@@ -1,0 +1,16 @@
+{
+  "name": "panic-font",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Burnthday's Widespread Panic Spread Sheet static site.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && npx serve dist",
+    "deploy": "npm run build && npx wrangler pages deploy dist --project-name burnthday"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {}
+}
