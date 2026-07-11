@@ -1398,8 +1398,8 @@ main {
   position: absolute;
   left: -0.24em;
   right: -0.16em;
-  top: 58%;
-  height: 0.58em;
+  top: 47%;
+  height: 0.48em;
   transform: translateY(-50%);
   overflow: hidden;
   pointer-events: none;
