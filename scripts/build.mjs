@@ -854,9 +854,10 @@ function renderHtml(data) {
     ${renderSiteHeader()}
 
     <main>
+      ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
-      ${renderSetlists(data)}
       ${renderShelfBoard(data)}
+      ${renderSetlists(data, { skipLatest: true })}
       ${renderTourDates(data)}
       ${renderCommunityLinks()}
       ${renderArchiveTeaser(data)}
@@ -880,10 +881,11 @@ function renderSiteHeader() {
     <img class="brand-logo" src="/assets/burnthday-logo.png" alt="Burnthday">
   </a>
   <nav class="jump-links" aria-label="Sections">
+    <a href="/#latest-setlist">Latest Setlist</a>
     <a href="/#song-list">Song List</a>
-    <a href="/#setlists">Setlists</a>
     <a href="/#shelf">Shelf</a>
     <a href="/#purgatory">Purgatory</a>
+    <a href="/#setlists">Setlists</a>
     <a href="/#tour-dates">Tour Dates</a>
     <a href="/tour-in-review/">Tour In Review</a>
     <a href="/p/widespread-panic-song-origins-and">Song Origins</a>
@@ -908,9 +910,9 @@ function renderRotationBoard(data) {
   <nav class="sheet-jump" aria-label="Song list shortcuts">
     <a href="#rotation-originals">Originals</a>
     <a href="#rotation-covers">Covers</a>
-    <a href="#setlists">Setlists</a>
     <a href="#shelf">Shelf</a>
     <a href="#purgatory">Purgatory</a>
+    <a href="#setlists">Setlists</a>
     <a href="#tour-dates">Tour Dates</a>
   </nav>
   ${renderSongPanel("rotation-originals", "ORIGINALS", data.boards.rotationOriginals)}
@@ -1000,16 +1002,29 @@ function renderSong(row, options = {}) {
   return `<span class="rotation-song"><span class="marker-wrap"><span class="marker-text${handClass}">${escapeHtml(row.title.toUpperCase())}</span>${marker}${count}${date}</span></span>`;
 }
 
-function renderSetlists(data) {
+function renderLatestSetlist(data) {
   const latest = data.setlists[0];
+  if (!latest) return "";
+
+  return `<section class="latest-setlist" id="latest-setlist">
+  <div class="section-heading">
+    <h2>LATEST SETLIST</h2>
+    <span>${escapeHtml(latest.date)} ${escapeHtml(latest.location)}</span>
+  </div>
+  ${renderFeaturedSetlist(latest)}
+</section>`;
+}
+
+function renderSetlists(data, options = {}) {
+  const setlists = options.skipLatest ? data.setlists.slice(1) : data.setlists;
+  const postedLabel = options.skipLatest ? `${setlists.length} older posted` : `${data.totals.postedSetlists} posted`;
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
     <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>
-    <span>${data.totals.postedSetlists} posted</span>
+    <span>${escapeHtml(postedLabel)}</span>
   </div>
-  ${latest ? renderFeaturedSetlist(latest) : ""}
   <div class="setlist-grid">
-    ${data.setlists.slice(1).map(renderSetlistCard).join("")}
+    ${setlists.map(renderSetlistCard).join("")}
   </div>
 </section>`;
 }
@@ -1423,10 +1438,20 @@ sup {
   visibility: hidden;
 }
 
+.latest-setlist,
 .setlist-section,
 .tour-date-section {
   width: min(1180px, 100%);
   margin: 36px auto;
+}
+
+.latest-setlist {
+  margin-top: 0;
+}
+
+.latest-setlist .setlist-feature {
+  margin-bottom: 0;
+  border-color: rgba(0, 0, 0, 0.28);
 }
 
 .community-links {
