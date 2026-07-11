@@ -874,7 +874,6 @@ function renderHtml(data) {
       ${renderSetlists(data, { skipLatest: true })}
       ${renderTourDates(data)}
       ${renderCommunityLinks()}
-      ${renderArchiveTeaser(data)}
     </main>
 
     ${renderSiteFooter(data)}
@@ -904,8 +903,6 @@ function renderSiteHeader() {
     <a href="/tour-in-review/">Tour In Review</a>
     <a href="/p/widespread-panic-song-origins-and">Song Origins</a>
     <a href="/p/about">About</a>
-    <a href="/pages/">Pages</a>
-    <a href="/archive/">Archive</a>
   </nav>
 </header>`;
 }
@@ -1098,28 +1095,6 @@ function renderCommunityLinks() {
 </section>`;
 }
 
-function renderArchiveTeaser(data) {
-  if (!data.archive?.totalEntries) return "";
-  return `<section class="archive-teaser">
-  <div class="section-heading">
-    <h2>BURNTHDAY ARCHIVE</h2>
-    <span>${data.archive.totalEntries} pages restored</span>
-  </div>
-  <div class="archive-teaser-grid">
-    <div>
-      <h3>Tour In Review</h3>
-      <p>${data.archive.reviewEntries} preserved review pages and review-related posts from Blogger.</p>
-      <a href="/tour-in-review/">Open Tour In Review</a>
-    </div>
-    <div>
-      <h3>Full Archive</h3>
-      <p>All Blogger entries from the Takeout export are available at their original paths.</p>
-      <a href="/archive/">Open Archive</a>
-    </div>
-  </div>
-</section>`;
-}
-
 function renderStat(value, label) {
   return `<div class="stat"><strong>${formatNumber(value)}</strong><span>${escapeHtml(label)}</span></div>`;
 }
@@ -1195,20 +1170,21 @@ a {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 8px 16px;
   font-family: "MilkRun", system-ui, sans-serif;
   font-size: 15px;
 }
 
 .jump-links a {
-  min-height: 34px;
   display: inline-flex;
   align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 6px 10px;
+  padding: 3px 0;
   text-decoration: none;
-  background: #ffffff;
+  border-bottom: 1px solid transparent;
+}
+
+.jump-links a:hover {
+  border-bottom-color: currentColor;
 }
 
 main {
@@ -1601,7 +1577,7 @@ sup {
 .setlist-text .venue {
   margin: 3px 0 10px;
   color: var(--muted);
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: inherit;
 }
 
 .setlist-text p {
@@ -1668,36 +1644,6 @@ sup {
   color: var(--green);
 }
 
-.archive-teaser {
-  width: min(1180px, 100%);
-  margin: 36px auto;
-}
-
-.archive-teaser-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.archive-teaser-grid > div {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  padding: 14px;
-}
-
-.archive-teaser h3 {
-  margin: 0 0 8px;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 22px;
-}
-
-.archive-teaser p {
-  margin: 0 0 10px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.archive-teaser a,
 .archive-list a {
   color: var(--ink);
   font-weight: 700;
@@ -1845,8 +1791,7 @@ sup {
 
   .board-ledger,
   .setlist-feature,
-  .setlist-grid,
-  .archive-teaser-grid {
+  .setlist-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1868,13 +1813,12 @@ sup {
 
   .jump-links {
     font-size: 14px;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    gap: 8px 14px;
   }
 
   .jump-links a {
     min-width: 0;
-    justify-content: center;
   }
 
   .laminate {
