@@ -17,6 +17,7 @@ const sheetRanges = {
 
 const config = {
   rotationSlpLimit: 200,
+  siteTimeZone: "America/Los_Angeles",
   addOnOriginals: ["SPARKS FLY"],
   addOnCovers: ["GODZILLA", "BLACK SABBATH", "THE HARDER THEY COME", "DEAD FLOWERS", "COMFORTABLY NUMB", "WAR PIGS"],
   addOnDates: {
@@ -379,6 +380,7 @@ function buildSiteData(source, archiveEntries = []) {
   const currentTourByKey = new Map(currentTour.map((row) => [normalizeTitle(row.title), row]));
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
   const postedShowCount = setlists.length;
+  const boardShow = pickBoardShow(tourDates, setlists);
 
   const songs = catalog.map((row) => {
     const key = normalizeTitle(row.title);
@@ -423,6 +425,7 @@ function buildSiteData(source, archiveEntries = []) {
       title: `Widespread Panic ${latestYear} Tour`,
       year: latestYear,
       deck: "The Widespread Panic Spread Sheet",
+      boardShow,
       latestShow: setlists[0] || null
     },
     rules: {
@@ -463,17 +466,16 @@ function archiveSummary(entry) {
 }
 
 function buildBoards(songs) {
-  const addOnOriginals = new Set(config.addOnOriginals);
-  const addOnCovers = new Set(config.addOnCovers);
+  const addOns = new Set([...config.addOnOriginals, ...config.addOnCovers]);
   const active = songs.filter((row) => row.effectiveSlp < config.rotationSlpLimit || row.playedThisTour);
 
   const rotationOriginals = withAddOns(
-    active.filter((row) => row.type === "Original" && !addOnOriginals.has(row.title.toUpperCase())).sort(byTitle),
+    active.filter((row) => row.type === "Original" && !addOns.has(row.title.toUpperCase())).sort(byTitle),
     songs,
     config.addOnOriginals
   );
   const rotationCovers = withAddOns(
-    active.filter((row) => row.type === "Cover" && !addOnCovers.has(row.title.toUpperCase())).sort(byTitle),
+    active.filter((row) => row.type === "Cover" && !addOns.has(row.title.toUpperCase())).sort(byTitle),
     songs,
     config.addOnCovers
   );
@@ -606,28 +608,40 @@ function isIgnoredSetlistTitle(title) {
 function normalizeCatalogRow(row) {
   const coverFlag = clean(row.Cover);
   const originalFlag = clean(row.Original);
+  const title = clean(row["Song Title"] || row.Title || row.Song);
   const type = clean(row.TYPE) || clean(row.Type) || (originalFlag ? "Original" : coverFlag ? "Cover" : "");
+  const configuredType = configuredTypeForTitle(title);
 
   return {
-    title: clean(row["Song Title"] || row.Title || row.Song),
+    title,
     first: clean(row.First),
     last: clean(row.Last),
     total: toNumber(row.Total),
     l100: toNumber(row.L100),
     slp: toNumber(row.SLP),
-    type: type === "Original" ? "Original" : "Cover"
+    type: configuredType || (type === "Original" ? "Original" : "Cover")
   };
 }
 
 function normalizeCurrentTourRow(row) {
+  const title = clean(row["Song Title"] || row.Title || row.Song);
+  const configuredType = configuredTypeForTitle(title);
+
   return {
-    title: clean(row["Song Title"] || row.Title || row.Song),
+    title,
     first: clean(row.First),
     last: clean(row.Last),
     total: toNumber(row.Total),
     slp: toNumber(row.SLP),
-    type: clean(row.Original) ? "Original" : clean(row.Cover) ? "Cover" : ""
+    type: configuredType || (clean(row.Original) ? "Original" : clean(row.Cover) ? "Cover" : "")
   };
+}
+
+function configuredTypeForTitle(title) {
+  const key = clean(title).toUpperCase();
+  if (config.addOnOriginals.includes(key)) return "Original";
+  if (config.addOnCovers.includes(key)) return "Cover";
+  return "";
 }
 
 function rowsToObjects(rows) {
@@ -958,7 +972,7 @@ function renderBoardHeader(title, subtitle = "") {
 
 function renderPrimaryBoardHeader(data) {
   const latest = data.site.latestShow;
-  const title = latest?.location || data.site.title;
+  const title = formatBoardShowTitle(data.site.boardShow) || latest?.location || data.site.title;
 
   return `<div class="header-row primary-header">
     <div class="nums left">
@@ -966,7 +980,7 @@ function renderPrimaryBoardHeader(data) {
       <img alt="2" class="marker-num" src="/assets/marker-2.png">
     </div>
     <div class="board-title">
-      <h1>${escapeHtml(`${title.toUpperCase()} I`)}</h1>
+      <h1>${escapeHtml(title.toUpperCase())}</h1>
     </div>
     <div class="nums right">
       <img alt="3" class="marker-num" src="/assets/marker-3.png">
@@ -994,12 +1008,15 @@ function renderSong(row, options = {}) {
   const stripeAsset = options.shelfMode && row.playedThisTour ? "marker-black.png" : row.stripeAsset;
   const dateText = options.shelfMode || row.isAddOn ? row.addOnDate || row.lastDisplay : "";
   const handClass = row.isAddOn ? " hand-addon" : "";
+  const title = row.title.toUpperCase();
+  const fitClass = songFitClass(title, dateText);
+  const songClasses = ["rotation-song", row.isAddOn ? "is-hand-addon" : "", fitClass].filter(Boolean).join(" ");
   const marker = stripeAsset ? `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(stripeAsset)}" alt=""></span>` : "";
   const countValue = options.shelfMode ? row.total : row.tourCount;
   const count = countValue > 0 ? `<sup>${countValue}</sup>` : "";
   const date = dateText ? `<span class="date-sup">${escapeHtml(dateText)}</span>` : "";
 
-  return `<span class="rotation-song"><span class="marker-wrap"><span class="marker-text${handClass}">${escapeHtml(row.title.toUpperCase())}</span>${marker}${count}${date}</span></span>`;
+  return `<span class="${songClasses}"><span class="marker-wrap"><span class="marker-text${handClass}">${escapeHtml(title)}</span>${marker}${count}</span>${date}</span>`;
 }
 
 function renderLatestSetlist(data) {
@@ -1373,25 +1390,41 @@ main {
 }
 
 .rotation-song {
+  --song-scale: 1;
   display: block;
   min-height: 27px;
   margin: 0 0 6px;
-  font-size: clamp(19px, 1.25vw, 27px);
+  font-size: calc(clamp(19px, 1.25vw, 27px) * var(--song-scale));
   text-transform: uppercase;
   line-height: 1.02;
-  overflow-wrap: break-word;
+  letter-spacing: 0;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  text-wrap: nowrap;
+}
+
+.rotation-song.fit-tight {
+  --song-scale: 0.94;
+}
+
+.rotation-song.fit-sm {
+  --song-scale: 0.88;
+}
+
+.rotation-song.fit-xs {
+  --song-scale: 0.82;
 }
 
 .marker-wrap {
   position: relative;
   display: inline-block;
-  max-width: 100%;
   line-height: 1;
 }
 
 .marker-text {
   position: relative;
   z-index: 1;
+  letter-spacing: 0;
 }
 
 .marker-mask {
@@ -1408,10 +1441,9 @@ main {
 
 .marker-img {
   display: block;
-  width: auto;
+  width: 100%;
   height: 100%;
-  min-width: calc(100% + 0.4em);
-  max-width: none;
+  object-fit: fill;
   opacity: 0.9;
   mix-blend-mode: multiply;
 }
@@ -1429,9 +1461,13 @@ sup {
 
 .hand-addon {
   font-family: "PanicHand", sans-serif;
-  font-size: 16px;
-  letter-spacing: 0;
+  font-size: 0.82em;
+  letter-spacing: -0.045em;
   line-height: 1;
+  display: inline-block;
+  transform: scaleY(1.08);
+  transform-origin: left center;
+  vertical-align: -0.02em;
 }
 
 .spacer {
@@ -1991,6 +2027,79 @@ function publicPath(pagePath) {
 function splitStrict(items, count) {
   const perColumn = Math.ceil(items.length / count);
   return Array.from({ length: count }, (_, index) => items.slice(index * perColumn, (index + 1) * perColumn));
+}
+
+function pickBoardShow(tourDates, setlists) {
+  const today = currentDateKey();
+  const sortedDates = [...tourDates].filter((show) => show.isoDate).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+  const currentOrPast = [...sortedDates].reverse().find((show) => show.isoDate <= today);
+  const selected = currentOrPast || setlists[0] || sortedDates[0] || null;
+  if (!selected) return null;
+
+  const run = tourRunInfo(sortedDates, selected);
+  return {
+    ...selected,
+    runNumber: run.number,
+    runLength: run.length,
+    runLabel: run.length > 1 ? romanNumeral(run.number) : ""
+  };
+}
+
+function currentDateKey() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: config.siteTimeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+}
+
+function tourRunInfo(tourDates, selected) {
+  if (!tourDates.length || !selected?.isoDate) return { number: 1, length: 1 };
+
+  let index = tourDates.findIndex((show) => sameShowDate(show, selected));
+  if (index === -1) index = tourDates.findIndex((show) => show.isoDate === selected.isoDate);
+  if (index === -1) return { number: 1, length: 1 };
+
+  let first = index;
+  let last = index;
+  while (first > 0 && sameRunStop(tourDates[first - 1], selected)) first -= 1;
+  while (last < tourDates.length - 1 && sameRunStop(tourDates[last + 1], selected)) last += 1;
+
+  return {
+    number: index - first + 1,
+    length: last - first + 1
+  };
+}
+
+function sameShowDate(a, b) {
+  return a.isoDate === b.isoDate && normalizeRunValue(a.location) === normalizeRunValue(b.location) && normalizeRunValue(a.venue) === normalizeRunValue(b.venue);
+}
+
+function sameRunStop(a, b) {
+  return normalizeRunValue(a.location) === normalizeRunValue(b.location) && normalizeRunValue(a.venue) === normalizeRunValue(b.venue);
+}
+
+function normalizeRunValue(value) {
+  return clean(value).toLowerCase().replace(/\s+/g, " ");
+}
+
+function romanNumeral(value) {
+  const numerals = ["", "I", "II", "III", "IV", "V", "VI"];
+  return numerals[value] || String(value);
+}
+
+function formatBoardShowTitle(show) {
+  if (!show?.location) return "";
+  return `${show.location}${show.runLabel ? ` ${show.runLabel}` : ""}`;
+}
+
+function songFitClass(title, dateText = "") {
+  const length = title.length + (dateText ? dateText.length + 2 : 0);
+  if (length >= 40) return "fit-xs";
+  if (length >= 32) return "fit-sm";
+  if (length >= 25) return "fit-tight";
+  return "";
 }
 
 function newestUniqueDates(setlists, catalog, currentTour) {

@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-11T04:20:40.249Z",
+  "importedAt": "2026-07-11T14:53:32.698Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1309,7 +1309,7 @@
       "state": "OR",
       "location": "Bend, OR",
       "sourceUrl": "https://widespreadpanic.com/shows/2026-07-10-bend-or-hayden-homes-amphitheater/",
-      "streamUrl": "",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-hayden-homes-amphitheater-bend-or-07-10-2026-mp3-flac-or-online-music-streaming/47018.html?cgid=ARTIST-58",
       "sets": [
         {
           "label": "1",
@@ -1328,7 +1328,7 @@
         },
         {
           "label": "2",
-          "songs": "Let's Get Down To Business, Imitation Leather Shoes, Jack, Trashy, Saint Ex, Smokestack Lightning, Surprise Valley, Blight",
+          "songs": "Let's Get Down To Business, Imitation Leather Shoes, Jack, Trashy, Saint Ex, Smokestack Lightning, Surprise Valley, Blight, Surprise Valley, Life During Wartime",
           "songTitles": [
             "Let's Get Down To Business",
             "Imitation Leather Shoes",
@@ -1337,7 +1337,17 @@
             "Saint Ex",
             "Smokestack Lightning",
             "Surprise Valley",
-            "Blight"
+            "Blight",
+            "Surprise Valley",
+            "Life During Wartime"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Disco, Love Tractor",
+          "songTitles": [
+            "Disco",
+            "Love Tractor"
           ]
         }
       ],
