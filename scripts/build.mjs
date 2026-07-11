@@ -1044,7 +1044,8 @@ function renderSetlists(data, options = {}) {
 }
 
 function renderFeaturedSetlist(show) {
-  return `<article class="setlist-feature">
+  const imageClass = show.image ? "" : " no-image";
+  return `<article class="setlist-feature${imageClass}">
     ${renderSetlistImage(show)}
     <div class="setlist-copy">
       ${renderSetlistText(show)}
@@ -1053,7 +1054,8 @@ function renderFeaturedSetlist(show) {
 }
 
 function renderSetlistCard(show) {
-  return `<article class="setlist-card">
+  const imageClass = show.image ? "" : " no-image";
+  return `<article class="setlist-card${imageClass}">
     ${renderSetlistImage(show)}
     ${renderSetlistText(show)}
   </article>`;
@@ -1526,6 +1528,10 @@ sup {
   border-radius: 6px;
   background: #ffffff;
   padding: 14px;
+}
+
+.setlist-feature.no-image {
+  grid-template-columns: 1fr;
 }
 
 .setlist-grid {

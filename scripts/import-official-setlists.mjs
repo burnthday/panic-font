@@ -71,7 +71,7 @@ function parseShowPage(url, html) {
   const state = cleanText(readFirst(html, /<span class="venue-region region">\s*([\s\S]*?)\s*<\/span>/i)) || fallback.state;
   const notes = parseNotes(html);
   const streamUrl = decodeHtml(readFirst(html, /<div class="download-link">[\s\S]*?<a href="([^"]+)"/i));
-  const image = parsePrimaryImage(html);
+  const image = parseShowPhoto(html, fallback.isoDate);
 
   return {
     date: isoToShortDate(fallback.isoDate),
@@ -150,11 +150,57 @@ function isSetlistNote(note) {
   );
 }
 
-function parsePrimaryImage(html) {
-  const og = readFirst(html, /<meta property="og:image" content="([^"]+)"/i);
-  if (og) return decodeHtml(og);
+function parseShowPhoto(html, isoDate) {
+  const compactDate = String(isoDate || "").replaceAll("-", "");
+  if (!compactDate) return "";
+
+  const candidates = imageUrlsFromHtml(html)
+    .filter((url) => isShowPhotoUrl(url, compactDate))
+    .sort((a, b) => imageUrlScore(b, compactDate) - imageUrlScore(a, compactDate));
+
+  return candidates[0] || "";
+}
+
+function imageUrlsFromHtml(html) {
+  const urls = new Set();
+  const decoded = decodeHtml(html);
+
+  for (const match of decoded.matchAll(/https?:\\?\/\\?\/[^"'<>\s)]+?\.(?:jpe?g|png|webp)(?:\?[^"'<>\s)]*)?/gi)) {
+    urls.add(match[0].replaceAll("\\/", "/"));
+  }
+
   const schema = readFirst(html, /"thumbnailUrl":"([^"]+)"/i);
-  return schema ? decodeHtml(schema.replace(/\\\//g, "/")) : "";
+  if (schema) urls.add(decodeHtml(schema.replace(/\\\//g, "/")));
+
+  return [...urls].map(cleanImageUrl).filter(Boolean);
+}
+
+function cleanImageUrl(url) {
+  return decodeHtml(String(url || ""))
+    .replaceAll("\\/", "/")
+    .replace(/-\d+x\d+(?=\.(?:jpe?g|png|webp)(?:\?|$))/i, "")
+    .replace(/-\d+x\d+_c(?=\.(?:jpe?g|png|webp)(?:\?|$))/i, "");
+}
+
+function isShowPhotoUrl(url, compactDate) {
+  const value = String(url || "");
+  if (!value.includes(compactDate)) return false;
+  if (!/widespread-panic/i.test(value)) return false;
+  if (isPromotionalImageUrl(value)) return false;
+  return true;
+}
+
+function isPromotionalImageUrl(url) {
+  return /poster|promo|promotional|presale|tour|square|nobox|bonner|july-\d|logo|cropped|share/i.test(url);
+}
+
+function imageUrlScore(url, compactDate) {
+  let score = 0;
+  if (url.includes(compactDate)) score += 100;
+  if (/timmermans|tennille|photo/i.test(url)) score += 20;
+  if (!/-\d+x\d+(?:_c)?\.(?:jpe?g|png|webp)(?:\?|$)/i.test(url)) score += 10;
+  if (/-\d+x\d+(?:_c)?\.(?:jpe?g|png|webp)(?:\?|$)/i.test(url)) score -= 10;
+  return score;
 }
 
 function normalizeSetLabel(value) {
