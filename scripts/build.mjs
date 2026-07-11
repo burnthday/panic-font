@@ -42,7 +42,7 @@ async function main() {
   await writeFile(path.join(dist, "styles.css"), renderCss(), "utf8");
   await writeFile(path.join(dist, "data", "site-data.json"), JSON.stringify(siteData, null, 2), "utf8");
   await writeFile(path.join(dist, "_headers"), renderHeaders(), "utf8");
-  await writeFile(path.join(dist, "_redirects"), "/* /index.html 200\n", "utf8");
+  await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries), "utf8");
   await writeFile(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: https://burnthday.com/sitemap.xml\n", "utf8");
   await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries), "utf8");
 
@@ -50,11 +50,12 @@ async function main() {
 }
 
 async function loadSourceData() {
-  const [spreadsheet, setlists] = await Promise.all([loadSpreadsheetData(), loadSetlists()]);
+  const setlists = await loadSetlists();
+  const spreadsheet = await loadSpreadsheetData(inferSetlistYear(setlists));
   return { ...spreadsheet, setlists };
 }
 
-async function loadSpreadsheetData() {
+async function loadSpreadsheetData(tourYear = 0) {
   const serviceAccount = parseServiceAccount();
   if (serviceAccount) {
     try {
@@ -64,20 +65,43 @@ async function loadSpreadsheetData() {
     }
   }
 
-  return loadFromSeedCsv();
+  return loadFromSeedCsv(tourYear);
 }
 
 async function loadSetlists() {
+  const explicitYear = process.env.TOUR_YEAR;
+  const sourceDir = path.join(root, "data", "source");
+  const candidates = [];
+
+  if (explicitYear) candidates.push(path.join(sourceDir, `setlists-${explicitYear}.json`));
+
   try {
-    const raw = await readFile(path.join(root, "data", "source", "setlists-2025.json"), "utf8");
-    return attachLocalSetlistImages(JSON.parse(raw));
+    const files = await readdir(sourceDir);
+    candidates.push(
+      ...files
+        .filter((file) => /^setlists-\d{4}\.json$/.test(file))
+        .sort((a, b) => b.localeCompare(a))
+        .map((file) => path.join(sourceDir, file))
+    );
   } catch {
-    return { title: "WIDESPREAD PANIC 2025 TOUR", sourceUrl: "", setlists: [], tourDates: [] };
+    candidates.push(path.join(sourceDir, "setlists-2025.json"));
   }
+
+  for (const filename of [...new Set(candidates)]) {
+    try {
+      const raw = await readFile(filename, "utf8");
+      const payload = JSON.parse(raw);
+      return attachLocalSetlistImages(payload, inferSetlistYear(payload));
+    } catch {
+      // Try the next setlist snapshot.
+    }
+  }
+
+  return { title: "WIDESPREAD PANIC TOUR", sourceUrl: "", setlists: [], tourDates: [] };
 }
 
-async function attachLocalSetlistImages(payload) {
-  const localDir = path.join(root, "assets", "setlists", "2025");
+async function attachLocalSetlistImages(payload, tourYear = 0) {
+  const localDir = path.join(root, "assets", "setlists", String(tourYear || ""));
   let files = [];
   try {
     files = await readdir(localDir);
@@ -88,7 +112,7 @@ async function attachLocalSetlistImages(payload) {
   const byDate = new Map(files.map((file) => [path.parse(file).name, file]));
   for (const show of payload.setlists || []) {
     const file = byDate.get(show.isoDate);
-    if (file) show.image = `/assets/setlists/2025/${file}`;
+    if (file) show.image = `/assets/setlists/${tourYear}/${file}`;
   }
   return payload;
 }
@@ -316,9 +340,12 @@ function base64Url(input) {
   return buffer.toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 
-async function loadFromSeedCsv() {
+async function loadFromSeedCsv(tourYear = 0) {
   const catalogCsv = await readFile(path.join(root, "data", "source", "catalog.csv"), "utf8");
-  const currentTourCsv = await readFile(path.join(root, "data", "source", "current-tour.csv"), "utf8");
+  const currentTourCsv = await readFirstExisting([
+    tourYear ? path.join(root, "data", "source", `current-tour-${tourYear}.csv`) : "",
+    path.join(root, "data", "source", "current-tour.csv")
+  ]);
 
   return {
     label: "seed CSV snapshot",
@@ -327,31 +354,51 @@ async function loadFromSeedCsv() {
   };
 }
 
+async function readFirstExisting(filenames) {
+  let lastError = null;
+  for (const filename of filenames.filter(Boolean)) {
+    try {
+      return await readFile(filename, "utf8");
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("No readable source file found.");
+}
+
 function buildSiteData(source, archiveEntries = []) {
-  const catalog = source.catalog.map(normalizeCatalogRow).filter((row) => isPublicSongTitle(row.title));
-  const currentTour = source.currentTour.map(normalizeCurrentTourRow).filter((row) => isPublicSongTitle(row.title));
+  const baseCatalog = source.catalog.map(normalizeCatalogRow).filter((row) => isPublicSongTitle(row.title));
+  const rawCurrentTour = source.currentTour.map(normalizeCurrentTourRow).filter((row) => isPublicSongTitle(row.title));
   const setlists = [...(source.setlists.setlists || [])].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
   const tourDates = [...(source.setlists.tourDates || [])].sort((a, b) => a.isoDate.localeCompare(b.isoDate));
-  const setlistStats = analyzeSetlists(setlists, catalog, currentTour);
+  const setlistYear = inferSetlistYear(source.setlists);
+  const latestYear = setlistYear || inferLatestYear(rawCurrentTour) || inferLatestYear(baseCatalog) || new Date().getFullYear();
+  const currentTour = setlistYear ? rawCurrentTour.filter((row) => rowBelongsToYear(row, setlistYear)) : rawCurrentTour;
+  const setlistStats = analyzeSetlists(setlists, baseCatalog, currentTour);
+  const catalog = withSetlistOnlySongs(baseCatalog, setlistStats, currentTour);
   const currentTourByKey = new Map(currentTour.map((row) => [normalizeTitle(row.title), row]));
-  const latestYear = inferLatestYear(currentTour) || inferLatestYear(catalog) || 2025;
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
+  const postedShowCount = setlists.length;
 
   const songs = catalog.map((row) => {
     const key = normalizeTitle(row.title);
     const sheetTour = currentTourByKey.get(key);
     const parsedTour = setlistStats.byKey.get(key);
-    const tourCount = Math.max(sheetTour?.total || 0, parsedTour?.count || 0);
+    const tourCount = sheetTour ? sheetTour.total : parsedTour?.count || 0;
     const effectiveLastIso = maxIso([parseDateKey(row.last), parseDateKey(sheetTour?.last), parsedTour?.lastIso]);
     const lastDisplay = effectiveLastIso ? isoToShortDate(effectiveLastIso) : row.last;
     const playedThisTour = tourCount > 0;
     const stripeIndex = lastFourDates.indexOf(effectiveLastIso);
+    const effectiveSlp = playedThisTour
+      ? showsSinceLastPlayed(setlists, parsedTour?.lastIso || parseDateKey(sheetTour?.last))
+      : row.slp + postedShowCount;
 
     return {
       ...row,
       key,
       tourCount,
       playedThisTour,
+      effectiveSlp,
       effectiveLastIso,
       lastDisplay,
       stripeAsset: stripeIndex >= 0 ? config.stripeAssets[stripeIndex] : "",
@@ -374,6 +421,7 @@ function buildSiteData(source, archiveEntries = []) {
     site: {
       name: "Burnthday",
       title: `Widespread Panic ${latestYear} Tour`,
+      year: latestYear,
       deck: "The Widespread Panic Spread Sheet",
       latestShow: setlists[0] || null
     },
@@ -417,7 +465,7 @@ function archiveSummary(entry) {
 function buildBoards(songs) {
   const addOnOriginals = new Set(config.addOnOriginals);
   const addOnCovers = new Set(config.addOnCovers);
-  const active = songs.filter((row) => row.slp < config.rotationSlpLimit || row.playedThisTour);
+  const active = songs.filter((row) => row.effectiveSlp < config.rotationSlpLimit || row.playedThisTour);
 
   const rotationOriginals = withAddOns(
     active.filter((row) => row.type === "Original" && !addOnOriginals.has(row.title.toUpperCase())).sort(byTitle),
@@ -430,7 +478,7 @@ function buildBoards(songs) {
     config.addOnCovers
   );
 
-  const shelfRows = songs.filter((row) => row.total > 1 && row.slp >= config.rotationSlpLimit).sort((a, b) => b.slp - a.slp || byTitle(a, b));
+  const shelfRows = songs.filter((row) => row.total > 1 && row.effectiveSlp >= config.rotationSlpLimit).sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
   const purgatoryRows = songs.filter((row) => row.total === 1).sort(byTitle);
 
   return {
@@ -443,6 +491,29 @@ function buildBoards(songs) {
   };
 }
 
+function withSetlistOnlySongs(catalog, setlistStats, currentTour) {
+  const knownKeys = new Set([...catalog, ...currentTour].map((row) => normalizeTitle(row.title)));
+  const additions = [];
+
+  for (const [key, stat] of setlistStats.byKey) {
+    if (knownKeys.has(key) || !isPublicSongTitle(stat.title) || !stat.count) continue;
+
+    additions.push({
+      title: stat.title,
+      first: isoToShortDate(stat.firstIso || stat.lastIso),
+      last: isoToShortDate(stat.lastIso),
+      total: stat.count,
+      l100: stat.count,
+      slp: 0,
+      type: "Cover",
+      isSetlistOnly: true
+    });
+    knownKeys.add(key);
+  }
+
+  return [...catalog, ...additions.sort(byTitle)];
+}
+
 function withAddOns(rows, allSongs, names) {
   const byKey = new Map(allSongs.map((row) => [row.title.toUpperCase(), row]));
   const addOns = names.map((name) => ({
@@ -451,6 +522,7 @@ function withAddOns(rows, allSongs, names) {
       type: "",
       total: 0,
       slp: 0,
+      effectiveSlp: 0,
       tourCount: 0,
       playedThisTour: false,
       lastDisplay: config.addOnDates[name] || ""
@@ -470,18 +542,14 @@ function analyzeSetlists(setlists, catalog, currentTour) {
 
   const byKey = new Map();
   for (const show of setlists) {
-    const showKeys = new Set();
     for (const set of show.sets || []) {
-      for (const key of splitSetSongs(set.songs, known)) {
-        showKeys.add(key);
+      for (const song of splitSetSongs(set.songTitles || set.songs, known)) {
+        const current = byKey.get(song.key) || { count: 0, firstIso: "", lastIso: "", title: song.title };
+        current.count += 1;
+        current.firstIso = minIso([current.firstIso, show.isoDate]);
+        current.lastIso = maxIso([current.lastIso, show.isoDate]);
+        byKey.set(song.key, current);
       }
-    }
-
-    for (const key of showKeys) {
-      const current = byKey.get(key) || { count: 0, lastIso: "" };
-      current.count += 1;
-      current.lastIso = maxIso([current.lastIso, show.isoDate]);
-      byKey.set(key, current);
     }
   }
 
@@ -489,8 +557,8 @@ function analyzeSetlists(setlists, catalog, currentTour) {
 }
 
 function splitSetSongs(value, known) {
-  const pieces = stripStageMarks(value)
-    .split(/\s*>\s*|\s*,\s*/)
+  const pieces = (Array.isArray(value) ? value : stripStageMarks(value).split(/\s*>\s*|\s*,\s*/))
+    .map(stripStageMarks)
     .map((piece) => piece.trim())
     .filter(Boolean);
   const found = [];
@@ -503,14 +571,22 @@ function splitSetSongs(value, known) {
       const candidate = pieces.slice(index, index + width).join(", ");
       const key = normalizeTitle(candidate);
       if (known.has(key)) {
-        match = key;
+        match = known.get(key);
         span = width;
         break;
       }
     }
 
-    if (match) found.push(match);
-    index += span || 1;
+    if (match) {
+      found.push(match);
+      index += span;
+      continue;
+    }
+
+    const title = pieces[index];
+    const key = normalizeTitle(title);
+    if (key && !isIgnoredSetlistTitle(title)) found.push({ key, title });
+    index += 1;
   }
 
   return found;
@@ -521,6 +597,10 @@ function stripStageMarks(value) {
     .replace(/[¹²³⁴⁵⁶⁷⁸⁹⁰]/g, "")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function isIgnoredSetlistTitle(title) {
+  return normalizeTitle(title) === "jam";
 }
 
 function normalizeCatalogRow(row) {
@@ -645,6 +725,7 @@ async function writeBloggerArchive(entries) {
 
   await Promise.all(entries.map((entry) => writeStaticPage(entry.path, renderArchivePage(entry))));
   await writeStaticPage("/archive/index.html", renderArchiveIndex(entries));
+  await writeStaticPage("/pages/index.html", renderPagesIndex(entries.filter((entry) => entry.path.startsWith("/p/"))));
   await writeStaticPage("/tour-in-review/index.html", renderTourReviewIndex(entries.filter((entry) => entry.isReview)));
 }
 
@@ -699,6 +780,14 @@ function renderArchiveIndex(entries) {
   });
 }
 
+function renderPagesIndex(entries) {
+  return renderArchiveListPage({
+    title: "Burnthday Pages",
+    deck: `${entries.length} preserved Blogger pages from the Takeout export, including About, Song Origins, lyrics, downloads, and old live stream pages.`,
+    entries: entries.sort((a, b) => a.title.localeCompare(b.title))
+  });
+}
+
 function renderTourReviewIndex(entries) {
   return renderArchiveListPage({
     title: "Tour In Review",
@@ -730,7 +819,7 @@ function renderArchiveListPage({ title, deck, entries }) {
         </header>
         <ol class="archive-list">
           ${entries.map((entry) => `<li>
-            <a href="${escapeAttr(entry.path)}">${escapeHtml(entry.title)}</a>
+            <a href="${escapeAttr(publicPath(entry.path))}">${escapeHtml(entry.title)}</a>
             <span>${escapeHtml(formatArchiveDate(entry.published))}</span>
             ${entry.categories.length ? `<em>${escapeHtml(entry.categories.join(" / "))}</em>` : ""}
           </li>`).join("")}
@@ -744,7 +833,7 @@ function renderArchiveListPage({ title, deck, entries }) {
 }
 
 function renderHtml(data) {
-  const description = "Burnthday's Widespread Panic song list, 2025 tour setlists, shelf, and purgatory.";
+  const description = `Burnthday's Widespread Panic song list, ${data.site.year} tour setlists, shelf, and purgatory.`;
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -794,6 +883,9 @@ function renderSiteHeader() {
     <a href="/#setlists">Setlists</a>
     <a href="/#shelf">Shelf</a>
     <a href="/tour-in-review/">Tour In Review</a>
+    <a href="/p/widespread-panic-song-origins-and">Song Origins</a>
+    <a href="/p/about">About</a>
+    <a href="/pages/">Pages</a>
     <a href="/archive/">Archive</a>
   </nav>
 </header>`;
@@ -902,7 +994,7 @@ function renderSetlists(data) {
   const latest = data.setlists[0];
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
-    <h2>2025 SETLISTS</h2>
+    <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>
     <span>${data.totals.postedSetlists} posted</span>
   </div>
   ${latest ? renderFeaturedSetlist(latest) : ""}
@@ -939,13 +1031,14 @@ function renderSetlistText(show) {
     <p class="venue">${escapeHtml(show.venue)}</p>
     ${(show.sets || []).map((set) => `<p><strong>${escapeHtml(set.label)}:</strong> ${escapeHtml(set.songs)}</p>`).join("")}
     ${show.notes?.length ? `<ul class="notes">${show.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join("")}</ul>` : ""}
+    ${(show.sourceUrl || show.streamUrl) ? `<p class="setlist-links">${show.sourceUrl ? `<a href="${escapeAttr(show.sourceUrl)}">Official Page</a>` : ""}${show.streamUrl ? `<a href="${escapeAttr(show.streamUrl)}">Stream</a>` : ""}</p>` : ""}
   </div>`;
 }
 
 function renderTourDates(data) {
   return `<section class="tour-date-section">
   <div class="section-heading">
-    <h2>2025 TOUR DATES</h2>
+    <h2>${escapeHtml(String(data.site.year))} TOUR DATES</h2>
     <span>${data.totals.tourDates} listed</span>
   </div>
   <ol class="tour-dates">
@@ -1011,6 +1104,7 @@ function renderCss() {
 
 html {
   background: var(--paper);
+  overflow-x: clip;
 }
 
 body {
@@ -1019,6 +1113,7 @@ body {
   color: var(--ink);
   background: var(--paper);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  overflow-x: clip;
 }
 
 a {
@@ -1085,6 +1180,7 @@ main {
   align-items: center;
   gap: 24px;
   margin-bottom: 36px;
+  min-width: 0;
 }
 
 .nums {
@@ -1110,6 +1206,7 @@ main {
 .board-title {
   text-align: center;
   min-width: 0;
+  max-width: 100%;
 }
 
 .board-title h1 {
@@ -1121,6 +1218,7 @@ main {
   font-weight: 400;
   letter-spacing: 0;
   white-space: nowrap;
+  max-width: 100%;
 }
 
 .board-title p {
@@ -1258,11 +1356,11 @@ main {
 
 .marker-mask {
   position: absolute;
-  left: -0.42em;
-  right: -0.12em;
-  top: 50%;
-  height: 1.2em;
-  transform: translateY(-70%);
+  left: -0.24em;
+  right: -0.16em;
+  top: 58%;
+  height: 0.58em;
+  transform: translateY(-50%);
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
@@ -1272,6 +1370,7 @@ main {
   display: block;
   width: auto;
   height: 100%;
+  min-width: calc(100% + 0.4em);
   max-width: none;
   opacity: 0.9;
   mix-blend-mode: multiply;
@@ -1410,6 +1509,19 @@ sup {
   color: var(--muted);
   font-size: 14px;
   line-height: 1.35;
+}
+
+.setlist-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.setlist-links a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .tour-dates {
@@ -1597,6 +1709,11 @@ sup {
     grid-template-columns: 1fr;
   }
 
+  .jump-links {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
   .nums.left,
   .nums.right {
     justify-self: center;
@@ -1604,6 +1721,8 @@ sup {
 
   .board-title h1 {
     font-size: 46px;
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .songs.grid4 {
@@ -1626,11 +1745,22 @@ sup {
   main,
   .site-head,
   .site-foot {
-    width: min(100% - 20px, 1180px);
+    width: min(calc(100% - 20px), 1180px);
   }
 
   .brand-logo {
     width: 148px;
+  }
+
+  .jump-links {
+    font-size: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jump-links a {
+    min-width: 0;
+    justify-content: center;
   }
 
   .laminate {
@@ -1639,7 +1769,7 @@ sup {
 
   .board-title h1,
   .section-heading h2 {
-    font-size: 36px;
+    font-size: 32px;
   }
 
   .board-ledger {
@@ -1709,6 +1839,41 @@ function renderHeaders() {
 `;
 }
 
+function renderRedirects(archiveEntries = []) {
+  const lines = [
+    "/2025/02/widespread-panic-2025-tour.html / 301",
+    "/2025/02/widespread-panic-2025-tour / 301",
+    "/search /archive/ 301",
+    "/search/* /archive/ 301",
+    "/feeds/posts/default /archive/ 301",
+    "/feeds/posts/default/* /archive/ 301",
+    "/p/:slug.html /p/:slug 301",
+    "/:year/:month/:slug.html /:year/:month/:slug 301",
+    "/archive/:year/:slug.html /archive/:year/:slug 301"
+  ];
+
+  const seen = new Set(lines);
+  for (const entry of archiveEntries) {
+    if (!entry.sourceUrl) continue;
+    try {
+      const url = new URL(entry.sourceUrl);
+      if (!/(^|\.)burnthday\.(com|blogspot\.com)$/i.test(url.hostname)) continue;
+      const sourcePath = clean(url.pathname);
+      const targetPath = publicPath(entry.path);
+      if (!sourcePath || sourcePath === targetPath) continue;
+      const rule = `${sourcePath} ${targetPath} 301`;
+      if (!seen.has(rule)) {
+        lines.push(rule);
+        seen.add(rule);
+      }
+    } catch {
+      // Ignore malformed legacy source URLs.
+    }
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
 function renderSitemap(data, archiveEntries = []) {
   const updated = data.generatedAt.slice(0, 10);
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -1725,12 +1890,20 @@ function renderSitemap(data, archiveEntries = []) {
     <loc>https://burnthday.com/tour-in-review/</loc>
     <lastmod>${updated}</lastmod>
   </url>
+  <url>
+    <loc>https://burnthday.com/pages/</loc>
+    <lastmod>${updated}</lastmod>
+  </url>
   ${archiveEntries.map((entry) => `<url>
-    <loc>https://burnthday.com${escapeHtml(entry.path)}</loc>
+    <loc>https://burnthday.com${escapeHtml(publicPath(entry.path))}</loc>
     <lastmod>${(entry.updated || entry.published || updated).slice(0, 10)}</lastmod>
   </url>`).join("\n  ")}
 </urlset>
 `;
+}
+
+function publicPath(pagePath) {
+  return String(pagePath || "/").replace(/\/index\.html$/i, "/").replace(/\.html?$/i, "");
 }
 
 function splitStrict(items, count) {
@@ -1750,6 +1923,11 @@ function newestUniqueDates(setlists, catalog, currentTour) {
     if (parsed) dates.add(parsed);
   }
   return [...dates].sort().reverse().slice(0, 4);
+}
+
+function showsSinceLastPlayed(setlists, lastIso) {
+  if (!lastIso) return 0;
+  return setlists.filter((show) => show.isoDate && show.isoDate > lastIso).length;
 }
 
 function parseDateKey(value) {
@@ -1778,6 +1956,18 @@ function maxIso(values) {
   return values.filter(Boolean).sort().at(-1) || "";
 }
 
+function minIso(values) {
+  return values.filter(Boolean).sort()[0] || "";
+}
+
+function inferSetlistYear(payload) {
+  const setlists = payload?.setlists || [];
+  const dates = [...setlists, ...(payload?.tourDates || [])]
+    .map((show) => Number(String(show.isoDate || "").slice(0, 4)))
+    .filter(Number.isFinite);
+  return Math.max(0, ...dates);
+}
+
 function inferLatestYear(rows) {
   const years = rows.flatMap((row) => [row.first, row.last]).map((date) => {
     const match = clean(date).match(/(\d{2,4})$/);
@@ -1788,13 +1978,27 @@ function inferLatestYear(rows) {
   return Math.max(0, ...years);
 }
 
+function rowBelongsToYear(row, year) {
+  return [row.first, row.last]
+    .map(parseDateKey)
+    .some((date) => Number(date.slice(0, 4)) === Number(year));
+}
+
 function normalizeTitle(title) {
-  return clean(title)
+  const normalized = clean(title)
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u00d7/g, "x")
     .replace(/&/g, "and")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
+  const aliases = {
+    bowleggedwomanknockkneedman: "bowleggedwoman",
+    conradthecaterpillar: "conrad",
+    knockinaroundthezoo: "knockingroundthezoo",
+    nobodysfault: "nobodysfaultbutmine"
+  };
+  return aliases[normalized] || normalized;
 }
 
 function titleCase(value) {
