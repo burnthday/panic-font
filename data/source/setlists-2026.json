@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-11T00:31:39.044Z",
+  "importedAt": "2026-07-11T04:20:40.249Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1300,192 +1300,6 @@
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/03/WSP_-Bonner_Square.jpg",
       "imageWidth": 0,
       "imageHeight": 0
-    }
-  ],
-  "tourDates": [
-    {
-      "date": "01/20/2026",
-      "isoDate": "2026-01-20",
-      "venue": "Riviera Maya Mexico Hard Rock Hotel Riviera Maya",
-      "city": "",
-      "state": "",
-      "location": ""
-    },
-    {
-      "date": "01/21/2026",
-      "isoDate": "2026-01-21",
-      "venue": "Riviera Maya Mexico Hard Rock Hotel Riviera Maya",
-      "city": "",
-      "state": "",
-      "location": ""
-    },
-    {
-      "date": "01/22/2026",
-      "isoDate": "2026-01-22",
-      "venue": "Riviera Maya Mexico Hard Rock Hotel Riviera Maya",
-      "city": "",
-      "state": "",
-      "location": ""
-    },
-    {
-      "date": "01/23/2026",
-      "isoDate": "2026-01-23",
-      "venue": "Riviera Maya Mexico Hard Rock Hotel Riviera Maya",
-      "city": "",
-      "state": "",
-      "location": ""
-    },
-    {
-      "date": "02/14/2026",
-      "isoDate": "2026-02-14",
-      "venue": "Moody Center",
-      "city": "Austin",
-      "state": "TX",
-      "location": "Austin, TX"
-    },
-    {
-      "date": "02/15/2026",
-      "isoDate": "2026-02-15",
-      "venue": "Moody Center",
-      "city": "Austin",
-      "state": "TX",
-      "location": "Austin, TX"
-    },
-    {
-      "date": "03/20/2026",
-      "isoDate": "2026-03-20",
-      "venue": "St Augustine Amphitheatre",
-      "city": "St Augustine",
-      "state": "FL",
-      "location": "St Augustine, FL"
-    },
-    {
-      "date": "03/21/2026",
-      "isoDate": "2026-03-21",
-      "venue": "St Augustine Amphitheatre",
-      "city": "St Augustine",
-      "state": "FL",
-      "location": "St Augustine, FL"
-    },
-    {
-      "date": "03/22/2026",
-      "isoDate": "2026-03-22",
-      "venue": "St Augustine Amphitheatre",
-      "city": "St Augustine",
-      "state": "FL",
-      "location": "St Augustine, FL"
-    },
-    {
-      "date": "04/17/2026",
-      "isoDate": "2026-04-17",
-      "venue": "Coca Cola Amphitheater",
-      "city": "Birmingham",
-      "state": "AL",
-      "location": "Birmingham, AL"
-    },
-    {
-      "date": "04/18/2026",
-      "isoDate": "2026-04-18",
-      "venue": "Coca Cola Amphitheater",
-      "city": "Birmingham",
-      "state": "AL",
-      "location": "Birmingham, AL"
-    },
-    {
-      "date": "04/30/2026",
-      "isoDate": "2026-04-30",
-      "venue": "New Orleans Jazz And Heritage Festival Fair Grounds Race Course",
-      "city": "New Orleans",
-      "state": "LA",
-      "location": "New Orleans, LA"
-    },
-    {
-      "date": "05/08/2026",
-      "isoDate": "2026-05-08",
-      "venue": "The Theater At Virgin Hotels Las Vegas",
-      "city": "Las Vegas",
-      "state": "NV",
-      "location": "Las Vegas, NV"
-    },
-    {
-      "date": "05/09/2026",
-      "isoDate": "2026-05-09",
-      "venue": "The Theater At Virgin Hotels Las Vegas",
-      "city": "Las Vegas",
-      "state": "NV",
-      "location": "Las Vegas, NV"
-    },
-    {
-      "date": "05/10/2026",
-      "isoDate": "2026-05-10",
-      "venue": "The Theater At Virgin Hotels Las Vegas",
-      "city": "Las Vegas",
-      "state": "NV",
-      "location": "Las Vegas, NV"
-    },
-    {
-      "date": "06/13/2026",
-      "isoDate": "2026-06-13",
-      "venue": "Merriweather Post Pavilion",
-      "city": "Columbia",
-      "state": "MD",
-      "location": "Columbia, MD"
-    },
-    {
-      "date": "06/14/2026",
-      "isoDate": "2026-06-14",
-      "venue": "Merriweather Post Pavilion",
-      "city": "Columbia",
-      "state": "MD",
-      "location": "Columbia, MD"
-    },
-    {
-      "date": "06/26/2026",
-      "isoDate": "2026-06-26",
-      "venue": "Red Rocks Amphitheatre",
-      "city": "Morrison",
-      "state": "CO",
-      "location": "Morrison, CO"
-    },
-    {
-      "date": "06/27/2026",
-      "isoDate": "2026-06-27",
-      "venue": "Red Rocks Amphitheatre",
-      "city": "Morrison",
-      "state": "CO",
-      "location": "Morrison, CO"
-    },
-    {
-      "date": "06/28/2026",
-      "isoDate": "2026-06-28",
-      "venue": "Red Rocks Amphitheatre",
-      "city": "Morrison",
-      "state": "CO",
-      "location": "Morrison, CO"
-    },
-    {
-      "date": "07/05/2026",
-      "isoDate": "2026-07-05",
-      "venue": "Snow King Mountain",
-      "city": "Jackson",
-      "state": "WY",
-      "location": "Jackson, WY"
-    },
-    {
-      "date": "07/07/2026",
-      "isoDate": "2026-07-07",
-      "venue": "Kettlehouse Amphitheater",
-      "city": "Missoula",
-      "state": "MT",
-      "location": "Missoula, MT"
-    },
-    {
-      "date": "07/08/2026",
-      "isoDate": "2026-07-08",
-      "venue": "Kettlehouse Amphitheater",
-      "city": "Missoula",
-      "state": "MT",
-      "location": "Missoula, MT"
     },
     {
       "date": "07/10/2026",
@@ -1493,7 +1307,262 @@
       "venue": "Hayden Homes Amphitheater",
       "city": "Bend",
       "state": "OR",
-      "location": "Bend, OR"
+      "location": "Bend, OR",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-10-bend-or-hayden-homes-amphitheater/",
+      "streamUrl": "",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Wondering, Makes Sense To Me, Down, Happy, Diner, Goodpeople, Christmas Katie, Let It Rock, Radio Child",
+          "songTitles": [
+            "Wondering",
+            "Makes Sense To Me",
+            "Down",
+            "Happy",
+            "Diner",
+            "Goodpeople",
+            "Christmas Katie",
+            "Let It Rock",
+            "Radio Child"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Let's Get Down To Business, Imitation Leather Shoes, Jack, Trashy, Saint Ex, Smokestack Lightning, Surprise Valley, Blight",
+          "songTitles": [
+            "Let's Get Down To Business",
+            "Imitation Leather Shoes",
+            "Jack",
+            "Trashy",
+            "Saint Ex",
+            "Smokestack Lightning",
+            "Surprise Valley",
+            "Blight"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/03/July-3000x3000-1.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    }
+  ],
+  "tourDates": [
+    {
+      "date": "01/20/2026",
+      "isoDate": "2026-01-20",
+      "venue": "Hard Rock Hotel Riviera Maya",
+      "city": "Riviera Maya",
+      "state": "Quintana Roo",
+      "location": "Riviera Maya, Quintana Roo",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-01-20-riviera-maya-mexico-hard-rock-hotel-riviera-maya/"
+    },
+    {
+      "date": "01/21/2026",
+      "isoDate": "2026-01-21",
+      "venue": "Hard Rock Hotel Riviera Maya",
+      "city": "Riviera Maya",
+      "state": "Quintana Roo",
+      "location": "Riviera Maya, Quintana Roo",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-01-21-riviera-maya-mexico-hard-rock-hotel-riviera-maya/"
+    },
+    {
+      "date": "01/22/2026",
+      "isoDate": "2026-01-22",
+      "venue": "Hard Rock Hotel Riviera Maya",
+      "city": "Riviera Maya",
+      "state": "Quintana Roo",
+      "location": "Riviera Maya, Quintana Roo",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-01-22-riviera-maya-mexico-hard-rock-hotel-riviera-maya/"
+    },
+    {
+      "date": "01/23/2026",
+      "isoDate": "2026-01-23",
+      "venue": "Hard Rock Hotel Riviera Maya",
+      "city": "Riviera Maya",
+      "state": "Quintana Roo",
+      "location": "Riviera Maya, Quintana Roo",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-01-23-riviera-maya-mexico-hard-rock-hotel-riviera-maya/"
+    },
+    {
+      "date": "02/14/2026",
+      "isoDate": "2026-02-14",
+      "venue": "Moody Center",
+      "city": "Austin",
+      "state": "TX",
+      "location": "Austin, TX",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-02-14-austin-tx-moody-center/"
+    },
+    {
+      "date": "02/15/2026",
+      "isoDate": "2026-02-15",
+      "venue": "Moody Center",
+      "city": "Austin",
+      "state": "TX",
+      "location": "Austin, TX",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-02-15-austin-tx-moody-center/"
+    },
+    {
+      "date": "03/20/2026",
+      "isoDate": "2026-03-20",
+      "venue": "St. Augustine Amphitheatre",
+      "city": "St. Augustine",
+      "state": "FL",
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-03-20-st-augustine-fl-st-augustine-amphitheatre/"
+    },
+    {
+      "date": "03/21/2026",
+      "isoDate": "2026-03-21",
+      "venue": "St. Augustine Amphitheatre",
+      "city": "St. Augustine",
+      "state": "FL",
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-03-21-st-augustine-fl-st-augustine-amphitheatre/"
+    },
+    {
+      "date": "03/22/2026",
+      "isoDate": "2026-03-22",
+      "venue": "St. Augustine Amphitheatre",
+      "city": "St. Augustine",
+      "state": "FL",
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-03-22-st-augustine-fl-st-augustine-amphitheatre/"
+    },
+    {
+      "date": "04/17/2026",
+      "isoDate": "2026-04-17",
+      "venue": "Coca-Cola Amphitheater",
+      "city": "Birmingham",
+      "state": "AL",
+      "location": "Birmingham, AL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-04-17-birmingham-al-coca-cola-amphitheater/"
+    },
+    {
+      "date": "04/18/2026",
+      "isoDate": "2026-04-18",
+      "venue": "Coca-Cola Amphitheater",
+      "city": "Birmingham",
+      "state": "AL",
+      "location": "Birmingham, AL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-04-18-birmingham-al-coca-cola-amphitheater/"
+    },
+    {
+      "date": "04/30/2026",
+      "isoDate": "2026-04-30",
+      "venue": "New Orleans Jazz and Heritage Festival, Fair Grounds Race Course",
+      "city": "New Orleans",
+      "state": "LA",
+      "location": "New Orleans, LA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-04-30-new-orleans-la-new-orleans-jazz-and-heritage-festival-fair-grounds-race-course/"
+    },
+    {
+      "date": "05/08/2026",
+      "isoDate": "2026-05-08",
+      "venue": "The Theater at Virgin Hotels Las Vegas",
+      "city": "Las Vegas",
+      "state": "NV",
+      "location": "Las Vegas, NV",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-05-08-las-vegas-nv-the-theater-at-virgin-hotels-las-vegas/"
+    },
+    {
+      "date": "05/09/2026",
+      "isoDate": "2026-05-09",
+      "venue": "The Theater at Virgin Hotels Las Vegas",
+      "city": "Las Vegas",
+      "state": "NV",
+      "location": "Las Vegas, NV",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-05-09-las-vegas-nv-the-theater-at-virgin-hotels-las-vegas/"
+    },
+    {
+      "date": "05/10/2026",
+      "isoDate": "2026-05-10",
+      "venue": "The Theater at Virgin Hotels Las Vegas",
+      "city": "Las Vegas",
+      "state": "NV",
+      "location": "Las Vegas, NV",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-05-10-las-vegas-nv-the-theater-at-virgin-hotels-las-vegas/"
+    },
+    {
+      "date": "06/13/2026",
+      "isoDate": "2026-06-13",
+      "venue": "Merriweather Post Pavilion",
+      "city": "Columbia",
+      "state": "MD",
+      "location": "Columbia, MD",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-06-13-columbia-md-merriweather-post-pavilion/"
+    },
+    {
+      "date": "06/14/2026",
+      "isoDate": "2026-06-14",
+      "venue": "Merriweather Post Pavilion",
+      "city": "Columbia",
+      "state": "MD",
+      "location": "Columbia, MD",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-06-14-columbia-md-merriweather-post-pavilion/"
+    },
+    {
+      "date": "06/26/2026",
+      "isoDate": "2026-06-26",
+      "venue": "Red Rocks Amphitheatre",
+      "city": "Morrison",
+      "state": "CO",
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-06-26-morrison-co-red-rocks-amphitheatre/"
+    },
+    {
+      "date": "06/27/2026",
+      "isoDate": "2026-06-27",
+      "venue": "Red Rocks Amphitheatre",
+      "city": "Morrison",
+      "state": "CO",
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-06-27-morrison-co-red-rocks-amphitheatre/"
+    },
+    {
+      "date": "06/28/2026",
+      "isoDate": "2026-06-28",
+      "venue": "Red Rocks Amphitheatre",
+      "city": "Morrison",
+      "state": "CO",
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-06-28-morrison-co-red-rocks-amphitheatre/"
+    },
+    {
+      "date": "07/05/2026",
+      "isoDate": "2026-07-05",
+      "venue": "Snow King Mountain",
+      "city": "Jackson",
+      "state": "WY",
+      "location": "Jackson, WY",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-05-jackson-wy-snow-king-mountain/"
+    },
+    {
+      "date": "07/07/2026",
+      "isoDate": "2026-07-07",
+      "venue": "KettleHouse Amphitheater",
+      "city": "Missoula",
+      "state": "MT",
+      "location": "Missoula, MT",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-07-missoula-mt-kettlehouse-amphitheater/"
+    },
+    {
+      "date": "07/08/2026",
+      "isoDate": "2026-07-08",
+      "venue": "KettleHouse Amphitheater",
+      "city": "Missoula",
+      "state": "MT",
+      "location": "Missoula, MT",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-08-missoula-mt-kettlehouse-amphitheater/"
+    },
+    {
+      "date": "07/10/2026",
+      "isoDate": "2026-07-10",
+      "venue": "Hayden Homes Amphitheater",
+      "city": "Bend",
+      "state": "OR",
+      "location": "Bend, OR",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-10-bend-or-hayden-homes-amphitheater/"
     },
     {
       "date": "07/11/2026",
@@ -1501,7 +1570,8 @@
       "venue": "Hayden Homes Amphitheater",
       "city": "Bend",
       "state": "OR",
-      "location": "Bend, OR"
+      "location": "Bend, OR",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-11-bend-or-hayden-homes-amphitheater/"
     },
     {
       "date": "07/16/2026",
@@ -1509,7 +1579,8 @@
       "venue": "Fox Theater",
       "city": "Oakland",
       "state": "CA",
-      "location": "Oakland, CA"
+      "location": "Oakland, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-16-oakland-ca-fox-theater/"
     },
     {
       "date": "07/17/2026",
@@ -1517,7 +1588,8 @@
       "venue": "Fox Theater",
       "city": "Oakland",
       "state": "CA",
-      "location": "Oakland, CA"
+      "location": "Oakland, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-17-oakland-ca-fox-theater/"
     },
     {
       "date": "07/18/2026",
@@ -1525,7 +1597,8 @@
       "venue": "Fox Theater",
       "city": "Oakland",
       "state": "CA",
-      "location": "Oakland, CA"
+      "location": "Oakland, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-18-oakland-ca-fox-theater/"
     },
     {
       "date": "07/21/2026",
@@ -1533,7 +1606,8 @@
       "venue": "Channel 24",
       "city": "Sacramento",
       "state": "CA",
-      "location": "Sacramento, CA"
+      "location": "Sacramento, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-21-sacramento-ca-channel-24/"
     },
     {
       "date": "07/23/2026",
@@ -1541,7 +1615,8 @@
       "venue": "The Orpheum Theatre",
       "city": "Los Angeles",
       "state": "CA",
-      "location": "Los Angeles, CA"
+      "location": "Los Angeles, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-23-los-angeles-ca-the-orpheum-theatre/"
     },
     {
       "date": "07/24/2026",
@@ -1549,7 +1624,8 @@
       "venue": "The Orpheum Theatre",
       "city": "Los Angeles",
       "state": "CA",
-      "location": "Los Angeles, CA"
+      "location": "Los Angeles, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-24-los-angeles-ca-the-orpheum-theatre/"
     },
     {
       "date": "07/25/2026",
@@ -1557,31 +1633,35 @@
       "venue": "The Orpheum Theatre",
       "city": "Los Angeles",
       "state": "CA",
-      "location": "Los Angeles, CA"
+      "location": "Los Angeles, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-25-los-angeles-ca-the-orpheum-theatre/"
     },
     {
       "date": "08/14/2026",
       "isoDate": "2026-08-14",
-      "venue": "Hard Rock Live At Etess Arena",
+      "venue": "Hard Rock Live at Etess Arena",
       "city": "Atlantic City",
       "state": "NJ",
-      "location": "Atlantic City, NJ"
+      "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-08-14-atlantic-city-nj-hard-rock-live-at-etess-arena/"
     },
     {
       "date": "08/15/2026",
       "isoDate": "2026-08-15",
-      "venue": "Hard Rock Live At Etess Arena",
+      "venue": "Hard Rock Live at Etess Arena",
       "city": "Atlantic City",
       "state": "NJ",
-      "location": "Atlantic City, NJ"
+      "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-08-15-atlantic-city-nj-hard-rock-live-at-etess-arena/"
     },
     {
       "date": "08/16/2026",
       "isoDate": "2026-08-16",
-      "venue": "Hard Rock Live At Etess Arena",
+      "venue": "Hard Rock Live at Etess Arena",
       "city": "Atlantic City",
       "state": "NJ",
-      "location": "Atlantic City, NJ"
+      "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-08-16-atlantic-city-nj-hard-rock-live-at-etess-arena/"
     },
     {
       "date": "09/18/2026",
@@ -1589,7 +1669,8 @@
       "venue": "Live Oak Bank Pavilion",
       "city": "Wilmington",
       "state": "NC",
-      "location": "Wilmington, NC"
+      "location": "Wilmington, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-09-18-wilmington-nc-live-oak-bank-pavilion/"
     },
     {
       "date": "09/19/2026",
@@ -1597,7 +1678,8 @@
       "venue": "Live Oak Bank Pavilion",
       "city": "Wilmington",
       "state": "NC",
-      "location": "Wilmington, NC"
+      "location": "Wilmington, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-09-19-wilmington-nc-live-oak-bank-pavilion/"
     },
     {
       "date": "10/10/2026",
@@ -1605,7 +1687,8 @@
       "venue": "Mempho Music Festival",
       "city": "Memphis",
       "state": "TN",
-      "location": "Memphis, TN"
+      "location": "Memphis, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-10-10-memphis-tn-mempho-music-festival/"
     },
     {
       "date": "10/11/2026",
@@ -1613,7 +1696,8 @@
       "venue": "Mempho Music Festival",
       "city": "Memphis",
       "state": "TN",
-      "location": "Memphis, TN"
+      "location": "Memphis, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-10-11-memphis-tn-mempho-music-festival/"
     },
     {
       "date": "10/23/2026",
@@ -1621,7 +1705,8 @@
       "venue": "The Riverside Theater",
       "city": "Milwaukee",
       "state": "WI",
-      "location": "Milwaukee, WI"
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-10-23-milwaukee-wi-the-riverside-theater/"
     },
     {
       "date": "10/24/2026",
@@ -1629,7 +1714,8 @@
       "venue": "The Riverside Theater",
       "city": "Milwaukee",
       "state": "WI",
-      "location": "Milwaukee, WI"
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-10-24-milwaukee-wi-the-riverside-theater/"
     },
     {
       "date": "10/25/2026",
@@ -1637,7 +1723,8 @@
       "venue": "The Riverside Theater",
       "city": "Milwaukee",
       "state": "WI",
-      "location": "Milwaukee, WI"
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-10-25-milwaukee-wi-the-riverside-theater/"
     }
   ]
 }

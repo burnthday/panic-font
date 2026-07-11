@@ -12,13 +12,15 @@ const output = args.out || path.join(root, "data", "source", `setlists-${year}.j
 
 async function main() {
   const urls = await discoverShowUrls();
-  const shows = [];
+  const tourPages = [];
 
   for (const url of urls) {
     const html = await fetchText(url);
     const parsed = parseShowPage(url, html);
-    if (parsed.sets.length) shows.push(parsed);
+    tourPages.push(parsed);
   }
+
+  const shows = tourPages.filter((show) => show.sets.length);
 
   const payload = {
     title: `WIDESPREAD PANIC ${year} TOUR`,
@@ -27,12 +29,24 @@ async function main() {
     sourcePublishedAt: "",
     importedAt: new Date().toISOString(),
     setlists: shows.sort((a, b) => a.isoDate.localeCompare(b.isoDate)),
-    tourDates: urls.map((url) => parseTourDateFromUrl(url)).filter(Boolean).sort((a, b) => a.isoDate.localeCompare(b.isoDate))
+    tourDates: tourPages.map(tourDateSummary).sort((a, b) => a.isoDate.localeCompare(b.isoDate))
   };
 
   await mkdir(path.dirname(output), { recursive: true });
   await writeFile(output, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
   console.log(`Imported ${payload.setlists.length} ${year} official setlists and ${payload.tourDates.length} tour dates to ${path.relative(root, output)}.`);
+}
+
+function tourDateSummary(show) {
+  return {
+    date: show.date,
+    isoDate: show.isoDate,
+    venue: show.venue,
+    city: show.city,
+    state: show.state,
+    location: show.location,
+    sourceUrl: show.sourceUrl
+  };
 }
 
 async function discoverShowUrls() {
@@ -125,7 +139,15 @@ function parseNotes(html) {
     .replace(/<\/p>/gi, "\n")
     .split(/\n+/)
     .map(cleanText)
-    .filter(Boolean);
+    .filter((note) => note && isSetlistNote(note));
+}
+
+function isSetlistNote(note) {
+  return !(
+    /^tickets?\b/i.test(note) ||
+    /^\d+-day tickets?$/i.test(note) ||
+    /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}$/i.test(note)
+  );
 }
 
 function parsePrimaryImage(html) {

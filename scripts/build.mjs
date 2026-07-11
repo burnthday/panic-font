@@ -858,6 +858,7 @@ function renderHtml(data) {
       ${renderSetlists(data)}
       ${renderShelfBoard(data)}
       ${renderTourDates(data)}
+      ${renderCommunityLinks()}
       ${renderArchiveTeaser(data)}
     </main>
 
@@ -865,7 +866,7 @@ function renderHtml(data) {
 
     <script>
       if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".primary-board .song-panel:not(:first-of-type), .shelf-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
+        document.querySelectorAll(".primary-board .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
       }
     </script>
   </body>
@@ -882,6 +883,8 @@ function renderSiteHeader() {
     <a href="/#song-list">Song List</a>
     <a href="/#setlists">Setlists</a>
     <a href="/#shelf">Shelf</a>
+    <a href="/#purgatory">Purgatory</a>
+    <a href="/#tour-dates">Tour Dates</a>
     <a href="/tour-in-review/">Tour In Review</a>
     <a href="/p/widespread-panic-song-origins-and">Song Origins</a>
     <a href="/p/about">About</a>
@@ -907,6 +910,8 @@ function renderRotationBoard(data) {
     <a href="#rotation-covers">Covers</a>
     <a href="#setlists">Setlists</a>
     <a href="#shelf">Shelf</a>
+    <a href="#purgatory">Purgatory</a>
+    <a href="#tour-dates">Tour Dates</a>
   </nav>
   ${renderSongPanel("rotation-originals", "ORIGINALS", data.boards.rotationOriginals)}
   ${renderSongPanel("rotation-covers", "COVERS", data.boards.rotationCovers)}
@@ -921,15 +926,18 @@ function renderRotationBoard(data) {
 
 function renderShelfBoard(data) {
   return `<section class="laminate shelf-board" id="shelf">
-  ${renderBoardHeader("THE SHELF", "Purgatory songs are lifetime-one-timers. Black marks mean the song returned during this tour.")}
-  ${renderSongPanel("shelf-originals", "SHELF ORIGINALS", data.boards.shelfOriginals, { shelfMode: true })}
-  ${renderSongPanel("shelf-covers", "SHELF COVERS", data.boards.shelfCovers, { shelfMode: true })}
-  ${renderSongPanel("purgatory-originals", "PURGATORY ORIGINALS", data.boards.purgatoryOriginals, { shelfMode: true })}
-  ${renderSongPanel("purgatory-covers", "PURGATORY COVERS", data.boards.purgatoryCovers, { shelfMode: true })}
+  ${renderBoardHeader("THE SHELF")}
+  ${renderSongPanel("shelf-originals", "ORIGINALS", data.boards.shelfOriginals, { shelfMode: true, columns: 3 })}
+  ${renderSongPanel("shelf-covers", "COVERS", data.boards.shelfCovers, { shelfMode: true, columns: 3 })}
+</section>
+<section class="laminate purgatory-board" id="purgatory">
+  ${renderBoardHeader("PURGATORY")}
+  ${renderSongPanel("purgatory-originals", "ORIGINALS", data.boards.purgatoryOriginals, { shelfMode: true, columns: 3 })}
+  ${renderSongPanel("purgatory-covers", "COVERS", data.boards.purgatoryCovers, { shelfMode: true, columns: 3 })}
 </section>`;
 }
 
-function renderBoardHeader(title, subtitle) {
+function renderBoardHeader(title, subtitle = "") {
   return `<div class="header-row">
     <div class="nums left">
       <img alt="1" class="marker-num" src="/assets/marker-1.png">
@@ -937,7 +945,7 @@ function renderBoardHeader(title, subtitle) {
     </div>
     <div class="board-title">
       <h1>${escapeHtml(title)}</h1>
-      <p>${escapeHtml(subtitle)}</p>
+      ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ""}
     </div>
     <div class="nums right">
       <img alt="3" class="marker-num" src="/assets/marker-3.png">
@@ -966,9 +974,10 @@ function renderPrimaryBoardHeader(data) {
 }
 
 function renderSongGrid(rows, options = {}) {
-  const columns = splitStrict(rows, 4);
-  return `<div class="songs grid4">
-    ${columns.map((column, index) => `<div class="col">${column.map((row) => renderSong(row, options)).join("")}${rows.length % 4 === 0 && index < 3 ? '<span class="rotation-song spacer">&nbsp;</span>' : ""}</div>`).join("")}
+  const columnCount = options.columns || 4;
+  const columns = splitStrict(rows, columnCount);
+  return `<div class="songs grid${columnCount}">
+    ${columns.map((column, index) => `<div class="col">${column.map((row) => renderSong(row, options)).join("")}${rows.length % columnCount === 0 && index < columnCount - 1 ? '<span class="rotation-song spacer">&nbsp;</span>' : ""}</div>`).join("")}
   </div>`;
 }
 
@@ -984,8 +993,9 @@ function renderSong(row, options = {}) {
   const dateText = options.shelfMode || row.isAddOn ? row.addOnDate || row.lastDisplay : "";
   const handClass = row.isAddOn ? " hand-addon" : "";
   const marker = stripeAsset ? `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(stripeAsset)}" alt=""></span>` : "";
-  const count = row.tourCount > 0 ? `<sup>${row.tourCount}</sup>` : "";
-  const date = dateText ? `<sup class="date-sup">(${escapeHtml(dateText)})</sup>` : "";
+  const countValue = options.shelfMode ? row.total : row.tourCount;
+  const count = countValue > 0 ? `<sup>${countValue}</sup>` : "";
+  const date = dateText ? `<span class="date-sup">${escapeHtml(dateText)}</span>` : "";
 
   return `<span class="rotation-song"><span class="marker-wrap"><span class="marker-text${handClass}">${escapeHtml(row.title.toUpperCase())}</span>${marker}${count}${date}</span></span>`;
 }
@@ -1036,7 +1046,7 @@ function renderSetlistText(show) {
 }
 
 function renderTourDates(data) {
-  return `<section class="tour-date-section">
+  return `<section class="tour-date-section" id="tour-dates">
   <div class="section-heading">
     <h2>${escapeHtml(String(data.site.year))} TOUR DATES</h2>
     <span>${data.totals.tourDates} listed</span>
@@ -1044,6 +1054,15 @@ function renderTourDates(data) {
   <ol class="tour-dates">
     ${data.tourDates.map((date) => `<li class="${date.isPosted ? "is-posted" : ""}"><span>${escapeHtml(date.date)}</span><strong>${escapeHtml(date.location)}</strong><em>${escapeHtml(date.venue)}</em></li>`).join("")}
   </ol>
+</section>`;
+}
+
+function renderCommunityLinks() {
+  return `<section class="community-links" aria-label="Community links">
+  <a class="posse-link" href="https://www.facebook.com/HerringPosse">
+    <img src="/assets/PosseFacebookBanner.png" alt="Jimmy Herring Has a Posse">
+  </a>
+  <span>Jimmy Herring Has a Posse</span>
 </section>`;
 }
 
@@ -1326,6 +1345,12 @@ main {
   column-gap: clamp(46px, 7vw, 144px);
 }
 
+.songs.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: clamp(34px, 6vw, 116px);
+}
+
 .songs .col {
   min-width: 0;
   display: flex;
@@ -1402,6 +1427,30 @@ sup {
 .tour-date-section {
   width: min(1180px, 100%);
   margin: 36px auto;
+}
+
+.community-links {
+  width: min(1180px, 100%);
+  margin: 28px auto 36px;
+  text-align: center;
+  font-family: "MilkRun", system-ui, sans-serif;
+}
+
+.posse-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.posse-link img {
+  display: block;
+  width: min(212px, 70vw);
+  height: auto;
+  margin: 0 auto 5px;
+}
+
+.community-links span {
+  display: block;
+  font-size: 12px;
 }
 
 .section-heading {
@@ -1729,6 +1778,10 @@ sup {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .songs.grid3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .board-ledger,
   .setlist-feature,
   .setlist-grid,
@@ -1807,6 +1860,10 @@ sup {
   }
 
   .songs.grid4 {
+    grid-template-columns: 1fr;
+  }
+
+  .songs.grid3 {
     grid-template-columns: 1fr;
   }
 
