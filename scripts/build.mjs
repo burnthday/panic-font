@@ -30,8 +30,8 @@ const config = {
 };
 
 async function main() {
-  const [source, archiveEntries] = await Promise.all([loadSourceData(), loadBloggerArchive()]);
-  const siteData = buildSiteData(source, archiveEntries);
+  const [source, archiveEntries, songOrigins] = await Promise.all([loadSourceData(), loadBloggerArchive(), loadSongOrigins()]);
+  const siteData = buildSiteData(source, archiveEntries, songOrigins);
 
   await rm(dist, { recursive: true, force: true });
   await mkdir(path.join(dist, "assets"), { recursive: true });
@@ -39,15 +39,16 @@ async function main() {
 
   await copyAssets();
   await writeBloggerArchive(archiveEntries);
+  await writeSongOrigins(songOrigins);
   await writeFile(path.join(dist, "index.html"), renderHtml(siteData), "utf8");
   await writeFile(path.join(dist, "styles.css"), renderCss(), "utf8");
   await writeFile(path.join(dist, "data", "site-data.json"), JSON.stringify(siteData, null, 2), "utf8");
   await writeFile(path.join(dist, "_headers"), renderHeaders(), "utf8");
   await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries), "utf8");
   await writeFile(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: https://burnthday.com/sitemap.xml\n", "utf8");
-  await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries), "utf8");
+  await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins), "utf8");
 
-  console.log(`Built ${siteData.site.title}: ${siteData.boards.rotationOriginals.length} originals, ${siteData.boards.rotationCovers.length} covers, ${siteData.setlists.length} setlists, ${archiveEntries.length} archive pages.`);
+  console.log(`Built ${siteData.site.title}: ${siteData.boards.rotationOriginals.length} originals, ${siteData.boards.rotationCovers.length} covers, ${siteData.setlists.length} setlists, ${archiveEntries.length} archive pages, ${songOrigins.length} song origins.`);
 }
 
 async function loadSourceData() {
@@ -144,6 +145,16 @@ async function loadBloggerArchive() {
       };
     })
     .sort((a, b) => (b.published || "").localeCompare(a.published || ""));
+}
+
+async function loadSongOrigins() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "song-origins.json"), "utf8");
+    const payload = JSON.parse(raw);
+    return (payload.origins || []).filter((origin) => origin.title && origin.slug);
+  } catch {
+    return [];
+  }
 }
 
 async function loadArchiveMediaByName() {
@@ -367,7 +378,7 @@ async function readFirstExisting(filenames) {
   throw lastError || new Error("No readable source file found.");
 }
 
-function buildSiteData(source, archiveEntries = []) {
+function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const baseCatalog = source.catalog.map(normalizeCatalogRow).filter((row) => isPublicSongTitle(row.title));
   const rawCurrentTour = source.currentTour.map(normalizeCurrentTourRow).filter((row) => isPublicSongTitle(row.title));
   const setlists = [...(source.setlists.setlists || [])].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
@@ -451,8 +462,22 @@ function buildSiteData(source, archiveEntries = []) {
       latestEntries: archiveEntries.slice(0, 12).map(archiveSummary),
       latestReviews: archiveEntries.filter((entry) => entry.isReview).slice(0, 12).map(archiveSummary)
     },
+    songOrigins: {
+      totalEntries: songOrigins.length,
+      completeEntries: songOrigins.filter((origin) => origin.text).length,
+      entries: songOrigins.map(songOriginSummary)
+    },
     currentTour: songs.filter((row) => row.playedThisTour).sort((a, b) => b.tourCount - a.tourCount || byTitle(a, b)),
     catalog: songs
+  };
+}
+
+function songOriginSummary(origin) {
+  return {
+    title: origin.title,
+    slug: origin.slug,
+    image: origin.image || "",
+    sourceUrl: origin.sourceUrl || ""
   };
 }
 
@@ -743,6 +768,18 @@ async function writeBloggerArchive(entries) {
   await writeStaticPage("/tour-in-review/index.html", renderTourReviewIndex(entries.filter((entry) => entry.isReview)));
 }
 
+async function writeSongOrigins(origins) {
+  if (!origins.length) return;
+
+  await writeStaticPage("/p/widespread-panic-song-origins-and.html", renderSongOriginsIndex(origins, {
+    canonicalPath: "/p/widespread-panic-song-origins-and"
+  }));
+  await writeStaticPage("/song-origins/index.html", renderSongOriginsIndex(origins, {
+    canonicalPath: "/p/widespread-panic-song-origins-and"
+  }));
+  await Promise.all(origins.map((origin) => writeStaticPage(`/song-origins/${origin.slug}/index.html`, renderSongOriginPage(origin, origins))));
+}
+
 async function writeStaticPage(pagePath, html) {
   const relative = pagePath.replace(/^\/+/, "");
   const target = path.join(dist, relative);
@@ -784,6 +821,137 @@ function renderArchivePage(entry) {
   </body>
 </html>
 `;
+}
+
+function renderSongOriginsIndex(origins, options = {}) {
+  const canonicalPath = options.canonicalPath || "/p/widespread-panic-song-origins-and";
+  const description = "Widespread Panic song origins, histories, notes, and Burnthday picks.";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Song Origins | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com${escapeAttr(canonicalPath)}">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main origins-main">
+      <section class="archive-index origin-index">
+        <header class="origin-hero">
+          <img class="origin-fish" src="/assets/archive-media/SongOriginsOriginalWSPfish.png" alt="">
+          <div>
+            <p>Song Origins</p>
+            <h1>Widespread Panic Song Origins</h1>
+            <span>${origins.length} notes recovered from Burnthday's original Facebook photo posts.</span>
+          </div>
+        </header>
+        <div class="origin-grid">
+          ${origins.map(renderSongOriginCard).join("")}
+        </div>
+      </section>
+    </main>
+    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } })}
+  </body>
+</html>
+`;
+}
+
+function renderSongOriginCard(origin) {
+  return `<a class="origin-card" href="/song-origins/${escapeAttr(origin.slug)}/">
+    ${origin.image ? `<img src="${escapeAttr(origin.image)}" alt="">` : ""}
+    <span>Song Origins</span>
+    <strong>${escapeHtml(origin.title)}</strong>
+  </a>`;
+}
+
+function renderSongOriginPage(origin, origins) {
+  const description = clean(origin.text).slice(0, 180) || `Burnthday Song Origins: ${origin.title}`;
+  const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
+  const previous = origins[currentIndex - 1] || null;
+  const next = origins[currentIndex + 1] || null;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(origin.title)} Song Origin | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com/song-origins/${escapeAttr(origin.slug)}/">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main origins-main">
+      <article class="archive-page origin-page">
+        <nav class="origin-back"><a href="/p/widespread-panic-song-origins-and">Song Origins</a></nav>
+        <header class="archive-title origin-title">
+          <p>Song Origins</p>
+          <h1>${escapeHtml(origin.title)}</h1>
+        </header>
+        <div class="origin-layout">
+          ${origin.image ? `<figure class="origin-image"><img src="${escapeAttr(origin.image)}" alt=""></figure>` : ""}
+          <div class="origin-body">
+            ${renderOriginText(origin.text)}
+            <p class="origin-source"><a href="${escapeAttr(origin.sourceUrl)}">Original Facebook post</a></p>
+          </div>
+        </div>
+        <nav class="origin-nav" aria-label="Song origin navigation">
+          ${previous ? `<a href="/song-origins/${escapeAttr(previous.slug)}/">${escapeHtml(previous.title)}</a>` : "<span></span>"}
+          ${next ? `<a href="/song-origins/${escapeAttr(next.slug)}/">${escapeHtml(next.title)}</a>` : "<span></span>"}
+        </nav>
+      </article>
+    </main>
+    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } })}
+  </body>
+</html>
+`;
+}
+
+function renderOriginText(text) {
+  const formatted = String(text || "")
+    .replace(/(:)\s{2,}(?=\d)/g, "$1 ")
+    .replace(/[ \t]{2,}/g, "\n\n")
+    .replace(/\s+(# of times played:)/g, "\n\n$1")
+    .replace(/\s+(First time played:|Frequency:|Longest drought:|Most common lead in:|Most common lead out:|Most common set position:|Notes:|Lyrics:|Chords:|Learn the Guitar Solo:)/g, "\n$1")
+    .replace(/\s+(Burnthday's Picks:)/g, "\n\n$1")
+    .replace(/\s+(\d{1,2}\/\d{1,2}\/\d{2,4}\s+[^\n]+?https?:\/\/)/g, "\n$1");
+
+  return formatted
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      const lines = block.split(/\n/).map((line) => line.trim()).filter(Boolean);
+      const className = /^# of times played:/.test(lines[0]) ? " class=\"origin-stats\"" : "";
+      return `<p${className}>${lines.map(renderLinkedText).join("<br>")}</p>`;
+    })
+    .join("");
+}
+
+function renderLinkedText(text) {
+  const pieces = [];
+  let cursor = 0;
+  for (const match of String(text || "").matchAll(/https?:\/\/[^\s<]+/g)) {
+    const rawUrl = match[0];
+    const start = match.index || 0;
+    const trailing = rawUrl.match(/[),.]+$/)?.[0] || "";
+    const url = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
+    pieces.push(escapeHtml(text.slice(cursor, start)));
+    pieces.push(`<a href="${escapeAttr(url)}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`);
+    cursor = start + rawUrl.length;
+  }
+  pieces.push(escapeHtml(text.slice(cursor)));
+  return pieces.join("");
 }
 
 function renderArchiveIndex(entries) {
@@ -1746,6 +1914,154 @@ sup {
   grid-column: 1 / -1;
 }
 
+.origins-main {
+  width: min(1240px, calc(100% - 32px));
+}
+
+.origin-hero {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
+}
+
+.origin-fish {
+  display: block;
+  width: 150px;
+  height: auto;
+}
+
+.origin-hero p,
+.origin-title p {
+  margin: 0 0 7px;
+  color: var(--muted);
+  font-family: "MilkRun", system-ui, sans-serif;
+  text-transform: uppercase;
+}
+
+.origin-hero h1 {
+  margin: 0;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: clamp(34px, 5vw, 64px);
+  line-height: 0.95;
+  font-weight: 400;
+}
+
+.origin-hero span {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+}
+
+.origin-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.origin-card {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  gap: 7px;
+  color: var(--ink);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.origin-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: var(--cream);
+}
+
+.origin-card span {
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.origin-card strong {
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.origin-back {
+  margin-bottom: 14px;
+}
+
+.origin-back a,
+.origin-source a,
+.origin-nav a,
+.origin-body a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.origin-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.origin-image {
+  margin: 0;
+}
+
+.origin-image img {
+  display: block;
+  width: 100%;
+  max-height: 520px;
+  object-fit: contain;
+  background: var(--cream);
+}
+
+.origin-body {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  font-size: 17px;
+  line-height: 1.52;
+}
+
+.origin-body p {
+  margin: 0 0 16px;
+}
+
+.origin-stats {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.origin-source {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.origin-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 26px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
 .site-foot {
   width: min(1880px, calc(100% - 56px));
   margin: 0 auto 36px;
@@ -1804,6 +2120,18 @@ sup {
   .tour-dates {
     columns: 1;
   }
+
+  .origin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .origin-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .origin-image img {
+    width: min(420px, 100%);
+  }
 }
 
 @media (max-width: 560px) {
@@ -1818,13 +2146,15 @@ sup {
   }
 
   .jump-links {
-    font-size: 14px;
-    display: flex;
-    gap: 8px 14px;
+    font-size: 13px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 10px;
   }
 
   .jump-links a {
     min-width: 0;
+    white-space: nowrap;
   }
 
   .laminate {
@@ -1889,6 +2219,33 @@ sup {
   .archive-list li {
     grid-template-columns: 1fr;
   }
+
+  .origin-hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .origin-fish {
+    margin: 0 auto;
+  }
+
+  .origin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .origin-card {
+    grid-template-columns: 84px minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+  }
+
+  .origin-card img {
+    grid-row: 1 / span 2;
+  }
+
+  .origin-body {
+    font-size: 16px;
+  }
 }
 `;
 }
@@ -1942,7 +2299,7 @@ function renderRedirects(archiveEntries = []) {
   return `${lines.join("\n")}\n`;
 }
 
-function renderSitemap(data, archiveEntries = []) {
+function renderSitemap(data, archiveEntries = [], songOrigins = []) {
   const updated = data.generatedAt.slice(0, 10);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -1962,6 +2319,14 @@ function renderSitemap(data, archiveEntries = []) {
     <loc>https://burnthday.com/pages/</loc>
     <lastmod>${updated}</lastmod>
   </url>
+  <url>
+    <loc>https://burnthday.com/song-origins/</loc>
+    <lastmod>${updated}</lastmod>
+  </url>
+  ${songOrigins.map((origin) => `<url>
+    <loc>https://burnthday.com/song-origins/${escapeHtml(origin.slug)}/</loc>
+    <lastmod>${updated}</lastmod>
+  </url>`).join("\n  ")}
   ${archiveEntries.map((entry) => `<url>
     <loc>https://burnthday.com${escapeHtml(publicPath(entry.path))}</loc>
     <lastmod>${(entry.updated || entry.published || updated).slice(0, 10)}</lastmod>
