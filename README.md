@@ -10,6 +10,22 @@ npm run build
 
 The site is written to `dist/`. If Google credentials are not present, the build uses the CSV snapshots in `data/source/`.
 
+## 2025 Setlists
+
+The imported 2025 tour setlists live in `data/source/setlists-2025.json`.
+
+Refresh them from the current Blogger feed with:
+
+```bash
+npm run import:blogger
+```
+
+The deployed build tries this import first, then falls back to the checked-in JSON if Blogger is unavailable.
+
+## Blogger Archive
+
+The full Blogger Takeout feed is checked in at `data/source/blogger-feed.atom`. The build turns those entries into static pages at their original Blogger paths, plus archive indexes at `/archive/` and `/tour-in-review/`. Media files recovered from Takeout live in `assets/archive-media/` and are linked locally when the old Blogger image filename can be matched safely.
+
 ## Live Google Sheets Automation
 
 For automatic rebuilds from Google Sheets, add a Google service account that has viewer access to this spreadsheet:

@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
+    "import:blogger": "node scripts/import-blogger-setlists.mjs",
     "dev": "npm run build && npx serve dist",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name burnthday"
   },
