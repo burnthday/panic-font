@@ -442,7 +442,8 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     rules: {
       rotationSlpLimit: config.rotationSlpLimit,
       purgatory: "Songs with one lifetime play stay in Purgatory. If played this tour, they stay marked black until the next tour reset.",
-      shelf: "Shelf songs that return this tour stay marked black until the next tour reset."
+      shelf: "Shelf songs that return this tour stay marked black until the next tour reset.",
+      woodshed: "Nick Johnson Woodshed contains active catalog songs inside the rotation window that Nick has not played this tour."
     },
     totals: {
       catalogSongs: songs.length,
@@ -507,6 +508,7 @@ function buildBoards(songs) {
 
   const shelfRows = songs.filter((row) => row.total > 1 && row.effectiveSlp >= config.rotationSlpLimit).sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
   const purgatoryRows = songs.filter((row) => row.total === 1).sort(byTitle);
+  const woodshedRows = songs.filter((row) => row.total > 1 && !row.playedThisTour && row.effectiveSlp < config.rotationSlpLimit).sort(byTitle);
 
   return {
     rotationOriginals,
@@ -514,7 +516,9 @@ function buildBoards(songs) {
     shelfOriginals: shelfRows.filter((row) => row.type === "Original"),
     shelfCovers: shelfRows.filter((row) => row.type === "Cover"),
     purgatoryOriginals: purgatoryRows.filter((row) => row.type === "Original"),
-    purgatoryCovers: purgatoryRows.filter((row) => row.type === "Cover")
+    purgatoryCovers: purgatoryRows.filter((row) => row.type === "Cover"),
+    woodshedOriginals: woodshedRows.filter((row) => row.type === "Original"),
+    woodshedCovers: woodshedRows.filter((row) => row.type === "Cover")
   };
 }
 
@@ -1039,6 +1043,7 @@ function renderHtml(data) {
       ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
       ${renderShelfBoard(data)}
+      ${renderWoodshedBoard(data)}
       ${renderSetlists(data, { skipLatest: true })}
       ${renderTourDates(data)}
       ${renderCommunityLinks()}
@@ -1048,7 +1053,7 @@ function renderHtml(data) {
 
     <script>
       if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".primary-board .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
+        document.querySelectorAll(".primary-board .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel, .woodshed-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
       }
     </script>
   </body>
@@ -1066,6 +1071,7 @@ function renderSiteHeader() {
     <a href="/#song-list">Song List</a>
     <a href="/#shelf">Shelf</a>
     <a href="/#purgatory">Purgatory</a>
+    <a href="/#woodshed">Woodshed</a>
     <a href="/#setlists">Setlists</a>
     <a href="/#tour-dates">Tour Dates</a>
     <a href="/tour-in-review/">Tour In Review</a>
@@ -1091,6 +1097,7 @@ function renderRotationBoard(data) {
     <a href="#rotation-covers">Covers</a>
     <a href="#shelf">Shelf</a>
     <a href="#purgatory">Purgatory</a>
+    <a href="#woodshed">Woodshed</a>
     <a href="#setlists">Setlists</a>
     <a href="#tour-dates">Tour Dates</a>
   </nav>
@@ -1115,6 +1122,15 @@ function renderShelfBoard(data) {
   ${renderBoardHeader("PURGATORY")}
   ${renderSongPanel("purgatory-originals", "ORIGINALS", data.boards.purgatoryOriginals, { shelfMode: true, columns: 3 })}
   ${renderSongPanel("purgatory-covers", "COVERS", data.boards.purgatoryCovers, { shelfMode: true, columns: 3 })}
+</section>`;
+}
+
+function renderWoodshedBoard(data) {
+  const count = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
+  return `<section class="laminate woodshed-board" id="woodshed">
+  ${renderBoardHeader("NICK JOHNSON WOODSHED", `${count} active songs unplayed by Nick this tour`)}
+  ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, columns: 3 })}
+  ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, columns: 3 })}
 </section>`;
 }
 
@@ -1575,10 +1591,10 @@ main {
 
 .marker-mask {
   position: absolute;
-  left: -0.24em;
-  right: -0.16em;
-  top: 47%;
-  height: 0.48em;
+  left: -0.2em;
+  right: -0.12em;
+  top: 55%;
+  height: 0.62em;
   transform: translateY(-50%);
   overflow: hidden;
   pointer-events: none;
@@ -1725,6 +1741,7 @@ sup {
 
 .setlist-feature .setlist-image {
   margin: 0;
+  min-width: 0;
 }
 
 .setlist-image img {
@@ -1736,6 +1753,8 @@ sup {
 
 .setlist-text {
   min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .setlist-text h3 {
@@ -2137,6 +2156,9 @@ sup {
 @media (max-width: 560px) {
   main,
   .site-head,
+  .latest-setlist,
+  .setlist-section,
+  .tour-date-section,
   .site-foot {
     width: min(calc(100% - 20px), 1180px);
   }
@@ -2168,6 +2190,14 @@ sup {
 
   .board-ledger {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .setlist-text {
+    font-size: 14px;
+  }
+
+  .setlist-text h3 {
+    font-size: 15px;
   }
 
   .sheet-jump {

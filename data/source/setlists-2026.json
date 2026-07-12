@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-11T15:11:47.220Z",
+  "importedAt": "2026-07-12T13:59:25.915Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1352,6 +1352,64 @@
         }
       ],
       "notes": [],
+      "image": "",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "07/11/2026",
+      "isoDate": "2026-07-11",
+      "venue": "Hayden Homes Amphitheater",
+      "city": "Bend",
+      "state": "OR",
+      "location": "Bend, OR",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-11-bend-or-hayden-homes-amphitheater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-hayden-homes-amphitheater-bend-or-07-11-2026-mp3-flac-or-online-music-streaming/47019.html?cgid=ARTIST-58",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Blue Indian, Chainsaw City, Heroes, Party at Your Mama's House, Stop Breakin' Down Blues, Visiting Day, Tickle the Truth, Old Neighborhood, Halloween Face",
+          "songTitles": [
+            "Blue Indian",
+            "Chainsaw City",
+            "Heroes",
+            "Party at Your Mama's House",
+            "Stop Breakin' Down Blues",
+            "Visiting Day",
+            "Tickle the Truth",
+            "Old Neighborhood",
+            "Halloween Face"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Fishing, Protein Drink, Sewing Machine, Stop-Go, Low Spark Of High-Heeled Boys, Ride Me High, Tall Boy, Low Spark Of High-Heeled Boys, Pilgrims, Vacation, Postcard",
+          "songTitles": [
+            "Fishing",
+            "Protein Drink",
+            "Sewing Machine",
+            "Stop-Go",
+            "Low Spark Of High-Heeled Boys",
+            "Ride Me High",
+            "Tall Boy",
+            "Low Spark Of High-Heeled Boys",
+            "Pilgrims",
+            "Vacation",
+            "Postcard"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "We Walk Each Other Home, Climb To Safety",
+          "songTitles": [
+            "We Walk Each Other Home",
+            "Climb To Safety"
+          ]
+        }
+      ],
+      "notes": [
+        "*Chainsaw City w/Steve Lopez on percussion"
+      ],
       "image": "",
       "imageWidth": 0,
       "imageHeight": 0
