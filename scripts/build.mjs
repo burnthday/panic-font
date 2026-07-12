@@ -20,6 +20,9 @@ const config = {
   siteTimeZone: "America/Los_Angeles",
   addOnOriginals: ["SPARKS FLY"],
   addOnCovers: ["GODZILLA", "BLACK SABBATH", "THE HARDER THEY COME", "DEAD FLOWERS", "COMFORTABLY NUMB", "WAR PIGS"],
+  typeOverrides: {
+    "JACK STRAW": "Cover"
+  },
   addOnDates: {
     GODZILLA: "10/28/18",
     "BLACK SABBATH": "10/28/16",
@@ -32,6 +35,7 @@ const config = {
 async function main() {
   const [source, archiveEntries, songOrigins] = await Promise.all([loadSourceData(), loadBloggerArchive(), loadSongOrigins()]);
   const siteData = buildSiteData(source, archiveEntries, songOrigins);
+  warnForClassificationGaps(siteData);
 
   await rm(dist, { recursive: true, force: true });
   await mkdir(path.join(dist, "assets"), { recursive: true });
@@ -49,6 +53,15 @@ async function main() {
   await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins), "utf8");
 
   console.log(`Built ${siteData.site.title}: ${siteData.boards.rotationOriginals.length} originals, ${siteData.boards.rotationCovers.length} covers, ${siteData.setlists.length} setlists, ${archiveEntries.length} archive pages, ${songOrigins.length} song origins.`);
+}
+
+function warnForClassificationGaps(siteData) {
+  const rows = siteData.boards?.needsClassification || [];
+  if (!rows.length) return;
+
+  const sample = rows.slice(0, 12).map((row) => row.title).join(", ");
+  const suffix = rows.length > 12 ? `, +${rows.length - 12} more` : "";
+  console.warn(`Needs original/cover classification (${rows.length}): ${sample}${suffix}`);
 }
 
 async function loadSourceData() {
@@ -509,6 +522,7 @@ function buildBoards(songs) {
   const shelfRows = songs.filter((row) => row.total > 1 && row.effectiveSlp >= config.rotationSlpLimit).sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
   const purgatoryRows = songs.filter((row) => row.total === 1).sort(byTitle);
   const woodshedRows = songs.filter((row) => row.total > 1 && !row.playedThisTour && row.effectiveSlp < config.rotationSlpLimit).sort(byTitle);
+  const needsClassification = songs.filter((row) => row.type === "Unclassified").sort(byTitle);
 
   return {
     rotationOriginals,
@@ -518,7 +532,8 @@ function buildBoards(songs) {
     purgatoryOriginals: purgatoryRows.filter((row) => row.type === "Original"),
     purgatoryCovers: purgatoryRows.filter((row) => row.type === "Cover"),
     woodshedOriginals: woodshedRows.filter((row) => row.type === "Original"),
-    woodshedCovers: woodshedRows.filter((row) => row.type === "Cover")
+    woodshedCovers: woodshedRows.filter((row) => row.type === "Cover"),
+    needsClassification
   };
 }
 
@@ -536,7 +551,7 @@ function withSetlistOnlySongs(catalog, setlistStats, currentTour) {
       total: stat.count,
       l100: stat.count,
       slp: 0,
-      type: "Cover",
+      type: configuredTypeForTitle(stat.title) || "Unclassified",
       isSetlistOnly: true
     });
     knownKeys.add(key);
@@ -573,14 +588,20 @@ function analyzeSetlists(setlists, catalog, currentTour) {
 
   const byKey = new Map();
   for (const show of setlists) {
+    const showSongsByKey = new Map();
+
     for (const set of show.sets || []) {
       for (const song of splitSetSongs(set.songTitles || set.songs, known)) {
-        const current = byKey.get(song.key) || { count: 0, firstIso: "", lastIso: "", title: song.title };
-        current.count += 1;
-        current.firstIso = minIso([current.firstIso, show.isoDate]);
-        current.lastIso = maxIso([current.lastIso, show.isoDate]);
-        byKey.set(song.key, current);
+        if (!showSongsByKey.has(song.key)) showSongsByKey.set(song.key, song);
       }
+    }
+
+    for (const song of showSongsByKey.values()) {
+      const current = byKey.get(song.key) || { count: 0, firstIso: "", lastIso: "", title: song.title };
+      current.count += 1;
+      current.firstIso = minIso([current.firstIso, show.isoDate]);
+      current.lastIso = maxIso([current.lastIso, show.isoDate]);
+      byKey.set(song.key, current);
     }
   }
 
@@ -648,7 +669,7 @@ function normalizeCatalogRow(row) {
     total: toNumber(row.Total),
     l100: toNumber(row.L100),
     slp: toNumber(row.SLP),
-    type: configuredType || (type === "Original" ? "Original" : "Cover")
+    type: configuredType || (type === "Original" ? "Original" : type === "Cover" ? "Cover" : "Unclassified")
   };
 }
 
@@ -662,12 +683,13 @@ function normalizeCurrentTourRow(row) {
     last: clean(row.Last),
     total: toNumber(row.Total),
     slp: toNumber(row.SLP),
-    type: configuredType || (clean(row.Original) ? "Original" : clean(row.Cover) ? "Cover" : "")
+    type: configuredType || (clean(row.Original) ? "Original" : clean(row.Cover) ? "Cover" : "Unclassified")
   };
 }
 
 function configuredTypeForTitle(title) {
   const key = clean(title).toUpperCase();
+  if (config.typeOverrides[key]) return config.typeOverrides[key];
   if (config.addOnOriginals.includes(key)) return "Original";
   if (config.addOnCovers.includes(key)) return "Cover";
   return "";
