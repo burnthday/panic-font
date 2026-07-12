@@ -251,12 +251,45 @@ function isReviewEntry(entry, pagePath) {
 }
 
 function rewriteArchiveHtml(html) {
-  return String(html || "")
+  return scrubBlockedExternalLinks(html)
     .replace(/https?:\/\/[^"'<>\s)]+/gi, (url) => localArchiveMediaUrl(url) || url)
     .replace(/https?:\/\/(?:www\.)?burnthday\.com/gi, "")
     .replace(/https?:\/\/burnthday\.blogspot\.com/gi, "")
     .replace(/https?:\/\/burnthday\.github\.io\/panic-font\/([^"'<>\s)]+)/gi, "/assets/$1")
     .replace(/\?m=1/g, "");
+}
+
+function scrubBlockedExternalLinks(html) {
+  return scrubBlockedExternalText(stripBlockedExternalUrls(String(html || "")
+    .replace(/<a\b([^>]*\bhref=(["'])(.*?)\2[^>]*)>([\s\S]*?)<\/a>/gi, (match, _attrs, _quote, href, label) => {
+      return isBlockedExternalUrl(href) ? stripTags(label) : match;
+    })));
+}
+
+function stripBlockedExternalUrls(value) {
+  return String(value || "")
+    .replace(/(?:https?:\/\/)?(?:www\.)?panicstream\.(?:com|net)\/[^\s"'<>),]+/gi, "")
+    .replace(/https?:\/\/[^\s"'<>),]+/gi, (url) => {
+      return isBlockedExternalUrl(url) ? "" : url;
+    });
+}
+
+function scrubBlockedExternalText(value) {
+  return String(value || "").replace(/\b@?PanicStream(?:\.(?:com|net))?\b/gi, "");
+}
+
+function isBlockedExternalUrl(url) {
+  const value = decodeXml(String(url || ""));
+  const decoded = safeDecodeURIComponent(value);
+  return /panicstream(?:\.(?:com|net))?/i.test(value) || /panicstream(?:\.(?:com|net))?/i.test(decoded);
+}
+
+function safeDecodeURIComponent(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 function localArchiveMediaUrl(url) {
@@ -456,7 +489,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       rotationSlpLimit: config.rotationSlpLimit,
       purgatory: "Songs with one lifetime play stay in Purgatory. If played this tour, they stay marked black until the next tour reset.",
       shelf: "Shelf songs that return this tour stay marked black until the next tour reset.",
-      woodshed: "Nick Johnson Woodshed contains active catalog songs inside the rotation window that Nick has not played this tour."
+      woodshed: "The Woodshed contains active catalog songs inside the rotation window that have not been played this tour."
     },
     totals: {
       catalogSongs: songs.length,
@@ -965,18 +998,19 @@ function renderOriginText(text) {
 }
 
 function renderLinkedText(text) {
+  const safeText = stripBlockedExternalUrls(text);
   const pieces = [];
   let cursor = 0;
-  for (const match of String(text || "").matchAll(/https?:\/\/[^\s<]+/g)) {
+  for (const match of safeText.matchAll(/https?:\/\/[^\s<]+/g)) {
     const rawUrl = match[0];
     const start = match.index || 0;
     const trailing = rawUrl.match(/[),.]+$/)?.[0] || "";
     const url = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
-    pieces.push(escapeHtml(text.slice(cursor, start)));
+    pieces.push(escapeHtml(safeText.slice(cursor, start)));
     pieces.push(`<a href="${escapeAttr(url)}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`);
     cursor = start + rawUrl.length;
   }
-  pieces.push(escapeHtml(text.slice(cursor)));
+  pieces.push(escapeHtml(safeText.slice(cursor)));
   return pieces.join("");
 }
 
@@ -1123,6 +1157,7 @@ function renderRotationBoard(data) {
     <a href="#setlists">Setlists</a>
     <a href="#tour-dates">Tour Dates</a>
   </nav>
+  ${renderSheetKey(data)}
   ${renderSongPanel("rotation-originals", "ORIGINALS", data.boards.rotationOriginals)}
   ${renderSongPanel("rotation-covers", "COVERS", data.boards.rotationCovers)}
   <div class="board-ledger" aria-label="Tour stats">
@@ -1150,10 +1185,24 @@ function renderShelfBoard(data) {
 function renderWoodshedBoard(data) {
   const count = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
   return `<section class="laminate woodshed-board" id="woodshed">
-  ${renderBoardHeader("NICK JOHNSON WOODSHED", `${count} active songs unplayed by Nick this tour`)}
+  ${renderBoardHeader("THE WOODSHED", `${count} active songs unplayed this tour`)}
   ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, columns: 3 })}
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, columns: 3 })}
 </section>`;
+}
+
+function renderSheetKey(data) {
+  return `<details class="sheet-key" open>
+    <summary>SHEET KEY</summary>
+    <dl>
+      <div><dt>Song List</dt><dd>Originals and covers active for the ${escapeHtml(String(data.site.year))} tour sheet.</dd></div>
+      <div><dt>Tiny Number</dt><dd>Times played this tour. Sandwiches count once per show.</dd></div>
+      <div><dt>Marker</dt><dd>Recent plays. Black marks on Shelf and Purgatory stay until the next tour reset.</dd></div>
+      <div><dt>Shelf</dt><dd>Songs outside the rotation window with lifetime count and last-played date.</dd></div>
+      <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
+      <div><dt>The Woodshed</dt><dd>Active rotation songs that have not been played this tour.</dd></div>
+    </dl>
+  </details>`;
 }
 
 function renderBoardHeader(title, subtitle = "") {
@@ -1509,6 +1558,51 @@ main {
   padding: 6px 10px;
   text-decoration: none;
   background: #ffffff;
+}
+
+.sheet-key {
+  margin: 2px 0 20px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 0 12px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.sheet-key summary {
+  cursor: pointer;
+  list-style: none;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.sheet-key summary::-webkit-details-marker {
+  display: none;
+}
+
+.sheet-key dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 22px;
+  margin: 11px 0 0;
+}
+
+.sheet-key div {
+  min-width: 0;
+}
+
+.sheet-key dt {
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.sheet-key dd {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.28;
 }
 
 .song-panel {
@@ -2153,6 +2247,7 @@ sup {
   }
 
   .board-ledger,
+  .sheet-key dl,
   .setlist-feature,
   .setlist-grid {
     grid-template-columns: 1fr;
@@ -2236,6 +2331,16 @@ sup {
   .sheet-jump a {
     flex: 1 1 42%;
     justify-content: center;
+  }
+
+  .sheet-key {
+    margin-bottom: 12px;
+  }
+
+  .sheet-key summary {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
   }
 
   .song-panel {
