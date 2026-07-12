@@ -22,6 +22,16 @@ npm run import:blogger
 
 The deployed build tries this import first, then falls back to the checked-in JSON if Blogger is unavailable.
 
+## Current Tour Setlists
+
+The 2026 official Widespread Panic setlists live in `data/source/setlists-2026.json`. Refresh the current tour from the official WSP show pages, then enrich the display text with segue markers from same-date Internet Archive recordings:
+
+```bash
+TOUR_YEAR=2026 npm run refresh:setlists
+```
+
+The checked-in setlist JSON keeps two versions of each set: `songTitles` are canonical official titles used for counting, and `songs` is the display string with `>` transitions. This keeps sandwich songs visible in the setlist while counting each song only once per show.
+
 ## Blogger Archive
 
 The full Blogger Takeout feed is checked in at `data/source/blogger-feed.atom`. The build turns those entries into static pages at their original Blogger paths, plus archive indexes at `/archive/` and `/tour-in-review/`. Media files recovered from Takeout live in `assets/archive-media/` and are linked locally when the old Blogger image filename can be matched safely.

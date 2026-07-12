@@ -17,7 +17,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Disco, Little Lilly, Rock, One Arm Steve, Christmas Katie, Trashy, Holden Oversoul, Lawyers Guns And Money",
+          "songs": "Disco > Little Lilly, Rock, One Arm Steve, Christmas Katie > Trashy, Holden Oversoul, Lawyers Guns And Money",
           "songTitles": [
             "Disco",
             "Little Lilly",
@@ -31,7 +31,7 @@
         },
         {
           "label": "2",
-          "songs": "Rebirtha, Sleeping Man, Down, Hatfield, Drums, Arleen, Driving Song, Tall Boy, Driving Song, North",
+          "songs": "Rebirtha > Sleeping Man, Down, Hatfield > Drums > Arleen, Driving Song > Tall Boy > Driving Song, North",
           "songTitles": [
             "Rebirtha",
             "Sleeping Man",
@@ -59,7 +59,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/01/Widespread-Panic-20260120-Timmermans-3033.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-01-20.4ch",
+      "transitionSourceTitle": "Widespread Panic - Live at Hard Rock Hotel And Resort - Puerto Aventuras, Mexico  on 2026-01-20 (4ch Schoeps)"
     },
     {
       "date": "01/21/2026",
@@ -73,7 +75,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Greta, Blight, Wondering, Little By Little, Airplane, Pusherman, We Walk Each Other Home, Conrad The Caterpillar",
+          "songs": "Greta > Blight > Wondering, Little By Little, Airplane > Pusherman, We Walk Each Other Home, Conrad The Caterpillar",
           "songTitles": [
             "Greta",
             "Blight",
@@ -87,7 +89,7 @@
         },
         {
           "label": "2",
-          "songs": "Travelin' Light, Barstools and Dreamers, Bear's Gone Fishin', Surprise Valley, Drums, Me and The Devil Blues, Surprise Valley, Blue Indian, Henry Parsons Died, Blackout Blues",
+          "songs": "Travelin' Light > Barstools and Dreamers, Bear's Gone Fishin' > Surprise Valley > Drums, Me and The Devil Blues > Surprise Valley, Blue Indian, Henry Parsons Died > Blackout Blues",
           "songTitles": [
             "Travelin' Light",
             "Barstools and Dreamers",
@@ -103,7 +105,7 @@
         },
         {
           "label": "E",
-          "songs": "For What It's Worth, Climb To Safety",
+          "songs": "For What It's Worth > Climb To Safety",
           "songTitles": [
             "For What It's Worth",
             "Climb To Safety"
@@ -115,7 +117,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/01/Widespread-Panic-20260121-Timmermans-3200.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-01-21",
+      "transitionSourceTitle": "Widespread Panic Live at Hard Rock Hotel And Resort on 2026-01-21"
     },
     {
       "date": "01/22/2026",
@@ -129,7 +133,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Pigeons, Action Man, Good Morning Little School Girl, Pleas, Don't Wanna Lose You, Chainsaw City, The Last Straw, You Got Yours",
+          "songs": "Pigeons > Action Man, Good Morning Little School Girl > Pleas > Don't Wanna Lose You > Chainsaw City, The Last Straw > You Got Yours",
           "songTitles": [
             "Pigeons",
             "Action Man",
@@ -143,7 +147,7 @@
         },
         {
           "label": "2",
-          "songs": "Little Kin, Makes Sense To Me, Space Wrangler, I Walk On Guilded Splinters, Jam, Diner, Ride Me High, Tie Your Shoes, Ride Me High, Love Tractor",
+          "songs": "Little Kin > Makes Sense To Me, Space Wrangler, I Walk On Guilded Splinters > Jam > Diner > Ride Me High > Tie Your Shoes > Ride Me High > Love Tractor",
           "songTitles": [
             "Little Kin",
             "Makes Sense To Me",
@@ -171,7 +175,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/01/Widespread-Panic-20260122-Timmermans-2101.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-01-22",
+      "transitionSourceTitle": "Widespread Panic Live at Hard Rock Hotel And Resort on 2026-01-22"
     },
     {
       "date": "01/23/2026",
@@ -185,7 +191,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Postcard, Pilgrims, Walkin' (For Your Love), And It Stoned Me, Pickin' Up The Pieces, Fishwater, Low Spark Of High-Heeled Boys, Bowlegged Woman, Knock-Kneed Man, Low Spark Of High-Heeled Boys, Fishwater",
+          "songs": "Postcard > Pilgrims, Walkin' (For Your Love), And It Stoned Me, Pickin' Up The Pieces, Fishwater > Low Spark Of High-Heeled Boys > Bowlegged Woman, Knock-Kneed Man > Low Spark Of High-Heeled Boys > Fishwater",
           "songTitles": [
             "Postcard",
             "Pilgrims",
@@ -201,7 +207,7 @@
         },
         {
           "label": "2",
-          "songs": "Bust it Big, Mr. Soul, C. Brown, Second Skin, Red Hot Mama, Spoonful, All Time Low, Jack, Maggot Brain, Chilly Water",
+          "songs": "Bust it Big > Mr. Soul, C. Brown > Second Skin > Red Hot Mama > Spoonful > All Time Low, Jack, Maggot Brain > Chilly Water",
           "songTitles": [
             "Bust it Big",
             "Mr. Soul",
@@ -230,7 +236,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/01/Widespread-Panic-20260123-Timmermans-4393.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-01-23",
+      "transitionSourceTitle": "Widespread Panic Live at Hard Rock Hotel And Resort on 2026-01-23"
     },
     {
       "date": "02/14/2026",
@@ -244,7 +252,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Junior, Greta, Little Lilly, Climb To Safety, This Part of Town, Thought Sausage, Barstools and Dreamers, King Baby, Porch Song",
+          "songs": "Junior, Greta > Little Lilly, Climb To Safety, This Part of Town, Thought Sausage > Barstools and Dreamers, King Baby > Porch Song",
           "songTitles": [
             "Junior",
             "Greta",
@@ -259,7 +267,7 @@
         },
         {
           "label": "2",
-          "songs": "You Wreck Me, Ribs and Whiskey, Wondering, Proving Ground, Ride Me High, Proving Ground, Down, Papa's Home, Drums, Tie Your Shoes, Papa's Home, North",
+          "songs": "You Wreck Me, Ribs and Whiskey, Wondering, Proving Ground > Ride Me High > Proving Ground, Down, Papa's Home > Drums > Tie Your Shoes > Papa's Home, North",
           "songTitles": [
             "You Wreck Me",
             "Ribs and Whiskey",
@@ -289,7 +297,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/02/Widespread-Panic-20260214-Timmermans-1101.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-02-14.mk4v.flac24",
+      "transitionSourceTitle": "Widespread Panic Live at Moody Coliseum on 2026-02-14"
     },
     {
       "date": "02/15/2026",
@@ -303,7 +313,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Driving Song, Disco, Driving Song, Little By Little, Goodpeople, Dark Bar, Goodpeople, Aunt Avis, Holden Oversoul, Henry Parsons Died",
+          "songs": "Driving Song > Disco > Driving Song > Little By Little, Goodpeople > Dark Bar > Goodpeople > Aunt Avis, Holden Oversoul > Henry Parsons Died",
           "songTitles": [
             "Driving Song",
             "Disco",
@@ -319,7 +329,7 @@
         },
         {
           "label": "2",
-          "songs": "Blackout Blues, Diner, Blight, Saint Ex, Airplane, You Got Yours, Gimme, Blue Indian, Pigeons",
+          "songs": "Blackout Blues > Diner > Blight > Saint Ex > Airplane > You Got Yours, Gimme > Blue Indian, Pigeons",
           "songTitles": [
             "Blackout Blues",
             "Diner",
@@ -334,7 +344,7 @@
         },
         {
           "label": "E",
-          "songs": "We Walk Each Other Home, Up All Night, Tall Boy",
+          "songs": "We Walk Each Other Home, Up All Night > Tall Boy",
           "songTitles": [
             "We Walk Each Other Home",
             "Up All Night",
@@ -347,7 +357,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/02/Widespread-Panic-20260215-Timmermans-1333.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-02-15",
+      "transitionSourceTitle": "Widespread Panic Live at The Moody Center ATX on 2026-02-15"
     },
     {
       "date": "03/20/2026",
@@ -361,7 +373,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Goin' Out West, Surprise Valley, Pleas, One Arm Steve, Hatfield, Surprise Valley, Imitation Leather Shoes, Trashy, Space Wrangler",
+          "songs": "Goin' Out West, Surprise Valley > Pleas > One Arm Steve, Hatfield > Surprise Valley, Imitation Leather Shoes, Trashy, Space Wrangler",
           "songTitles": [
             "Goin' Out West",
             "Surprise Valley",
@@ -376,7 +388,7 @@
         },
         {
           "label": "2",
-          "songs": "Let's Get Down To Business, Halloween Face, Mercy, Smokestack Lightning, Rebirtha, Party at Your Mama's House, Jack, Big Wooly Mammoth, All Time Low, Chilly Water",
+          "songs": "Let's Get Down To Business, Halloween Face, Mercy > Smokestack Lightning, Rebirtha > Party at Your Mama's House, Jack, Big Wooly Mammoth > All Time Low > Chilly Water",
           "songTitles": [
             "Let's Get Down To Business",
             "Halloween Face",
@@ -403,7 +415,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/03/Widespread-Panic-20260320-Timmermans-1575.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/WSP2026-03-20.SP",
+      "transitionSourceTitle": "Widespread Panic Live at St. Augustine Amphitheatre on 2026-03-20"
     },
     {
       "date": "03/21/2026",
@@ -417,7 +431,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Chainsaw City, Action Man, Old Neighborhood, Better Off, Just Kissed My Baby, Greta, Little By Little, Saint Ex",
+          "songs": "Chainsaw City > Action Man, Old Neighborhood > Better Off, Just Kissed My Baby > Greta > Little By Little, Saint Ex",
           "songTitles": [
             "Chainsaw City",
             "Action Man",
@@ -431,7 +445,7 @@
         },
         {
           "label": "2",
-          "songs": "Honky Red, I'm Not Alone, Second Skin, King Baby, Bust it Big, City Of Dreams, Protein Drink, Sewing Machine, Ain't Life Grand",
+          "songs": "Honky Red, I'm Not Alone > Second Skin, King Baby > Bust it Big, City Of Dreams, Protein Drink > Sewing Machine, Ain't Life Grand",
           "songTitles": [
             "Honky Red",
             "I'm Not Alone",
@@ -458,7 +472,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/03/Widespread-Panic-20260321-Timmermans-0014.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-03-21",
+      "transitionSourceTitle": "Widespread Panic Live at St. Augustine Amphitheatre on 2026-03-21"
     },
     {
       "date": "03/22/2026",
@@ -472,7 +488,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Holden Oversoul, Can't Get High, Travelin' Light, Happy, Little Lilly, Driving Song, Blue Carousel, Driving Song, Conrad The Caterpillar",
+          "songs": "Holden Oversoul, Can't Get High, Travelin' Light, Happy > Little Lilly > Driving Song > Blue Carousel > Driving Song > Conrad The Caterpillar",
           "songTitles": [
             "Holden Oversoul",
             "Can't Get High",
@@ -487,7 +503,7 @@
         },
         {
           "label": "2",
-          "songs": "Pilgrims, Sharon, Tackle Box Hero, Fishing, Time is Free, Bear's Gone Fishin', Drums, Fishwater, Blue Indian, Ribs and Whiskey",
+          "songs": "Pilgrims > Sharon, Tackle Box Hero, Fishing > Time is Free, Bear's Gone Fishin' > Drums > Fishwater > Blue Indian, Ribs and Whiskey",
           "songTitles": [
             "Pilgrims",
             "Sharon",
@@ -503,7 +519,7 @@
         },
         {
           "label": "E",
-          "songs": "Hope In A Hopeless World, Life During Wartime",
+          "songs": "Hope In A Hopeless World > Life During Wartime",
           "songTitles": [
             "Hope In A Hopeless World",
             "Life During Wartime"
@@ -515,7 +531,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/03/Widespread-Panic-20260322-Timmermans-2078.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-03-22.cmc5mk4v",
+      "transitionSourceTitle": "Widespread Panic Live at The Amphitheatre at Saint Augustine on 2026-03-22"
     },
     {
       "date": "04/17/2026",
@@ -529,7 +547,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "The Take Out, Radio Child, Machine, Barstools and Dreamers, C. Brown, Goodpeople, Dark Bar, Goodpeople, Little By Little, Blackout Blues",
+          "songs": "The Take Out, Radio Child, Machine > Barstools and Dreamers, C. Brown, Goodpeople > Dark Bar > Goodpeople, Little By Little, Blackout Blues",
           "songTitles": [
             "The Take Out",
             "Radio Child",
@@ -545,7 +563,7 @@
         },
         {
           "label": "1",
-          "songs": "Contentment Blues, Diner, Love Tractor, Visiting Day, Blight, You Got Yours, We Walk Each Other Home, Up All Night, Ride Me High, Climb To Safety",
+          "songs": "Contentment Blues, Diner > Love Tractor, Visiting Day, Blight > You Got Yours, We Walk Each Other Home, Up All Night > Ride Me High > Climb To Safety",
           "songTitles": [
             "Contentment Blues",
             "Diner",
@@ -573,7 +591,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/04/Widespread-Panic-20260417-Timmermans-0314.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-04-17.mk21.flac24",
+      "transitionSourceTitle": "Widespread Panic Live at Coca-Cola Amphitheater on 2026-04-17"
     },
     {
       "date": "04/18/2026",
@@ -587,7 +607,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Tall Boy, Henry Parsons Died, Walkin' (For Your Love), Shut Up and Drive, Tie Your Shoes, Tie Your Shoes, Sleepy Monkey, Big Wooly Mammoth, Low Rider, Pigeons, Let's Get The Show On The Road, Pleas, Hatfield, Impossible, I Walk On Guilded Splinters, Free Somehow, Halloween Face",
+          "songs": "Tall Boy > Henry Parsons Died, Walkin' (For Your Love), Shut Up and Drive > Tie Your Shoes, Tie Your Shoes, Sleepy Monkey, Big Wooly Mammoth, Low Rider, Pigeons, Let's Get The Show On The Road, Pleas, Hatfield, Impossible, I Walk On Guilded Splinters, Free Somehow, Halloween Face",
           "songTitles": [
             "Tall Boy",
             "Henry Parsons Died",
@@ -626,7 +646,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/04/Widespread-Panic-20260418-Timmermans-3089.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-04-18.mk4v.flac24",
+      "transitionSourceTitle": "Widespread Panic Live at Coca-Cola Amphitheater on 2026-04-18"
     },
     {
       "date": "04/30/2026",
@@ -640,7 +662,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Ain't Life Grand, Greta, Knockin' Around The Zoo, Surprise Valley, One Arm Steve, Saint Ex, Travelin' Light, Thought Sausage, King Baby, I'm So Glad, Bust it Big, Fishwater, Arleen, Fishwater",
+          "songs": "Ain't Life Grand, Greta > Knockin' Around The Zoo, Surprise Valley, One Arm Steve, Saint Ex, Travelin' Light, Thought Sausage, King Baby, I'm So Glad, Bust it Big, Fishwater > Arleen > Fishwater",
           "songTitles": [
             "Ain't Life Grand",
             "Greta",
@@ -666,7 +688,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/05/Widespread-Panic-New-Orleans-Jazzfest-20260430-Timmermans-0627.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-04-30.MK4.flac24",
+      "transitionSourceTitle": "Widespread Panic Live at New Orleans Jazz & Heritage Festival on 2026-04-30"
     },
     {
       "date": "05/08/2026",
@@ -680,7 +704,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Chainsaw City, Holden Oversoul, And It Stoned Me, Space Wrangler, Bear's Gone Fishin', Sleeping Man, Blue Indian, Blackout Blues",
+          "songs": "Chainsaw City, Holden Oversoul, And It Stoned Me, Space Wrangler, Bear's Gone Fishin' > Sleeping Man, Blue Indian > Blackout Blues",
           "songTitles": [
             "Chainsaw City",
             "Holden Oversoul",
@@ -694,7 +718,7 @@
         },
         {
           "label": "2",
-          "songs": "Makes Sense To Me, Rebirtha, You Got Yours, Goodpeople, Dark Bar, Goodpeople, Trashy, Lawyers Guns And Money, Protein Drink, Sewing Machine",
+          "songs": "Makes Sense To Me > Rebirtha > You Got Yours, Goodpeople > Dark Bar > Goodpeople > Trashy > Lawyers Guns And Money, Protein Drink > Sewing Machine",
           "songTitles": [
             "Makes Sense To Me",
             "Rebirtha",
@@ -722,7 +746,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/05/Widespread-Panic-20260508-Timmermans-0457.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-05-08",
+      "transitionSourceTitle": "Widespread Panic Live at The Theatre At Virgin Hotel on 2026-05-08"
     },
     {
       "date": "05/09/2026",
@@ -736,7 +762,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Wondering, For What It's Worth, Little By Little, Blue Carousel, Rock, Sometimes, Gimme, Jack, Climb To Safety",
+          "songs": "Wondering, For What It's Worth, Little By Little, Blue Carousel > Rock, Sometimes, Gimme, Jack > Climb To Safety",
           "songTitles": [
             "Wondering",
             "For What It's Worth",
@@ -751,7 +777,7 @@
         },
         {
           "label": "2",
-          "songs": "Tall Boy, Happy, Driving Song, Pilgrims, Driving Song, Drums, Ribs and Whiskey, Stop Breakin' Down Blues, Up All Night, All Time Low",
+          "songs": "Tall Boy, Happy, Driving Song > Pilgrims > Driving Song > Drums > Ribs and Whiskey > Stop Breakin' Down Blues, Up All Night, All Time Low",
           "songTitles": [
             "Tall Boy",
             "Happy",
@@ -778,7 +804,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/05/Widespread-Panic-20260509-Timmermans-0060.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-05-09.mk4_24bit",
+      "transitionSourceTitle": "Widespread Panic Live at The Virgin Theater on 2026-05-09"
     },
     {
       "date": "05/10/2026",
@@ -792,7 +820,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Junior, Send Your Mind, Little Lilly, Pleas, Hope In A Hopeless World, Travelin' Man, The Waker, Honky Red, Red Hot Mama",
+          "songs": "Junior > Send Your Mind, Little Lilly > Pleas, Hope In A Hopeless World, Travelin' Man > The Waker, Honky Red > Red Hot Mama",
           "songTitles": [
             "Junior",
             "Send Your Mind",
@@ -807,7 +835,7 @@
         },
         {
           "label": "2",
-          "songs": "Little Kin, Good Morning Little School Girl, Dyin' Man, Aunt Avis, Machine, Barstools and Dreamers, Party at Your Mama's House, Ride Me High, Love Tractor",
+          "songs": "Little Kin, Good Morning Little School Girl, Dyin' Man, Aunt Avis > Machine > Barstools and Dreamers, Party at Your Mama's House > Ride Me High > Love Tractor",
           "songTitles": [
             "Little Kin",
             "Good Morning Little School Girl",
@@ -822,7 +850,7 @@
         },
         {
           "label": "E",
-          "songs": "Keep Me In Your Heart, Vampire Blues, Postcard",
+          "songs": "Keep Me In Your Heart, Vampire Blues > Postcard",
           "songTitles": [
             "Keep Me In Your Heart",
             "Vampire Blues",
@@ -835,7 +863,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/05/Widespread-Panic-20260510-Timmermans-0341.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-05-10",
+      "transitionSourceTitle": "Widespread Panic Live at The Theatre At Virgin Hotel on 2026-05-10"
     },
     {
       "date": "06/13/2026",
@@ -849,7 +879,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Henry Parsons Died, Greta, Christmas Katie, Action Man, Driving Song, We Walk Each Other Home, Driving Song, Shut Up and Drive, Honky Red, Imitation Leather Shoes",
+          "songs": "Henry Parsons Died > Greta > Christmas Katie > Action Man, Driving Song > We Walk Each Other Home > Driving Song > Shut Up and Drive > Honky Red, Imitation Leather Shoes",
           "songTitles": [
             "Henry Parsons Died",
             "Greta",
@@ -865,7 +895,7 @@
         },
         {
           "label": "2",
-          "songs": "Chilly Water, Contentment Blues, Disco, Second Skin, Rebirtha, Tie Your Shoes, Blue Indian, Halloween Face",
+          "songs": "Chilly Water > Contentment Blues > Disco > Second Skin > Rebirtha > Tie Your Shoes > Blue Indian > Halloween Face",
           "songTitles": [
             "Chilly Water",
             "Contentment Blues",
@@ -879,7 +909,7 @@
         },
         {
           "label": "E",
-          "songs": "Big Wooly Mammoth, Porch Song",
+          "songs": "Big Wooly Mammoth > Porch Song",
           "songTitles": [
             "Big Wooly Mammoth",
             "Porch Song"
@@ -891,7 +921,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/06/Widespread-Panic-20260613-Timmermans-0293.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-06-13",
+      "transitionSourceTitle": "Widespread Panic Live at Merriweather Post Pavilion on 2026-06-13"
     },
     {
       "date": "06/14/2026",
@@ -905,7 +937,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Pigeons, Pleas, Thought Sausage, Vacation, Sharon, I'm Not Alone, Space Wrangler",
+          "songs": "Pigeons > Pleas > Thought Sausage, Vacation > Sharon > I'm Not Alone > Space Wrangler",
           "songTitles": [
             "Pigeons",
             "Pleas",
@@ -918,7 +950,7 @@
         },
         {
           "label": "2",
-          "songs": "None Of Us Are Free, Tall Boy, Ribs and Whiskey, Surprise Valley, Ride Me High, Surprise Valley, Blight, King Baby, Bust it Big, All Time Low",
+          "songs": "None Of Us Are Free, Tall Boy > Ribs and Whiskey, Surprise Valley > Ride Me High > Surprise Valley > Blight > King Baby > Bust it Big > All Time Low",
           "songTitles": [
             "None Of Us Are Free",
             "Tall Boy",
@@ -946,7 +978,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/06/Widespread-Panic-20260614-Timmermans-1149.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-06-14.z",
+      "transitionSourceTitle": "Widespread Panic Live at Merriweather Post Pavilion on 2026-06-14"
     },
     {
       "date": "06/26/2026",
@@ -960,7 +994,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "One Arm Steve, Better Off, Travelin' Light, Little By Little, Papa Johnny Road, Diner, Bear's Gone Fishin', Holden Oversoul",
+          "songs": "One Arm Steve > Better Off, Travelin' Light, Little By Little, Papa Johnny Road > Diner > Bear's Gone Fishin' > Holden Oversoul",
           "songTitles": [
             "One Arm Steve",
             "Better Off",
@@ -974,7 +1008,7 @@
         },
         {
           "label": "2",
-          "songs": "Protein Drink, Sewing Machine, Down, Fishing, Dirty Business, Stop-Go, Maggot Brain, Love Tractor",
+          "songs": "Protein Drink > Sewing Machine, Down, Fishing > Dirty Business > Stop-Go > Maggot Brain > Love Tractor",
           "songTitles": [
             "Protein Drink",
             "Sewing Machine",
@@ -988,7 +1022,7 @@
         },
         {
           "label": "E",
-          "songs": "Nobody's Loss, Tickle the Truth, Blackout Blues",
+          "songs": "Nobody's Loss, Tickle the Truth > Blackout Blues",
           "songTitles": [
             "Nobody's Loss",
             "Tickle the Truth",
@@ -1001,7 +1035,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/06/Widespread-Panic-20260626-Timmermans-0003.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-06-26",
+      "transitionSourceTitle": "Widespread Panic Live at Red Rocks Amphitheatre on 2026-06-26"
     },
     {
       "date": "06/27/2026",
@@ -1015,7 +1051,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "The Take Out, Wondering, Little Kin, C. Brown, 1x1, Trashy, Goodpeople, Dark Bar, Goodpeople, Porch Song",
+          "songs": "The Take Out, Wondering, Little Kin, C. Brown, 1x1, Trashy, Goodpeople > Dark Bar > Goodpeople, Porch Song",
           "songTitles": [
             "The Take Out",
             "Wondering",
@@ -1031,7 +1067,7 @@
         },
         {
           "label": "2",
-          "songs": "Postcard, Surprise Valley, Climb To Safety, Surprise Valley, Travelin' Man, The Waker, Arleen, Pilgrims, Flat Foot Flewzy",
+          "songs": "Postcard, Surprise Valley, Climb To Safety > Surprise Valley, Travelin' Man > The Waker > Arleen, Pilgrims, Flat Foot Flewzy",
           "songTitles": [
             "Postcard",
             "Surprise Valley",
@@ -1060,7 +1096,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/06/Widespread-Panic-20260627-Timmermans-1028.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-06-27.4ch",
+      "transitionSourceTitle": "Widespread Panic Live at Red Rocks - Morrison, CO on 2026-06-27 (4ch)"
     },
     {
       "date": "06/28/2026",
@@ -1074,7 +1112,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Big Wooly Mammoth, Jack, Radio Child, This Part of Town, Fishwater, All Time Low, Fishwater, Rock, Heroes, Papa's Home",
+          "songs": "Big Wooly Mammoth > Jack > Radio Child > This Part of Town, Fishwater > All Time Low > Fishwater > Rock, Heroes > Papa's Home",
           "songTitles": [
             "Big Wooly Mammoth",
             "Jack",
@@ -1090,7 +1128,7 @@
         },
         {
           "label": "2",
-          "songs": "North, Gradle, Don't Be Denied, Party at Your Mama's House, Stop Breakin' Down Blues, Second Skin, Airplane, Drums, Halloween Face, Ride Me High, Red Hot Mama",
+          "songs": "North, Gradle, Don't Be Denied, Party at Your Mama's House > Stop Breakin' Down Blues, Second Skin, Airplane > Drums > Halloween Face, Ride Me High > Red Hot Mama",
           "songTitles": [
             "North",
             "Gradle",
@@ -1107,7 +1145,7 @@
         },
         {
           "label": "E",
-          "songs": "Greta, You Got Yours, May Your Glass Be Filled",
+          "songs": "Greta > You Got Yours, May Your Glass Be Filled",
           "songTitles": [
             "Greta",
             "You Got Yours",
@@ -1127,7 +1165,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/06/Widespread-Panic-20260628-Timmermans-2167.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp0122026-06-28",
+      "transitionSourceTitle": "Widespread Panic Live at Red Rocks Ampitheatre on 2026-06-28"
     },
     {
       "date": "07/05/2026",
@@ -1141,7 +1181,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Little Lilly, Send Your Mind, Ribs and Whiskey, Can't Get High, Tall Boy, I'm Not Alone, Walkin' (For Your Love), Space Wrangler",
+          "songs": "Little Lilly > Send Your Mind, Ribs and Whiskey, Can't Get High, Tall Boy, I'm Not Alone, Walkin' (For Your Love), Space Wrangler",
           "songTitles": [
             "Little Lilly",
             "Send Your Mind",
@@ -1155,7 +1195,7 @@
         },
         {
           "label": "2",
-          "songs": "For What It's Worth, King Baby, Sleeping Man, Driving Song, Rebirtha, Driving Song, The Last Straw, Mountain Jam, Bowlegged Woman, Knock-Kneed Man",
+          "songs": "For What It's Worth, King Baby, Sleeping Man, Driving Song > Rebirtha > Driving Song > The Last Straw, Mountain Jam, Bowlegged Woman, Knock-Kneed Man",
           "songTitles": [
             "For What It's Worth",
             "King Baby",
@@ -1183,7 +1223,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260705-Jackson-Wyoming-Andy-Tennille-10-2.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-05.4channel",
+      "transitionSourceTitle": "Widespread Panic - Live at Snow King Mountain - Jackson, WY on 2026-07-05 (4ch)"
     },
     {
       "date": "07/07/2026",
@@ -1197,7 +1239,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Pleas, Henry Parsons Died, Walk On, Up All Night, Hatfield, Blue Carousel, We Walk Each Other Home, Sometimes, Action Man",
+          "songs": "Pleas > Henry Parsons Died, Walk On, Up All Night > Hatfield > Blue Carousel, We Walk Each Other Home, Sometimes, Action Man",
           "songTitles": [
             "Pleas",
             "Henry Parsons Died",
@@ -1212,7 +1254,7 @@
         },
         {
           "label": "2",
-          "songs": "Proving Ground, Conrad The Caterpillar, Proving Ground, Free Somehow, None Of Us Are Free, Gimme, Bust it Big, Pigeons, Bust it Big, Low Rider, Tie Your Shoes, Junior",
+          "songs": "Proving Ground > Conrad The Caterpillar, Proving Ground, Free Somehow, None Of Us Are Free, Gimme, Bust it Big > Pigeons > Bust it Big > Low Rider > Tie Your Shoes > Junior",
           "songTitles": [
             "Proving Ground",
             "Conrad The Caterpillar",
@@ -1230,7 +1272,7 @@
         },
         {
           "label": "E",
-          "songs": "Me and The Devil Blues, Heaven",
+          "songs": "Me and The Devil Blues > Heaven",
           "songTitles": [
             "Me and The Devil Blues",
             "Heaven"
@@ -1242,7 +1284,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260707-Missoula-Montana-Andy-Tennille-1.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-07.kk184KMAm148",
+      "transitionSourceTitle": "Widespread Panic Live at KettleHouse Amphitheater on 2026-07-07"
     },
     {
       "date": "07/08/2026",
@@ -1256,7 +1300,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "I'm So Glad, Little By Little, Blackout Blues, Old Joe, Worry, Pickin' Up The Pieces, Tackle Box Hero, Bear's Gone Fishin', Sharon",
+          "songs": "I'm So Glad > Little By Little, Blackout Blues, Old Joe, Worry, Pickin' Up The Pieces, Tackle Box Hero, Bear's Gone Fishin', Sharon",
           "songTitles": [
             "I'm So Glad",
             "Little By Little",
@@ -1271,7 +1315,7 @@
         },
         {
           "label": "2",
-          "songs": "Porch Song, Holden Oversoul, Honky Red, Rock, Impossible, Drums, Nobody's Fault, B of D, Chilly Water",
+          "songs": "Porch Song, Holden Oversoul, Honky Red > Rock, Impossible, Drums, Nobody's Fault, B of D, Chilly Water",
           "songTitles": [
             "Porch Song",
             "Holden Oversoul",
@@ -1286,7 +1330,7 @@
         },
         {
           "label": "E",
-          "songs": "Barstools and Dreamers, Thought Sausage, Travelin' Light",
+          "songs": "Barstools and Dreamers, Thought Sausage > Travelin' Light",
           "songTitles": [
             "Barstools and Dreamers",
             "Thought Sausage",
@@ -1299,7 +1343,9 @@
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260708-Missoula-Montana-Andy-Tennille-20.jpg",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-08.4ch",
+      "transitionSourceTitle": "Widespread Panic - Live at Kettlehouse Amphitheater - Bonner, MT on 2026-07-08 (4ch)"
     },
     {
       "date": "07/10/2026",
@@ -1313,7 +1359,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Wondering, Makes Sense To Me, Down, Happy, Diner, Goodpeople, Christmas Katie, Let It Rock, Radio Child",
+          "songs": "Wondering > Makes Sense To Me, Down, Happy > Diner > Goodpeople > Christmas Katie > Let It Rock, Radio Child",
           "songTitles": [
             "Wondering",
             "Makes Sense To Me",
@@ -1328,7 +1374,7 @@
         },
         {
           "label": "2",
-          "songs": "Let's Get Down To Business, Imitation Leather Shoes, Jack, Trashy, Saint Ex, Smokestack Lightning, Surprise Valley, Blight, Surprise Valley, Life During Wartime",
+          "songs": "Let's Get Down To Business > Imitation Leather Shoes, Jack, Trashy, Saint Ex > Smokestack Lightning > Surprise Valley > Blight > Surprise Valley > Life During Wartime",
           "songTitles": [
             "Let's Get Down To Business",
             "Imitation Leather Shoes",
@@ -1344,7 +1390,7 @@
         },
         {
           "label": "E",
-          "songs": "Disco, Love Tractor",
+          "songs": "Disco > Love Tractor",
           "songTitles": [
             "Disco",
             "Love Tractor"
@@ -1354,7 +1400,9 @@
       "notes": [],
       "image": "",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wspdd1502026-07-10",
+      "transitionSourceTitle": "Widespread Panic Live at Hayden Homes Amphhitheater on 2026-07-10"
     },
     {
       "date": "07/11/2026",
@@ -1368,7 +1416,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Blue Indian, Chainsaw City, Heroes, Party at Your Mama's House, Stop Breakin' Down Blues, Visiting Day, Tickle the Truth, Old Neighborhood, Halloween Face",
+          "songs": "Blue Indian > Chainsaw City, Heroes > Party at Your Mama's House > Stop Breakin' Down Blues, Visiting Day, Tickle the Truth, Old Neighborhood > Halloween Face",
           "songTitles": [
             "Blue Indian",
             "Chainsaw City",
@@ -1383,7 +1431,7 @@
         },
         {
           "label": "2",
-          "songs": "Fishing, Protein Drink, Sewing Machine, Stop-Go, Low Spark Of High-Heeled Boys, Ride Me High, Tall Boy, Low Spark Of High-Heeled Boys, Pilgrims, Vacation, Postcard",
+          "songs": "Fishing > Protein Drink > Sewing Machine > Stop-Go > Low Spark Of High-Heeled Boys > Ride Me High > Tall Boy > Low Spark Of High-Heeled Boys, Pilgrims > Vacation > Postcard",
           "songTitles": [
             "Fishing",
             "Protein Drink",
@@ -1400,7 +1448,7 @@
         },
         {
           "label": "E",
-          "songs": "We Walk Each Other Home, Climb To Safety",
+          "songs": "We Walk Each Other Home > Climb To Safety",
           "songTitles": [
             "We Walk Each Other Home",
             "Climb To Safety"
@@ -1412,7 +1460,9 @@
       ],
       "image": "",
       "imageWidth": 0,
-      "imageHeight": 0
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wspdd1502026-07-11",
+      "transitionSourceTitle": "Widespread Panic Live at Hayden Homes Amphhitheater on 2026-07-11"
     }
   ],
   "tourDates": [
@@ -1794,5 +1844,11 @@
       "location": "Milwaukee, WI",
       "sourceUrl": "https://widespreadpanic.com/shows/2026-10-25-milwaukee-wi-the-riverside-theater/"
     }
-  ]
+  ],
+  "transitionSource": {
+    "label": "Internet Archive Live Music Archive",
+    "sourceUrl": "https://archive.org/details/WidespreadPanic",
+    "importedAt": "2026-07-12T15:53:53.816Z",
+    "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
+  }
 }

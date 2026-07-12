@@ -8,7 +8,9 @@
     "build": "node scripts/build.mjs",
     "import:blogger": "node scripts/import-blogger-setlists.mjs",
     "import:official-setlists": "node scripts/import-official-setlists.mjs",
+    "enrich:setlist-transitions": "node scripts/enrich-setlist-transitions.mjs",
     "import:song-origins": "node scripts/import-song-origins.mjs",
+    "refresh:setlists": "npm run import:official-setlists && npm run enrich:setlist-transitions",
     "dev": "npm run build && npx serve dist",
     "deploy": "npm run build && npx wrangler pages deploy dist --project-name burnthday"
   },

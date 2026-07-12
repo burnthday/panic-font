@@ -34,6 +34,9 @@ jobs:
         run: npm run import:official-setlists -- --year 2026
         continue-on-error: true
 
+      - name: Enrich setlist transitions
+        run: npm run enrich:setlist-transitions -- --year 2026 --require-all
+
       - name: Build site
         run: npm run build
         env:
