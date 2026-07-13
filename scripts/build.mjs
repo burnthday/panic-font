@@ -66,8 +66,8 @@ function warnForClassificationGaps(siteData) {
 
 async function loadSourceData() {
   const setlists = await loadSetlists();
-  const spreadsheet = await loadSpreadsheetData(inferSetlistYear(setlists));
-  return { ...spreadsheet, setlists };
+  const [spreadsheet, playstats] = await Promise.all([loadSpreadsheetData(inferSetlistYear(setlists)), loadPlaystats()]);
+  return { ...spreadsheet, setlists, playstats };
 }
 
 async function loadSpreadsheetData(tourYear = 0) {
@@ -158,6 +158,21 @@ async function loadBloggerArchive() {
       };
     })
     .sort((a, b) => (b.published || "").localeCompare(a.published || ""));
+}
+
+async function loadPlaystats() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "everyday-companion-playstats.json"), "utf8");
+    const payload = JSON.parse(raw);
+    return {
+      source: payload.source || "Everyday Companion",
+      sourceUrl: payload.sourceUrl || "",
+      importedAt: payload.importedAt || "",
+      rows: payload.rows || []
+    };
+  } catch {
+    return { source: "", sourceUrl: "", importedAt: "", rows: [] };
+  }
 }
 
 async function loadSongOrigins() {
@@ -425,7 +440,13 @@ async function readFirstExisting(filenames) {
 }
 
 function buildSiteData(source, archiveEntries = [], songOrigins = []) {
-  const baseCatalog = source.catalog.map(normalizeCatalogRow).filter((row) => isPublicSongTitle(row.title));
+  const rawPlaystats = (source.playstats?.rows || []).map(normalizePlaystatRow).filter((row) => isPublicSongTitle(row.title));
+  const playstatsByKey = new Map(rawPlaystats.map((row) => [normalizeTitle(row.title), row]));
+  const hasPlaystats = rawPlaystats.length > 0;
+  const baseCatalog = source.catalog
+    .map(normalizeCatalogRow)
+    .filter((row) => isPublicSongTitle(row.title))
+    .map((row) => mergePlaystats(row, playstatsByKey.get(normalizeTitle(row.title))));
   const rawCurrentTour = source.currentTour.map(normalizeCurrentTourRow).filter((row) => isPublicSongTitle(row.title));
   const setlists = [...(source.setlists.setlists || [])].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
   const tourDates = [...(source.setlists.tourDates || [])].sort((a, b) => a.isoDate.localeCompare(b.isoDate));
@@ -433,7 +454,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const latestYear = setlistYear || inferLatestYear(rawCurrentTour) || inferLatestYear(baseCatalog) || new Date().getFullYear();
   const currentTour = setlistYear ? rawCurrentTour.filter((row) => rowBelongsToYear(row, setlistYear)) : rawCurrentTour;
   const setlistStats = analyzeSetlists(setlists, baseCatalog, currentTour);
-  const catalog = withSetlistOnlySongs(baseCatalog, setlistStats, currentTour);
+  const catalog = withSetlistOnlySongs(baseCatalog, setlistStats, currentTour, playstatsByKey);
   const currentTourByKey = new Map(currentTour.map((row) => [normalizeTitle(row.title), row]));
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
   const postedShowCount = setlists.length;
@@ -448,15 +469,20 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     const lastDisplay = effectiveLastIso ? isoToShortDate(effectiveLastIso) : row.last;
     const playedThisTour = tourCount > 0;
     const stripeIndex = lastFourDates.indexOf(effectiveLastIso);
+    const lastForSlp = parsedTour?.lastIso || parseDateKey(sheetTour?.last) || parseDateKey(row.last);
     const effectiveSlp = playedThisTour
-      ? showsSinceLastPlayed(setlists, parsedTour?.lastIso || parseDateKey(sheetTour?.last))
-      : row.slp + postedShowCount;
+      ? showsSinceLastPlayed(setlists, lastForSlp)
+      : hasPlaystats
+        ? row.slp
+        : row.slp + postedShowCount;
 
     return {
       ...row,
       key,
       tourCount,
       playedThisTour,
+      playedFromShelf: playedThisTour && row.seedTotal > 1 && row.seedSlp >= config.rotationSlpLimit,
+      playedFromPurgatory: playedThisTour && row.total - tourCount === 1,
       effectiveSlp,
       effectiveLastIso,
       lastDisplay,
@@ -472,10 +498,11 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   return {
     generatedAt: new Date().toISOString(),
     source: {
-      label: source.label,
+      label: hasPlaystats ? `${source.label} + ${source.playstats.source || "Everyday Companion"} playstats` : source.label,
       sheetId,
       sheetUrl: `https://docs.google.com/spreadsheets/d/${sheetId}`,
-      setlistUrl: source.setlists.sourceUrl || ""
+      setlistUrl: source.setlists.sourceUrl || "",
+      playstatsUrl: source.playstats?.sourceUrl || ""
     },
     site: {
       name: "Burnthday",
@@ -552,8 +579,8 @@ function buildBoards(songs) {
     config.addOnCovers
   );
 
-  const shelfRows = songs.filter((row) => row.total > 1 && row.effectiveSlp >= config.rotationSlpLimit).sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
-  const purgatoryRows = songs.filter((row) => row.total === 1).sort(byTitle);
+  const shelfRows = songs.filter((row) => row.total > 1 && (row.effectiveSlp >= config.rotationSlpLimit || row.playedFromShelf)).sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
+  const purgatoryRows = songs.filter((row) => row.total === 1 || row.playedFromPurgatory).sort(byTitle);
   const woodshedRows = songs.filter((row) => row.total > 1 && !row.playedThisTour && row.effectiveSlp < config.rotationSlpLimit).sort(byTitle);
   const needsClassification = songs.filter((row) => row.type === "Unclassified").sort(byTitle);
 
@@ -570,20 +597,23 @@ function buildBoards(songs) {
   };
 }
 
-function withSetlistOnlySongs(catalog, setlistStats, currentTour) {
+function withSetlistOnlySongs(catalog, setlistStats, currentTour, playstatsByKey = new Map()) {
   const knownKeys = new Set([...catalog, ...currentTour].map((row) => normalizeTitle(row.title)));
   const additions = [];
 
   for (const [key, stat] of setlistStats.byKey) {
     if (knownKeys.has(key) || !isPublicSongTitle(stat.title) || !stat.count) continue;
 
+    const lifetime = playstatsByKey.get(key);
     additions.push({
       title: stat.title,
-      first: isoToShortDate(stat.firstIso || stat.lastIso),
-      last: isoToShortDate(stat.lastIso),
-      total: stat.count,
-      l100: stat.count,
-      slp: 0,
+      first: lifetime?.first || isoToShortDate(stat.firstIso || stat.lastIso),
+      last: lifetime?.last || isoToShortDate(stat.lastIso),
+      total: lifetime?.total || stat.count,
+      l100: lifetime?.l100 || stat.count,
+      slp: lifetime?.slp || 0,
+      seedTotal: lifetime?.total || stat.count,
+      seedSlp: lifetime?.slp || 0,
       type: configuredTypeForTitle(stat.title) || "Unclassified",
       isSetlistOnly: true
     });
@@ -694,14 +724,18 @@ function normalizeCatalogRow(row) {
   const title = clean(row["Song Title"] || row.Title || row.Song);
   const type = clean(row.TYPE) || clean(row.Type) || (originalFlag ? "Original" : coverFlag ? "Cover" : "");
   const configuredType = configuredTypeForTitle(title);
+  const total = toNumber(row.Total);
+  const slp = toNumber(row.SLP);
 
   return {
     title,
     first: clean(row.First),
     last: clean(row.Last),
-    total: toNumber(row.Total),
+    total,
     l100: toNumber(row.L100),
-    slp: toNumber(row.SLP),
+    slp,
+    seedTotal: total,
+    seedSlp: slp,
     type: configuredType || (type === "Original" ? "Original" : type === "Cover" ? "Cover" : "Unclassified")
   };
 }
@@ -717,6 +751,29 @@ function normalizeCurrentTourRow(row) {
     total: toNumber(row.Total),
     slp: toNumber(row.SLP),
     type: configuredType || (clean(row.Original) ? "Original" : clean(row.Cover) ? "Cover" : "Unclassified")
+  };
+}
+
+function normalizePlaystatRow(row) {
+  return {
+    title: clean(row.title || row["Song Title"] || row.Title || row.Song),
+    first: clean(row.first || row.First),
+    last: clean(row.last || row.Last),
+    total: toNumber(row.total || row.Total),
+    l100: toNumber(row.l100 || row.L100),
+    slp: toNumber(row.slp || row.SLP)
+  };
+}
+
+function mergePlaystats(row, playstats) {
+  if (!playstats) return row;
+  return {
+    ...row,
+    first: playstats.first || row.first,
+    last: playstats.last || row.last,
+    total: playstats.total || row.total,
+    l100: playstats.l100,
+    slp: playstats.slp
   };
 }
 
@@ -2659,7 +2716,9 @@ function normalizeTitle(title) {
     bowleggedwomanknockkneedman: "bowleggedwoman",
     conradthecaterpillar: "conrad",
     knockinaroundthezoo: "knockingroundthezoo",
-    nobodysfault: "nobodysfaultbutmine"
+    nobodysfault: "nobodysfaultbutmine",
+    thismustbetheplacenavemelody: "thismustbetheplacenaivemelody",
+    wrm: "wurm"
   };
   return aliases[normalized] || normalized;
 }

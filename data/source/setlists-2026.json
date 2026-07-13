@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-12T13:59:25.915Z",
+  "importedAt": "2026-07-13T15:55:12.100Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1397,8 +1397,10 @@
           ]
         }
       ],
-      "notes": [],
-      "image": "",
+      "notes": [
+        "Entire show with Nick Johnson on guitar"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260710-Bend-Oregon-Andy-Tennille-9872.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wspdd1502026-07-10",
@@ -1456,9 +1458,10 @@
         }
       ],
       "notes": [
-        "*Chainsaw City w/Steve Lopez on percussion"
+        "Entire show with Nick Johnson on guitar",
+        "\"Chainsaw City\" with Steve Lopez on percussion"
       ],
-      "image": "",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260711-Bend-Oregon-Andy-Tennille-0861.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wspdd1502026-07-11",
@@ -1848,7 +1851,7 @@
   "transitionSource": {
     "label": "Internet Archive Live Music Archive",
     "sourceUrl": "https://archive.org/details/WidespreadPanic",
-    "importedAt": "2026-07-12T15:53:53.816Z",
+    "importedAt": "2026-07-13T15:57:03.488Z",
     "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
   }
 }

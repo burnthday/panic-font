@@ -1,0 +1,5663 @@
+{
+  "source": "Everyday Companion",
+  "sourceUrl": "https://everydaycompanion.com/playstats/playstats.asp",
+  "importedAt": "2026-07-13T15:53:47.281Z",
+  "rows": [
+    {
+      "title": "Drums",
+      "first": "10/19/85",
+      "last": "07/08/26",
+      "total": 1622,
+      "l100": 27,
+      "slp": 3
+    },
+    {
+      "title": "Space Wrangler",
+      "first": "10/19/85",
+      "last": "07/05/26",
+      "total": 1221,
+      "l100": 22,
+      "slp": 5
+    },
+    {
+      "title": "Porch Song",
+      "first": "03/17/86",
+      "last": "07/08/26",
+      "total": 1182,
+      "l100": 25,
+      "slp": 3
+    },
+    {
+      "title": "Chilly Water",
+      "first": "06/22/85",
+      "last": "07/08/26",
+      "total": 1165,
+      "l100": 22,
+      "slp": 3
+    },
+    {
+      "title": "Pigeons",
+      "first": "10/23/86",
+      "last": "07/07/26",
+      "total": 1112,
+      "l100": 25,
+      "slp": 4
+    },
+    {
+      "title": "Travelin' Light",
+      "first": "04/17/86",
+      "last": "07/08/26",
+      "total": 1050,
+      "l100": 12,
+      "slp": 3
+    },
+    {
+      "title": "Love Tractor",
+      "first": "06/16/89",
+      "last": "07/10/26",
+      "total": 1003,
+      "l100": 23,
+      "slp": 2
+    },
+    {
+      "title": "Walkin' (For Your Love)",
+      "first": "09/29/89",
+      "last": "07/05/26",
+      "total": 877,
+      "l100": 18,
+      "slp": 5
+    },
+    {
+      "title": "Fishwater",
+      "first": "03/08/90",
+      "last": "06/28/26",
+      "total": 860,
+      "l100": 19,
+      "slp": 6
+    },
+    {
+      "title": "Driving Song",
+      "first": "04/07/86",
+      "last": "07/05/26",
+      "total": 840,
+      "l100": 21,
+      "slp": 5
+    },
+    {
+      "title": "Holden Oversoul",
+      "first": "03/22/88",
+      "last": "07/08/26",
+      "total": 823,
+      "l100": 23,
+      "slp": 3
+    },
+    {
+      "title": "C. Brown",
+      "first": "02/13/86",
+      "last": "06/27/26",
+      "total": 817,
+      "l100": 12,
+      "slp": 7
+    },
+    {
+      "title": "Stop-Go",
+      "first": "04/07/86",
+      "last": "07/11/26",
+      "total": 781,
+      "l100": 6,
+      "slp": 1
+    },
+    {
+      "title": "Rock",
+      "first": "10/04/89",
+      "last": "07/08/26",
+      "total": 741,
+      "l100": 19,
+      "slp": 3
+    },
+    {
+      "title": "Conrad",
+      "first": "05/26/86",
+      "last": "07/07/26",
+      "total": 739,
+      "l100": 12,
+      "slp": 4
+    },
+    {
+      "title": "Barstools and Dreamers",
+      "first": "??/??/87",
+      "last": "07/08/26",
+      "total": 734,
+      "l100": 20,
+      "slp": 3
+    },
+    {
+      "title": "Henry Parsons Died",
+      "first": "10/25/92",
+      "last": "07/07/26",
+      "total": 717,
+      "l100": 20,
+      "slp": 4
+    },
+    {
+      "title": "Jam",
+      "first": "10/24/85",
+      "last": "10/25/25",
+      "total": 680,
+      "l100": 15,
+      "slp": 35
+    },
+    {
+      "title": "Makes Sense To Me",
+      "first": "04/01/91",
+      "last": "07/10/26",
+      "total": 677,
+      "l100": 10,
+      "slp": 2
+    },
+    {
+      "title": "Wondering",
+      "first": "02/07/92",
+      "last": "07/10/26",
+      "total": 674,
+      "l100": 21,
+      "slp": 2
+    },
+    {
+      "title": "Diner",
+      "first": "02/07/92",
+      "last": "07/10/26",
+      "total": 669,
+      "l100": 20,
+      "slp": 2
+    },
+    {
+      "title": "Proving Ground",
+      "first": "05/??/89",
+      "last": "07/07/26",
+      "total": 665,
+      "l100": 7,
+      "slp": 4
+    },
+    {
+      "title": "Ain't Life Grand",
+      "first": "07/26/93",
+      "last": "07/05/26",
+      "total": 664,
+      "l100": 25,
+      "slp": 5
+    },
+    {
+      "title": "Hatfield",
+      "first": "02/08/92",
+      "last": "07/07/26",
+      "total": 654,
+      "l100": 15,
+      "slp": 4
+    },
+    {
+      "title": "Pleas",
+      "first": "01/22/88",
+      "last": "07/07/26",
+      "total": 590,
+      "l100": 23,
+      "slp": 4
+    },
+    {
+      "title": "Weight Of The World",
+      "first": "10/31/90",
+      "last": "06/04/25",
+      "total": 589,
+      "l100": 1,
+      "slp": 54
+    },
+    {
+      "title": "Pilgrims",
+      "first": "09/14/92",
+      "last": "07/11/26",
+      "total": 583,
+      "l100": 18,
+      "slp": 1
+    },
+    {
+      "title": "Disco",
+      "first": "08/04/88",
+      "last": "07/10/26",
+      "total": 573,
+      "l100": 21,
+      "slp": 2
+    },
+    {
+      "title": "Blackout Blues",
+      "first": "11/17/93",
+      "last": "07/08/26",
+      "total": 565,
+      "l100": 19,
+      "slp": 3
+    },
+    {
+      "title": "Machine",
+      "first": "10/06/86",
+      "last": "05/10/26",
+      "total": 549,
+      "l100": 15,
+      "slp": 11
+    },
+    {
+      "title": "Papa's Home",
+      "first": "08/27/92",
+      "last": "06/28/26",
+      "total": 542,
+      "l100": 15,
+      "slp": 6
+    },
+    {
+      "title": "I'm Not Alone",
+      "first": "06/01/87",
+      "last": "07/05/26",
+      "total": 527,
+      "l100": 17,
+      "slp": 5
+    },
+    {
+      "title": "Tall Boy",
+      "first": "08/03/95",
+      "last": "07/11/26",
+      "total": 524,
+      "l100": 26,
+      "slp": 1
+    },
+    {
+      "title": "Jack",
+      "first": "08/04/88",
+      "last": "07/10/26",
+      "total": 522,
+      "l100": 19,
+      "slp": 2
+    },
+    {
+      "title": "Pickin' Up The Pieces",
+      "first": "06/26/91",
+      "last": "07/08/26",
+      "total": 505,
+      "l100": 10,
+      "slp": 3
+    },
+    {
+      "title": "Impossible",
+      "first": "08/04/88",
+      "last": "07/08/26",
+      "total": 459,
+      "l100": 7,
+      "slp": 3
+    },
+    {
+      "title": "Junior",
+      "first": "04/09/93",
+      "last": "07/07/26",
+      "total": 458,
+      "l100": 11,
+      "slp": 4
+    },
+    {
+      "title": "Greta",
+      "first": "03/30/96",
+      "last": "06/28/26",
+      "total": 449,
+      "l100": 23,
+      "slp": 6
+    },
+    {
+      "title": "Little Kin",
+      "first": "04/24/93",
+      "last": "06/27/26",
+      "total": 449,
+      "l100": 15,
+      "slp": 7
+    },
+    {
+      "title": "Worry",
+      "first": "??/??/85",
+      "last": "07/08/26",
+      "total": 442,
+      "l100": 6,
+      "slp": 3
+    },
+    {
+      "title": "Rebirtha",
+      "first": "01/23/93",
+      "last": "07/05/26",
+      "total": 437,
+      "l100": 22,
+      "slp": 5
+    },
+    {
+      "title": "Climb To Safety",
+      "first": "01/20/96",
+      "last": "07/11/26",
+      "total": 428,
+      "l100": 24,
+      "slp": 1
+    },
+    {
+      "title": "Radio Child",
+      "first": "03/26/95",
+      "last": "07/10/26",
+      "total": 423,
+      "l100": 12,
+      "slp": 2
+    },
+    {
+      "title": "Surprise Valley",
+      "first": "06/27/99",
+      "last": "07/10/26",
+      "total": 400,
+      "l100": 25,
+      "slp": 2
+    },
+    {
+      "title": "Mr. Soul",
+      "first": "05/13/87",
+      "last": "04/17/26",
+      "total": 393,
+      "l100": 10,
+      "slp": 16
+    },
+    {
+      "title": "All Time Low",
+      "first": "04/18/98",
+      "last": "06/28/26",
+      "total": 374,
+      "l100": 25,
+      "slp": 6
+    },
+    {
+      "title": "Can't Get High",
+      "first": "07/09/93",
+      "last": "07/05/26",
+      "total": 374,
+      "l100": 8,
+      "slp": 5
+    },
+    {
+      "title": "Papa Legba",
+      "first": "12/31/87",
+      "last": "04/18/23",
+      "total": 372,
+      "l100": 0,
+      "slp": 109
+    },
+    {
+      "title": "The Take Out",
+      "first": "08/22/87",
+      "last": "06/27/26",
+      "total": 366,
+      "l100": 7,
+      "slp": 7
+    },
+    {
+      "title": "It Ain't No Use",
+      "first": "01/13/90",
+      "last": "08/11/22",
+      "total": 365,
+      "l100": 0,
+      "slp": 143
+    },
+    {
+      "title": "Airplane",
+      "first": "03/02/94",
+      "last": "06/28/26",
+      "total": 362,
+      "l100": 15,
+      "slp": 6
+    },
+    {
+      "title": "Tie Your Shoes",
+      "first": "03/17/86",
+      "last": "07/07/26",
+      "total": 346,
+      "l100": 19,
+      "slp": 4
+    },
+    {
+      "title": "Send Your Mind",
+      "first": "04/02/91",
+      "last": "07/05/26",
+      "total": 345,
+      "l100": 7,
+      "slp": 5
+    },
+    {
+      "title": "Better Off",
+      "first": "02/07/92",
+      "last": "06/26/26",
+      "total": 343,
+      "l100": 10,
+      "slp": 8
+    },
+    {
+      "title": "Heaven",
+      "first": "??/??/87",
+      "last": "07/07/26",
+      "total": 332,
+      "l100": 4,
+      "slp": 4
+    },
+    {
+      "title": "Coconut",
+      "first": "02/24/85",
+      "last": "09/13/25",
+      "total": 322,
+      "l100": 3,
+      "slp": 39
+    },
+    {
+      "title": "Blue Indian",
+      "first": "10/06/98",
+      "last": "07/11/26",
+      "total": 320,
+      "l100": 23,
+      "slp": 1
+    },
+    {
+      "title": "Ride Me High",
+      "first": "11/04/96",
+      "last": "07/11/26",
+      "total": 319,
+      "l100": 21,
+      "slp": 1
+    },
+    {
+      "title": "One Arm Steve",
+      "first": "04/18/98",
+      "last": "06/26/26",
+      "total": 318,
+      "l100": 14,
+      "slp": 8
+    },
+    {
+      "title": "Heroes",
+      "first": "08/04/93",
+      "last": "07/11/26",
+      "total": 313,
+      "l100": 2,
+      "slp": 1
+    },
+    {
+      "title": "Mercy",
+      "first": "04/01/91",
+      "last": "03/20/26",
+      "total": 309,
+      "l100": 8,
+      "slp": 19
+    },
+    {
+      "title": "Imitation Leather Shoes",
+      "first": "04/02/00",
+      "last": "07/10/26",
+      "total": 307,
+      "l100": 11,
+      "slp": 2
+    },
+    {
+      "title": "The Last Straw",
+      "first": "12/31/87",
+      "last": "07/05/26",
+      "total": 303,
+      "l100": 8,
+      "slp": 5
+    },
+    {
+      "title": "North",
+      "first": "09/25/99",
+      "last": "06/28/26",
+      "total": 291,
+      "l100": 10,
+      "slp": 6
+    },
+    {
+      "title": "Action Man",
+      "first": "04/01/00",
+      "last": "07/07/26",
+      "total": 286,
+      "l100": 15,
+      "slp": 4
+    },
+    {
+      "title": "Blight",
+      "first": "10/27/95",
+      "last": "07/10/26",
+      "total": 285,
+      "l100": 19,
+      "slp": 2
+    },
+    {
+      "title": "Big Wooly Mammoth",
+      "first": "10/10/95",
+      "last": "06/28/26",
+      "total": 283,
+      "l100": 19,
+      "slp": 6
+    },
+    {
+      "title": "A of D",
+      "first": "02/01/89",
+      "last": "10/26/25",
+      "total": 276,
+      "l100": 1,
+      "slp": 34
+    },
+    {
+      "title": "You Got Yours",
+      "first": "09/16/95",
+      "last": "06/28/26",
+      "total": 274,
+      "l100": 17,
+      "slp": 6
+    },
+    {
+      "title": "Aunt Avis",
+      "first": "09/09/95",
+      "last": "05/10/26",
+      "total": 272,
+      "l100": 10,
+      "slp": 11
+    },
+    {
+      "title": "Me And The Devil Blues",
+      "first": "08/07/89",
+      "last": "07/07/26",
+      "total": 272,
+      "l100": 5,
+      "slp": 4
+    },
+    {
+      "title": "Contentment Blues",
+      "first": "??/??/87",
+      "last": "06/13/26",
+      "total": 271,
+      "l100": 5,
+      "slp": 10
+    },
+    {
+      "title": "Walk On",
+      "first": "01/12/87",
+      "last": "07/07/26",
+      "total": 268,
+      "l100": 6,
+      "slp": 4
+    },
+    {
+      "title": "B of D",
+      "first": "02/14/89",
+      "last": "07/08/26",
+      "total": 267,
+      "l100": 5,
+      "slp": 3
+    },
+    {
+      "title": "Dyin' Man",
+      "first": "04/20/97",
+      "last": "05/10/26",
+      "total": 266,
+      "l100": 5,
+      "slp": 11
+    },
+    {
+      "title": "Postcard",
+      "first": "10/06/86",
+      "last": "07/11/26",
+      "total": 263,
+      "l100": 14,
+      "slp": 1
+    },
+    {
+      "title": "Who Do You Belong To?",
+      "first": "07/01/93",
+      "last": "12/31/25",
+      "total": 260,
+      "l100": 5,
+      "slp": 26
+    },
+    {
+      "title": "Bear's Gone Fishin'",
+      "first": "07/01/97",
+      "last": "07/08/26",
+      "total": 256,
+      "l100": 19,
+      "slp": 3
+    },
+    {
+      "title": "Ribs And Whiskey",
+      "first": "11/24/90",
+      "last": "07/05/26",
+      "total": 253,
+      "l100": 20,
+      "slp": 5
+    },
+    {
+      "title": "Bust It Big",
+      "first": "09/26/03",
+      "last": "07/07/26",
+      "total": 250,
+      "l100": 24,
+      "slp": 4
+    },
+    {
+      "title": "Sleeping Man",
+      "first": "03/21/95",
+      "last": "07/05/26",
+      "total": 250,
+      "l100": 9,
+      "slp": 5
+    },
+    {
+      "title": "Little Lilly",
+      "first": "11/17/98",
+      "last": "07/05/26",
+      "total": 248,
+      "l100": 17,
+      "slp": 5
+    },
+    {
+      "title": "Bowlegged Woman",
+      "first": "02/02/87",
+      "last": "07/05/26",
+      "total": 247,
+      "l100": 12,
+      "slp": 5
+    },
+    {
+      "title": "Sleepy Monkey",
+      "first": "??/??/85",
+      "last": "04/18/26",
+      "total": 246,
+      "l100": 3,
+      "slp": 15
+    },
+    {
+      "title": "Thought Sausage",
+      "first": "04/18/00",
+      "last": "07/08/26",
+      "total": 243,
+      "l100": 16,
+      "slp": 3
+    },
+    {
+      "title": "Arleen",
+      "first": "07/15/87",
+      "last": "06/27/26",
+      "total": 239,
+      "l100": 10,
+      "slp": 7
+    },
+    {
+      "title": "Goin' Out West",
+      "first": "01/20/96",
+      "last": "06/28/26",
+      "total": 239,
+      "l100": 11,
+      "slp": 6
+    },
+    {
+      "title": "Give",
+      "first": "04/07/00",
+      "last": "06/28/25",
+      "total": 235,
+      "l100": 1,
+      "slp": 50
+    },
+    {
+      "title": "Party At Your Mama's House",
+      "first": "05/07/97",
+      "last": "07/11/26",
+      "total": 234,
+      "l100": 18,
+      "slp": 1
+    },
+    {
+      "title": "Low Spark Of High Heeled Boys",
+      "first": "02/13/86",
+      "last": "07/11/26",
+      "total": 232,
+      "l100": 8,
+      "slp": 1
+    },
+    {
+      "title": "Goodpeople",
+      "first": "03/26/05",
+      "last": "07/10/26",
+      "total": 230,
+      "l100": 21,
+      "slp": 2
+    },
+    {
+      "title": "Cream Puff War",
+      "first": "04/17/86",
+      "last": "07/26/25",
+      "total": 223,
+      "l100": 2,
+      "slp": 46
+    },
+    {
+      "title": "Flat Foot Flewzy",
+      "first": "06/26/91",
+      "last": "06/27/26",
+      "total": 223,
+      "l100": 6,
+      "slp": 7
+    },
+    {
+      "title": "I Walk On Guilded Splinters",
+      "first": "09/09/88",
+      "last": "04/18/26",
+      "total": 213,
+      "l100": 6,
+      "slp": 15
+    },
+    {
+      "title": "Red Hot Mama",
+      "first": "10/31/98",
+      "last": "06/28/26",
+      "total": 211,
+      "l100": 15,
+      "slp": 6
+    },
+    {
+      "title": "Christmas Katie",
+      "first": "04/18/98",
+      "last": "07/10/26",
+      "total": 208,
+      "l100": 8,
+      "slp": 2
+    },
+    {
+      "title": "Stop Breakin' Down Blues",
+      "first": "10/27/00",
+      "last": "07/11/26",
+      "total": 206,
+      "l100": 12,
+      "slp": 1
+    },
+    {
+      "title": "Dream Song",
+      "first": "03/13/92",
+      "last": "10/31/25",
+      "total": 205,
+      "l100": 2,
+      "slp": 33
+    },
+    {
+      "title": "Let's Get Down To Business",
+      "first": "10/31/94",
+      "last": "07/10/26",
+      "total": 203,
+      "l100": 4,
+      "slp": 2
+    },
+    {
+      "title": "Gimme",
+      "first": "11/19/88",
+      "last": "07/07/26",
+      "total": 201,
+      "l100": 6,
+      "slp": 4
+    },
+    {
+      "title": "No Sugar Tonight/New Mother Nature",
+      "first": "02/24/85",
+      "last": "04/24/25",
+      "total": 194,
+      "l100": 5,
+      "slp": 59
+    },
+    {
+      "title": "She Caught The Katy",
+      "first": "03/16/87",
+      "last": "07/10/15",
+      "total": 194,
+      "l100": 0,
+      "slp": 415
+    },
+    {
+      "title": "Dear Mr. Fantasy",
+      "first": "??/??/85",
+      "last": "05/17/25",
+      "total": 188,
+      "l100": 2,
+      "slp": 55
+    },
+    {
+      "title": "L.a.",
+      "first": "07/15/87",
+      "last": "07/13/19",
+      "total": 186,
+      "l100": 0,
+      "slp": 225
+    },
+    {
+      "title": "Can't Find My Way Home",
+      "first": "08/08/88",
+      "last": "04/15/24",
+      "total": 184,
+      "l100": 1,
+      "slp": 75
+    },
+    {
+      "title": "This Part Of Town",
+      "first": "11/27/99",
+      "last": "06/28/26",
+      "total": 180,
+      "l100": 9,
+      "slp": 6
+    },
+    {
+      "title": "Second Skin",
+      "first": "03/24/05",
+      "last": "06/28/26",
+      "total": 176,
+      "l100": 14,
+      "slp": 6
+    },
+    {
+      "title": "Hope In A Hopeless World",
+      "first": "02/06/96",
+      "last": "05/10/26",
+      "total": 173,
+      "l100": 3,
+      "slp": 11
+    },
+    {
+      "title": "You Should Be Glad",
+      "first": "04/01/05",
+      "last": "11/23/25",
+      "total": 173,
+      "l100": 2,
+      "slp": 29
+    },
+    {
+      "title": "And It Stoned Me",
+      "first": "02/16/87",
+      "last": "05/08/26",
+      "total": 172,
+      "l100": 4,
+      "slp": 13
+    },
+    {
+      "title": "Chainsaw City",
+      "first": "08/25/90",
+      "last": "07/11/26",
+      "total": 171,
+      "l100": 8,
+      "slp": 1
+    },
+    {
+      "title": "Old Neighborhood",
+      "first": "10/28/01",
+      "last": "07/11/26",
+      "total": 170,
+      "l100": 7,
+      "slp": 1
+    },
+    {
+      "title": "City of Dreams",
+      "first": "03/04/92",
+      "last": "06/14/26",
+      "total": 168,
+      "l100": 5,
+      "slp": 9
+    },
+    {
+      "title": "Let It Rock",
+      "first": "06/16/86",
+      "last": "07/10/26",
+      "total": 168,
+      "l100": 4,
+      "slp": 2
+    },
+    {
+      "title": "Just Kissed My Baby",
+      "first": "01/08/91",
+      "last": "03/21/26",
+      "total": 165,
+      "l100": 1,
+      "slp": 18
+    },
+    {
+      "title": "Gradle",
+      "first": "03/22/95",
+      "last": "06/28/26",
+      "total": 163,
+      "l100": 2,
+      "slp": 6
+    },
+    {
+      "title": "Happy",
+      "first": "09/24/95",
+      "last": "07/10/26",
+      "total": 163,
+      "l100": 5,
+      "slp": 2
+    },
+    {
+      "title": "Knocking 'Round The Zoo",
+      "first": "04/07/86",
+      "last": "04/30/26",
+      "total": 162,
+      "l100": 5,
+      "slp": 14
+    },
+    {
+      "title": "Saint Ex",
+      "first": "05/07/10",
+      "last": "07/10/26",
+      "total": 160,
+      "l100": 22,
+      "slp": 2
+    },
+    {
+      "title": "Low Rider",
+      "first": "03/??/86",
+      "last": "07/07/26",
+      "total": 157,
+      "l100": 2,
+      "slp": 4
+    },
+    {
+      "title": "Genesis",
+      "first": "04/23/87",
+      "last": "08/09/25",
+      "total": 156,
+      "l100": 2,
+      "slp": 44
+    },
+    {
+      "title": "Sewing Machine",
+      "first": "12/31/01",
+      "last": "07/11/26",
+      "total": 156,
+      "l100": 14,
+      "slp": 1
+    },
+    {
+      "title": "Up All Night",
+      "first": "10/26/07",
+      "last": "07/07/26",
+      "total": 156,
+      "l100": 17,
+      "slp": 4
+    },
+    {
+      "title": "Protein Drink",
+      "first": "12/31/01",
+      "last": "07/11/26",
+      "total": 153,
+      "l100": 14,
+      "slp": 1
+    },
+    {
+      "title": "Nobody's Loss",
+      "first": "01/19/96",
+      "last": "06/26/26",
+      "total": 151,
+      "l100": 5,
+      "slp": 8
+    },
+    {
+      "title": "1 x 1",
+      "first": "03/23/95",
+      "last": "06/27/26",
+      "total": 149,
+      "l100": 2,
+      "slp": 7
+    },
+    {
+      "title": "Down",
+      "first": "04/16/00",
+      "last": "07/10/26",
+      "total": 148,
+      "l100": 12,
+      "slp": 2
+    },
+    {
+      "title": "Ophelia",
+      "first": "07/15/87",
+      "last": "08/26/23",
+      "total": 147,
+      "l100": 1,
+      "slp": 94
+    },
+    {
+      "title": "Vacation",
+      "first": "09/15/86",
+      "last": "07/11/26",
+      "total": 146,
+      "l100": 8,
+      "slp": 1
+    },
+    {
+      "title": "Let's Get The Show On The Road",
+      "first": "02/24/85",
+      "last": "04/18/26",
+      "total": 139,
+      "l100": 3,
+      "slp": 15
+    },
+    {
+      "title": "Visiting Day",
+      "first": "04/25/00",
+      "last": "07/11/26",
+      "total": 138,
+      "l100": 6,
+      "slp": 1
+    },
+    {
+      "title": "Pusherman",
+      "first": "10/31/90",
+      "last": "01/21/26",
+      "total": 135,
+      "l100": 1,
+      "slp": 24
+    },
+    {
+      "title": "From The Cradle",
+      "first": "04/22/06",
+      "last": "10/25/25",
+      "total": 126,
+      "l100": 2,
+      "slp": 35
+    },
+    {
+      "title": "Papa Johnny Road",
+      "first": "04/15/03",
+      "last": "06/26/26",
+      "total": 126,
+      "l100": 3,
+      "slp": 8
+    },
+    {
+      "title": "Time Zones",
+      "first": "04/30/05",
+      "last": "12/30/23",
+      "total": 126,
+      "l100": 3,
+      "slp": 84
+    },
+    {
+      "title": "Cotton Was King",
+      "first": "05/05/10",
+      "last": "08/09/25",
+      "total": 121,
+      "l100": 4,
+      "slp": 44
+    },
+    {
+      "title": "Sometimes",
+      "first": "08/23/99",
+      "last": "07/07/26",
+      "total": 120,
+      "l100": 3,
+      "slp": 4
+    },
+    {
+      "title": "Glory",
+      "first": "09/20/95",
+      "last": "08/26/22",
+      "total": 118,
+      "l100": 0,
+      "slp": 140
+    },
+    {
+      "title": "Solid Rock",
+      "first": "06/11/05",
+      "last": "06/22/18",
+      "total": 117,
+      "l100": 0,
+      "slp": 271
+    },
+    {
+      "title": "Red Beans",
+      "first": "04/27/92",
+      "last": "08/23/25",
+      "total": 115,
+      "l100": 1,
+      "slp": 41
+    },
+    {
+      "title": "End Of The Show",
+      "first": "01/27/94",
+      "last": "05/09/26",
+      "total": 114,
+      "l100": 7,
+      "slp": 12
+    },
+    {
+      "title": "Fixin' To Die",
+      "first": "06/25/90",
+      "last": "08/21/25",
+      "total": 114,
+      "l100": 2,
+      "slp": 43
+    },
+    {
+      "title": "Shut Up And Drive",
+      "first": "05/08/10",
+      "last": "06/13/26",
+      "total": 113,
+      "l100": 9,
+      "slp": 10
+    },
+    {
+      "title": "Chunk Of Coal",
+      "first": "07/26/95",
+      "last": "05/29/22",
+      "total": 112,
+      "l100": 0,
+      "slp": 153
+    },
+    {
+      "title": "Maggot Brain",
+      "first": "10/31/92",
+      "last": "06/26/26",
+      "total": 108,
+      "l100": 3,
+      "slp": 8
+    },
+    {
+      "title": "Old Joe",
+      "first": "04/03/00",
+      "last": "07/08/26",
+      "total": 108,
+      "l100": 5,
+      "slp": 3
+    },
+    {
+      "title": "Thin Air (Smells Like Mississippi)",
+      "first": "04/12/03",
+      "last": "05/27/23",
+      "total": 105,
+      "l100": 0,
+      "slp": 103
+    },
+    {
+      "title": "Weak Brain, Narrow Mind",
+      "first": "07/16/97",
+      "last": "05/16/25",
+      "total": 103,
+      "l100": 2,
+      "slp": 56
+    },
+    {
+      "title": "Last Dance",
+      "first": "06/22/85",
+      "last": "09/15/23",
+      "total": 102,
+      "l100": 1,
+      "slp": 92
+    },
+    {
+      "title": "The Waker",
+      "first": "10/07/98",
+      "last": "06/27/26",
+      "total": 102,
+      "l100": 8,
+      "slp": 7
+    },
+    {
+      "title": "Expiration Day",
+      "first": "12/31/01",
+      "last": "11/21/25",
+      "total": 98,
+      "l100": 5,
+      "slp": 31
+    },
+    {
+      "title": "Use Me",
+      "first": "10/31/97",
+      "last": "09/16/23",
+      "total": 98,
+      "l100": 1,
+      "slp": 91
+    },
+    {
+      "title": "Don't Wanna Lose You",
+      "first": "04/11/03",
+      "last": "01/22/26",
+      "total": 97,
+      "l100": 4,
+      "slp": 23
+    },
+    {
+      "title": "Feelin' Alright",
+      "first": "02/24/85",
+      "last": "04/15/11",
+      "total": 95,
+      "l100": 0,
+      "slp": 694
+    },
+    {
+      "title": "Help Me Somebody",
+      "first": "04/27/95",
+      "last": "10/24/25",
+      "total": 95,
+      "l100": 1,
+      "slp": 36
+    },
+    {
+      "title": "Travelin' Man",
+      "first": "05/02/03",
+      "last": "06/27/26",
+      "total": 95,
+      "l100": 8,
+      "slp": 7
+    },
+    {
+      "title": "May Your Glass Be Filled",
+      "first": "03/26/05",
+      "last": "06/28/26",
+      "total": 94,
+      "l100": 7,
+      "slp": 6
+    },
+    {
+      "title": "Honky Red",
+      "first": "04/05/14",
+      "last": "07/08/26",
+      "total": 93,
+      "l100": 18,
+      "slp": 3
+    },
+    {
+      "title": "Tickle the Truth",
+      "first": "04/04/07",
+      "last": "07/11/26",
+      "total": 93,
+      "l100": 4,
+      "slp": 1
+    },
+    {
+      "title": "Happy Child",
+      "first": "03/11/89",
+      "last": "09/17/22",
+      "total": 92,
+      "l100": 0,
+      "slp": 136
+    },
+    {
+      "title": "Good Morning Little Schoolgirl",
+      "first": "10/05/87",
+      "last": "05/10/26",
+      "total": 91,
+      "l100": 5,
+      "slp": 11
+    },
+    {
+      "title": "Life During Wartime",
+      "first": "10/31/03",
+      "last": "07/10/26",
+      "total": 90,
+      "l100": 9,
+      "slp": 2
+    },
+    {
+      "title": "Tail Dragger",
+      "first": "10/31/11",
+      "last": "06/28/25",
+      "total": 90,
+      "l100": 5,
+      "slp": 50
+    },
+    {
+      "title": "Breathing Slow",
+      "first": "04/07/86",
+      "last": "04/14/24",
+      "total": 89,
+      "l100": 1,
+      "slp": 76
+    },
+    {
+      "title": "Casa Del Grillo",
+      "first": "07/16/00",
+      "last": "01/17/23",
+      "total": 89,
+      "l100": 0,
+      "slp": 121
+    },
+    {
+      "title": "Flicker",
+      "first": "04/03/07",
+      "last": "10/22/22",
+      "total": 87,
+      "l100": 0,
+      "slp": 131
+    },
+    {
+      "title": "Tortured Artist",
+      "first": "04/11/03",
+      "last": "04/14/24",
+      "total": 87,
+      "l100": 1,
+      "slp": 76
+    },
+    {
+      "title": "West Virginia",
+      "first": "01/26/93",
+      "last": "10/27/00",
+      "total": 86,
+      "l100": 0,
+      "slp": 1464
+    },
+    {
+      "title": "Sharon",
+      "first": "06/16/86",
+      "last": "07/08/26",
+      "total": 85,
+      "l100": 9,
+      "slp": 3
+    },
+    {
+      "title": "Angels on High",
+      "first": "03/27/07",
+      "last": "08/04/19",
+      "total": 81,
+      "l100": 0,
+      "slp": 222
+    },
+    {
+      "title": "Trouble",
+      "first": "03/11/89",
+      "last": "07/28/23",
+      "total": 81,
+      "l100": 1,
+      "slp": 98
+    },
+    {
+      "title": "Dirty Business",
+      "first": "??/??/85",
+      "last": "06/26/26",
+      "total": 80,
+      "l100": 3,
+      "slp": 8
+    },
+    {
+      "title": "Slippin' Into Darkness",
+      "first": "10/31/02",
+      "last": "11/01/25",
+      "total": 80,
+      "l100": 4,
+      "slp": 32
+    },
+    {
+      "title": "Don't Be Denied",
+      "first": "06/01/87",
+      "last": "06/28/26",
+      "total": 79,
+      "l100": 5,
+      "slp": 6
+    },
+    {
+      "title": "Lawyers, Guns, And Money",
+      "first": "03/21/87",
+      "last": "06/27/26",
+      "total": 79,
+      "l100": 10,
+      "slp": 7
+    },
+    {
+      "title": "Do What You Like",
+      "first": "03/16/87",
+      "last": "10/25/19",
+      "total": 78,
+      "l100": 0,
+      "slp": 216
+    },
+    {
+      "title": "Sell Sell",
+      "first": "02/19/12",
+      "last": "09/18/22",
+      "total": 76,
+      "l100": 0,
+      "slp": 135
+    },
+    {
+      "title": "Smokestack Lightning",
+      "first": "04/05/86",
+      "last": "07/10/26",
+      "total": 74,
+      "l100": 8,
+      "slp": 2
+    },
+    {
+      "title": "Nobody's Fault But Mine",
+      "first": "02/13/86",
+      "last": "07/08/26",
+      "total": 73,
+      "l100": 1,
+      "slp": 3
+    },
+    {
+      "title": "Cease Fire",
+      "first": "03/20/15",
+      "last": "08/21/25",
+      "total": 72,
+      "l100": 5,
+      "slp": 43
+    },
+    {
+      "title": "Little Wing",
+      "first": "06/22/85",
+      "last": "10/25/25",
+      "total": 72,
+      "l100": 3,
+      "slp": 35
+    },
+    {
+      "title": "St. Louis",
+      "first": "10/19/07",
+      "last": "01/20/24",
+      "total": 71,
+      "l100": 1,
+      "slp": 80
+    },
+    {
+      "title": "Fishing",
+      "first": "04/16/03",
+      "last": "07/11/26",
+      "total": 67,
+      "l100": 13,
+      "slp": 1
+    },
+    {
+      "title": "Me And My Uncle",
+      "first": "05/13/87",
+      "last": "05/05/89",
+      "total": 65,
+      "l100": 0,
+      "slp": 2968
+    },
+    {
+      "title": "Dark Bar",
+      "first": "06/28/08",
+      "last": "06/27/26",
+      "total": 64,
+      "l100": 14,
+      "slp": 7
+    },
+    {
+      "title": "Wish You Were Here",
+      "first": "04/25/86",
+      "last": "10/28/23",
+      "total": 61,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "Astronomy Domine Jam",
+      "first": "09/04/87",
+      "last": "06/19/14",
+      "total": 59,
+      "l100": 0,
+      "slp": 504
+    },
+    {
+      "title": "Entering A Black Hole Backwards",
+      "first": "02/27/92",
+      "last": "09/15/23",
+      "total": 59,
+      "l100": 1,
+      "slp": 92
+    },
+    {
+      "title": "Clinic Cynic",
+      "first": "10/27/01",
+      "last": "09/14/14",
+      "total": 58,
+      "l100": 0,
+      "slp": 488
+    },
+    {
+      "title": "Doreatha",
+      "first": "05/13/95",
+      "last": "07/19/06",
+      "total": 57,
+      "l100": 0,
+      "slp": 1068
+    },
+    {
+      "title": "One Kind Favor",
+      "first": "07/18/97",
+      "last": "03/21/25",
+      "total": 55,
+      "l100": 1,
+      "slp": 62
+    },
+    {
+      "title": "Werewolves of London",
+      "first": "10/19/85",
+      "last": "10/30/21",
+      "total": 55,
+      "l100": 0,
+      "slp": 177
+    },
+    {
+      "title": "Bayou Lena",
+      "first": "10/26/01",
+      "last": "08/26/22",
+      "total": 54,
+      "l100": 0,
+      "slp": 140
+    },
+    {
+      "title": "Steven's Cat",
+      "first": "03/28/15",
+      "last": "09/13/25",
+      "total": 54,
+      "l100": 2,
+      "slp": 39
+    },
+    {
+      "title": "Get Up Early In The Morning",
+      "first": "05/18/92",
+      "last": "05/26/96",
+      "total": 53,
+      "l100": 0,
+      "slp": 1936
+    },
+    {
+      "title": "None of Us Are Free",
+      "first": "07/03/05",
+      "last": "07/07/26",
+      "total": 53,
+      "l100": 3,
+      "slp": 4
+    },
+    {
+      "title": "New Speedway Boogie",
+      "first": "01/12/87",
+      "last": "08/02/19",
+      "total": 51,
+      "l100": 0,
+      "slp": 224
+    },
+    {
+      "title": "China Cat Sunflower",
+      "first": "04/17/86",
+      "last": "02/01/89",
+      "total": 50,
+      "l100": 0,
+      "slp": 2993
+    },
+    {
+      "title": "Down On The Farm",
+      "first": "11/14/87",
+      "last": "10/27/19",
+      "total": 50,
+      "l100": 0,
+      "slp": 214
+    },
+    {
+      "title": "Crazy",
+      "first": "03/29/05",
+      "last": "10/31/25",
+      "total": 49,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "Four Cornered Room",
+      "first": "02/07/96",
+      "last": "11/01/25",
+      "total": 49,
+      "l100": 4,
+      "slp": 32
+    },
+    {
+      "title": "Dirty Side Down",
+      "first": "04/24/10",
+      "last": "09/16/18",
+      "total": 48,
+      "l100": 0,
+      "slp": 260
+    },
+    {
+      "title": "The Other One",
+      "first": "02/24/85",
+      "last": "03/11/89",
+      "total": 47,
+      "l100": 0,
+      "slp": 2985
+    },
+    {
+      "title": "Nebulous",
+      "first": "04/17/03",
+      "last": "07/23/06",
+      "total": 46,
+      "l100": 0,
+      "slp": 1065
+    },
+    {
+      "title": "Raise The Roof",
+      "first": "01/27/94",
+      "last": "06/22/01",
+      "total": 45,
+      "l100": 0,
+      "slp": 1418
+    },
+    {
+      "title": "Vampire Blues",
+      "first": "10/31/05",
+      "last": "05/10/26",
+      "total": 45,
+      "l100": 2,
+      "slp": 11
+    },
+    {
+      "title": "Galleon",
+      "first": "10/03/95",
+      "last": "08/10/22",
+      "total": 44,
+      "l100": 0,
+      "slp": 144
+    },
+    {
+      "title": "Jamais Vu",
+      "first": "03/14/15",
+      "last": "10/26/25",
+      "total": 43,
+      "l100": 8,
+      "slp": 34
+    },
+    {
+      "title": "For What It's Worth",
+      "first": "??/??/85",
+      "last": "07/05/26",
+      "total": 42,
+      "l100": 9,
+      "slp": 5
+    },
+    {
+      "title": "True To My Nature",
+      "first": "07/07/10",
+      "last": "10/29/14",
+      "total": 41,
+      "l100": 0,
+      "slp": 469
+    },
+    {
+      "title": "Fire on the Mountain",
+      "first": "??/??/85",
+      "last": "02/10/11",
+      "total": 40,
+      "l100": 0,
+      "slp": 707
+    },
+    {
+      "title": "Her Dance Needs No Body",
+      "first": "04/01/08",
+      "last": "12/31/16",
+      "total": 40,
+      "l100": 0,
+      "slp": 316
+    },
+    {
+      "title": "Monstrosity",
+      "first": "04/29/03",
+      "last": "07/12/06",
+      "total": 40,
+      "l100": 0,
+      "slp": 1073
+    },
+    {
+      "title": "Spoonful",
+      "first": "02/13/86",
+      "last": "01/23/26",
+      "total": 40,
+      "l100": 1,
+      "slp": 22
+    },
+    {
+      "title": "Halloween Face",
+      "first": "10/31/21",
+      "last": "07/11/26",
+      "total": 39,
+      "l100": 23,
+      "slp": 1
+    },
+    {
+      "title": "Jaded Tourist",
+      "first": "06/27/10",
+      "last": "02/11/23",
+      "total": 39,
+      "l100": 0,
+      "slp": 118
+    },
+    {
+      "title": "Trashy",
+      "first": "06/27/21",
+      "last": "07/10/26",
+      "total": 38,
+      "l100": 18,
+      "slp": 2
+    },
+    {
+      "title": "Dog Song",
+      "first": "07/07/90",
+      "last": "05/24/92",
+      "total": 37,
+      "l100": 0,
+      "slp": 2508
+    },
+    {
+      "title": "Counting Train Cars",
+      "first": "04/15/03",
+      "last": "03/13/14",
+      "total": 36,
+      "l100": 0,
+      "slp": 529
+    },
+    {
+      "title": "Sugaree",
+      "first": "02/24/85",
+      "last": "10/02/88",
+      "total": 35,
+      "l100": 0,
+      "slp": 3039
+    },
+    {
+      "title": "Time Is Free",
+      "first": "10/30/93",
+      "last": "03/22/26",
+      "total": 35,
+      "l100": 2,
+      "slp": 17
+    },
+    {
+      "title": "Geraldine And The Honeybee",
+      "first": "05/28/88",
+      "last": "12/29/19",
+      "total": 34,
+      "l100": 0,
+      "slp": 210
+    },
+    {
+      "title": "Little By Little",
+      "first": "07/29/23",
+      "last": "07/08/26",
+      "total": 34,
+      "l100": 34,
+      "slp": 3
+    },
+    {
+      "title": "Quarter Tank Of Gasoline",
+      "first": "03/04/92",
+      "last": "09/16/23",
+      "total": 33,
+      "l100": 1,
+      "slp": 91
+    },
+    {
+      "title": "Sympathy for the Devil",
+      "first": "04/24/86",
+      "last": "01/27/20",
+      "total": 33,
+      "l100": 0,
+      "slp": 203
+    },
+    {
+      "title": "Thank You Falettinme Be Mice Elf Agin",
+      "first": "08/05/89",
+      "last": "04/24/15",
+      "total": 33,
+      "l100": 0,
+      "slp": 438
+    },
+    {
+      "title": "Three Candles",
+      "first": "04/01/08",
+      "last": "02/19/16",
+      "total": 33,
+      "l100": 0,
+      "slp": 384
+    },
+    {
+      "title": "Cryptical Envelopment",
+      "first": "06/22/85",
+      "last": "03/11/89",
+      "total": 32,
+      "l100": 0,
+      "slp": 2985
+    },
+    {
+      "title": "The Shape I'm In",
+      "first": "09/17/95",
+      "last": "10/23/21",
+      "total": 32,
+      "l100": 0,
+      "slp": 180
+    },
+    {
+      "title": "Time Waits",
+      "first": "07/16/03",
+      "last": "07/23/22",
+      "total": 32,
+      "l100": 0,
+      "slp": 147
+    },
+    {
+      "title": "Walk On The Flood",
+      "first": "04/01/08",
+      "last": "09/30/11",
+      "total": 32,
+      "l100": 0,
+      "slp": 652
+    },
+    {
+      "title": "When The Clowns Come Home",
+      "first": "03/25/05",
+      "last": "04/10/07",
+      "total": 32,
+      "l100": 0,
+      "slp": 995
+    },
+    {
+      "title": "You'll Be Fine",
+      "first": "09/15/97",
+      "last": "07/09/13",
+      "total": 31,
+      "l100": 0,
+      "slp": 575
+    },
+    {
+      "title": "Are You Ready For The Country?",
+      "first": "04/30/03",
+      "last": "05/27/23",
+      "total": 30,
+      "l100": 0,
+      "slp": 103
+    },
+    {
+      "title": "I'm So Glad",
+      "first": "07/08/03",
+      "last": "07/08/26",
+      "total": 30,
+      "l100": 9,
+      "slp": 3
+    },
+    {
+      "title": "Jesus Just Left Chicago",
+      "first": "11/28/09",
+      "last": "05/28/23",
+      "total": 30,
+      "l100": 0,
+      "slp": 102
+    },
+    {
+      "title": "King Baby",
+      "first": "06/25/23",
+      "last": "07/05/26",
+      "total": 30,
+      "l100": 30,
+      "slp": 5
+    },
+    {
+      "title": "Not Fade Away",
+      "first": "02/24/85",
+      "last": "02/14/89",
+      "total": 29,
+      "l100": 0,
+      "slp": 2989
+    },
+    {
+      "title": "Smoke And Burn",
+      "first": "03/30/95",
+      "last": "07/31/98",
+      "total": 29,
+      "l100": 0,
+      "slp": 1694
+    },
+    {
+      "title": "We Walk Each Other Home",
+      "first": "07/30/23",
+      "last": "07/11/26",
+      "total": 29,
+      "l100": 29,
+      "slp": 1
+    },
+    {
+      "title": "I Know You Rider",
+      "first": "04/24/86",
+      "last": "07/06/91",
+      "total": 28,
+      "l100": 0,
+      "slp": 2670
+    },
+    {
+      "title": "Street Dogs For Breakfast",
+      "first": "03/13/15",
+      "last": "01/26/19",
+      "total": 28,
+      "l100": 0,
+      "slp": 248
+    },
+    {
+      "title": "The Earth Will Swallow You",
+      "first": "04/06/90",
+      "last": "07/18/06",
+      "total": 27,
+      "l100": 0,
+      "slp": 1069
+    },
+    {
+      "title": "Fairies Wear Boots",
+      "first": "06/17/07",
+      "last": "07/24/25",
+      "total": 27,
+      "l100": 2,
+      "slp": 48
+    },
+    {
+      "title": "Wishbone",
+      "first": "11/04/88",
+      "last": "08/23/19",
+      "total": 27,
+      "l100": 0,
+      "slp": 221
+    },
+    {
+      "title": "Bird Song",
+      "first": "03/??/86",
+      "last": "08/13/22",
+      "total": 26,
+      "l100": 0,
+      "slp": 141
+    },
+    {
+      "title": "Sandbox",
+      "first": "04/03/96",
+      "last": "12/31/22",
+      "total": 25,
+      "l100": 0,
+      "slp": 126
+    },
+    {
+      "title": "Shouldn't Have Took More Than You Gave",
+      "first": "03/17/86",
+      "last": "05/27/89",
+      "total": 25,
+      "l100": 0,
+      "slp": 2964
+    },
+    {
+      "title": "Superstition",
+      "first": "10/31/98",
+      "last": "07/13/13",
+      "total": 25,
+      "l100": 0,
+      "slp": 572
+    },
+    {
+      "title": "Sundown Betty",
+      "first": "01/29/18",
+      "last": "08/27/23",
+      "total": 24,
+      "l100": 1,
+      "slp": 93
+    },
+    {
+      "title": "Chest Fever",
+      "first": "09/14/06",
+      "last": "06/29/14",
+      "total": 23,
+      "l100": 0,
+      "slp": 497
+    },
+    {
+      "title": "Turn On Your Love Light",
+      "first": "10/24/85",
+      "last": "12/31/19",
+      "total": 23,
+      "l100": 0,
+      "slp": 208
+    },
+    {
+      "title": "You Wreck Me",
+      "first": "10/20/17",
+      "last": "05/08/26",
+      "total": 23,
+      "l100": 6,
+      "slp": 13
+    },
+    {
+      "title": "Daisy Mae",
+      "first": "11/01/02",
+      "last": "10/21/05",
+      "total": 22,
+      "l100": 0,
+      "slp": 1108
+    },
+    {
+      "title": "Smoking Factory",
+      "first": "03/23/07",
+      "last": "10/21/17",
+      "total": 22,
+      "l100": 0,
+      "slp": 293
+    },
+    {
+      "title": "Swamp",
+      "first": "10/31/98",
+      "last": "01/29/18",
+      "total": 22,
+      "l100": 0,
+      "slp": 281
+    },
+    {
+      "title": "Waitin' For The Bus",
+      "first": "10/31/09",
+      "last": "05/25/24",
+      "total": 22,
+      "l100": 1,
+      "slp": 70
+    },
+    {
+      "title": "Angels Don't Sing The Blues",
+      "first": "07/04/15",
+      "last": "09/17/17",
+      "total": 21,
+      "l100": 0,
+      "slp": 295
+    },
+    {
+      "title": "Honey Bee",
+      "first": "10/28/17",
+      "last": "05/25/24",
+      "total": 21,
+      "l100": 2,
+      "slp": 70
+    },
+    {
+      "title": "Iko Iko",
+      "first": "02/24/85",
+      "last": "01/26/89",
+      "total": 21,
+      "l100": 0,
+      "slp": 2994
+    },
+    {
+      "title": "Knockin' On Heaven's Door",
+      "first": "06/22/85",
+      "last": "11/17/90",
+      "total": 21,
+      "l100": 0,
+      "slp": 2727
+    },
+    {
+      "title": "A Hard Rain's A-Gonna Fall",
+      "first": "12/31/15",
+      "last": "03/22/24",
+      "total": 20,
+      "l100": 2,
+      "slp": 79
+    },
+    {
+      "title": "Heathen",
+      "first": "??/??/85",
+      "last": "04/23/08",
+      "total": 20,
+      "l100": 0,
+      "slp": 907
+    },
+    {
+      "title": "Morning Dew",
+      "first": "08/12/87",
+      "last": "05/14/15",
+      "total": 20,
+      "l100": 0,
+      "slp": 433
+    },
+    {
+      "title": "You Can't Always Get What You Want",
+      "first": "02/12/12",
+      "last": "06/27/25",
+      "total": 20,
+      "l100": 3,
+      "slp": 51
+    },
+    {
+      "title": "Another Man Done Gone",
+      "first": "05/13/87",
+      "last": "05/27/89",
+      "total": 19,
+      "l100": 0,
+      "slp": 2964
+    },
+    {
+      "title": "The Ballad of John and Yoko",
+      "first": "01/25/12",
+      "last": "10/24/21",
+      "total": 19,
+      "l100": 0,
+      "slp": 179
+    },
+    {
+      "title": "Don't Tell The Band",
+      "first": "06/23/01",
+      "last": "10/29/17",
+      "total": 19,
+      "l100": 0,
+      "slp": 289
+    },
+    {
+      "title": "Dark Day Program",
+      "first": "04/01/08",
+      "last": "03/12/22",
+      "total": 18,
+      "l100": 0,
+      "slp": 163
+    },
+    {
+      "title": "Degenerate",
+      "first": "10/31/11",
+      "last": "07/25/25",
+      "total": 18,
+      "l100": 2,
+      "slp": 47
+    },
+    {
+      "title": "Tackle Box Hero",
+      "first": "01/17/23",
+      "last": "07/08/26",
+      "total": 18,
+      "l100": 15,
+      "slp": 3
+    },
+    {
+      "title": "I Like The Things About Me",
+      "first": "07/23/03",
+      "last": "06/28/06",
+      "total": 17,
+      "l100": 0,
+      "slp": 1083
+    },
+    {
+      "title": "Junco Partner",
+      "first": "07/21/92",
+      "last": "05/08/06",
+      "total": 17,
+      "l100": 0,
+      "slp": 1091
+    },
+    {
+      "title": "Sweet Leaf",
+      "first": "10/31/89",
+      "last": "08/10/22",
+      "total": 17,
+      "l100": 0,
+      "slp": 144
+    },
+    {
+      "title": "Wooden Ships",
+      "first": "09/15/86",
+      "last": "10/11/88",
+      "total": 17,
+      "l100": 0,
+      "slp": 3035
+    },
+    {
+      "title": "Light Is Like Water",
+      "first": "06/27/01",
+      "last": "06/20/14",
+      "total": 16,
+      "l100": 0,
+      "slp": 503
+    },
+    {
+      "title": "The Poorhouse Of Positive Thinking",
+      "first": "03/21/15",
+      "last": "05/03/16",
+      "total": 16,
+      "l100": 0,
+      "slp": 363
+    },
+    {
+      "title": "Tears of a Woman",
+      "first": "07/07/99",
+      "last": "08/09/03",
+      "total": 16,
+      "l100": 0,
+      "slp": 1233
+    },
+    {
+      "title": "All Along The Watchtower",
+      "first": "07/22/01",
+      "last": "03/31/19",
+      "total": 14,
+      "l100": 0,
+      "slp": 237
+    },
+    {
+      "title": "Blue Carousel",
+      "first": "09/16/23",
+      "last": "07/07/26",
+      "total": 14,
+      "l100": 14,
+      "slp": 4
+    },
+    {
+      "title": "Song For Sitara",
+      "first": "03/30/05",
+      "last": "07/18/06",
+      "total": 14,
+      "l100": 0,
+      "slp": 1069
+    },
+    {
+      "title": "There Is A Time",
+      "first": "10/31/15",
+      "last": "12/29/25",
+      "total": 14,
+      "l100": 4,
+      "slp": 28
+    },
+    {
+      "title": "Coach",
+      "first": "04/22/08",
+      "last": "07/02/14",
+      "total": 13,
+      "l100": 0,
+      "slp": 496
+    },
+    {
+      "title": "Free Somehow",
+      "first": "04/01/08",
+      "last": "07/07/26",
+      "total": 13,
+      "l100": 4,
+      "slp": 4
+    },
+    {
+      "title": "Many Rivers To Cross",
+      "first": "01/28/12",
+      "last": "12/31/22",
+      "total": 13,
+      "l100": 0,
+      "slp": 126
+    },
+    {
+      "title": "Meeting of the Waters",
+      "first": "04/18/03",
+      "last": "10/26/03",
+      "total": 13,
+      "l100": 0,
+      "slp": 1206
+    },
+    {
+      "title": "Riders On The Storm",
+      "first": "10/31/96",
+      "last": "10/31/25",
+      "total": 13,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "Already Fried",
+      "first": "04/01/08",
+      "last": "12/31/09",
+      "total": 12,
+      "l100": 0,
+      "slp": 790
+    },
+    {
+      "title": "Drinking Muddy Water",
+      "first": "10/31/13",
+      "last": "02/18/22",
+      "total": 12,
+      "l100": 0,
+      "slp": 167
+    },
+    {
+      "title": "E on a G",
+      "first": "04/03/00",
+      "last": "02/28/20",
+      "total": 12,
+      "l100": 0,
+      "slp": 201
+    },
+    {
+      "title": "Get In Get Out",
+      "first": "07/05/02",
+      "last": "12/31/03",
+      "total": 12,
+      "l100": 0,
+      "slp": 1197
+    },
+    {
+      "title": "Rumble",
+      "first": "10/29/17",
+      "last": "07/25/25",
+      "total": 12,
+      "l100": 1,
+      "slp": 47
+    },
+    {
+      "title": "Running Down A Dream",
+      "first": "10/29/22",
+      "last": "11/22/25",
+      "total": 12,
+      "l100": 8,
+      "slp": 30
+    },
+    {
+      "title": "Come Together",
+      "first": "06/11/05",
+      "last": "04/15/23",
+      "total": 11,
+      "l100": 0,
+      "slp": 111
+    },
+    {
+      "title": "Green Onions",
+      "first": "07/12/95",
+      "last": "11/02/14",
+      "total": 11,
+      "l100": 0,
+      "slp": 466
+    },
+    {
+      "title": "Keep Me in Your Heart",
+      "first": "06/25/23",
+      "last": "06/27/26",
+      "total": 11,
+      "l100": 11,
+      "slp": 7
+    },
+    {
+      "title": "Let It Bleed",
+      "first": "10/12/03",
+      "last": "07/14/06",
+      "total": 11,
+      "l100": 0,
+      "slp": 1071
+    },
+    {
+      "title": "Love The One You're With",
+      "first": "06/22/85",
+      "last": "12/31/22",
+      "total": 11,
+      "l100": 0,
+      "slp": 126
+    },
+    {
+      "title": "Mountain Jam",
+      "first": "04/23/87",
+      "last": "07/05/26",
+      "total": 11,
+      "l100": 1,
+      "slp": 5
+    },
+    {
+      "title": "Nights In White Satin",
+      "first": "??/??/85",
+      "last": "02/11/11",
+      "total": 11,
+      "l100": 0,
+      "slp": 706
+    },
+    {
+      "title": "That's All Right Mama",
+      "first": "03/??/86",
+      "last": "05/29/91",
+      "total": 11,
+      "l100": 0,
+      "slp": 2680
+    },
+    {
+      "title": "Yard of Blonde Girls",
+      "first": "05/10/03",
+      "last": "10/26/03",
+      "total": 11,
+      "l100": 0,
+      "slp": 1206
+    },
+    {
+      "title": "After Midnight",
+      "first": "12/31/87",
+      "last": "12/29/90",
+      "total": 10,
+      "l100": 0,
+      "slp": 2715
+    },
+    {
+      "title": "Baby, Let Me Follow You Down",
+      "first": "10/05/05",
+      "last": "10/28/11",
+      "total": 10,
+      "l100": 0,
+      "slp": 633
+    },
+    {
+      "title": "New Minglewood Blues",
+      "first": "??/??/86",
+      "last": "12/12/86",
+      "total": 10,
+      "l100": 0,
+      "slp": 3215
+    },
+    {
+      "title": "Stag-O-Lee",
+      "first": "01/18/96",
+      "last": "11/08/13",
+      "total": 10,
+      "l100": 0,
+      "slp": 544
+    },
+    {
+      "title": "When You Coming Home",
+      "first": "07/31/10",
+      "last": "04/18/23",
+      "total": 10,
+      "l100": 0,
+      "slp": 109
+    },
+    {
+      "title": "You Better Run",
+      "first": "07/30/00",
+      "last": "07/01/08",
+      "total": 10,
+      "l100": 0,
+      "slp": 890
+    },
+    {
+      "title": "Cosmic Confidante",
+      "first": "05/24/24",
+      "last": "11/23/25",
+      "total": 9,
+      "l100": 9,
+      "slp": 29
+    },
+    {
+      "title": "Crippled Inside",
+      "first": "06/17/07",
+      "last": "07/08/11",
+      "total": 9,
+      "l100": 0,
+      "slp": 672
+    },
+    {
+      "title": "Dear Prudence",
+      "first": "03/13/22",
+      "last": "08/23/25",
+      "total": 9,
+      "l100": 4,
+      "slp": 41
+    },
+    {
+      "title": "High Time We Went",
+      "first": "11/01/14",
+      "last": "08/03/19",
+      "total": 9,
+      "l100": 0,
+      "slp": 223
+    },
+    {
+      "title": "Keep Your Lamps Trimmed and Burning",
+      "first": "02/16/87",
+      "last": "04/18/09",
+      "total": 9,
+      "l100": 0,
+      "slp": 839
+    },
+    {
+      "title": "Machine Gun",
+      "first": "11/02/14",
+      "last": "02/16/25",
+      "total": 9,
+      "l100": 2,
+      "slp": 63
+    },
+    {
+      "title": "Man Smart, Woman Smarter",
+      "first": "??/??/85",
+      "last": "11/11/87",
+      "total": 9,
+      "l100": 0,
+      "slp": 3133
+    },
+    {
+      "title": "Rockin' In The Free World",
+      "first": "10/04/94",
+      "last": "10/04/25",
+      "total": 9,
+      "l100": 2,
+      "slp": 37
+    },
+    {
+      "title": "Run For Your Life",
+      "first": "04/16/05",
+      "last": "09/01/05",
+      "total": 9,
+      "l100": 0,
+      "slp": 1131
+    },
+    {
+      "title": "Shoot Out At The Fantasy Factory",
+      "first": "10/31/89",
+      "last": "12/31/89",
+      "total": 9,
+      "l100": 0,
+      "slp": 2888
+    },
+    {
+      "title": "Time Waits For No One",
+      "first": "10/31/08",
+      "last": "03/02/17",
+      "total": 9,
+      "l100": 0,
+      "slp": 311
+    },
+    {
+      "title": "Tonight's the Night",
+      "first": "05/14/03",
+      "last": "04/26/05",
+      "total": 9,
+      "l100": 0,
+      "slp": 1172
+    },
+    {
+      "title": "Carmelita",
+      "first": "01/29/12",
+      "last": "07/06/14",
+      "total": 8,
+      "l100": 0,
+      "slp": 493
+    },
+    {
+      "title": "Cortez the Killer",
+      "first": "10/31/01",
+      "last": "11/22/25",
+      "total": 8,
+      "l100": 1,
+      "slp": 30
+    },
+    {
+      "title": "Long May You Live",
+      "first": "04/05/86",
+      "last": "11/08/01",
+      "total": 8,
+      "l100": 0,
+      "slp": 1363
+    },
+    {
+      "title": "New Blue",
+      "first": "10/26/01",
+      "last": "03/26/22",
+      "total": 8,
+      "l100": 0,
+      "slp": 160
+    },
+    {
+      "title": "Puppy Sleeps",
+      "first": "12/31/01",
+      "last": "10/28/23",
+      "total": 8,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "Solace",
+      "first": "01/26/96",
+      "last": "04/13/96",
+      "total": 8,
+      "l100": 0,
+      "slp": 1949
+    },
+    {
+      "title": "Sun Keep",
+      "first": "07/05/90",
+      "last": "10/15/90",
+      "total": 8,
+      "l100": 0,
+      "slp": 2742
+    },
+    {
+      "title": "Ace of Spades",
+      "first": "10/31/13",
+      "last": "04/19/23",
+      "total": 7,
+      "l100": 0,
+      "slp": 108
+    },
+    {
+      "title": "ARU/WSP Jam",
+      "first": "02/08/92",
+      "last": "08/09/92",
+      "total": 7,
+      "l100": 0,
+      "slp": 2467
+    },
+    {
+      "title": "God Was In The Water",
+      "first": "07/12/02",
+      "last": "11/15/02",
+      "total": 7,
+      "l100": 0,
+      "slp": 1301
+    },
+    {
+      "title": "Heart of Gold",
+      "first": "10/31/14",
+      "last": "10/28/23",
+      "total": 7,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "I Wanna Be Sedated",
+      "first": "10/31/03",
+      "last": "12/31/23",
+      "total": 7,
+      "l100": 1,
+      "slp": 83
+    },
+    {
+      "title": "It Was You",
+      "first": "07/09/97",
+      "last": "04/28/98",
+      "total": 7,
+      "l100": 0,
+      "slp": 1739
+    },
+    {
+      "title": "It's All Over Now",
+      "first": "06/23/99",
+      "last": "07/04/14",
+      "total": 7,
+      "l100": 0,
+      "slp": 494
+    },
+    {
+      "title": "On Your Way Down",
+      "first": "11/28/09",
+      "last": "10/23/22",
+      "total": 7,
+      "l100": 0,
+      "slp": 130
+    },
+    {
+      "title": "Small Town",
+      "first": "06/23/24",
+      "last": "10/26/25",
+      "total": 7,
+      "l100": 7,
+      "slp": 34
+    },
+    {
+      "title": "Stranger in a Strange Land",
+      "first": "11/19/21",
+      "last": "03/22/24",
+      "total": 7,
+      "l100": 2,
+      "slp": 79
+    },
+    {
+      "title": "Success Yourself",
+      "first": "01/27/94",
+      "last": "06/27/21",
+      "total": 7,
+      "l100": 0,
+      "slp": 194
+    },
+    {
+      "title": "That's What Love Will Make You Do",
+      "first": "10/06/86",
+      "last": "01/03/87",
+      "total": 7,
+      "l100": 0,
+      "slp": 3211
+    },
+    {
+      "title": "Baby, Let Me Hold Your Hand",
+      "first": "01/25/96",
+      "last": "05/14/03",
+      "total": 6,
+      "l100": 0,
+      "slp": 1272
+    },
+    {
+      "title": "Baby, Please Don't Go",
+      "first": "10/31/08",
+      "last": "10/29/14",
+      "total": 6,
+      "l100": 0,
+      "slp": 469
+    },
+    {
+      "title": "Cardboard Box",
+      "first": "04/14/86",
+      "last": "10/06/90",
+      "total": 6,
+      "l100": 0,
+      "slp": 2744
+    },
+    {
+      "title": "Cleburne Terrace",
+      "first": "11/19/88",
+      "last": "11/04/94",
+      "total": 6,
+      "l100": 0,
+      "slp": 2133
+    },
+    {
+      "title": "Devil In Disguise",
+      "first": "10/31/13",
+      "last": "03/29/14",
+      "total": 6,
+      "l100": 0,
+      "slp": 520
+    },
+    {
+      "title": "Familiar Reality",
+      "first": "04/29/10",
+      "last": "05/02/19",
+      "total": 6,
+      "l100": 0,
+      "slp": 232
+    },
+    {
+      "title": "Hallelujah",
+      "first": "12/31/15",
+      "last": "10/30/16",
+      "total": 6,
+      "l100": 0,
+      "slp": 319
+    },
+    {
+      "title": "The Harder They Come",
+      "first": "07/27/01",
+      "last": "09/13/25",
+      "total": 6,
+      "l100": 2,
+      "slp": 39
+    },
+    {
+      "title": "If You'se A Viper",
+      "first": "04/20/05",
+      "last": "10/04/05",
+      "total": 6,
+      "l100": 0,
+      "slp": 1120
+    },
+    {
+      "title": "Interstellar Overdrive",
+      "first": "05/02/03",
+      "last": "07/11/06",
+      "total": 6,
+      "l100": 0,
+      "slp": 1074
+    },
+    {
+      "title": "Orange Blossom Special",
+      "first": "01/23/96",
+      "last": "12/30/97",
+      "total": 6,
+      "l100": 0,
+      "slp": 1764
+    },
+    {
+      "title": "Scarlet Begonias",
+      "first": "08/12/87",
+      "last": "10/20/87",
+      "total": 6,
+      "l100": 0,
+      "slp": 3137
+    },
+    {
+      "title": "Sparks Fly",
+      "first": "05/10/03",
+      "last": "05/16/25",
+      "total": 6,
+      "l100": 1,
+      "slp": 56
+    },
+    {
+      "title": "This Cruel Thing",
+      "first": "09/25/10",
+      "last": "12/31/19",
+      "total": 6,
+      "l100": 0,
+      "slp": 208
+    },
+    {
+      "title": "Blue Sunday",
+      "first": "10/31/98",
+      "last": "03/27/22",
+      "total": 5,
+      "l100": 0,
+      "slp": 159
+    },
+    {
+      "title": "Dark End of the Street",
+      "first": "10/31/05",
+      "last": "06/20/14",
+      "total": 5,
+      "l100": 0,
+      "slp": 503
+    },
+    {
+      "title": "Easy Wind",
+      "first": "??/??/85",
+      "last": "07/09/11",
+      "total": 5,
+      "l100": 0,
+      "slp": 671
+    },
+    {
+      "title": "Heroes (DB)",
+      "first": "12/31/15",
+      "last": "02/15/25",
+      "total": 5,
+      "l100": 1,
+      "slp": 64
+    },
+    {
+      "title": "I Told Her I'd Be Early",
+      "first": "06/11/87",
+      "last": "06/05/90",
+      "total": 5,
+      "l100": 0,
+      "slp": 2809
+    },
+    {
+      "title": "Peace Frog",
+      "first": "10/31/98",
+      "last": "03/27/22",
+      "total": 5,
+      "l100": 0,
+      "slp": 159
+    },
+    {
+      "title": "Road To Damascus",
+      "first": "06/26/01",
+      "last": "10/02/07",
+      "total": 5,
+      "l100": 0,
+      "slp": 951
+    },
+    {
+      "title": "Snake Drive",
+      "first": "04/09/05",
+      "last": "01/27/19",
+      "total": 5,
+      "l100": 0,
+      "slp": 247
+    },
+    {
+      "title": "Stir It Up",
+      "first": "06/22/85",
+      "last": "06/29/08",
+      "total": 5,
+      "l100": 0,
+      "slp": 891
+    },
+    {
+      "title": "Time Fades Away",
+      "first": "12/31/13",
+      "last": "06/29/14",
+      "total": 5,
+      "l100": 0,
+      "slp": 497
+    },
+    {
+      "title": "Wet Trombone Blues",
+      "first": "01/27/94",
+      "last": "06/27/21",
+      "total": 5,
+      "l100": 0,
+      "slp": 194
+    },
+    {
+      "title": "The Wind Cries Mary",
+      "first": "10/31/99",
+      "last": "07/29/01",
+      "total": 5,
+      "l100": 0,
+      "slp": 1389
+    },
+    {
+      "title": "You've Got To Hide Your Love Away",
+      "first": "03/07/14",
+      "last": "07/21/22",
+      "total": 5,
+      "l100": 0,
+      "slp": 149
+    },
+    {
+      "title": "(Sittin' On) The Dock Of The Bay",
+      "first": "12/29/05",
+      "last": "03/29/14",
+      "total": 4,
+      "l100": 0,
+      "slp": 520
+    },
+    {
+      "title": "Basically Frightened",
+      "first": "02/14/11",
+      "last": "07/25/22",
+      "total": 4,
+      "l100": 0,
+      "slp": 145
+    },
+    {
+      "title": "Bastards In Bubbles",
+      "first": "12/31/18",
+      "last": "10/02/21",
+      "total": 4,
+      "l100": 0,
+      "slp": 186
+    },
+    {
+      "title": "Benefactor",
+      "first": "07/06/91",
+      "last": "08/31/92",
+      "total": 4,
+      "l100": 0,
+      "slp": 2463
+    },
+    {
+      "title": "Bird On A Wire",
+      "first": "08/13/22",
+      "last": "01/19/24",
+      "total": 4,
+      "l100": 1,
+      "slp": 81
+    },
+    {
+      "title": "Black Sabbath",
+      "first": "10/31/87",
+      "last": "04/26/25",
+      "total": 4,
+      "l100": 1,
+      "slp": 57
+    },
+    {
+      "title": "Boom Boom Boom",
+      "first": "04/01/08",
+      "last": "05/03/08",
+      "total": 4,
+      "l100": 0,
+      "slp": 900
+    },
+    {
+      "title": "D'yer Maker",
+      "first": "10/31/14",
+      "last": "02/23/16",
+      "total": 4,
+      "l100": 0,
+      "slp": 381
+    },
+    {
+      "title": "Godzilla",
+      "first": "10/31/97",
+      "last": "04/25/25",
+      "total": 4,
+      "l100": 1,
+      "slp": 58
+    },
+    {
+      "title": "I Can See Clearly Now",
+      "first": "09/12/15",
+      "last": "12/31/25",
+      "total": 4,
+      "l100": 1,
+      "slp": 26
+    },
+    {
+      "title": "I Wish You Would",
+      "first": "06/01/87",
+      "last": "11/13/99",
+      "total": 4,
+      "l100": 0,
+      "slp": 1549
+    },
+    {
+      "title": "Iron Man",
+      "first": "10/31/11",
+      "last": "07/25/25",
+      "total": 4,
+      "l100": 2,
+      "slp": 47
+    },
+    {
+      "title": "Journey Through The Past",
+      "first": "12/31/13",
+      "last": "10/31/15",
+      "total": 4,
+      "l100": 0,
+      "slp": 399
+    },
+    {
+      "title": "Life As A Tree",
+      "first": "08/25/19",
+      "last": "06/29/25",
+      "total": 4,
+      "l100": 3,
+      "slp": 49
+    },
+    {
+      "title": "Mama Told Me Not To Come",
+      "first": "10/18/08",
+      "last": "06/26/11",
+      "total": 4,
+      "l100": 0,
+      "slp": 679
+    },
+    {
+      "title": "Shiek",
+      "first": "03/24/96",
+      "last": "11/18/00",
+      "total": 4,
+      "l100": 0,
+      "slp": 1450
+    },
+    {
+      "title": "Somewhere In Time",
+      "first": "02/19/12",
+      "last": "02/29/20",
+      "total": 4,
+      "l100": 0,
+      "slp": 200
+    },
+    {
+      "title": "Soul Kitchen",
+      "first": "10/28/00",
+      "last": "10/26/25",
+      "total": 4,
+      "l100": 2,
+      "slp": 34
+    },
+    {
+      "title": "Strange Times",
+      "first": "10/31/10",
+      "last": "10/15/11",
+      "total": 4,
+      "l100": 0,
+      "slp": 641
+    },
+    {
+      "title": "That Don't Make It Junk",
+      "first": "04/16/11",
+      "last": "02/18/12",
+      "total": 4,
+      "l100": 0,
+      "slp": 616
+    },
+    {
+      "title": "Time Is Free Jam",
+      "first": "10/26/93",
+      "last": "08/02/98",
+      "total": 4,
+      "l100": 0,
+      "slp": 1692
+    },
+    {
+      "title": "???",
+      "first": "06/06/87",
+      "last": "04/23/93",
+      "total": 3,
+      "l100": 0,
+      "slp": 2361
+    },
+    {
+      "title": "Ball of Confusion",
+      "first": "07/22/89",
+      "last": "10/31/01",
+      "total": 3,
+      "l100": 0,
+      "slp": 1369
+    },
+    {
+      "title": "Born Under A Bad Sign",
+      "first": "10/31/05",
+      "last": "07/06/11",
+      "total": 3,
+      "l100": 0,
+      "slp": 673
+    },
+    {
+      "title": "Children of the Grave",
+      "first": "10/31/07",
+      "last": "10/31/21",
+      "total": 3,
+      "l100": 0,
+      "slp": 176
+    },
+    {
+      "title": "House of the Rising Sun",
+      "first": "11/23/01",
+      "last": "10/29/17",
+      "total": 3,
+      "l100": 0,
+      "slp": 289
+    },
+    {
+      "title": "I Wish",
+      "first": "12/31/02",
+      "last": "12/31/09",
+      "total": 3,
+      "l100": 0,
+      "slp": 790
+    },
+    {
+      "title": "I've Been Working",
+      "first": "07/11/98",
+      "last": "06/20/14",
+      "total": 3,
+      "l100": 0,
+      "slp": 503
+    },
+    {
+      "title": "Jessica",
+      "first": "12/29/15",
+      "last": "06/28/25",
+      "total": 3,
+      "l100": 1,
+      "slp": 50
+    },
+    {
+      "title": "Lady Wisdom Sleeps",
+      "first": "08/20/90",
+      "last": "05/18/91",
+      "total": 3,
+      "l100": 0,
+      "slp": 2681
+    },
+    {
+      "title": "Lake Of Fire",
+      "first": "10/31/09",
+      "last": "04/21/18",
+      "total": 3,
+      "l100": 0,
+      "slp": 274
+    },
+    {
+      "title": "Love And Happiness",
+      "first": "04/15/05",
+      "last": "12/31/11",
+      "total": 3,
+      "l100": 0,
+      "slp": 630
+    },
+    {
+      "title": "Mardi Gras In New Orleans",
+      "first": "10/28/00",
+      "last": "07/08/16",
+      "total": 3,
+      "l100": 0,
+      "slp": 346
+    },
+    {
+      "title": "Morally Challenged",
+      "first": "12/31/01",
+      "last": "05/29/22",
+      "total": 3,
+      "l100": 0,
+      "slp": 153
+    },
+    {
+      "title": "Mountain Hideaway",
+      "first": "06/29/13",
+      "last": "07/20/13",
+      "total": 3,
+      "l100": 0,
+      "slp": 568
+    },
+    {
+      "title": "Paranoid",
+      "first": "10/31/87",
+      "last": "12/31/25",
+      "total": 3,
+      "l100": 1,
+      "slp": 26
+    },
+    {
+      "title": "Plastic Jesus",
+      "first": "03/14/14",
+      "last": "04/12/14",
+      "total": 3,
+      "l100": 0,
+      "slp": 513
+    },
+    {
+      "title": "Shake, Rattle, And Roll",
+      "first": "11/01/96",
+      "last": "10/12/03",
+      "total": 3,
+      "l100": 0,
+      "slp": 1216
+    },
+    {
+      "title": "Sitting In Limbo",
+      "first": "09/12/15",
+      "last": "12/31/25",
+      "total": 3,
+      "l100": 1,
+      "slp": 26
+    },
+    {
+      "title": "Skin It Back",
+      "first": "10/31/02",
+      "last": "11/12/02",
+      "total": 3,
+      "l100": 0,
+      "slp": 1303
+    },
+    {
+      "title": "Straight To Hell",
+      "first": "10/25/15",
+      "last": "10/03/25",
+      "total": 3,
+      "l100": 1,
+      "slp": 38
+    },
+    {
+      "title": "Sultans of Swing",
+      "first": "02/14/11",
+      "last": "09/28/13",
+      "total": 3,
+      "l100": 0,
+      "slp": 559
+    },
+    {
+      "title": "Susie Q",
+      "first": "04/25/86",
+      "last": "09/07/13",
+      "total": 3,
+      "l100": 0,
+      "slp": 567
+    },
+    {
+      "title": "Tacos",
+      "first": "08/01/95",
+      "last": "10/31/19",
+      "total": 3,
+      "l100": 0,
+      "slp": 213
+    },
+    {
+      "title": "This Friendly World",
+      "first": "10/31/19",
+      "last": "03/03/23",
+      "total": 3,
+      "l100": 0,
+      "slp": 117
+    },
+    {
+      "title": "Vicious",
+      "first": "10/31/03",
+      "last": "10/24/21",
+      "total": 3,
+      "l100": 0,
+      "slp": 179
+    },
+    {
+      "title": "Walkin' (For Your Love) reprise",
+      "first": "10/25/96",
+      "last": "10/20/10",
+      "total": 3,
+      "l100": 0,
+      "slp": 717
+    },
+    {
+      "title": "Wang Dang Doodle",
+      "first": "09/08/87",
+      "last": "06/12/05",
+      "total": 3,
+      "l100": 0,
+      "slp": 1162
+    },
+    {
+      "title": "We'll Be Fine",
+      "first": "06/26/01",
+      "last": "10/05/03",
+      "total": 3,
+      "l100": 0,
+      "slp": 1221
+    },
+    {
+      "title": "Why Don't We Do It In The Road?",
+      "first": "10/19/85",
+      "last": "10/18/14",
+      "total": 3,
+      "l100": 0,
+      "slp": 477
+    },
+    {
+      "title": "Wild Thing",
+      "first": "10/24/85",
+      "last": "06/26/11",
+      "total": 3,
+      "l100": 0,
+      "slp": 679
+    },
+    {
+      "title": "A Little Help From My Friends",
+      "first": "12/31/14",
+      "last": "12/31/16",
+      "total": 2,
+      "l100": 0,
+      "slp": 316
+    },
+    {
+      "title": "Ain't No Sunshine",
+      "first": "12/31/14",
+      "last": "06/24/18",
+      "total": 2,
+      "l100": 0,
+      "slp": 269
+    },
+    {
+      "title": "Analyze",
+      "first": "07/09/94",
+      "last": "07/27/94",
+      "total": 2,
+      "l100": 0,
+      "slp": 2176
+    },
+    {
+      "title": "Beat On The Brat",
+      "first": "10/31/03",
+      "last": "10/30/16",
+      "total": 2,
+      "l100": 0,
+      "slp": 319
+    },
+    {
+      "title": "Big Chief Jam",
+      "first": "07/23/99",
+      "last": "07/23/08",
+      "total": 2,
+      "l100": 0,
+      "slp": 874
+    },
+    {
+      "title": "Born On The Bayou",
+      "first": "10/31/08",
+      "last": "09/07/13",
+      "total": 2,
+      "l100": 0,
+      "slp": 567
+    },
+    {
+      "title": "Boys In The Barroom",
+      "first": "11/19/88",
+      "last": "11/25/88",
+      "total": 2,
+      "l100": 0,
+      "slp": 3015
+    },
+    {
+      "title": "Brown Eyed Girl",
+      "first": "02/24/85",
+      "last": "06/01/87",
+      "total": 2,
+      "l100": 0,
+      "slp": 3166
+    },
+    {
+      "title": "Burning Down The House",
+      "first": "12/31/13",
+      "last": "12/31/16",
+      "total": 2,
+      "l100": 0,
+      "slp": 316
+    },
+    {
+      "title": "The Chain",
+      "first": "07/21/86",
+      "last": "08/11/86",
+      "total": 2,
+      "l100": 0,
+      "slp": 3237
+    },
+    {
+      "title": "Cissy Strut",
+      "first": "08/08/03",
+      "last": "03/25/10",
+      "total": 2,
+      "l100": 0,
+      "slp": 789
+    },
+    {
+      "title": "Cocaine",
+      "first": "10/31/13",
+      "last": "08/03/19",
+      "total": 2,
+      "l100": 0,
+      "slp": 223
+    },
+    {
+      "title": "Crazy Train",
+      "first": "10/28/23",
+      "last": "12/30/23",
+      "total": 2,
+      "l100": 2,
+      "slp": 84
+    },
+    {
+      "title": "Cross Cut Saw",
+      "first": "12/03/94",
+      "last": "06/27/00",
+      "total": 2,
+      "l100": 0,
+      "slp": 1505
+    },
+    {
+      "title": "Crossroads",
+      "first": "06/05/90",
+      "last": "11/23/90",
+      "total": 2,
+      "l100": 0,
+      "slp": 2725
+    },
+    {
+      "title": "Dead Flowers",
+      "first": "12/29/15",
+      "last": "06/29/25",
+      "total": 2,
+      "l100": 1,
+      "slp": 49
+    },
+    {
+      "title": "Down in a Hole",
+      "first": "10/31/25",
+      "last": "12/31/25",
+      "total": 2,
+      "l100": 2,
+      "slp": 26
+    },
+    {
+      "title": "Dream Warrior",
+      "first": "10/30/10",
+      "last": "10/29/22",
+      "total": 2,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "Drive",
+      "first": "10/17/01",
+      "last": "11/17/01",
+      "total": 2,
+      "l100": 0,
+      "slp": 1355
+    },
+    {
+      "title": "Elevator To The Moon",
+      "first": "04/04/91",
+      "last": "07/29/23",
+      "total": 2,
+      "l100": 1,
+      "slp": 97
+    },
+    {
+      "title": "Enter Sandman",
+      "first": "10/31/07",
+      "last": "10/29/22",
+      "total": 2,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "First We Take Manhattan",
+      "first": "12/31/15",
+      "last": "02/26/16",
+      "total": 2,
+      "l100": 0,
+      "slp": 380
+    },
+    {
+      "title": "Foxy Lady",
+      "first": "04/07/86",
+      "last": "04/25/86",
+      "total": 2,
+      "l100": 0,
+      "slp": 3260
+    },
+    {
+      "title": "Georgia On A Fast Train",
+      "first": "12/31/05",
+      "last": "04/22/06",
+      "total": 2,
+      "l100": 0,
+      "slp": 1092
+    },
+    {
+      "title": "Georgia On My Mind",
+      "first": "12/31/05",
+      "last": "09/20/08",
+      "total": 2,
+      "l100": 0,
+      "slp": 868
+    },
+    {
+      "title": "Get Up (I Feel Like Being A Sex Machine)",
+      "first": "10/31/02",
+      "last": "11/10/02",
+      "total": 2,
+      "l100": 0,
+      "slp": 1304
+    },
+    {
+      "title": "Glad",
+      "first": "06/22/02",
+      "last": "09/06/14",
+      "total": 2,
+      "l100": 0,
+      "slp": 491
+    },
+    {
+      "title": "Havin' A Ball",
+      "first": "07/16/94",
+      "last": "07/23/94",
+      "total": 2,
+      "l100": 0,
+      "slp": 2178
+    },
+    {
+      "title": "Hearts Gone Blind",
+      "first": "10/03/91",
+      "last": "10/04/91",
+      "total": 2,
+      "l100": 0,
+      "slp": 2608
+    },
+    {
+      "title": "Help Me",
+      "first": "10/31/13",
+      "last": "11/14/13",
+      "total": 2,
+      "l100": 0,
+      "slp": 541
+    },
+    {
+      "title": "I Got The Same Old Blues",
+      "first": "03/25/23",
+      "last": "04/21/23",
+      "total": 2,
+      "l100": 0,
+      "slp": 107
+    },
+    {
+      "title": "I Put A Spell On You",
+      "first": "10/31/05",
+      "last": "06/25/14",
+      "total": 2,
+      "l100": 0,
+      "slp": 500
+    },
+    {
+      "title": "I Trusted You",
+      "first": "10/31/19",
+      "last": "11/02/19",
+      "total": 2,
+      "l100": 0,
+      "slp": 211
+    },
+    {
+      "title": "I Want You (She's So Heavy)",
+      "first": "10/30/06",
+      "last": "12/30/06",
+      "total": 2,
+      "l100": 0,
+      "slp": 1010
+    },
+    {
+      "title": "Just Like A Woman",
+      "first": "09/01/09",
+      "last": "10/10/09",
+      "total": 2,
+      "l100": 0,
+      "slp": 817
+    },
+    {
+      "title": "Key to the Highway",
+      "first": "06/01/87",
+      "last": "09/08/87",
+      "total": 2,
+      "l100": 0,
+      "slp": 3147
+    },
+    {
+      "title": "L.A. Woman",
+      "first": "10/31/97",
+      "last": "10/29/16",
+      "total": 2,
+      "l100": 0,
+      "slp": 320
+    },
+    {
+      "title": "Lean On Me",
+      "first": "12/31/14",
+      "last": "06/28/15",
+      "total": 2,
+      "l100": 0,
+      "slp": 420
+    },
+    {
+      "title": "Long Cool Woman In A Black Dress",
+      "first": "10/29/00",
+      "last": "12/31/18",
+      "total": 2,
+      "l100": 0,
+      "slp": 251
+    },
+    {
+      "title": "Machine reprise",
+      "first": "10/20/17",
+      "last": "10/08/21",
+      "total": 2,
+      "l100": 0,
+      "slp": 185
+    },
+    {
+      "title": "Mercy Train To Bogart",
+      "first": "06/27/21",
+      "last": "10/21/22",
+      "total": 2,
+      "l100": 0,
+      "slp": 132
+    },
+    {
+      "title": "Moondance",
+      "first": "12/31/09",
+      "last": "12/31/16",
+      "total": 2,
+      "l100": 0,
+      "slp": 316
+    },
+    {
+      "title": "The Other One Jam",
+      "first": "07/21/86",
+      "last": "10/13/88",
+      "total": 2,
+      "l100": 0,
+      "slp": 3033
+    },
+    {
+      "title": "Over The Hills And Far Away",
+      "first": "10/31/98",
+      "last": "12/31/98",
+      "total": 2,
+      "l100": 0,
+      "slp": 1647
+    },
+    {
+      "title": "Piece of My Heart",
+      "first": "08/24/18",
+      "last": "05/25/24",
+      "total": 2,
+      "l100": 1,
+      "slp": 70
+    },
+    {
+      "title": "Radar Love",
+      "first": "10/31/96",
+      "last": "10/30/06",
+      "total": 2,
+      "l100": 0,
+      "slp": 1016
+    },
+    {
+      "title": "Rainy Day Women #12 & 35",
+      "first": "04/20/02",
+      "last": "11/10/02",
+      "total": 2,
+      "l100": 0,
+      "slp": 1304
+    },
+    {
+      "title": "Reflections",
+      "first": "01/12/91",
+      "last": "01/31/91",
+      "total": 2,
+      "l100": 0,
+      "slp": 2697
+    },
+    {
+      "title": "Roadhouse Blues",
+      "first": "01/25/22",
+      "last": "12/29/23",
+      "total": 2,
+      "l100": 1,
+      "slp": 85
+    },
+    {
+      "title": "Room at the Top",
+      "first": "03/24/24",
+      "last": "07/05/26",
+      "total": 2,
+      "l100": 2,
+      "slp": 5
+    },
+    {
+      "title": "Scholarship",
+      "first": "12/31/01",
+      "last": "04/22/02",
+      "total": 2,
+      "l100": 0,
+      "slp": 1343
+    },
+    {
+      "title": "Shoes On Tight",
+      "first": "03/24/07",
+      "last": "03/30/07",
+      "total": 2,
+      "l100": 0,
+      "slp": 1002
+    },
+    {
+      "title": "Spill The Wine",
+      "first": "10/31/13",
+      "last": "12/31/13",
+      "total": 2,
+      "l100": 0,
+      "slp": 536
+    },
+    {
+      "title": "Testify",
+      "first": "12/31/99",
+      "last": "06/22/02",
+      "total": 2,
+      "l100": 0,
+      "slp": 1337
+    },
+    {
+      "title": "There's A Hole In The Bucket",
+      "first": "04/07/86",
+      "last": "11/11/87",
+      "total": 2,
+      "l100": 0,
+      "slp": 3133
+    },
+    {
+      "title": "This Masquerade",
+      "first": "10/31/09",
+      "last": "11/14/09",
+      "total": 2,
+      "l100": 0,
+      "slp": 801
+    },
+    {
+      "title": "Tipitina",
+      "first": "06/21/08",
+      "last": "03/20/14",
+      "total": 2,
+      "l100": 0,
+      "slp": 524
+    },
+    {
+      "title": "Trondossa",
+      "first": "05/06/18",
+      "last": "04/28/19",
+      "total": 2,
+      "l100": 0,
+      "slp": 233
+    },
+    {
+      "title": "Wait for No One",
+      "first": "02/24/85",
+      "last": "05/13/87",
+      "total": 2,
+      "l100": 0,
+      "slp": 3176
+    },
+    {
+      "title": "War Pigs",
+      "first": "07/26/25",
+      "last": "12/31/25",
+      "total": 2,
+      "l100": 2,
+      "slp": 26
+    },
+    {
+      "title": "You Gotta Move",
+      "first": "06/01/87",
+      "last": "09/08/87",
+      "total": 2,
+      "l100": 0,
+      "slp": 3147
+    },
+    {
+      "title": "Zigzaggin' Through Ghostland",
+      "first": "10/31/21",
+      "last": "02/18/22",
+      "total": 2,
+      "l100": 0,
+      "slp": 167
+    },
+    {
+      "title": "(Don't Fear) The Reaper",
+      "first": "10/28/18",
+      "last": "10/28/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 254
+    },
+    {
+      "title": "(Don't Go Back To) Rockville",
+      "first": "12/30/09",
+      "last": "12/30/09",
+      "total": 1,
+      "l100": 0,
+      "slp": 791
+    },
+    {
+      "title": "Across the Universe",
+      "first": "02/19/12",
+      "last": "02/19/12",
+      "total": 1,
+      "l100": 0,
+      "slp": 615
+    },
+    {
+      "title": "Action Man reprise",
+      "first": "10/30/10",
+      "last": "10/30/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 711
+    },
+    {
+      "title": "Adirondacks",
+      "first": "12/31/01",
+      "last": "12/31/01",
+      "total": 1,
+      "l100": 0,
+      "slp": 1347
+    },
+    {
+      "title": "All Right Now",
+      "first": "10/29/17",
+      "last": "10/29/17",
+      "total": 1,
+      "l100": 0,
+      "slp": 289
+    },
+    {
+      "title": "Allhambra",
+      "first": "12/08/86",
+      "last": "12/08/86",
+      "total": 1,
+      "l100": 0,
+      "slp": 3216
+    },
+    {
+      "title": "American Standard",
+      "first": "09/19/90",
+      "last": "09/19/90",
+      "total": 1,
+      "l100": 0,
+      "slp": 2754
+    },
+    {
+      "title": "And When I Die",
+      "first": "12/31/02",
+      "last": "12/31/02",
+      "total": 1,
+      "l100": 0,
+      "slp": 1298
+    },
+    {
+      "title": "Aqualung",
+      "first": "10/28/18",
+      "last": "10/28/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 254
+    },
+    {
+      "title": "As Time Goes By",
+      "first": "12/31/08",
+      "last": "12/31/08",
+      "total": 1,
+      "l100": 0,
+      "slp": 844
+    },
+    {
+      "title": "Back In The U.S.A.",
+      "first": "11/09/08",
+      "last": "11/09/08",
+      "total": 1,
+      "l100": 0,
+      "slp": 849
+    },
+    {
+      "title": "Bad Moon Rising",
+      "first": "09/07/13",
+      "last": "09/07/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 567
+    },
+    {
+      "title": "Band On The Run",
+      "first": "10/29/00",
+      "last": "10/29/00",
+      "total": 1,
+      "l100": 0,
+      "slp": 1462
+    },
+    {
+      "title": "Bertha",
+      "first": "06/01/87",
+      "last": "06/01/87",
+      "total": 1,
+      "l100": 0,
+      "slp": 3166
+    },
+    {
+      "title": "Big Chief",
+      "first": "05/01/08",
+      "last": "05/01/08",
+      "total": 1,
+      "l100": 0,
+      "slp": 902
+    },
+    {
+      "title": "The Big Lagoon",
+      "first": "10/03/91",
+      "last": "10/03/91",
+      "total": 1,
+      "l100": 0,
+      "slp": 2609
+    },
+    {
+      "title": "Black Hole Sun",
+      "first": "10/31/25",
+      "last": "10/31/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "Black-Eyed Peas Jam",
+      "first": "10/31/89",
+      "last": "10/31/89",
+      "total": 1,
+      "l100": 0,
+      "slp": 2918
+    },
+    {
+      "title": "Blind",
+      "first": "12/31/02",
+      "last": "12/31/02",
+      "total": 1,
+      "l100": 0,
+      "slp": 1298
+    },
+    {
+      "title": "Boogie Chillen",
+      "first": "06/22/01",
+      "last": "06/22/01",
+      "total": 1,
+      "l100": 0,
+      "slp": 1418
+    },
+    {
+      "title": "Born To Be Wild",
+      "first": "04/25/86",
+      "last": "04/25/86",
+      "total": 1,
+      "l100": 0,
+      "slp": 3260
+    },
+    {
+      "title": "Bright Side of Life",
+      "first": "10/31/07",
+      "last": "10/31/07",
+      "total": 1,
+      "l100": 0,
+      "slp": 932
+    },
+    {
+      "title": "Bring It On Home",
+      "first": "10/31/10",
+      "last": "10/31/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 710
+    },
+    {
+      "title": "Broken String Blues",
+      "first": "10/24/85",
+      "last": "10/24/85",
+      "total": 1,
+      "l100": 0,
+      "slp": 3276
+    },
+    {
+      "title": "Brown Sugar",
+      "first": "10/31/08",
+      "last": "10/31/08",
+      "total": 1,
+      "l100": 0,
+      "slp": 854
+    },
+    {
+      "title": "Burnout Man",
+      "first": "02/24/85",
+      "last": "02/24/85",
+      "total": 1,
+      "l100": 0,
+      "slp": 3279
+    },
+    {
+      "title": "Busted",
+      "first": "04/20/05",
+      "last": "04/20/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1176
+    },
+    {
+      "title": "Can't Change The Past",
+      "first": "08/10/06",
+      "last": "08/10/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1052
+    },
+    {
+      "title": "Can't Get Enough",
+      "first": "11/02/13",
+      "last": "11/02/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 547
+    },
+    {
+      "title": "Cant Get There From Here",
+      "first": "10/30/06",
+      "last": "10/30/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1016
+    },
+    {
+      "title": "Can't Help Falling In Love",
+      "first": "02/24/94",
+      "last": "02/24/94",
+      "total": 1,
+      "l100": 0,
+      "slp": 2232
+    },
+    {
+      "title": "The Changeling",
+      "first": "10/28/16",
+      "last": "10/28/16",
+      "total": 1,
+      "l100": 0,
+      "slp": 321
+    },
+    {
+      "title": "Chicken Strut",
+      "first": "10/31/19",
+      "last": "10/31/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 213
+    },
+    {
+      "title": "Cisco Kid",
+      "first": "09/22/90",
+      "last": "09/22/90",
+      "total": 1,
+      "l100": 0,
+      "slp": 2751
+    },
+    {
+      "title": "Clair de Lune",
+      "first": "10/31/25",
+      "last": "10/31/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "Clap Hands",
+      "first": "07/10/13",
+      "last": "07/10/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 574
+    },
+    {
+      "title": "Come As You Are",
+      "first": "10/31/09",
+      "last": "10/31/09",
+      "total": 1,
+      "l100": 0,
+      "slp": 810
+    },
+    {
+      "title": "Come On",
+      "first": "12/31/13",
+      "last": "12/31/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 536
+    },
+    {
+      "title": "Comfortably Numb",
+      "first": "06/29/25",
+      "last": "06/29/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 49
+    },
+    {
+      "title": "Crack And Whistle",
+      "first": "02/13/96",
+      "last": "02/13/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1966
+    },
+    {
+      "title": "Crime And Punishment",
+      "first": "10/17/01",
+      "last": "10/17/01",
+      "total": 1,
+      "l100": 0,
+      "slp": 1380
+    },
+    {
+      "title": "Daddy's Drinkin' Again",
+      "first": "07/29/03",
+      "last": "07/29/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1242
+    },
+    {
+      "title": "Dang Me",
+      "first": "02/11/12",
+      "last": "02/11/12",
+      "total": 1,
+      "l100": 0,
+      "slp": 619
+    },
+    {
+      "title": "Desperados Waiting For A Train",
+      "first": "08/25/19",
+      "last": "08/25/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 219
+    },
+    {
+      "title": "Do It Again",
+      "first": "09/22/90",
+      "last": "09/22/90",
+      "total": 1,
+      "l100": 0,
+      "slp": 2751
+    },
+    {
+      "title": "Don't Drink The Water",
+      "first": "05/28/23",
+      "last": "05/28/23",
+      "total": 1,
+      "l100": 0,
+      "slp": 102
+    },
+    {
+      "title": "Doo Doo Doo Doo Doo (Heartbreaker)",
+      "first": "06/12/11",
+      "last": "06/12/11",
+      "total": 1,
+      "l100": 0,
+      "slp": 688
+    },
+    {
+      "title": "Dooley",
+      "first": "10/31/15",
+      "last": "10/31/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 399
+    },
+    {
+      "title": "Dragonaut Jam",
+      "first": "10/29/22",
+      "last": "10/29/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "Dreams",
+      "first": "10/29/22",
+      "last": "10/29/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "Drift Away",
+      "first": "10/28/18",
+      "last": "10/28/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 254
+    },
+    {
+      "title": "Earache My Eye",
+      "first": "10/31/14",
+      "last": "10/31/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 468
+    },
+    {
+      "title": "Early In The Morning Blues",
+      "first": "06/27/00",
+      "last": "06/27/00",
+      "total": 1,
+      "l100": 0,
+      "slp": 1505
+    },
+    {
+      "title": "Electric Funeral",
+      "first": "10/25/16",
+      "last": "10/25/16",
+      "total": 1,
+      "l100": 0,
+      "slp": 323
+    },
+    {
+      "title": "Excitable Boy",
+      "first": "12/30/09",
+      "last": "12/30/09",
+      "total": 1,
+      "l100": 0,
+      "slp": 791
+    },
+    {
+      "title": "Fab Fox 'Fess Jam",
+      "first": "12/30/96",
+      "last": "12/30/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1883
+    },
+    {
+      "title": "Feeling Gravitys Pull",
+      "first": "10/31/21",
+      "last": "10/31/21",
+      "total": 1,
+      "l100": 0,
+      "slp": 176
+    },
+    {
+      "title": "The Fishin' Hole",
+      "first": "10/31/15",
+      "last": "10/31/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 399
+    },
+    {
+      "title": "Folsom Prison Blues",
+      "first": "10/05/10",
+      "last": "10/05/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 727
+    },
+    {
+      "title": "Fortunate Son",
+      "first": "09/07/13",
+      "last": "09/07/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 567
+    },
+    {
+      "title": "Four Years of Chances",
+      "first": "08/24/18",
+      "last": "08/24/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 266
+    },
+    {
+      "title": "Franklin's Tower",
+      "first": "05/13/88",
+      "last": "05/13/88",
+      "total": 1,
+      "l100": 0,
+      "slp": 3083
+    },
+    {
+      "title": "Freedom",
+      "first": "08/23/90",
+      "last": "08/23/90",
+      "total": 1,
+      "l100": 0,
+      "slp": 2762
+    },
+    {
+      "title": "Gimme Some Lovin'",
+      "first": "09/06/14",
+      "last": "09/06/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 491
+    },
+    {
+      "title": "Giving Love",
+      "first": "05/10/91",
+      "last": "05/10/91",
+      "total": 1,
+      "l100": 0,
+      "slp": 2685
+    },
+    {
+      "title": "The Golden Road (To Unlimited Devotion)",
+      "first": "10/28/23",
+      "last": "10/28/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "Good Morning Mr. Hard On",
+      "first": "12/31/19",
+      "last": "12/31/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 208
+    },
+    {
+      "title": "Gotta Get Mean",
+      "first": "10/29/91",
+      "last": "10/29/91",
+      "total": 1,
+      "l100": 0,
+      "slp": 2592
+    },
+    {
+      "title": "Gotta Have Money",
+      "first": "10/02/22",
+      "last": "10/02/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 133
+    },
+    {
+      "title": "Grandma's Hands",
+      "first": "08/07/03",
+      "last": "08/07/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1235
+    },
+    {
+      "title": "Guns of Brixton",
+      "first": "09/12/15",
+      "last": "09/12/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 406
+    },
+    {
+      "title": "Happy (PW)",
+      "first": "12/31/14",
+      "last": "12/31/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 463
+    },
+    {
+      "title": "Happy (RS)",
+      "first": "12/31/14",
+      "last": "12/31/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 463
+    },
+    {
+      "title": "Happy Xmas (War Is Over)",
+      "first": "12/31/12",
+      "last": "12/31/12",
+      "total": 1,
+      "l100": 0,
+      "slp": 613
+    },
+    {
+      "title": "Have A Cigar",
+      "first": "10/31/15",
+      "last": "10/31/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 399
+    },
+    {
+      "title": "Hercules",
+      "first": "05/02/15",
+      "last": "05/02/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 434
+    },
+    {
+      "title": "Here Comes The Judge",
+      "first": "10/28/18",
+      "last": "10/28/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 254
+    },
+    {
+      "title": "Hey Pocky Way",
+      "first": "10/31/19",
+      "last": "10/31/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 213
+    },
+    {
+      "title": "Highway To Heaven",
+      "first": "01/22/96",
+      "last": "01/22/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1981
+    },
+    {
+      "title": "Hit It And Quit It",
+      "first": "10/31/14",
+      "last": "10/31/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 468
+    },
+    {
+      "title": "Home on the Range",
+      "first": "10/29/17",
+      "last": "10/29/17",
+      "total": 1,
+      "l100": 0,
+      "slp": 289
+    },
+    {
+      "title": "Hot In Herre",
+      "first": "10/31/02",
+      "last": "10/31/02",
+      "total": 1,
+      "l100": 0,
+      "slp": 1312
+    },
+    {
+      "title": "How Come My Dog Don't Bark (When You Come Around)",
+      "first": "05/03/14",
+      "last": "05/03/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 512
+    },
+    {
+      "title": "I Ain't Got No Business Doin' Business Today",
+      "first": "09/14/88",
+      "last": "09/14/88",
+      "total": 1,
+      "l100": 0,
+      "slp": 3050
+    },
+    {
+      "title": "I Ain't Superstitious",
+      "first": "06/12/05",
+      "last": "06/12/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1162
+    },
+    {
+      "title": "I Can't Stop Loving You",
+      "first": "12/31/06",
+      "last": "12/31/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1009
+    },
+    {
+      "title": "I Fought The Law",
+      "first": "10/31/15",
+      "last": "10/31/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 399
+    },
+    {
+      "title": "I Got My Mojo Workin'",
+      "first": "10/31/13",
+      "last": "10/31/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 549
+    },
+    {
+      "title": "I Like It Like That",
+      "first": "11/03/91",
+      "last": "11/03/91",
+      "total": 1,
+      "l100": 0,
+      "slp": 2589
+    },
+    {
+      "title": "I Shot The Sheriff",
+      "first": "10/31/15",
+      "last": "10/31/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 399
+    },
+    {
+      "title": "I Swear It Wasn't Me",
+      "first": "01/25/15",
+      "last": "01/25/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 460
+    },
+    {
+      "title": "I Want Candy",
+      "first": "10/31/13",
+      "last": "10/31/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 549
+    },
+    {
+      "title": "I'll Sleep When I'm Dead",
+      "first": "12/31/23",
+      "last": "12/31/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 83
+    },
+    {
+      "title": "I'm A Man",
+      "first": "09/06/14",
+      "last": "09/06/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 491
+    },
+    {
+      "title": "I'm Losing You",
+      "first": "10/31/11",
+      "last": "10/31/11",
+      "total": 1,
+      "l100": 0,
+      "slp": 631
+    },
+    {
+      "title": "Indian Song",
+      "first": "12/29/96",
+      "last": "12/29/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1884
+    },
+    {
+      "title": "Jack Straw",
+      "first": "01/23/26",
+      "last": "01/23/26",
+      "total": 1,
+      "l100": 1,
+      "slp": 22
+    },
+    {
+      "title": "Jesus Was A Capricorn",
+      "first": "08/25/19",
+      "last": "08/25/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 219
+    },
+    {
+      "title": "Joe's Garage",
+      "first": "10/31/01",
+      "last": "10/31/01",
+      "total": 1,
+      "l100": 0,
+      "slp": 1369
+    },
+    {
+      "title": "Johnny Appleseed",
+      "first": "10/31/07",
+      "last": "10/31/07",
+      "total": 1,
+      "l100": 0,
+      "slp": 932
+    },
+    {
+      "title": "John's Other Jam",
+      "first": "10/30/06",
+      "last": "10/30/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1016
+    },
+    {
+      "title": "Jumpin' Jack Flash",
+      "first": "10/28/18",
+      "last": "10/28/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 254
+    },
+    {
+      "title": "Just Ain't Easy",
+      "first": "01/10/14",
+      "last": "01/10/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 535
+    },
+    {
+      "title": "Keep On Chooglin'",
+      "first": "09/07/13",
+      "last": "09/07/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 567
+    },
+    {
+      "title": "Last Date",
+      "first": "04/07/05",
+      "last": "04/07/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1187
+    },
+    {
+      "title": "Let's Roll",
+      "first": "02/12/12",
+      "last": "02/12/12",
+      "total": 1,
+      "l100": 0,
+      "slp": 618
+    },
+    {
+      "title": "Life on Mars?",
+      "first": "10/31/21",
+      "last": "10/31/21",
+      "total": 1,
+      "l100": 0,
+      "slp": 176
+    },
+    {
+      "title": "Light My Fire",
+      "first": "11/02/00",
+      "last": "11/02/00",
+      "total": 1,
+      "l100": 0,
+      "slp": 1460
+    },
+    {
+      "title": "Like A Hurricane",
+      "first": "09/25/10",
+      "last": "09/25/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 733
+    },
+    {
+      "title": "Lithium",
+      "first": "10/30/16",
+      "last": "10/30/16",
+      "total": 1,
+      "l100": 0,
+      "slp": 319
+    },
+    {
+      "title": "Little Lilly Jam",
+      "first": "11/10/98",
+      "last": "11/10/98",
+      "total": 1,
+      "l100": 0,
+      "slp": 1662
+    },
+    {
+      "title": "Little Lilly reprise",
+      "first": "11/09/99",
+      "last": "11/09/99",
+      "total": 1,
+      "l100": 0,
+      "slp": 1552
+    },
+    {
+      "title": "Little Red Rooster",
+      "first": "06/12/05",
+      "last": "06/12/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1162
+    },
+    {
+      "title": "Livin' In The USA",
+      "first": "10/10/08",
+      "last": "10/10/08",
+      "total": 1,
+      "l100": 0,
+      "slp": 867
+    },
+    {
+      "title": "Lola",
+      "first": "10/31/10",
+      "last": "10/31/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 710
+    },
+    {
+      "title": "Lonely Avenue",
+      "first": "08/19/01",
+      "last": "08/19/01",
+      "total": 1,
+      "l100": 0,
+      "slp": 1387
+    },
+    {
+      "title": "Long Live Rock",
+      "first": "10/31/97",
+      "last": "10/31/97",
+      "total": 1,
+      "l100": 0,
+      "slp": 1785
+    },
+    {
+      "title": "Long Train Runnin'",
+      "first": "04/21/88",
+      "last": "04/21/88",
+      "total": 1,
+      "l100": 0,
+      "slp": 3096
+    },
+    {
+      "title": "Longer Look",
+      "first": "04/14/05",
+      "last": "04/14/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1181
+    },
+    {
+      "title": "Louisiana Truck Stop",
+      "first": "11/02/02",
+      "last": "11/02/02",
+      "total": 1,
+      "l100": 0,
+      "slp": 1310
+    },
+    {
+      "title": "Love For Sale",
+      "first": "10/31/01",
+      "last": "10/31/01",
+      "total": 1,
+      "l100": 0,
+      "slp": 1369
+    },
+    {
+      "title": "Love In Vain",
+      "first": "03/16/18",
+      "last": "03/16/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 277
+    },
+    {
+      "title": "Love Is The Drug",
+      "first": "10/31/03",
+      "last": "10/31/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1203
+    },
+    {
+      "title": "Low Down Dirty Dog Blues",
+      "first": "12/29/15",
+      "last": "12/29/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 398
+    },
+    {
+      "title": "Lullaby for NYC",
+      "first": "11/20/93",
+      "last": "11/20/93",
+      "total": 1,
+      "l100": 0,
+      "slp": 2249
+    },
+    {
+      "title": "Magic Bus",
+      "first": "11/30/00",
+      "last": "11/30/00",
+      "total": 1,
+      "l100": 0,
+      "slp": 1442
+    },
+    {
+      "title": "Magic Carpet Ride",
+      "first": "10/29/17",
+      "last": "10/29/17",
+      "total": 1,
+      "l100": 0,
+      "slp": 289
+    },
+    {
+      "title": "Mama Kin",
+      "first": "10/31/08",
+      "last": "10/31/08",
+      "total": 1,
+      "l100": 0,
+      "slp": 854
+    },
+    {
+      "title": "Mambo Sun",
+      "first": "06/26/22",
+      "last": "06/26/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 150
+    },
+    {
+      "title": "Man On The Moon",
+      "first": "10/31/19",
+      "last": "10/31/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 213
+    },
+    {
+      "title": "Midnight Special",
+      "first": "12/31/12",
+      "last": "12/31/12",
+      "total": 1,
+      "l100": 0,
+      "slp": 613
+    },
+    {
+      "title": "Midnight Train To Georgia",
+      "first": "12/31/05",
+      "last": "12/31/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1094
+    },
+    {
+      "title": "Milk And Cookies",
+      "first": "08/24/19",
+      "last": "08/24/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 220
+    },
+    {
+      "title": "Misty Mountain Hop",
+      "first": "10/31/99",
+      "last": "10/31/99",
+      "total": 1,
+      "l100": 0,
+      "slp": 1553
+    },
+    {
+      "title": "Mr. Crowley",
+      "first": "10/28/23",
+      "last": "10/28/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "Muffin Man",
+      "first": "09/19/10",
+      "last": "09/19/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 737
+    },
+    {
+      "title": "My Generation",
+      "first": "12/31/23",
+      "last": "12/31/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 83
+    },
+    {
+      "title": "My Last Act",
+      "first": "12/31/01",
+      "last": "12/31/01",
+      "total": 1,
+      "l100": 0,
+      "slp": 1347
+    },
+    {
+      "title": "Mystic Highway",
+      "first": "09/07/13",
+      "last": "09/07/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 567
+    },
+    {
+      "title": "Nature's Way",
+      "first": "10/29/22",
+      "last": "10/29/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "Next Time You See Me",
+      "first": "06/01/87",
+      "last": "06/01/87",
+      "total": 1,
+      "l100": 0,
+      "slp": 3166
+    },
+    {
+      "title": "Nowhere To Run",
+      "first": "10/31/05",
+      "last": "10/31/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1101
+    },
+    {
+      "title": "The Old Man Down the Road",
+      "first": "09/07/13",
+      "last": "09/07/13",
+      "total": 1,
+      "l100": 0,
+      "slp": 567
+    },
+    {
+      "title": "On Broadway",
+      "first": "11/01/03",
+      "last": "11/01/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1202
+    },
+    {
+      "title": "Outta Mind (Outta Sight)",
+      "first": "10/31/11",
+      "last": "10/31/11",
+      "total": 1,
+      "l100": 0,
+      "slp": 631
+    },
+    {
+      "title": "Over The Rainbow",
+      "first": "10/28/23",
+      "last": "10/28/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "People Are Strange",
+      "first": "10/30/06",
+      "last": "10/30/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1016
+    },
+    {
+      "title": "Perfect Day",
+      "first": "10/31/19",
+      "last": "10/31/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 213
+    },
+    {
+      "title": "Pet Sematary",
+      "first": "10/31/03",
+      "last": "10/31/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1203
+    },
+    {
+      "title": "Phosphene Dream",
+      "first": "10/29/22",
+      "last": "10/29/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "Pigeons reprise",
+      "first": "03/25/89",
+      "last": "03/25/89",
+      "total": 1,
+      "l100": 0,
+      "slp": 2981
+    },
+    {
+      "title": "Play a Train Song",
+      "first": "11/23/25",
+      "last": "11/23/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 29
+    },
+    {
+      "title": "Postcard reprise",
+      "first": "06/27/99",
+      "last": "06/27/99",
+      "total": 1,
+      "l100": 0,
+      "slp": 1618
+    },
+    {
+      "title": "Proud Mary",
+      "first": "10/31/08",
+      "last": "10/31/08",
+      "total": 1,
+      "l100": 0,
+      "slp": 854
+    },
+    {
+      "title": "Ramble On Rose",
+      "first": "05/23/15",
+      "last": "05/23/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 431
+    },
+    {
+      "title": "Respect Yourself",
+      "first": "12/31/99",
+      "last": "12/31/99",
+      "total": 1,
+      "l100": 0,
+      "slp": 1537
+    },
+    {
+      "title": "Right Place Wrong Time",
+      "first": "10/30/10",
+      "last": "10/30/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 711
+    },
+    {
+      "title": "Ring of Fire",
+      "first": "05/16/03",
+      "last": "05/16/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1271
+    },
+    {
+      "title": "Rock Steady",
+      "first": "08/24/18",
+      "last": "08/24/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 266
+    },
+    {
+      "title": "Rotgut",
+      "first": "10/31/95",
+      "last": "10/31/95",
+      "total": 1,
+      "l100": 0,
+      "slp": 1988
+    },
+    {
+      "title": "Set the Controls for the Heart of the Sun Jam",
+      "first": "07/11/06",
+      "last": "07/11/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1074
+    },
+    {
+      "title": "She Walks Right In",
+      "first": "10/12/03",
+      "last": "10/12/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1216
+    },
+    {
+      "title": "Sick And Tired",
+      "first": "11/01/96",
+      "last": "11/01/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1892
+    },
+    {
+      "title": "Silent Night",
+      "first": "08/24/19",
+      "last": "08/24/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 220
+    },
+    {
+      "title": "Slip Kid",
+      "first": "10/31/07",
+      "last": "10/31/07",
+      "total": 1,
+      "l100": 0,
+      "slp": 932
+    },
+    {
+      "title": "Snorkle Search",
+      "first": "04/20/90",
+      "last": "04/20/90",
+      "total": 1,
+      "l100": 0,
+      "slp": 2830
+    },
+    {
+      "title": "Snowblind",
+      "first": "10/28/23",
+      "last": "10/28/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "Space is the Place",
+      "first": "05/29/22",
+      "last": "05/29/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 153
+    },
+    {
+      "title": "Space is the Place Jam",
+      "first": "04/18/92",
+      "last": "04/18/92",
+      "total": 1,
+      "l100": 0,
+      "slp": 2533
+    },
+    {
+      "title": "Space Truckin'",
+      "first": "10/31/96",
+      "last": "10/31/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1893
+    },
+    {
+      "title": "Spirit In The Dark",
+      "first": "10/31/05",
+      "last": "10/31/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1101
+    },
+    {
+      "title": "Starman",
+      "first": "10/31/19",
+      "last": "10/31/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 213
+    },
+    {
+      "title": "Still Crazy After All These Years",
+      "first": "12/31/16",
+      "last": "12/31/16",
+      "total": 1,
+      "l100": 0,
+      "slp": 316
+    },
+    {
+      "title": "Strange Brew",
+      "first": "10/31/14",
+      "last": "10/31/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 468
+    },
+    {
+      "title": "Stranglehold",
+      "first": "10/20/88",
+      "last": "10/20/88",
+      "total": 1,
+      "l100": 0,
+      "slp": 3029
+    },
+    {
+      "title": "Strictly Volunteer Jam",
+      "first": "09/14/92",
+      "last": "09/14/92",
+      "total": 1,
+      "l100": 0,
+      "slp": 2452
+    },
+    {
+      "title": "Such A Night",
+      "first": "10/30/21",
+      "last": "10/30/21",
+      "total": 1,
+      "l100": 0,
+      "slp": 177
+    },
+    {
+      "title": "Sweet Dreams (PC)",
+      "first": "10/29/22",
+      "last": "10/29/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "Sweet Dreams (RB)",
+      "first": "10/29/22",
+      "last": "10/29/22",
+      "total": 1,
+      "l100": 0,
+      "slp": 128
+    },
+    {
+      "title": "Sweetness",
+      "first": "02/01/89",
+      "last": "02/01/89",
+      "total": 1,
+      "l100": 0,
+      "slp": 2993
+    },
+    {
+      "title": "T.V. Eye",
+      "first": "04/21/15",
+      "last": "04/21/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 440
+    },
+    {
+      "title": "Tennessee Before Daylight",
+      "first": "08/13/06",
+      "last": "08/13/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1049
+    },
+    {
+      "title": "That Old Black Magic",
+      "first": "10/30/06",
+      "last": "10/30/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1016
+    },
+    {
+      "title": "Thinkin'",
+      "first": "02/24/85",
+      "last": "02/24/85",
+      "total": 1,
+      "l100": 0,
+      "slp": 3279
+    },
+    {
+      "title": "This Must Be The Place (Na�ve Melody)",
+      "first": "10/28/23",
+      "last": "10/28/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "This Week In Baseball",
+      "first": "05/07/03",
+      "last": "05/07/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1276
+    },
+    {
+      "title": "Time Is On My Side",
+      "first": "12/31/12",
+      "last": "12/31/12",
+      "total": 1,
+      "l100": 0,
+      "slp": 613
+    },
+    {
+      "title": "Time Waits Jam",
+      "first": "07/16/03",
+      "last": "07/16/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1253
+    },
+    {
+      "title": "The Time Warp",
+      "first": "10/31/03",
+      "last": "10/31/03",
+      "total": 1,
+      "l100": 0,
+      "slp": 1203
+    },
+    {
+      "title": "Tiptoe Through The Tulips",
+      "first": "10/28/18",
+      "last": "10/28/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 254
+    },
+    {
+      "title": "Tongue (Shuffle In A)",
+      "first": "12/31/10",
+      "last": "12/31/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 708
+    },
+    {
+      "title": "Toura Loura Loura",
+      "first": "03/17/18",
+      "last": "03/17/18",
+      "total": 1,
+      "l100": 0,
+      "slp": 276
+    },
+    {
+      "title": "Tractor Jam",
+      "first": "03/11/89",
+      "last": "03/11/89",
+      "total": 1,
+      "l100": 0,
+      "slp": 2985
+    },
+    {
+      "title": "Train Kept A Rollin'",
+      "first": "04/05/00",
+      "last": "04/05/00",
+      "total": 1,
+      "l100": 0,
+      "slp": 1533
+    },
+    {
+      "title": "Traveler's Rest",
+      "first": "08/10/06",
+      "last": "08/10/06",
+      "total": 1,
+      "l100": 0,
+      "slp": 1052
+    },
+    {
+      "title": "Tush",
+      "first": "10/10/21",
+      "last": "10/10/21",
+      "total": 1,
+      "l100": 0,
+      "slp": 183
+    },
+    {
+      "title": "Volare",
+      "first": "10/31/19",
+      "last": "10/31/19",
+      "total": 1,
+      "l100": 0,
+      "slp": 213
+    },
+    {
+      "title": "Voodoo",
+      "first": "05/02/15",
+      "last": "05/02/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 434
+    },
+    {
+      "title": "Waiting For The Wind To Blow Down The Tree In My Backyard",
+      "first": "01/19/96",
+      "last": "01/19/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1983
+    },
+    {
+      "title": "Walking After Midnight",
+      "first": "12/31/09",
+      "last": "12/31/09",
+      "total": 1,
+      "l100": 0,
+      "slp": 790
+    },
+    {
+      "title": "Wanna Be Startin' Somethin'",
+      "first": "12/31/09",
+      "last": "12/31/09",
+      "total": 1,
+      "l100": 0,
+      "slp": 790
+    },
+    {
+      "title": "Warning",
+      "first": "10/26/16",
+      "last": "10/26/16",
+      "total": 1,
+      "l100": 0,
+      "slp": 322
+    },
+    {
+      "title": "Wasted Words",
+      "first": "01/10/14",
+      "last": "01/10/14",
+      "total": 1,
+      "l100": 0,
+      "slp": 535
+    },
+    {
+      "title": "We Gotta Get Out Of This Place",
+      "first": "05/07/05",
+      "last": "05/07/05",
+      "total": 1,
+      "l100": 0,
+      "slp": 1164
+    },
+    {
+      "title": "Welcome To My Nightmare",
+      "first": "10/31/07",
+      "last": "10/31/07",
+      "total": 1,
+      "l100": 0,
+      "slp": 932
+    },
+    {
+      "title": "We're All Mad Here",
+      "first": "10/31/25",
+      "last": "10/31/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "Westport Ferry (Not Berkeley CA)",
+      "first": "12/31/96",
+      "last": "12/31/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1882
+    },
+    {
+      "title": "What A Wonderful World",
+      "first": "12/31/99",
+      "last": "12/31/99",
+      "total": 1,
+      "l100": 0,
+      "slp": 1537
+    },
+    {
+      "title": "What's Made Milwaukee Famous (Has Made A Loser Out Of Me)",
+      "first": "10/25/15",
+      "last": "10/25/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 402
+    },
+    {
+      "title": "White Rabbit",
+      "first": "10/31/25",
+      "last": "10/31/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "Who Are You",
+      "first": "10/31/25",
+      "last": "10/31/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "Who Do You Love",
+      "first": "09/08/87",
+      "last": "09/08/87",
+      "total": 1,
+      "l100": 0,
+      "slp": 3147
+    },
+    {
+      "title": "Wild Thing reprise",
+      "first": "06/26/11",
+      "last": "06/26/11",
+      "total": 1,
+      "l100": 0,
+      "slp": 679
+    },
+    {
+      "title": "Wipeout Jam",
+      "first": "02/24/85",
+      "last": "02/24/85",
+      "total": 1,
+      "l100": 0,
+      "slp": 3279
+    },
+    {
+      "title": "The Wizard",
+      "first": "10/28/23",
+      "last": "10/28/23",
+      "total": 1,
+      "l100": 1,
+      "slp": 86
+    },
+    {
+      "title": "Won't Get Fooled Again",
+      "first": "10/31/99",
+      "last": "10/31/99",
+      "total": 1,
+      "l100": 0,
+      "slp": 1553
+    },
+    {
+      "title": "Workin' On A Building",
+      "first": "11/21/91",
+      "last": "11/21/91",
+      "total": 1,
+      "l100": 0,
+      "slp": 2574
+    },
+    {
+      "title": "W�rm",
+      "first": "07/08/86",
+      "last": "07/08/86",
+      "total": 1,
+      "l100": 0,
+      "slp": 3245
+    },
+    {
+      "title": "Yer Blues",
+      "first": "02/07/96",
+      "last": "02/07/96",
+      "total": 1,
+      "l100": 0,
+      "slp": 1970
+    },
+    {
+      "title": "Yield Not To Temptation",
+      "first": "12/31/17",
+      "last": "12/31/17",
+      "total": 1,
+      "l100": 0,
+      "slp": 286
+    },
+    {
+      "title": "You Can Get It If You Really Want",
+      "first": "09/12/15",
+      "last": "09/12/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 406
+    },
+    {
+      "title": "You Got It All Wrong",
+      "first": "04/22/02",
+      "last": "04/22/02",
+      "total": 1,
+      "l100": 0,
+      "slp": 1343
+    },
+    {
+      "title": "Young Lust",
+      "first": "10/31/15",
+      "last": "10/31/15",
+      "total": 1,
+      "l100": 0,
+      "slp": 399
+    },
+    {
+      "title": "You're Gonna Miss Me When I'm Gone",
+      "first": "10/31/10",
+      "last": "10/31/10",
+      "total": 1,
+      "l100": 0,
+      "slp": 710
+    },
+    {
+      "title": "You're Lost Little Girl",
+      "first": "10/31/25",
+      "last": "10/31/25",
+      "total": 1,
+      "l100": 1,
+      "slp": 33
+    },
+    {
+      "title": "You're With Me Now",
+      "first": "04/22/02",
+      "last": "04/22/02",
+      "total": 1,
+      "l100": 0,
+      "slp": 1343
+    },
+    {
+      "title": "Zebra Song",
+      "first": "04/23/88",
+      "last": "04/23/88",
+      "total": 1,
+      "l100": 0,
+      "slp": 3094
+    }
+  ]
+}

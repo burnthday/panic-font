@@ -7,6 +7,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "import:blogger": "node scripts/import-blogger-setlists.mjs",
+    "import:playstats": "node scripts/import-everyday-companion-playstats.mjs",
     "import:official-setlists": "node scripts/import-official-setlists.mjs",
     "enrich:setlist-transitions": "node scripts/enrich-setlist-transitions.mjs",
     "import:song-origins": "node scripts/import-song-origins.mjs",

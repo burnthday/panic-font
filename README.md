@@ -32,6 +32,16 @@ TOUR_YEAR=2026 npm run refresh:setlists
 
 The checked-in setlist JSON keeps two versions of each set: `songTitles` are canonical official titles used for counting, and `songs` is the display string with `>` transitions. This keeps sandwich songs visible in the setlist while counting each song only once per show.
 
+## Lifetime Play Stats
+
+Shelf, Purgatory, and The Woodshed use lifetime count and last-played metadata from `data/source/everyday-companion-playstats.json`. Refresh that snapshot with:
+
+```bash
+npm run import:playstats
+```
+
+The build keeps Burnthday's original/cover classifications from `catalog.csv`, but overlays Everyday Companion's public `First`, `Last`, `Total`, `L100`, and `SLP` values for matched song titles.
+
 ## Blogger Archive
 
 The full Blogger Takeout feed is checked in at `data/source/blogger-feed.atom`. The build turns those entries into static pages at their original Blogger paths, plus archive indexes at `/archive/` and `/tour-in-review/`. Media files recovered from Takeout live in `assets/archive-media/` and are linked locally when the old Blogger image filename can be matched safely.

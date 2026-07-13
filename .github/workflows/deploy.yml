@@ -30,6 +30,10 @@ jobs:
         run: npm run import:blogger
         continue-on-error: true
 
+      - name: Import Everyday Companion playstats
+        run: npm run import:playstats
+        continue-on-error: true
+
       - name: Import official setlists
         run: npm run import:official-setlists -- --year 2026
         continue-on-error: true
