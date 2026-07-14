@@ -11,9 +11,10 @@
     "import:official-setlists": "node scripts/import-official-setlists.mjs",
     "enrich:setlist-transitions": "node scripts/enrich-setlist-transitions.mjs",
     "import:song-origins": "node scripts/import-song-origins.mjs",
+    "validate:playstats": "node scripts/validate-playstats-match.mjs",
     "refresh:setlists": "npm run import:official-setlists && npm run enrich:setlist-transitions",
     "dev": "npm run build && npx serve dist",
-    "deploy": "npm run build && npx wrangler pages deploy dist --project-name burnthday"
+    "deploy": "npm run build && npm run validate:playstats && npx wrangler pages deploy dist --project-name burnthday"
   },
   "engines": {
     "node": ">=20"

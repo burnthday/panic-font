@@ -21,7 +21,27 @@ const config = {
   addOnOriginals: ["SPARKS FLY"],
   addOnCovers: ["GODZILLA", "BLACK SABBATH", "THE HARDER THEY COME", "DEAD FLOWERS", "COMFORTABLY NUMB", "WAR PIGS"],
   typeOverrides: {
-    "JACK STRAW": "Cover"
+    "ASTRONOMY DOMINE JAM": "Cover",
+    "BLACK HOLE SUN": "Cover",
+    "BLACK-EYED PEAS JAM": "Cover",
+    "BIG CHIEF JAM": "Cover",
+    "CLAIR DE LUNE": "Cover",
+    "DOWN IN A HOLE": "Cover",
+    "DRAGONAUT JAM": "Cover",
+    "JACK STRAW": "Cover",
+    "JOHN'S OTHER JAM": "Cover",
+    "LITTLE LILLY JAM": "Original",
+    "PLAY A TRAIN SONG": "Cover",
+    "SET THE CONTROLS FOR THE HEART OF THE SUN JAM": "Cover",
+    "SPACE IS THE PLACE JAM": "Cover",
+    "THE OTHER ONE JAM": "Cover",
+    "TIME IS FREE JAM": "Cover",
+    "TIME WAITS JAM": "Original",
+    "TRACTOR JAM": "Original",
+    "WE'RE ALL MAD HERE": "Cover",
+    "WHITE RABBIT": "Cover",
+    "WHO ARE YOU": "Cover",
+    "YOU'RE LOST LITTLE GIRL": "Cover"
   },
   addOnDates: {
     GODZILLA: "10/28/18",
@@ -454,7 +474,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const latestYear = setlistYear || inferLatestYear(rawCurrentTour) || inferLatestYear(baseCatalog) || new Date().getFullYear();
   const currentTour = setlistYear ? rawCurrentTour.filter((row) => rowBelongsToYear(row, setlistYear)) : rawCurrentTour;
   const setlistStats = analyzeSetlists(setlists, baseCatalog, currentTour);
-  const catalog = withSetlistOnlySongs(baseCatalog, setlistStats, currentTour, playstatsByKey);
+  const catalog = withPlaystatsOnlySongs(withSetlistOnlySongs(baseCatalog, setlistStats, currentTour, playstatsByKey), rawPlaystats);
   const currentTourByKey = new Map(currentTour.map((row) => [normalizeTitle(row.title), row]));
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
   const postedShowCount = setlists.length;
@@ -616,6 +636,32 @@ function withSetlistOnlySongs(catalog, setlistStats, currentTour, playstatsByKey
       seedSlp: lifetime?.slp || 0,
       type: configuredTypeForTitle(stat.title) || "Unclassified",
       isSetlistOnly: true
+    });
+    knownKeys.add(key);
+  }
+
+  return [...catalog, ...additions.sort(byTitle)];
+}
+
+function withPlaystatsOnlySongs(catalog, playstatsRows) {
+  const knownKeys = new Set(catalog.map((row) => normalizeTitle(row.title)));
+  const additions = [];
+
+  for (const lifetime of playstatsRows) {
+    const key = normalizeTitle(lifetime.title);
+    if (knownKeys.has(key) || !isPublicSongTitle(lifetime.title)) continue;
+
+    additions.push({
+      title: lifetime.title,
+      first: lifetime.first,
+      last: lifetime.last,
+      total: lifetime.total,
+      l100: lifetime.l100,
+      slp: lifetime.slp,
+      seedTotal: lifetime.total,
+      seedSlp: lifetime.slp,
+      type: configuredTypeForTitle(lifetime.title) || "Unclassified",
+      isPlaystatsOnly: true
     });
     knownKeys.add(key);
   }
@@ -2748,7 +2794,7 @@ function clean(value) {
 
 function isPublicSongTitle(title) {
   const value = clean(title);
-  return Boolean(value) && !/^\?+$/.test(value);
+  return Boolean(value) && !/^\?+$/.test(value) && !/^jam$/i.test(value) && !/\breprise$/i.test(value);
 }
 
 function sourceLabel(data) {

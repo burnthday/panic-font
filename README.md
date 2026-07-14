@@ -40,7 +40,15 @@ Shelf, Purgatory, and The Woodshed use lifetime count and last-played metadata f
 npm run import:playstats
 ```
 
-The build keeps Burnthday's original/cover classifications from `catalog.csv`, but overlays Everyday Companion's public `First`, `Last`, `Total`, `L100`, and `SLP` values for matched song titles.
+The build keeps Burnthday's original/cover classifications from `catalog.csv`, but overlays Everyday Companion's public `First`, `Last`, `Total`, `L100`, and `SLP` values for matched song titles. Public Everyday Companion titles that are missing from the seed CSV are added to the generated catalog so the lifetime layer stays complete. Generic `Jam`, unknown `???`, and separate `reprise` rows are intentionally excluded from the public sheet.
+
+After a build, verify that generated lifetime stats still match Everyday Companion:
+
+```bash
+npm run validate:playstats
+```
+
+The deployment workflow runs that validation before publishing, so mismatched lifetime totals stop the deploy instead of leaking to the live boards.
 
 ## Blogger Archive
 
