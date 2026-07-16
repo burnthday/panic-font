@@ -17,9 +17,6 @@ const sheetRanges = {
 
 const config = {
   rotationSlpLimit: 200,
-  siteTimeZone: "America/Los_Angeles",
-  addOnOriginals: ["SPARKS FLY"],
-  addOnCovers: ["GODZILLA", "BLACK SABBATH", "THE HARDER THEY COME", "DEAD FLOWERS", "COMFORTABLY NUMB", "WAR PIGS"],
   typeOverrides: {
     "ASTRONOMY DOMINE JAM": "Cover",
     "BLACK HOLE SUN": "Cover",
@@ -38,19 +35,34 @@ const config = {
     "TIME IS FREE JAM": "Cover",
     "TIME WAITS JAM": "Original",
     "TRACTOR JAM": "Original",
+    "WAR PIGS": "Cover",
     "WE'RE ALL MAD HERE": "Cover",
     "WHITE RABBIT": "Cover",
     "WHO ARE YOU": "Cover",
     "YOU'RE LOST LITTLE GIRL": "Cover"
   },
-  addOnDates: {
-    GODZILLA: "10/28/18",
-    "BLACK SABBATH": "10/28/16",
-    "THE HARDER THEY COME": "09/12/15",
-    "DEAD FLOWERS": "12/29/15"
-  },
   stripeAssets: ["marker-black.png", "marker-green.png", "marker-blue.png", "marker-red.png"]
 };
+
+const primaryNavItems = [
+  ["Home", "/"],
+  ["Rumors", "/p/rumors"],
+  ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
+  ["Song Origins", "/p/widespread-panic-song-origins-and"],
+  ["Tour In Review", "/p/burnthdays-widespread-panic-tours-in"],
+  ["The Shelf", "/p/theshelf"],
+  ["About", "/p/about"]
+];
+
+const footerNavItems = [
+  ["Home", "/"],
+  ["Rumors", "/p/rumors"],
+  ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
+  ["Song Origins", "/p/widespread-panic-song-origins-and"],
+  ["Tour In Review", "/p/burnthdays-widespread-panic-tours-in"],
+  ["@Burnthday", "https://twitter.com/burnthday"],
+  ["About", "/p/about"]
+];
 
 async function main() {
   const [source, archiveEntries, songOrigins] = await Promise.all([loadSourceData(), loadBloggerArchive(), loadSongOrigins()]);
@@ -62,15 +74,20 @@ async function main() {
   await mkdir(path.join(dist, "data"), { recursive: true });
 
   await copyAssets();
-  await writeBloggerArchive(archiveEntries);
+  await writeBloggerArchive(archiveEntries, siteData);
   await writeSongOrigins(songOrigins);
+  await writeShelfInfoPage(siteData, archiveEntries);
+  await writeRumorsPage(siteData, archiveEntries);
+  const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
+  await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews);
   await writeFile(path.join(dist, "index.html"), renderHtml(siteData), "utf8");
   await writeFile(path.join(dist, "styles.css"), renderCss(), "utf8");
   await writeFile(path.join(dist, "data", "site-data.json"), JSON.stringify(siteData, null, 2), "utf8");
+  await writeFile(path.join(dist, "data", "freshness.json"), JSON.stringify(buildFreshnessReport(siteData, archiveEntries, songOrigins, generatedTourReviews), null, 2), "utf8");
   await writeFile(path.join(dist, "_headers"), renderHeaders(), "utf8");
-  await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries), "utf8");
+  await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries, generatedTourReviews), "utf8");
   await writeFile(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: https://burnthday.com/sitemap.xml\n", "utf8");
-  await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins), "utf8");
+  await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins, generatedTourReviews), "utf8");
 
   console.log(`Built ${siteData.site.title}: ${siteData.boards.rotationOriginals.length} originals, ${siteData.boards.rotationCovers.length} covers, ${siteData.setlists.length} setlists, ${archiveEntries.length} archive pages, ${songOrigins.length} song origins.`);
 }
@@ -86,8 +103,12 @@ function warnForClassificationGaps(siteData) {
 
 async function loadSourceData() {
   const setlists = await loadSetlists();
-  const [spreadsheet, playstats] = await Promise.all([loadSpreadsheetData(inferSetlistYear(setlists)), loadPlaystats()]);
-  return { ...spreadsheet, setlists, playstats };
+  const [spreadsheet, playstats, priorSongStats] = await Promise.all([
+    loadSpreadsheetData(inferSetlistYear(setlists)),
+    loadPlaystats(),
+    loadPriorSongStats()
+  ]);
+  return { ...spreadsheet, setlists, playstats, priorSongStats };
 }
 
 async function loadSpreadsheetData(tourYear = 0) {
@@ -188,6 +209,24 @@ async function loadPlaystats() {
       source: payload.source || "Everyday Companion",
       sourceUrl: payload.sourceUrl || "",
       importedAt: payload.importedAt || "",
+      rows: payload.rows || []
+    };
+  } catch {
+    return { source: "", sourceUrl: "", importedAt: "", rows: [] };
+  }
+}
+
+async function loadPriorSongStats() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "everyday-companion-prior-song-stats.json"), "utf8");
+    const payload = JSON.parse(raw);
+    return {
+      source: payload.source || "Everyday Companion Song Stats",
+      sourceUrl: payload.sourceUrl || "",
+      importedAt: payload.importedAt || "",
+      tourYear: payload.tourYear || "",
+      allowEcLag: Boolean(payload.allowEcLag),
+      missing: payload.missing || [],
       rows: payload.rows || []
     };
   } catch {
@@ -462,7 +501,14 @@ async function readFirstExisting(filenames) {
 function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const rawPlaystats = (source.playstats?.rows || []).map(normalizePlaystatRow).filter((row) => isPublicSongTitle(row.title));
   const playstatsByKey = new Map(rawPlaystats.map((row) => [normalizeTitle(row.title), row]));
+  const priorSongStatsByKey = new Map(
+    (source.priorSongStats?.rows || [])
+      .map(normalizePriorSongStatRow)
+      .filter((row) => isPublicSongTitle(row.title))
+      .map((row) => [normalizeTitle(row.title), row])
+  );
   const hasPlaystats = rawPlaystats.length > 0;
+  const hasPriorSongStats = priorSongStatsByKey.size > 0;
   const baseCatalog = source.catalog
     .map(normalizeCatalogRow)
     .filter((row) => isPublicSongTitle(row.title))
@@ -474,6 +520,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const latestYear = setlistYear || inferLatestYear(rawCurrentTour) || inferLatestYear(baseCatalog) || new Date().getFullYear();
   const currentTour = setlistYear ? rawCurrentTour.filter((row) => rowBelongsToYear(row, setlistYear)) : rawCurrentTour;
   const setlistStats = analyzeSetlists(setlists, baseCatalog, currentTour);
+  const nickSetlistStats = analyzeSetlists(setlists.filter(isNickJohnsonShow), baseCatalog, currentTour);
   const catalog = withPlaystatsOnlySongs(withSetlistOnlySongs(baseCatalog, setlistStats, currentTour, playstatsByKey), rawPlaystats);
   const currentTourByKey = new Map(currentTour.map((row) => [normalizeTitle(row.title), row]));
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
@@ -484,7 +531,14 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     const key = normalizeTitle(row.title);
     const sheetTour = currentTourByKey.get(key);
     const parsedTour = setlistStats.byKey.get(key);
+    const parsedNick = nickSetlistStats.byKey.get(key);
+    const priorSongStats = priorSongStatsByKey.get(key);
     const tourCount = sheetTour ? sheetTour.total : parsedTour?.count || 0;
+    const nickCount = parsedNick?.count || 0;
+    const inferredPreTourTotal = Math.max(0, row.total - tourCount);
+    const seedTotal = priorSongStats ? priorSongStats.totalBefore : tourCount > 0 ? inferredPreTourTotal : row.seedTotal;
+    const seedSlp = priorSongStats ? priorSongStats.ltp : row.seedSlp;
+    const seedLast = priorSongStats?.ltpDate || row.seedLast;
     const effectiveLastIso = maxIso([parseDateKey(row.last), parseDateKey(sheetTour?.last), parsedTour?.lastIso]);
     const lastDisplay = effectiveLastIso ? isoToShortDate(effectiveLastIso) : row.last;
     const playedThisTour = tourCount > 0;
@@ -499,10 +553,15 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     return {
       ...row,
       key,
+      seedTotal,
+      seedSlp,
+      seedLast,
       tourCount,
+      nickCount,
       playedThisTour,
-      playedFromShelf: playedThisTour && row.seedTotal > 1 && row.seedSlp >= config.rotationSlpLimit,
-      playedFromPurgatory: playedThisTour && row.total - tourCount === 1,
+      playedWithNick: nickCount > 0,
+      playedFromShelf: playedThisTour && seedTotal > 1 && seedSlp >= config.rotationSlpLimit,
+      playedFromPurgatory: playedThisTour && seedTotal === 1,
       effectiveSlp,
       effectiveLastIso,
       lastDisplay,
@@ -522,7 +581,11 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       sheetId,
       sheetUrl: `https://docs.google.com/spreadsheets/d/${sheetId}`,
       setlistUrl: source.setlists.sourceUrl || "",
-      playstatsUrl: source.playstats?.sourceUrl || ""
+      playstatsUrl: source.playstats?.sourceUrl || "",
+      priorSongStatsUrl: hasPriorSongStats ? source.priorSongStats?.sourceUrl || "" : "",
+      priorSongStatsImportedAt: hasPriorSongStats ? source.priorSongStats?.importedAt || "" : "",
+      priorSongStatsAllowEcLag: Boolean(source.priorSongStats?.allowEcLag),
+      priorSongStatsMissing: Array.isArray(source.priorSongStats?.missing) ? source.priorSongStats.missing.length : 0
     },
     site: {
       name: "Burnthday",
@@ -530,13 +593,14 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       year: latestYear,
       deck: "The Widespread Panic Spread Sheet",
       boardShow,
+      markerLegend: buildMarkerLegend(lastFourDates, setlists, tourDates),
       latestShow: setlists[0] || null
     },
     rules: {
       rotationSlpLimit: config.rotationSlpLimit,
       purgatory: "Songs with one lifetime play stay in Purgatory. If played this tour, they stay marked black until the next tour reset.",
       shelf: "Shelf songs that return this tour stay marked black until the next tour reset.",
-      woodshed: "The Woodshed contains active catalog songs inside the rotation window that have not been played this tour."
+      woodshed: "The Woodshed contains songs on the current sheet that have not been played with Nick Johnson on guitar."
     },
     totals: {
       catalogSongs: songs.length,
@@ -566,6 +630,56 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   };
 }
 
+function buildFreshnessReport(data, archiveEntries = [], songOrigins = [], generatedReviews = []) {
+  const latestShow = data.site.latestShow || null;
+  const boardShow = data.site.boardShow || null;
+  const priorStatsStrict = Boolean(data.source.priorSongStatsUrl) && !data.source.priorSongStatsAllowEcLag && data.source.priorSongStatsMissing === 0;
+
+  return {
+    generatedAt: data.generatedAt,
+    site: {
+      title: data.site.title,
+      year: data.site.year,
+      boardShow: boardShow ? showFreshnessSummary(boardShow) : null,
+      latestSetlist: latestShow ? showFreshnessSummary(latestShow) : null,
+      markerLegend: data.site.markerLegend
+    },
+    totals: data.totals,
+    sources: data.source,
+    integrity: {
+      strictPriorStats: priorStatsStrict,
+      publicPlaystatsSource: Boolean(data.source.playstatsUrl),
+      publicSetlistSource: Boolean(data.source.setlistUrl),
+      noEcLagRowsInPublishData: !data.source.priorSongStatsAllowEcLag,
+      priorStatsMissingRows: data.source.priorSongStatsMissing,
+      currentTourSongs: data.totals.currentTourSongs,
+      currentTourPlays: data.totals.currentTourPlays,
+      postedSetlists: data.totals.postedSetlists,
+      archivePages: archiveEntries.length,
+      generatedTourReviews: generatedReviews.length,
+      songOriginPages: songOrigins.length
+    },
+    commands: {
+      localQa: "npm run qa",
+      postShowLocal: "TOUR_YEAR=2026 npm run postshow",
+      strictPublishRefresh: "TOUR_YEAR=2026 npm run refresh:strict"
+    }
+  };
+}
+
+function showFreshnessSummary(show) {
+  return {
+    date: show.date || "",
+    isoDate: show.isoDate || "",
+    venue: show.venue || "",
+    city: show.city || "",
+    state: show.state || "",
+    location: show.location || "",
+    runLabel: show.runLabel || "",
+    sourceUrl: show.sourceUrl || ""
+  };
+}
+
 function songOriginSummary(origin) {
   return {
     title: origin.title,
@@ -584,24 +698,41 @@ function archiveSummary(entry) {
   };
 }
 
+function buildMarkerLegend(dates, setlists, tourDates) {
+  const sortedTourDates = [...tourDates].filter((show) => show.isoDate).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+  const colorNames = ["Black", "Green", "Blue", "Red"];
+
+  return dates.map((isoDate, index) => {
+    const show = setlists.find((entry) => entry.isoDate === isoDate) || tourDates.find((entry) => entry.isoDate === isoDate);
+    const run = show ? tourRunInfo(sortedTourDates, show) : { number: 1, length: 1 };
+    const location = show?.location ? `${show.location}${run.length > 1 ? ` ${romanNumeral(run.number)}` : ""}` : "";
+    const label = [isoToShortDate(isoDate), location].filter(Boolean).join(" ");
+    return {
+      color: colorNames[index] || `Marker ${index + 1}`,
+      asset: config.stripeAssets[index],
+      isoDate,
+      label
+    };
+  }).filter((item) => item.asset && item.isoDate);
+}
+
 function buildBoards(songs) {
-  const addOns = new Set([...config.addOnOriginals, ...config.addOnCovers]);
   const active = songs.filter((row) => row.effectiveSlp < config.rotationSlpLimit || row.playedThisTour);
+  const bustoutRows = songs.filter((row) => row.playedFromShelf || row.playedFromPurgatory).sort(byTitle);
+  const bustoutKeys = new Set(bustoutRows.map((row) => row.key));
 
   const rotationOriginals = withAddOns(
-    active.filter((row) => row.type === "Original" && !addOns.has(row.title.toUpperCase())).sort(byTitle),
-    songs,
-    config.addOnOriginals
+    active.filter((row) => row.type === "Original" && !bustoutKeys.has(row.key)).sort(byTitle),
+    bustoutRows.filter((row) => row.type === "Original")
   );
   const rotationCovers = withAddOns(
-    active.filter((row) => row.type === "Cover" && !addOns.has(row.title.toUpperCase())).sort(byTitle),
-    songs,
-    config.addOnCovers
+    active.filter((row) => row.type === "Cover" && !bustoutKeys.has(row.key)).sort(byTitle),
+    bustoutRows.filter((row) => row.type === "Cover")
   );
 
-  const shelfRows = songs.filter((row) => row.total > 1 && (row.effectiveSlp >= config.rotationSlpLimit || row.playedFromShelf)).sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
+  const shelfRows = songs.filter((row) => row.total > 1 && (row.effectiveSlp >= config.rotationSlpLimit || row.playedFromShelf)).sort(byTitle);
   const purgatoryRows = songs.filter((row) => row.total === 1 || row.playedFromPurgatory).sort(byTitle);
-  const woodshedRows = songs.filter((row) => row.total > 1 && !row.playedThisTour && row.effectiveSlp < config.rotationSlpLimit).sort(byTitle);
+  const woodshedRows = active.filter((row) => row.total > 1 && !row.playedWithNick).sort(byTitle);
   const needsClassification = songs.filter((row) => row.type === "Unclassified").sort(byTitle);
 
   return {
@@ -634,6 +765,7 @@ function withSetlistOnlySongs(catalog, setlistStats, currentTour, playstatsByKey
       slp: lifetime?.slp || 0,
       seedTotal: lifetime?.total || stat.count,
       seedSlp: lifetime?.slp || 0,
+      seedLast: lifetime?.last || isoToShortDate(stat.lastIso),
       type: configuredTypeForTitle(stat.title) || "Unclassified",
       isSetlistOnly: true
     });
@@ -660,6 +792,7 @@ function withPlaystatsOnlySongs(catalog, playstatsRows) {
       slp: lifetime.slp,
       seedTotal: lifetime.total,
       seedSlp: lifetime.slp,
+      seedLast: lifetime.last,
       type: configuredTypeForTitle(lifetime.title) || "Unclassified",
       isPlaystatsOnly: true
     });
@@ -669,21 +802,11 @@ function withPlaystatsOnlySongs(catalog, playstatsRows) {
   return [...catalog, ...additions.sort(byTitle)];
 }
 
-function withAddOns(rows, allSongs, names) {
-  const byKey = new Map(allSongs.map((row) => [row.title.toUpperCase(), row]));
-  const addOns = names.map((name) => ({
-    ...(byKey.get(name) || {
-      title: titleCase(name),
-      type: "",
-      total: 0,
-      slp: 0,
-      effectiveSlp: 0,
-      tourCount: 0,
-      playedThisTour: false,
-      lastDisplay: config.addOnDates[name] || ""
-    }),
+function withAddOns(rows, addOnRows) {
+  const addOns = addOnRows.map((row) => ({
+    ...row,
     isAddOn: true,
-    addOnDate: config.addOnDates[name] || byKey.get(name)?.lastDisplay || ""
+    addOnDate: displayDate(row.lastDisplay || row.seedLast)
   }));
   return [...rows, ...addOns];
 }
@@ -715,6 +838,10 @@ function analyzeSetlists(setlists, catalog, currentTour) {
   }
 
   return { byKey };
+}
+
+function isNickJohnsonShow(show) {
+  return (show.notes || []).some((note) => /\bnick johnson\b/i.test(note) && /\bguitar\b/i.test(note));
 }
 
 function splitSetSongs(value, known) {
@@ -782,6 +909,7 @@ function normalizeCatalogRow(row) {
     slp,
     seedTotal: total,
     seedSlp: slp,
+    seedLast: clean(row.Last),
     type: configuredType || (type === "Original" ? "Original" : type === "Cover" ? "Cover" : "Unclassified")
   };
 }
@@ -811,6 +939,15 @@ function normalizePlaystatRow(row) {
   };
 }
 
+function normalizePriorSongStatRow(row) {
+  return {
+    title: clean(row.title || row["Song Title"] || row.Title || row.Song),
+    ltpDate: clean(row.ltpDate || row["LTP Date"]),
+    ltp: toNumber(row.ltp || row.LTP),
+    totalBefore: toNumber(row.totalBefore || row["Total Before"] || row["#/Ever"])
+  };
+}
+
 function mergePlaystats(row, playstats) {
   if (!playstats) return row;
   return {
@@ -826,8 +963,6 @@ function mergePlaystats(row, playstats) {
 function configuredTypeForTitle(title) {
   const key = clean(title).toUpperCase();
   if (config.typeOverrides[key]) return config.typeOverrides[key];
-  if (config.addOnOriginals.includes(key)) return "Original";
-  if (config.addOnCovers.includes(key)) return "Cover";
   return "";
 }
 
@@ -921,13 +1056,17 @@ async function copyDirectory(sourceDir, targetDir) {
   }));
 }
 
-async function writeBloggerArchive(entries) {
+async function writeBloggerArchive(entries, data) {
   if (!entries.length) return;
 
-  await Promise.all(entries.map((entry) => writeStaticPage(entry.path, renderArchivePage(entry))));
-  await writeStaticPage("/archive/index.html", renderArchiveIndex(entries));
-  await writeStaticPage("/pages/index.html", renderPagesIndex(entries.filter((entry) => entry.path.startsWith("/p/"))));
-  await writeStaticPage("/tour-in-review/index.html", renderTourReviewIndex(entries.filter((entry) => entry.isReview)));
+  await Promise.all(entries.map((entry) => writeStaticPage(entry.path, renderArchivePage(entry, data))));
+  await writeStaticPage("/archive/index.html", renderArchiveIndex(entries, data));
+  await writeStaticPage("/pages/index.html", renderPagesIndex(entries.filter((entry) => entry.path.startsWith("/p/")), data));
+  await writeStaticPage("/tour-in-review/index.html", renderRedirectPage({
+    title: "Tour In Review",
+    targetPath: "/p/burnthdays-widespread-panic-tours-in",
+    data
+  }));
 }
 
 async function writeSongOrigins(origins) {
@@ -950,7 +1089,130 @@ async function writeStaticPage(pagePath, html) {
   await writeFile(target, html, "utf8");
 }
 
-function renderArchivePage(entry) {
+async function writeShelfInfoPage(data, entries) {
+  const oldShelfEntry = entries.find((entry) => entry.path === "/p/theshelf.html");
+  await writeStaticPage("/p/theshelf.html", renderShelfInfoPage(data, oldShelfEntry));
+}
+
+async function writeRumorsPage(data, entries) {
+  const oldRumorsEntry = entries.find((entry) => entry.path === "/p/rumors.html");
+  await writeStaticPage("/p/rumors.html", renderRumorsPage(data, oldRumorsEntry));
+}
+
+async function writeGeneratedTourReviewPages(data) {
+  const reviews = [];
+  const review2025 = await buildGeneratedTourReview(2025, data);
+  if (review2025) {
+    await writeStaticPage(review2025.path, renderGeneratedTourReviewPage(review2025, data));
+    reviews.push({
+      title: review2025.title,
+      path: review2025.path,
+      published: `${review2025.year}-12-31`,
+      summary: `${review2025.totals.setlists} setlists, ${review2025.totals.uniqueSongs} songs, ${review2025.totals.tourPlays} song plays`
+    });
+  }
+  return reviews;
+}
+
+async function writeTourReviewHub(data, entries, generatedReviews = []) {
+  const oldEntry = entries.find((entry) => entry.path === "/p/burnthdays-widespread-panic-tours-in.html");
+  await writeStaticPage("/p/burnthdays-widespread-panic-tours-in.html", renderTourReviewHubPage(data, oldEntry, generatedReviews));
+}
+
+async function buildGeneratedTourReview(year, data) {
+  let payload;
+  try {
+    payload = JSON.parse(await readFile(path.join(root, "data", "source", `setlists-${year}.json`), "utf8"));
+  } catch {
+    return null;
+  }
+
+  const setlists = [...(payload.setlists || [])].filter((show) => show.isoDate).sort((a, b) => b.isoDate.localeCompare(a.isoDate));
+  if (!setlists.length) return null;
+
+  const catalogByKey = new Map((data.catalog || []).map((row) => [normalizeTitle(row.title), row]));
+  const statsByKey = analyzeTourSongs(setlists, data.catalog || []);
+  const recentDates = [...new Set(setlists.map((show) => show.isoDate))].slice(0, 4);
+  const rows = [...statsByKey.values()].map((row) => {
+    const catalogRow = catalogByKey.get(row.key);
+    const type = catalogRow?.type || configuredTypeForTitle(row.title) || "Unclassified";
+    const stripeIndex = recentDates.indexOf(row.lastIso);
+    return {
+      ...catalogRow,
+      ...row,
+      title: catalogRow?.title || row.title,
+      type,
+      tourCount: row.count,
+      total: catalogRow?.total || row.count,
+      lastDisplay: isoToShortDate(row.lastIso),
+      stripeAsset: stripeIndex >= 0 ? config.stripeAssets[stripeIndex] : "",
+      isAddOn: false
+    };
+  }).sort(byTitle);
+
+  const originals = rows.filter((row) => row.type === "Original").sort(byTitle);
+  const covers = rows.filter((row) => row.type === "Cover").sort(byTitle);
+  const other = rows.filter((row) => row.type !== "Original" && row.type !== "Cover").sort(byTitle);
+  const tourPlays = sum(rows.map((row) => row.count));
+  const topSongs = [...rows].sort((a, b) => b.count - a.count || byTitle(a, b)).slice(0, 12);
+  const oneTimers = rows.filter((row) => row.count === 1).sort(byTitle);
+
+  return {
+    year,
+    title: `Widespread Panic ${year} Tour In Review`,
+    path: `/${year}/12/widespread-panic-${year}-tour-in-review.html`,
+    sourceUrl: payload.sourceUrl || "",
+    setlists,
+    tourDates: payload.tourDates || [],
+    boards: {
+      originals,
+      covers,
+      other
+    },
+    totals: {
+      setlists: setlists.length,
+      tourDates: (payload.tourDates || []).length,
+      uniqueSongs: rows.length,
+      tourPlays,
+      originals: originals.length,
+      covers: covers.length,
+      other: other.length,
+      oneTimers: oneTimers.length
+    },
+    topSongs,
+    oneTimers
+  };
+}
+
+function analyzeTourSongs(setlists, catalog) {
+  const known = new Map();
+  for (const song of catalog) {
+    const key = normalizeTitle(song.title);
+    if (key && !known.has(key)) known.set(key, { key, title: song.title });
+  }
+
+  const byKey = new Map();
+  for (const show of [...setlists].sort((a, b) => a.isoDate.localeCompare(b.isoDate))) {
+    const showSongsByKey = new Map();
+    for (const set of show.sets || []) {
+      for (const song of splitSetSongs(set.songTitles || set.songs, known)) {
+        if (!showSongsByKey.has(song.key)) showSongsByKey.set(song.key, song);
+      }
+    }
+
+    for (const song of showSongsByKey.values()) {
+      const current = byKey.get(song.key) || { key: song.key, title: song.title, count: 0, firstIso: show.isoDate, lastIso: show.isoDate };
+      current.count += 1;
+      current.firstIso = minIso([current.firstIso, show.isoDate]);
+      current.lastIso = maxIso([current.lastIso, show.isoDate]);
+      byKey.set(song.key, current);
+    }
+  }
+
+  return byKey;
+}
+
+function renderArchivePage(entry, data) {
   const title = `${entry.title} | Burnthday`;
   const description = entry.metaDescription || stripTags(entry.content).replace(/\s+/g, " ").trim().slice(0, 180);
   return `<!doctype html>
@@ -960,6 +1222,7 @@ function renderArchivePage(entry) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com${escapeAttr(publicPath(entry.path))}">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
@@ -979,7 +1242,211 @@ function renderArchivePage(entry) {
         </div>
       </article>
     </main>
-    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
+    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
+  </body>
+</html>
+`;
+}
+
+function renderShelfInfoPage(data, oldShelfEntry) {
+  const year = data.site.year;
+  const movedFromShelf = data.catalog.filter((row) => row.playedFromShelf).sort(byTitle);
+  const movedFromPurgatory = data.catalog.filter((row) => row.playedFromPurgatory).sort(byTitle);
+  const description = `Burnthday's Widespread Panic Shelf and Purgatory notes for the ${year} tour.`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Shelf | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com/p/theshelf">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main">
+      <article class="archive-page shelf-info-page">
+        <header class="archive-title">
+          <p>The Widespread Panic Spread Sheet</p>
+          <h1>The Shelf</h1>
+        </header>
+        ${oldShelfEntry?.content ? `<div class="archive-content">${oldShelfEntry.content}</div>` : ""}
+        <section class="shelf-movement">
+          <h2>${escapeHtml(String(year))} Movement</h2>
+          ${renderMovementList("Off The Shelf", movedFromShelf, "None.")}
+          ${renderMovementList("Out Of Purgatory", movedFromPurgatory, "None.")}
+          <p class="shelf-page-links"><a href="/#shelf">Current Shelf</a> <span>|</span> <a href="/#purgatory">Current Purgatory</a> <span>|</span> <a href="/">Current Song List</a></p>
+        </section>
+      </article>
+    </main>
+    ${renderSiteFooter(data)}
+  </body>
+</html>
+`;
+}
+
+function renderRumorsPage(data, oldRumorsEntry) {
+  const description = oldRumorsEntry?.metaDescription || "Burnthday Widespread Panic rumors.";
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Rumors | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com/p/rumors">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main">
+      <article class="archive-page rumors-page">
+        <header class="archive-title">
+          <p>The Widespread Panic Spread Sheet</p>
+          <h1>Rumors</h1>
+        </header>
+        <div class="archive-content">${oldRumorsEntry?.content || ""}</div>
+      </article>
+    </main>
+    ${renderSiteFooter(data)}
+  </body>
+</html>
+`;
+}
+
+function renderMovementList(title, rows, emptyText) {
+  return `<div class="movement-block">
+    <h3>${escapeHtml(title)}</h3>
+    ${rows.length ? `<ul class="movement-list">${rows.map(renderMovementRow).join("")}</ul>` : `<p>${escapeHtml(emptyText)}</p>`}
+  </div>`;
+}
+
+function renderMovementRow(row) {
+  const source = row.playedFromShelf ? `last played ${row.seedLast}, ${row.seedSlp} shows` : `one-timer last played ${row.seedLast || "before this tour"}`;
+  return `<li>
+    <strong>${escapeHtml(row.title)}</strong><sup>${escapeHtml(String(row.tourCount))}</sup>
+    <span>${escapeHtml(source)}. Most recent: ${escapeHtml(row.lastDisplay)}.</span>
+  </li>`;
+}
+
+function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
+  const description = "Burnthday's preserved and updated Widespread Panic Tour In Review pages.";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tour In Review | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com/p/burnthdays-widespread-panic-tours-in">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main">
+      <article class="archive-page tour-review-hub">
+        <header class="archive-title">
+          <p>The Widespread Panic Spread Sheet</p>
+          <h1>Tour In Review</h1>
+        </header>
+        ${oldEntry?.content ? `<div class="archive-content">${oldEntry.content}</div>` : ""}
+        ${generatedReviews.length ? `<section class="shelf-movement">
+          <h2>2025</h2>
+          <ul class="movement-list generated-review-list">
+            ${generatedReviews.map((review) => `<li>
+              <strong><a href="${escapeAttr(publicPath(review.path))}">${escapeHtml(review.title)}</a></strong>
+              <span>${escapeHtml(review.summary)}</span>
+            </li>`).join("")}
+          </ul>
+        </section>` : ""}
+      </article>
+    </main>
+    ${renderSiteFooter(data)}
+  </body>
+</html>
+`;
+}
+
+function renderGeneratedTourReviewPage(review, data) {
+  const latest = review.setlists[0];
+  const earliest = review.setlists.at(-1);
+  const description = `${review.title}: ${review.totals.setlists} setlists, ${review.totals.uniqueSongs} songs, and ${review.totals.tourPlays} song plays.`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(review.title)} | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com${escapeAttr(publicPath(review.path))}">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="tour-review-main">
+      <article class="archive-page generated-tour-review">
+        <header class="archive-title">
+          <p>Tour In Review</p>
+          <h1>${escapeHtml(review.title)}</h1>
+        </header>
+        <p class="review-date-range">${escapeHtml(earliest?.date || "")} ${escapeHtml(earliest?.location || "")} through ${escapeHtml(latest?.date || "")} ${escapeHtml(latest?.location || "")}.</p>
+        <div class="board-ledger review-ledger" aria-label="${escapeAttr(String(review.year))} tour stats">
+          ${renderStat(review.totals.uniqueSongs, "unique songs")}
+          ${renderStat(review.totals.tourPlays, "song plays")}
+          ${renderStat(review.totals.setlists, "setlists")}
+          ${renderStat(review.totals.tourDates, "tour dates")}
+        </div>
+        <section class="shelf-movement">
+          <h2>Most Played</h2>
+          <ol class="review-top-songs">
+            ${review.topSongs.map((row) => `<li><strong>${escapeHtml(row.title)}</strong><span>${escapeHtml(String(row.count))}</span></li>`).join("")}
+          </ol>
+        </section>
+      </article>
+
+      <section class="laminate primary-board tour-review-sheet" id="song-list">
+        ${renderBoardHeader(`${review.year} TOUR`)}
+        ${renderSongPanel(`review-${review.year}-originals`, "ORIGINALS", review.boards.originals)}
+        ${renderSongPanel(`review-${review.year}-covers`, "COVERS", review.boards.covers)}
+        ${review.boards.other.length ? renderSongPanel(`review-${review.year}-other`, "NEEDS SORTING", review.boards.other) : ""}
+        <div class="board-ledger" aria-label="${escapeAttr(String(review.year))} final sheet stats">
+          ${renderStat(review.totals.originals, "originals")}
+          ${renderStat(review.totals.covers, "covers")}
+          ${renderStat(review.totals.oneTimers, "one-timers")}
+          ${renderStat(review.totals.setlists, "setlists")}
+        </div>
+      </section>
+
+      <section class="setlist-section" id="setlists">
+        <div class="section-heading">
+          <h2>${escapeHtml(String(review.year))} SETLISTS</h2>
+          <span>${escapeHtml(String(review.totals.setlists))} posted</span>
+        </div>
+        <div class="setlist-grid">
+          ${review.setlists.map(renderSetlistCard).join("")}
+        </div>
+      </section>
+    </main>
+    ${renderSiteFooter(data)}
+    <script>
+      ${renderFitScriptBody()}
+    </script>
   </body>
 </html>
 `;
@@ -1117,31 +1584,34 @@ function renderLinkedText(text) {
   return pieces.join("");
 }
 
-function renderArchiveIndex(entries) {
+function renderArchiveIndex(entries, data) {
   return renderArchiveListPage({
     title: "Burnthday Archive",
     deck: `${entries.length} preserved Blogger posts and pages from the Takeout export.`,
-    entries
+    entries,
+    data
   });
 }
 
-function renderPagesIndex(entries) {
+function renderPagesIndex(entries, data) {
   return renderArchiveListPage({
     title: "Burnthday Pages",
     deck: `${entries.length} preserved Blogger pages from the Takeout export, including About, Song Origins, lyrics, downloads, and old live stream pages.`,
-    entries: entries.sort((a, b) => a.title.localeCompare(b.title))
+    entries: entries.sort((a, b) => a.title.localeCompare(b.title)),
+    data
   });
 }
 
-function renderTourReviewIndex(entries) {
+function renderTourReviewIndex(entries, data) {
   return renderArchiveListPage({
     title: "Tour In Review",
     deck: `${entries.length} preserved Tour In Review pages and related review posts.`,
-    entries
+    entries,
+    data
   });
 }
 
-function renderArchiveListPage({ title, deck, entries }) {
+function renderArchiveListPage({ title, deck, entries, data }) {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -1171,7 +1641,30 @@ function renderArchiveListPage({ title, deck, entries }) {
         </ol>
       </section>
     </main>
-    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
+    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
+  </body>
+</html>
+`;
+}
+
+function renderRedirectPage({ title, targetPath, data }) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="0; url=${escapeAttr(targetPath)}">
+    <meta name="robots" content="noindex">
+    <title>${escapeHtml(title)} | Burnthday</title>
+    <link rel="canonical" href="https://burnthday.com${escapeAttr(targetPath)}">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main">
+      <article class="archive-page">
+        <p><a href="${escapeAttr(targetPath)}">${escapeHtml(title)}</a></p>
+      </article>
+    </main>
+    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
   </body>
 </html>
 `;
@@ -1201,6 +1694,7 @@ function renderHtml(data) {
     <main>
       ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
+      ${renderSheetKey(data)}
       ${renderShelfBoard(data)}
       ${renderWoodshedBoard(data)}
       ${renderSetlists(data, { skipLatest: true })}
@@ -1211,62 +1705,107 @@ function renderHtml(data) {
     ${renderSiteFooter(data)}
 
     <script>
-      if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".primary-board .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel, .woodshed-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
-      }
+      ${renderFitScriptBody()}
     </script>
   </body>
 </html>
 `;
 }
 
+function renderFitScriptBody() {
+  return `function fitBoardTitles() {
+        document.querySelectorAll(".header-row .board-title h1").forEach((title) => {
+          const slot = title.parentElement;
+          if (!slot) return;
+
+          title.style.fontSize = "";
+          const computed = window.getComputedStyle(title);
+          let size = Number.parseFloat(computed.fontSize);
+          if (!Number.isFinite(size)) return;
+
+          const titleFloor = window.matchMedia("(max-width: 560px)").matches ? 18 : 24;
+          const minSize = Math.max(titleFloor, size * 0.46);
+          title.style.fontSize = size + "px";
+
+          let guard = 0;
+          while (title.scrollWidth > slot.clientWidth && size > minSize && guard < 28) {
+            size = Math.max(minSize, size * 0.94);
+            title.style.fontSize = size + "px";
+            guard += 1;
+          }
+        });
+      }
+
+      function fitSongRows() {
+        document.querySelectorAll(".rotation-song:not(.spacer)").forEach((song) => {
+          const text = song.querySelector(".marker-text");
+          if (!text) return;
+
+          song.style.removeProperty("--song-font-size");
+          const fits = () => text.scrollWidth <= text.clientWidth + 1 && song.scrollWidth <= song.clientWidth + 1;
+
+          song.classList.toggle("is-overflowing", !fits());
+        });
+      }
+
+      fitBoardTitles();
+      fitSongRows();
+      window.addEventListener("resize", () => window.requestAnimationFrame(() => {
+        fitBoardTitles();
+        fitSongRows();
+      }));
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+        fitBoardTitles();
+        fitSongRows();
+      });
+
+      if (window.matchMedia("(max-width: 700px)").matches) {
+        document.querySelectorAll(".primary-board:not(.tour-review-sheet) .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel, .woodshed-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
+      }`;
+}
+
 function renderSiteHeader() {
   return `<header class="site-head">
+  <nav class="header-social" aria-label="Burnthday social links">
+    <a class="social-dot facebook" href="https://www.facebook.com/burnthday" aria-label="burnthday on Facebook">f</a>
+    <a class="social-dot twitter" href="https://twitter.com/burnthday" aria-label="burnthday on Twitter">t</a>
+  </nav>
   <a class="brand" href="/" aria-label="Burnthday">
     <img class="brand-logo" src="/assets/burnthday-logo.png" alt="Burnthday">
   </a>
-  <nav class="jump-links" aria-label="Sections">
-    <a href="/#latest-setlist">Latest Setlist</a>
-    <a href="/#song-list">Song List</a>
-    <a href="/#shelf">Shelf</a>
-    <a href="/#purgatory">Purgatory</a>
-    <a href="/#woodshed">Woodshed</a>
-    <a href="/#setlists">Setlists</a>
-    <a href="/#tour-dates">Tour Dates</a>
-    <a href="/tour-in-review/">Tour In Review</a>
-    <a href="/p/widespread-panic-song-origins-and">Song Origins</a>
-    <a href="/p/about">About</a>
-  </nav>
+  ${renderNavLinks(primaryNavItems, "jump-links", "Primary navigation")}
 </header>`;
 }
 
 function renderSiteFooter(data) {
+  const year = data?.site?.year || new Date().getFullYear();
   return `<footer class="site-foot">
-  <span>Burnthday - unaffiliated with Widespread Panic.</span>
-  <span>${escapeHtml(sourceLabel(data))}</span>
+  <nav class="social-links" aria-label="Burnthday social links">
+    <a href="https://www.facebook.com/burnthday">burnthday on Facebook</a>
+    <a href="https://twitter.com/burnthday">burnthday on Twitter</a>
+    <a href="https://www.instagram.com/burnthday/">burnthday on Instagram</a>
+  </nav>
+  ${renderNavLinks(footerNavItems, "footer-links", "Footer links", true)}
+  <p>All Rights Reserved. Burnthday © ${escapeHtml(String(year))} | The Widespread Panic Spread Sheet</p>
 </footer>`;
+}
+
+function renderNavLinks(items, className, label, withPipes = false) {
+  const links = items.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`);
+  const html = withPipes ? links.join("<span>|</span>") : links.join("");
+  return `<nav class="${escapeAttr(className)}" aria-label="${escapeAttr(label)}">${html}</nav>`;
 }
 
 function renderRotationBoard(data) {
   const latest = data.site.latestShow;
   return `<section class="laminate primary-board" id="song-list">
   ${renderPrimaryBoardHeader(data)}
-  <nav class="sheet-jump" aria-label="Song list shortcuts">
-    <a href="#rotation-originals">Originals</a>
-    <a href="#rotation-covers">Covers</a>
-    <a href="#shelf">Shelf</a>
-    <a href="#purgatory">Purgatory</a>
-    <a href="#woodshed">Woodshed</a>
-    <a href="#setlists">Setlists</a>
-    <a href="#tour-dates">Tour Dates</a>
-  </nav>
-  ${renderSheetKey(data)}
-  ${renderSongPanel("rotation-originals", "ORIGINALS", data.boards.rotationOriginals)}
-  ${renderSongPanel("rotation-covers", "COVERS", data.boards.rotationCovers)}
-  <div class="board-ledger" aria-label="Tour stats">
-    ${renderStat(data.totals.currentTourSongs, "songs played")}
-    ${renderStat(data.totals.currentTourPlays, "tour plays")}
-    ${renderStat(data.totals.postedSetlists, "setlists posted")}
+	  ${renderSongPanel("rotation-originals", "ORIGINALS", data.boards.rotationOriginals)}
+	  ${renderSongPanel("rotation-covers", "COVERS", data.boards.rotationCovers)}
+	  <div class="board-ledger" aria-label="Tour stats">
+    ${renderStat(data.totals.currentTourSongs, "unique songs")}
+    ${renderStat(data.totals.currentTourPlays, "song plays")}
+    ${renderStat(data.totals.postedSetlists, "shows played")}
     ${renderStat(data.totals.tourDates, "tour dates")}
   </div>
 </section>`;
@@ -1288,24 +1827,47 @@ function renderShelfBoard(data) {
 function renderWoodshedBoard(data) {
   const count = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
   return `<section class="laminate woodshed-board" id="woodshed">
-  ${renderBoardHeader("THE WOODSHED", `${count} active songs unplayed this tour`)}
-  ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, columns: 3 })}
-  ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, columns: 3 })}
+  ${renderBoardHeader("THE WOODSHED", `${count} songs not yet played with Nick Johnson on guitar`)}
+  ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
+  ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
 </section>`;
 }
 
 function renderSheetKey(data) {
-  return `<details class="sheet-key" open>
-    <summary>SHEET KEY</summary>
-    <dl>
-      <div><dt>Song List</dt><dd>Originals and covers active for the ${escapeHtml(String(data.site.year))} tour sheet.</dd></div>
-      <div><dt>Tiny Number</dt><dd>Times played this tour. Sandwiches count once per show.</dd></div>
-      <div><dt>Marker</dt><dd>Recent plays. Black marks on Shelf and Purgatory stay until the next tour reset.</dd></div>
-      <div><dt>Shelf</dt><dd>Songs outside the rotation window with lifetime count and last-played date.</dd></div>
-      <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
-      <div><dt>The Woodshed</dt><dd>Active rotation songs that have not been played this tour.</dd></div>
-    </dl>
-  </details>`;
+  return `<section class="laminate sheet-key-sheet" id="sheet-key">
+  <div class="sheet-key">
+    <h2>SHEET KEY</h2>
+    <div class="key-topline">
+      <section class="key-block key-song-list">
+        <h3>Song List</h3>
+        <p>The main sheet shows originals and covers active for the ${escapeHtml(String(data.site.year))} tour.</p>
+        <ul class="key-points">
+          <li><strong>Tiny Number</strong><span>Times played this tour.</span></li>
+          <li><strong>Marker</strong><span>Played during one of the last four shows.</span></li>
+        </ul>
+      </section>
+      <section class="key-block key-marker">
+        <h3>Marker Colors</h3>
+        <p>On the Song List, colors show which recent show the song was played at.</p>
+        ${renderMarkerLegend(data.site.markerLegend)}
+        <p>On Shelf and Purgatory, black means the song came off that sheet this tour.</p>
+      </section>
+    </div>
+    <section class="key-block key-other-sheets">
+      <h3>Other Sheets</h3>
+      <dl>
+        <div><dt>Shelf</dt><dd>Songs outside the rotation window, with lifetime count and last-played date.</dd></div>
+        <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
+        <div><dt>The Woodshed</dt><dd>Songs on the current sheet not yet played with Nick Johnson on guitar.</dd></div>
+      </dl>
+    </section>
+  </div>
+</section>`;
+}
+
+function renderMarkerLegend(items = []) {
+  if (!items.length) return "";
+  return `<ol class="marker-legend">${items.map((item) => `<li><img src="/assets/${escapeAttr(item.asset)}" alt=""><span><strong>${escapeHtml(item.color)}</strong><em>${escapeHtml(item.label)}</em></span></li>`).join("")}</ol>`;
 }
 
 function renderBoardHeader(title, subtitle = "") {
@@ -1353,25 +1915,25 @@ function renderSongGrid(rows, options = {}) {
 }
 
 function renderSongPanel(id, label, rows, options = {}) {
-  return `<details class="song-panel" id="${escapeAttr(id)}" open>
-    <summary><span>${escapeHtml(label)}</span><em>${rows.length}</em></summary>
+  return `<section class="song-panel" id="${escapeAttr(id)}">
+    <h3>${escapeHtml(label)}</h3>
     ${renderSongGrid(rows, options)}
-  </details>`;
+  </section>`;
 }
 
 function renderSong(row, options = {}) {
-  const stripeAsset = options.shelfMode && row.playedThisTour ? "marker-black.png" : row.stripeAsset;
-  const dateText = options.shelfMode || row.isAddOn ? row.addOnDate || row.lastDisplay : "";
+  const stripeAsset = options.shelfMode && !options.woodshedMode && (row.playedFromShelf || row.playedFromPurgatory) ? "marker-black.png" : row.stripeAsset;
+  const shelfDate = row.playedFromShelf || row.playedFromPurgatory ? displayDate(row.seedLast) : row.lastDisplay;
+  const dateText = options.shelfMode ? shelfDate : row.isAddOn ? row.addOnDate || row.lastDisplay : "";
   const handClass = row.isAddOn ? " hand-addon" : "";
   const title = row.title.toUpperCase();
-  const fitClass = songFitClass(title, dateText);
-  const songClasses = ["rotation-song", row.isAddOn ? "is-hand-addon" : "", fitClass].filter(Boolean).join(" ");
-  const marker = stripeAsset ? `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(stripeAsset)}" alt=""></span>` : "";
   const countValue = options.shelfMode ? row.total : row.tourCount;
+  const songClasses = ["rotation-song", dateText ? "has-date" : "", countValue > 0 ? "has-count" : "", row.isAddOn ? "is-hand-addon" : ""].filter(Boolean).join(" ");
+  const marker = stripeAsset ? `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(stripeAsset)}" alt=""></span>` : "";
   const count = countValue > 0 ? `<sup>${countValue}</sup>` : "";
-  const date = dateText ? `<span class="date-sup">${escapeHtml(dateText)}</span>` : "";
+  const date = dateText ? `<span class="date-sup${row.isAddOn ? " add-on-date" : ""}">${row.isAddOn ? `(${escapeHtml(dateText)})` : escapeHtml(dateText)}</span>` : "";
 
-  return `<span class="${songClasses}"><span class="marker-wrap"><span class="marker-text${handClass}">${escapeHtml(title)}</span>${marker}${count}</span>${date}</span>`;
+  return `<span class="${songClasses}" title="${escapeAttr(title)}"><span class="marker-wrap"><span class="marker-target"><span class="marker-text${handClass}">${escapeHtml(title)}</span>${marker}</span>${count}</span>${date}</span>`;
 }
 
 function renderLatestSetlist(data) {
@@ -1425,13 +1987,105 @@ function renderSetlistImage(show) {
 }
 
 function renderSetlistText(show) {
+  const annotations = buildSetlistAnnotations(show);
   return `<div class="setlist-text">
-    <h3>${escapeHtml(show.date)} ${escapeHtml(show.location)}</h3>
-    <p class="venue">${escapeHtml(show.venue)}</p>
-    ${(show.sets || []).map((set) => `<p><strong>${escapeHtml(set.label)}:</strong> ${escapeHtml(set.songs)}</p>`).join("")}
-    ${show.notes?.length ? `<ul class="notes">${show.notes.map((note) => `<li>${escapeHtml(note)}</li>`).join("")}</ul>` : ""}
+    <h3>${escapeHtml(formatSetlistHeading(show))}</h3>
+    ${(show.sets || []).map((set) => `<p><strong>${escapeHtml(set.label)}:</strong> ${renderSetSongs(set, annotations)}</p>`).join("")}
+    ${renderSetlistGuestNotes(annotations)}
+    ${renderSetlistNotes(annotations)}
     ${(show.sourceUrl || show.streamUrl) ? `<p class="setlist-links">${show.sourceUrl ? `<a href="${escapeAttr(show.sourceUrl)}">Official Page</a>` : ""}${show.streamUrl ? `<a href="${escapeAttr(show.streamUrl)}">Stream</a>` : ""}</p>` : ""}
   </div>`;
+}
+
+function formatSetlistHeading(show) {
+  const place = [show.venue, show.location].filter(Boolean).join(", ");
+  return [show.date, place].filter(Boolean).join(" ");
+}
+
+function buildSetlistAnnotations(show) {
+  const guestNotes = [];
+  const bracketNotes = [];
+  const songTitles = [...new Set((show.sets || []).flatMap((set) => set.songTitles || splitDisplaySetSongs(set.songs)))];
+
+  for (const note of show.notes || []) {
+    const guest = parseGuestNote(note, songTitles);
+    if (guest) {
+      const marker = String(guestNotes.length + 1);
+      guestNotes.push({ ...guest, marker });
+    } else {
+      bracketNotes.push({ text: note });
+    }
+  }
+
+  const markersBySong = new Map();
+  for (const guest of guestNotes) {
+    for (const key of guest.songKeys) {
+      const markers = markersBySong.get(key) || [];
+      markers.push(guest.marker);
+      markersBySong.set(key, markers);
+    }
+  }
+
+  return { bracketNotes, guestNotes, markersBySong };
+}
+
+function parseGuestNote(note, songTitles) {
+  const text = clean(note);
+  if (!text || /^entire show\b/i.test(text)) return null;
+  const match = text.match(/^(.+?)\s+with\s+([A-Z][^;]+?\s+on\s+[^;]+)$/);
+  if (!match) return null;
+
+  const titlePart = match[1].replace(/^["']|["']$/g, "");
+  const titleKey = normalizeTitle(titlePart);
+  const songKeys = songTitles
+    .map((title) => ({ title, key: normalizeTitle(title) }))
+    .filter(({ key }) => key && (titleKey.includes(key) || key.includes(titleKey)))
+    .map(({ key }) => key);
+
+  return songKeys.length ? { songKeys: [...new Set(songKeys)], text: `with ${match[2].trim()}` } : null;
+}
+
+function renderSetSongs(set, annotations) {
+  if (!(set.songTitles || []).length) return escapeHtml(set.songs || "");
+
+  const display = String(set.songs || "");
+  const lowerDisplay = display.toLowerCase();
+  let cursor = 0;
+  let html = "";
+
+  for (const title of set.songTitles || []) {
+    const index = lowerDisplay.indexOf(String(title).toLowerCase(), cursor);
+    if (index < 0) return escapeHtml(set.songs || "");
+
+    html += escapeHtml(display.slice(cursor, index));
+    html += renderSetSongTitle(display.slice(index, index + title.length), annotations, title);
+    cursor = index + title.length;
+  }
+
+  html += escapeHtml(display.slice(cursor));
+  return html;
+}
+
+function renderSetSongTitle(displayTitle, annotations, canonicalTitle = displayTitle) {
+  const markers = annotations.markersBySong.get(normalizeTitle(canonicalTitle)) || [];
+  const markerText = markers.length ? `<sup class="guest-sup">${escapeHtml(markers.join(","))}</sup>` : "";
+  return `${escapeHtml(displayTitle)}${markerText}`;
+}
+
+function renderSetlistGuestNotes(annotations) {
+  if (!annotations.guestNotes.length) return "";
+  return `<p class="guest-notes">${annotations.guestNotes.map((note) => `<span><sup class="guest-sup">${escapeHtml(note.marker)}</sup> ${escapeHtml(note.text)}</span>`).join(" ")}</p>`;
+}
+
+function renderSetlistNotes(annotations) {
+  if (!annotations.bracketNotes.length) return "";
+  return `<p class="notes">${annotations.bracketNotes.map((note) => {
+    return `<span>[${escapeHtml(note.text)}]</span>`;
+  }).join(" ")}</p>`;
+}
+
+function splitDisplaySetSongs(value) {
+  return String(value || "").split(/\s*>\s*/).map((part) => part.trim()).filter(Boolean);
 }
 
 function renderTourDates(data) {
@@ -1448,10 +2102,10 @@ function renderTourDates(data) {
 
 function renderCommunityLinks() {
   return `<section class="community-links" aria-label="Community links">
-  <a class="posse-link" href="https://www.facebook.com/HerringPosse">
+  <a class="ticket-link" href="https://widespreadpanic.com/tour">Get Tickets</a>
+  <a class="posse-link" href="https://www.facebook.com/HerringPosse/">
     <img src="/assets/PosseFacebookBanner.png" alt="Jimmy Herring Has a Posse">
   </a>
-  <span>Jimmy Herring Has a Posse</span>
 </section>`;
 }
 
@@ -1508,39 +2162,83 @@ a {
 
 .site-head {
   width: min(1880px, calc(100% - 56px));
-  margin: 24px auto 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  margin: 20px auto 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    ". brand social"
+    "nav nav nav";
+  align-items: start;
+  gap: 22px 20px;
 }
 
 .brand {
+  grid-area: brand;
   display: inline-flex;
   align-items: center;
+  justify-self: center;
 }
 
 .brand-logo {
-  width: 176px;
+  width: clamp(280px, 27vw, 470px);
   height: auto;
   display: block;
 }
 
+.header-social {
+  grid-area: social;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 2px;
+}
+
+.social-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  color: #ffffff;
+  text-decoration: none;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.social-dot.facebook {
+  background: #1e65ae;
+}
+
+.social-dot.twitter {
+  background: #66c6e5;
+}
+
 .jump-links {
+  grid-area: nav;
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px 16px;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 15px;
+  justify-content: center;
+  gap: 16px clamp(28px, 4vw, 74px);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: clamp(24px, 1.8vw, 36px);
+  line-height: 1;
 }
 
 .jump-links a {
   display: inline-flex;
   align-items: center;
-  padding: 3px 0;
+  padding: 3px 0 6px;
   text-decoration: none;
   border-bottom: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.jump-links a:first-child {
+  color: #b94a4a;
 }
 
 .jump-links a:hover {
@@ -1563,7 +2261,7 @@ main {
 
 .header-row {
   display: grid;
-  grid-template-columns: minmax(120px, 1fr) minmax(0, auto) minmax(120px, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr) max-content;
   align-items: center;
   gap: 24px;
   margin-bottom: 36px;
@@ -1593,7 +2291,9 @@ main {
 .board-title {
   text-align: center;
   min-width: 0;
+  width: 100%;
   max-width: 100%;
+  justify-self: center;
 }
 
 .board-title h1 {
@@ -1606,6 +2306,7 @@ main {
   letter-spacing: 0;
   white-space: nowrap;
   max-width: 100%;
+  overflow: visible;
 }
 
 .board-title p {
@@ -1613,7 +2314,9 @@ main {
   color: var(--muted);
   font-family: "MilkRun", system-ui, sans-serif;
   font-size: 14px;
+  line-height: 1.2;
   letter-spacing: 0;
+  overflow-wrap: normal;
 }
 
 .board-ledger {
@@ -1664,92 +2367,163 @@ main {
 }
 
 .sheet-key {
-  margin: 2px 0 20px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 10px 0 12px;
+  margin: 0;
+  padding: 0;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.sheet-key summary {
-  cursor: pointer;
-  list-style: none;
+.sheet-key-sheet {
+  padding-top: 28px;
+  padding-bottom: 30px;
+}
+
+.sheet-key h2 {
+  margin: 0 0 18px;
   font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 18px;
+  font-size: 28px;
   line-height: 1;
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
-.sheet-key summary::-webkit-details-marker {
-  display: none;
-}
-
-.sheet-key dl {
+.key-topline {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px 22px;
-  margin: 11px 0 0;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(360px, 1.15fr);
+  gap: clamp(28px, 6vw, 96px);
+  align-items: start;
 }
 
-.sheet-key div {
+.key-block {
   min-width: 0;
 }
 
-.sheet-key dt {
+.key-block h3,
+.key-points strong,
+.key-other-sheets dt {
   font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.05;
+  font-weight: 400;
   color: var(--ink);
+  letter-spacing: 0;
 }
 
-.sheet-key dd {
-  margin: 3px 0 0;
+.key-block h3 {
+  margin: 0 0 7px;
+}
+
+.key-block p {
+  margin: 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.28;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.key-block p + p {
+  margin-top: 10px;
+}
+
+.key-points {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+}
+
+.key-points li {
+  min-width: 0;
+}
+
+.key-points strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.key-points span,
+.key-other-sheets dd {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.key-other-sheets {
+  margin-top: 22px;
+  padding-top: 17px;
+  border-top: 1px solid var(--line);
+}
+
+.key-other-sheets dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px 32px;
+  margin: 0;
+}
+
+.key-other-sheets dt {
+  margin: 0 0 4px;
+}
+
+.key-other-sheets dd {
+  margin: 0;
+}
+
+.marker-legend {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+  margin: 12px 0 12px;
+  padding: 0;
+}
+
+.marker-legend li {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.marker-legend img {
+  width: 38px;
+  height: 14px;
+  object-fit: fill;
+  mix-blend-mode: multiply;
+}
+
+.marker-legend span {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: baseline;
+}
+
+.marker-legend strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.marker-legend em {
+  color: var(--muted);
+  font-style: normal;
+  min-width: 0;
 }
 
 .song-panel {
   margin: 0;
 }
 
-.song-panel summary {
+.song-panel h3 {
   min-height: 24px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   margin: 0 0 12px;
-  cursor: pointer;
   font-size: 20px;
   font-weight: 700;
   text-decoration: underline;
-  list-style: none;
-}
-
-.song-panel summary::-webkit-details-marker {
-  display: none;
-}
-
-.song-panel summary::after {
-  content: "+";
-  color: var(--muted);
-  font-size: 20px;
-  line-height: 1;
-  text-decoration: none;
-  display: none;
-}
-
-.song-panel[open] summary::after {
-  content: "-";
-}
-
-.song-panel summary em {
-  margin-left: auto;
-  color: var(--muted);
-  font-style: normal;
-  font-weight: 400;
-  text-decoration: none;
-  display: none;
 }
 
 .songs.grid4 {
@@ -1771,50 +2545,70 @@ main {
 }
 
 .rotation-song {
-  --song-scale: 1;
-  display: block;
+  --song-font-size: 24px;
+  display: flex;
+  align-items: baseline;
+  max-width: 100%;
+  min-width: 0;
   min-height: 27px;
   margin: 0 0 6px;
-  font-size: calc(clamp(19px, 1.25vw, 27px) * var(--song-scale));
+  font-size: var(--song-font-size);
   text-transform: uppercase;
   line-height: 1.02;
   letter-spacing: 0;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   overflow-wrap: normal;
   text-wrap: nowrap;
 }
 
-.rotation-song.fit-tight {
-  --song-scale: 0.94;
-}
-
-.rotation-song.fit-sm {
-  --song-scale: 0.88;
-}
-
-.rotation-song.fit-xs {
-  --song-scale: 0.82;
-}
-
 .marker-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.rotation-song.has-date .marker-wrap {
+  max-width: 100%;
+}
+
+.marker-target {
   position: relative;
   display: inline-block;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   line-height: 1;
 }
 
 .marker-text {
   position: relative;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
   z-index: 1;
   letter-spacing: 0;
 }
 
+.rotation-song sup {
+  flex: 0 0 auto;
+}
+
 .marker-mask {
   position: absolute;
-  left: -0.2em;
-  right: -0.12em;
-  top: 55%;
-  height: 0.62em;
-  transform: translateY(-50%);
+  left: -0.14em;
+  right: -0.1em;
+  top: 0.1em;
+  bottom: 0.08em;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
@@ -1831,13 +2625,24 @@ main {
 
 sup {
   font-size: 0.55em;
-  vertical-align: super;
+  position: relative;
+  top: -0.5em;
+  vertical-align: baseline;
   line-height: 0;
   margin-left: 2px;
 }
 
 .date-sup {
+  flex: 0 0 auto;
   margin-left: 7px;
+}
+
+.add-on-date {
+  margin-left: 5px;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 0.72em;
+  line-height: 1;
+  vertical-align: 0.03em;
 }
 
 .hand-addon {
@@ -1873,26 +2678,32 @@ sup {
 
 .community-links {
   width: min(1180px, 100%);
-  margin: 28px auto 36px;
+  margin: 34px auto 46px;
   text-align: center;
-  font-family: "MilkRun", system-ui, sans-serif;
+}
+
+.ticket-link {
+  display: block;
+  width: max-content;
+  margin: 0 auto 34px;
+  color: #007cbb;
+  font-size: clamp(24px, 2.6vw, 36px);
+  line-height: 1;
+  text-decoration: none;
 }
 
 .posse-link {
-  display: inline-block;
+  display: block;
+  width: max-content;
+  margin: 0 auto;
   text-decoration: none;
 }
 
 .posse-link img {
   display: block;
-  width: min(212px, 70vw);
+  width: min(200px, 70vw);
   height: auto;
-  margin: 0 auto 5px;
-}
-
-.community-links span {
-  display: block;
-  font-size: 12px;
+  margin: 0 auto;
 }
 
 .section-heading {
@@ -1952,10 +2763,13 @@ sup {
 
 .setlist-image {
   margin: 0 0 12px;
-  background: var(--cream);
+  background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 4px;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .setlist-feature .setlist-image {
@@ -1966,47 +2780,70 @@ sup {
 .setlist-image img {
   display: block;
   width: 100%;
-  aspect-ratio: 3 / 2;
-  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  object-position: center center;
+  background: #ffffff;
 }
 
 .setlist-text {
   min-width: 0;
   overflow-wrap: break-word;
   word-break: normal;
+  font-size: 15px;
+  line-height: 1.35;
 }
 
 .setlist-text h3 {
-  margin: 0;
+  margin: 0 0 3px;
   font-family: inherit;
-  font-size: 16px;
-  line-height: 1.25;
+  font-size: inherit;
+  line-height: inherit;
   font-weight: 700;
   color: var(--ink);
   letter-spacing: 0;
 }
 
-.setlist-text .venue {
-  margin: 3px 0 10px;
-  color: var(--muted);
-  font-family: inherit;
-}
-
 .setlist-text p {
   margin: 8px 0;
-  line-height: 1.35;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .setlist-text strong {
   color: var(--ink);
 }
 
+.guest-notes,
 .notes {
   margin: 10px 0 0;
-  padding-left: 19px;
+  padding-left: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.guest-notes {
+  color: var(--ink);
+}
+
+.notes {
   color: var(--muted);
-  font-size: 14px;
-  line-height: 1.35;
+}
+
+.guest-notes span,
+.notes span {
+  display: block;
+}
+
+.setlist-text .guest-sup {
+  font-size: 0.62em;
+  top: -0.55em;
+  margin-left: 1px;
+}
+
+.notes .guest-sup {
+  margin-left: 0;
+  margin-right: 2px;
 }
 
 .setlist-links {
@@ -2014,6 +2851,8 @@ sup {
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 12px;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .setlist-links a {
@@ -2064,6 +2903,16 @@ sup {
 .archive-main {
   width: min(1180px, calc(100% - 32px));
   margin: 28px auto 56px;
+}
+
+.tour-review-main {
+  width: min(1880px, calc(100% - 56px));
+  margin: 28px auto 56px;
+}
+
+.tour-review-main > .archive-page {
+  width: min(1180px, 100%);
+  margin: 0 auto 34px;
 }
 
 .archive-page,
@@ -2125,6 +2974,121 @@ sup {
 
 .archive-content table {
   max-width: 100%;
+}
+
+.shelf-explainer {
+  max-width: 820px;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.shelf-explainer p {
+  margin: 0 0 14px;
+}
+
+.shelf-page-links {
+  color: var(--muted);
+}
+
+.shelf-page-links a,
+.movement-list a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.shelf-movement {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.shelf-movement h2,
+.legacy-shelf-notes h2 {
+  margin: 0 0 14px;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.movement-block {
+  margin: 20px 0;
+}
+
+.movement-block h3 {
+  margin: 0 0 8px;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.movement-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.movement-list li {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 3px 8px;
+  align-items: baseline;
+}
+
+.generated-review-list li {
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+}
+
+.review-ledger {
+  margin-top: 20px;
+}
+
+.review-top-songs {
+  columns: 2;
+  column-gap: 42px;
+  margin: 0;
+  padding-left: 26px;
+  font-size: 18px;
+}
+
+.review-top-songs li {
+  break-inside: avoid;
+  margin: 0 0 7px;
+}
+
+.review-top-songs strong {
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-weight: 400;
+}
+
+.review-top-songs span {
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.movement-list strong {
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.movement-list span {
+  color: var(--muted);
+}
+
+.legacy-shelf-notes {
+  margin-top: 36px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.legacy-note {
+  color: var(--muted);
 }
 
 .archive-list {
@@ -2301,44 +3265,106 @@ sup {
 }
 
 .site-foot {
-  width: min(1880px, calc(100% - 56px));
-  margin: 0 auto 36px;
+  width: min(1180px, calc(100% - 56px));
+  margin: 0 auto 28px;
+  text-align: center;
+  color: var(--ink);
+  font-size: clamp(18px, 1.65vw, 30px);
+  line-height: 1.35;
+}
+
+.site-foot a {
+  color: #007cbb;
+  text-decoration: none;
+}
+
+.social-links,
+.footer-links {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
   flex-wrap: wrap;
-  color: var(--muted);
-  font-size: 13px;
-  border-top: 1px solid var(--line);
-  padding-top: 14px;
+  gap: 8px 10px;
+}
+
+.social-links {
+  margin-bottom: 36px;
+  font-size: clamp(14px, 1.2vw, 18px);
+}
+
+.footer-links {
+  margin-bottom: 26px;
+}
+
+.footer-links span {
+  color: var(--ink);
+}
+
+.site-foot p {
+  margin: 0;
 }
 
 @media (max-width: 900px) {
-  .site-head,
-  .section-heading,
-  .site-foot {
+  .section-heading {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .header-row {
+  .site-head {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "social"
+      "brand"
+      "nav";
+    gap: 16px;
+  }
+
+  .header-social {
+    justify-self: center;
+  }
+
+  .brand-logo {
+    width: min(390px, 70vw);
+  }
+
+  .header-row {
+    grid-template-columns: minmax(76px, auto) minmax(0, 1fr) minmax(76px, auto);
+    gap: clamp(8px, 2.5vw, 18px);
+    margin-bottom: 26px;
   }
 
   .jump-links {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: center;
+    gap: 14px 28px;
+    font-size: 25px;
   }
 
   .nums.left,
   .nums.right {
-    justify-self: center;
+    justify-self: stretch;
+  }
+
+  .nums {
+    gap: clamp(5px, 1.4vw, 10px);
+  }
+
+  .nums.left {
+    justify-content: flex-start;
+  }
+
+  .nums.right {
+    justify-content: flex-end;
+  }
+
+  .marker-num {
+    width: clamp(36px, 7vw, 58px);
+    height: clamp(42px, 8vw, 66px);
   }
 
   .board-title h1 {
-    font-size: 46px;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    font-size: clamp(34px, 7.8vw, 56px);
+    white-space: nowrap;
+    overflow-wrap: normal;
   }
 
   .songs.grid4 {
@@ -2349,8 +3375,13 @@ sup {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .rotation-song {
+    --song-font-size: 22px;
+  }
+
   .board-ledger,
-  .sheet-key dl,
+  .key-topline,
+  .key-other-sheets dl,
   .setlist-feature,
   .setlist-grid {
     grid-template-columns: 1fr;
@@ -2373,28 +3404,48 @@ sup {
   }
 }
 
+@media (max-width: 720px) {
+  .rotation-song {
+    --song-font-size: 20px;
+  }
+
+  .songs.grid4,
+  .songs.grid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 560px) {
   main,
   .site-head,
   .latest-setlist,
   .setlist-section,
   .tour-date-section,
+  .tour-review-main,
   .site-foot {
     width: min(calc(100% - 20px), 1180px);
   }
 
   .brand-logo {
-    width: 148px;
+    width: min(330px, 82vw);
+  }
+
+  .social-dot {
+    width: 40px;
+    height: 40px;
+    font-size: 30px;
   }
 
   .jump-links {
-    font-size: 13px;
+    font-size: clamp(17px, 5vw, 20px);
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: center;
+    gap: 12px 14px;
   }
 
   .jump-links a {
+    justify-content: center;
     min-width: 0;
     white-space: nowrap;
   }
@@ -2403,7 +3454,36 @@ sup {
     padding: 13px 12px 18px;
   }
 
-  .board-title h1,
+  .header-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "left right"
+      "title title";
+    gap: 6px 8px;
+    margin-bottom: 24px;
+  }
+
+  .nums.left {
+    grid-area: left;
+  }
+
+  .nums.right {
+    grid-area: right;
+  }
+
+  .board-title {
+    grid-area: title;
+  }
+
+  .marker-num {
+    width: clamp(32px, 9vw, 44px);
+    height: clamp(37px, 10vw, 50px);
+  }
+
+  .board-title h1 {
+    font-size: clamp(34px, 12vw, 52px);
+  }
+
   .section-heading h2 {
     font-size: 32px;
   }
@@ -2416,56 +3496,24 @@ sup {
     font-size: 14px;
   }
 
-  .setlist-text h3 {
-    font-size: 15px;
-  }
-
-  .sheet-jump {
-    display: flex;
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    margin: 0 -4px 8px;
-    padding: 8px 4px;
-    background: rgba(255, 255, 255, 0.94);
-    border-bottom: 1px solid var(--line);
-  }
-
-  .sheet-jump a {
-    flex: 1 1 42%;
-    justify-content: center;
-  }
-
-  .sheet-key {
-    margin-bottom: 12px;
-  }
-
-  .sheet-key summary {
-    min-height: 38px;
-    display: flex;
-    align-items: center;
+  .key-points,
+  .marker-legend,
+  .review-top-songs {
+    grid-template-columns: 1fr;
+    columns: 1;
   }
 
   .song-panel {
     border-bottom: 1px solid var(--line);
   }
 
-  .song-panel summary {
-    min-height: 44px;
-    margin: 4px 0;
+  .song-panel h3 {
+    min-height: 30px;
+    margin: 4px 0 10px;
   }
 
-  .song-panel summary::after,
-  .song-panel summary em {
-    display: inline;
-  }
-
-  .songs.grid4 {
-    grid-template-columns: 1fr;
-  }
-
-  .songs.grid3 {
-    grid-template-columns: 1fr;
+  .rotation-song {
+    --song-font-size: 18px;
   }
 
   .tour-dates li {
@@ -2524,10 +3572,17 @@ function renderHeaders() {
 `;
 }
 
-function renderRedirects(archiveEntries = []) {
+function renderRedirects(archiveEntries = [], generatedReviews = []) {
+  const reviewByYear = new Map(generatedReviews.map((review) => {
+    const match = clean(review.path).match(/^\/?(\d{4})\//);
+    return match ? [match[1], publicPath(review.path)] : null;
+  }).filter(Boolean));
+  const review2025Path = reviewByYear.get("2025") || "/";
   const lines = [
-    "/2025/02/widespread-panic-2025-tour.html / 301",
-    "/2025/02/widespread-panic-2025-tour / 301",
+    "/tour-in-review /p/burnthdays-widespread-panic-tours-in 301",
+    "/tour-in-review/ /p/burnthdays-widespread-panic-tours-in 301",
+    `/2025/02/widespread-panic-2025-tour.html ${review2025Path} 301`,
+    `/2025/02/widespread-panic-2025-tour ${review2025Path} 301`,
     "/search /archive/ 301",
     "/search/* /archive/ 301",
     "/feeds/posts/default /archive/ 301",
@@ -2546,6 +3601,7 @@ function renderRedirects(archiveEntries = []) {
       const sourcePath = clean(url.pathname);
       const targetPath = publicPath(entry.path);
       if (!sourcePath || sourcePath === targetPath) continue;
+      if (sourcePath === "/2025/02/widespread-panic-2025-tour.html" || sourcePath === "/2025/02/widespread-panic-2025-tour") continue;
       const rule = `${sourcePath} ${targetPath} 301`;
       if (!seen.has(rule)) {
         lines.push(rule);
@@ -2559,8 +3615,13 @@ function renderRedirects(archiveEntries = []) {
   return `${lines.join("\n")}\n`;
 }
 
-function renderSitemap(data, archiveEntries = [], songOrigins = []) {
+function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedReviews = []) {
   const updated = data.generatedAt.slice(0, 10);
+  const redirectedArchivePaths = new Set([
+    "/2025/02/widespread-panic-2025-tour",
+    "/2025/02/widespread-panic-2025-tour.html"
+  ]);
+  const sitemapArchiveEntries = archiveEntries.filter((entry) => !redirectedArchivePaths.has(publicPath(entry.path)) && !redirectedArchivePaths.has(entry.path));
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -2569,10 +3630,6 @@ function renderSitemap(data, archiveEntries = [], songOrigins = []) {
   </url>
   <url>
     <loc>https://burnthday.com/archive/</loc>
-    <lastmod>${updated}</lastmod>
-  </url>
-  <url>
-    <loc>https://burnthday.com/tour-in-review/</loc>
     <lastmod>${updated}</lastmod>
   </url>
   <url>
@@ -2587,7 +3644,11 @@ function renderSitemap(data, archiveEntries = [], songOrigins = []) {
     <loc>https://burnthday.com/song-origins/${escapeHtml(origin.slug)}/</loc>
     <lastmod>${updated}</lastmod>
   </url>`).join("\n  ")}
-  ${archiveEntries.map((entry) => `<url>
+  ${generatedReviews.map((review) => `<url>
+    <loc>https://burnthday.com${escapeHtml(publicPath(review.path))}</loc>
+    <lastmod>${(review.published || updated).slice(0, 10)}</lastmod>
+  </url>`).join("\n  ")}
+  ${sitemapArchiveEntries.map((entry) => `<url>
     <loc>https://burnthday.com${escapeHtml(publicPath(entry.path))}</loc>
     <lastmod>${(entry.updated || entry.published || updated).slice(0, 10)}</lastmod>
   </url>`).join("\n  ")}
@@ -2605,10 +3666,12 @@ function splitStrict(items, count) {
 }
 
 function pickBoardShow(tourDates, setlists) {
-  const today = currentDateKey();
   const sortedDates = [...tourDates].filter((show) => show.isoDate).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
-  const currentOrPast = [...sortedDates].reverse().find((show) => show.isoDate <= today);
-  const selected = currentOrPast || setlists[0] || sortedDates[0] || null;
+  const postedDates = new Set(setlists.map((show) => show.isoDate).filter(Boolean));
+  const latestPostedIso = [...postedDates].sort().reverse()[0] || "";
+  const nextUnposted = sortedDates.find((show) => !postedDates.has(show.isoDate) && (!latestPostedIso || show.isoDate > latestPostedIso));
+  const latestPosted = [...sortedDates].reverse().find((show) => postedDates.has(show.isoDate));
+  const selected = nextUnposted || latestPosted || setlists[0] || sortedDates[0] || null;
   if (!selected) return null;
 
   const run = tourRunInfo(sortedDates, selected);
@@ -2618,15 +3681,6 @@ function pickBoardShow(tourDates, setlists) {
     runLength: run.length,
     runLabel: run.length > 1 ? romanNumeral(run.number) : ""
   };
-}
-
-function currentDateKey() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: config.siteTimeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date());
 }
 
 function tourRunInfo(tourDates, selected) {
@@ -2669,14 +3723,6 @@ function formatBoardShowTitle(show) {
   return `${show.location}${show.runLabel ? ` ${show.runLabel}` : ""}`;
 }
 
-function songFitClass(title, dateText = "") {
-  const length = title.length + (dateText ? dateText.length + 2 : 0);
-  if (length >= 40) return "fit-xs";
-  if (length >= 32) return "fit-sm";
-  if (length >= 25) return "fit-tight";
-  return "";
-}
-
 function newestUniqueDates(setlists, catalog, currentTour) {
   const dates = new Set();
   for (const show of setlists) if (show.isoDate) dates.add(show.isoDate);
@@ -2716,6 +3762,11 @@ function isoToShortDate(value) {
   if (!value) return "";
   const [year, month, day] = value.split("-");
   return `${month}/${day}/${year.slice(2)}`;
+}
+
+function displayDate(value) {
+  const isoDate = parseDateKey(value);
+  return isoDate ? isoToShortDate(isoDate) : clean(value);
 }
 
 function maxIso(values) {
@@ -2761,8 +3812,11 @@ function normalizeTitle(title) {
   const aliases = {
     bowleggedwomanknockkneedman: "bowleggedwoman",
     conradthecaterpillar: "conrad",
+    heroesdavidbowie: "heroesdb",
+    jamaisvutheworldhaschanged: "jamaisvu",
     knockinaroundthezoo: "knockingroundthezoo",
     nobodysfault: "nobodysfaultbutmine",
+    runnindownadream: "runningdownadream",
     thismustbetheplacenavemelody: "thismustbetheplacenaivemelody",
     wrm: "wurm"
   };

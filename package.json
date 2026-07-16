@@ -8,13 +8,21 @@
     "build": "node scripts/build.mjs",
     "import:blogger": "node scripts/import-blogger-setlists.mjs",
     "import:playstats": "node scripts/import-everyday-companion-playstats.mjs",
+    "import:ec-prior-stats": "node scripts/import-everyday-companion-prior-song-stats.mjs",
     "import:official-setlists": "node scripts/import-official-setlists.mjs",
     "enrich:setlist-transitions": "node scripts/enrich-setlist-transitions.mjs",
     "import:song-origins": "node scripts/import-song-origins.mjs",
     "validate:playstats": "node scripts/validate-playstats-match.mjs",
+    "validate:tour-data": "node scripts/validate-current-tour-data.mjs",
+    "validate:production": "node scripts/validate-production-readiness.mjs",
     "refresh:setlists": "npm run import:official-setlists && npm run enrich:setlist-transitions",
+    "refresh:data": "npm run refresh:strict",
+    "refresh:strict": "npm run import:playstats && npm run import:official-setlists && npm run enrich:setlist-transitions -- --require-all && npm run import:ec-prior-stats -- --require-all && npm run verify",
+    "postshow": "npm run refresh:setlists && npm run import:ec-prior-stats -- --allow-ec-lag && npm run verify",
+    "verify": "npm run build && npm run validate:playstats && npm run validate:tour-data",
+    "qa": "npm run verify && node scripts/qa-site.mjs && npm run validate:production",
     "dev": "npm run build && npx serve dist",
-    "deploy": "npm run build && npm run validate:playstats && npx wrangler pages deploy dist --project-name burnthday"
+    "deploy": "npm run verify && npx wrangler pages deploy dist --project-name burnthday"
   },
   "engines": {
     "node": ">=20"

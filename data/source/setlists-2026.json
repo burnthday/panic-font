@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-13T15:55:12.100Z",
+  "importedAt": "2026-07-16T04:34:20.613Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -416,7 +416,7 @@
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/03/Widespread-Panic-20260320-Timmermans-1575.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
-      "transitionSourceUrl": "https://archive.org/details/WSP2026-03-20.SP",
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-03-20.ak40.flac24",
       "transitionSourceTitle": "Widespread Panic Live at St. Augustine Amphitheatre on 2026-03-20"
     },
     {
@@ -1851,7 +1851,7 @@
   "transitionSource": {
     "label": "Internet Archive Live Music Archive",
     "sourceUrl": "https://archive.org/details/WidespreadPanic",
-    "importedAt": "2026-07-13T15:57:03.488Z",
+    "importedAt": "2026-07-16T04:36:15.087Z",
     "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
   }
 }

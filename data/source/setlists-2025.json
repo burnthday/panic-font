@@ -1,9 +1,773 @@
 {
   "title": "WIDESPREAD PANIC 2025 TOUR",
   "sourceUrl": "https://www.burnthday.com/2025/02/widespread-panic-2025-tour.html",
+  "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "2025-09-11T09:30:00.015-04:00",
-  "importedAt": "2026-07-09T22:40:11.292Z",
+  "importedAt": "2026-07-16T03:08:08.723Z",
   "setlists": [
+    {
+      "date": "12/31/25",
+      "isoDate": "2025-12-31",
+      "venue": "The Fox Theatre",
+      "city": "Atlanta",
+      "state": "GA",
+      "location": "Atlanta, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-12-31-atlanta-ga-the-fox-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-the-fox-theatre-atlanta-ga-12-31-2025-mp3-flac-or-online-music-streaming/45442.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Blue Indian, Wondering, We Walk Each Other Home, Don't Be Denied, Down In A Hole, Fishing, Who Do You Belong To?, Travelin' Light",
+          "songTitles": [
+            "Blue Indian",
+            "Wondering",
+            "We Walk Each Other Home",
+            "Don't Be Denied",
+            "Down In A Hole",
+            "Fishing",
+            "Who Do You Belong To?",
+            "Travelin' Light"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Big Wooly Mammoth, King Baby, Ribs and Whiskey, Tall Boy, Diner, May Your Glass Be Filled, Love Tractor",
+          "songTitles": [
+            "Big Wooly Mammoth",
+            "King Baby",
+            "Ribs and Whiskey",
+            "Tall Boy",
+            "Diner",
+            "May Your Glass Be Filled",
+            "Love Tractor"
+          ]
+        },
+        {
+          "label": "3",
+          "songs": "Ain't Life Grand, Sitting in Limbo, I Can See Clearly Now, Paranoid, War Pigs, Disco, Tie Your Shoes, Porch Song",
+          "songTitles": [
+            "Ain't Life Grand",
+            "Sitting in Limbo",
+            "I Can See Clearly Now",
+            "Paranoid",
+            "War Pigs",
+            "Disco",
+            "Tie Your Shoes",
+            "Porch Song"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Ride Me High, All Time Low",
+          "songTitles": [
+            "Ride Me High",
+            "All Time Low"
+          ]
+        }
+      ],
+      "notes": [
+        "Fishing, Who Do You Belong To?, Ain't Life Grand, Sitting in Limbo, I Can See Clearly Now, Paranoid, War Pigs, Disco, Tie Your Shoes, Porch Song, Ride Me High, All Time Low with Billy Strings on Guitar and Vocals",
+        "Ribs & Whiskey, Tall Boy, and Diner with Nick Johnson on guitar"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/01/Widespread-Panic-20251231-Timmermans-4333.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "12/30/25",
+      "isoDate": "2025-12-30",
+      "venue": "The Fox Theatre",
+      "city": "Atlanta",
+      "state": "GA",
+      "location": "Atlanta, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-12-30-atlanta-ga-the-fox-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-the-fox-theatre-atlanta-ga-12-30-2025-mp3-flac-or-online-music-streaming/45441.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Let's Get The Show On The Road, Driving Song, Pleas, Driving Song, Bear's Gone Fishin', Saint Ex, Greta, Bowlegged Woman, Knock-Kneed Man, Action Man",
+          "songTitles": [
+            "Let's Get The Show On The Road",
+            "Driving Song",
+            "Pleas",
+            "Driving Song",
+            "Bear's Gone Fishin'",
+            "Saint Ex",
+            "Greta",
+            "Bowlegged Woman, Knock-Kneed Man",
+            "Action Man"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Rock, Henry Parsons Died, Second Skin, Jack, Pigeons, Protein Drink, Sewing Machine, Mercy, Bust it Big, Chilly Water",
+          "songTitles": [
+            "Rock",
+            "Henry Parsons Died",
+            "Second Skin",
+            "Jack",
+            "Pigeons",
+            "Protein Drink",
+            "Sewing Machine",
+            "Mercy",
+            "Bust it Big",
+            "Chilly Water"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Pickin' Up The Pieces, Climb To Safety",
+          "songTitles": [
+            "Pickin' Up The Pieces",
+            "Climb To Safety"
+          ]
+        }
+      ],
+      "notes": [
+        "Mercy, Bust it Big, Chilly Water, Pickin' Up the Pieces, and Climb to Safety w/ Billy Strings on Guitar"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/12/Widespread-Panic-20251230-Timmermans-2395.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "12/29/25",
+      "isoDate": "2025-12-29",
+      "venue": "The Fox Theatre",
+      "city": "Atlanta",
+      "state": "GA",
+      "location": "Atlanta, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-12-29-atlanta-ga-the-fox-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-the-fox-theatre-atlanta-ga-12-29-2025-mp3-flac-or-online-music-streaming/45440.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Let's Get Down To Business, Makes Sense To Me, One Arm Steve, Little By Little, Walk On, Sleeping Man, Aunt Avis, Rebirtha, Conrad The Caterpillar",
+          "songTitles": [
+            "Let's Get Down To Business",
+            "Makes Sense To Me",
+            "One Arm Steve",
+            "Little By Little",
+            "Walk On",
+            "Sleeping Man",
+            "Aunt Avis",
+            "Rebirtha",
+            "Conrad The Caterpillar"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Little Kin, Machine, Barstools and Dreamers, Goodpeople, Dark Bar, Goodpeople, Party at Your Mama's House, Stop Breakin' Down Blues, Fishwater, Surprise Valley, Fishwater, Surprise Valley, Blackout Blues",
+          "songTitles": [
+            "Little Kin",
+            "Machine",
+            "Barstools and Dreamers",
+            "Goodpeople",
+            "Dark Bar",
+            "Goodpeople",
+            "Party at Your Mama's House",
+            "Stop Breakin' Down Blues",
+            "Fishwater",
+            "Surprise Valley",
+            "Fishwater",
+            "Surprise Valley",
+            "Blackout Blues"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "There is a Time, Mr. Soul",
+          "songTitles": [
+            "There is a Time",
+            "Mr. Soul"
+          ]
+        }
+      ],
+      "notes": [
+        "Stop Breakin' Down Blues, Fishwater, Surprise Valley, Blackout Blues, and Mr. Soul w/ Billy Strings on Guitar"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/12/Widespread-Panic-20251229-Timmermans-0745.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "11/23/25",
+      "isoDate": "2025-11-23",
+      "venue": "The Capitol Theatre",
+      "city": "Port Chester",
+      "state": "NY",
+      "location": "Port Chester, NY",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-23-port-chester-ny-the-capitol-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-the-capitol-theatre-port-chester-ny-11-23-2025-mp3-flac-or-online-music-streaming/45439.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Rebirtha, Tall Boy, Papa Johnny Road, Machine, Barstools and Dreamers, Free Somehow, Up All Night, Cosmic Confidante, Love Tractor",
+          "songTitles": [
+            "Rebirtha",
+            "Tall Boy",
+            "Papa Johnny Road",
+            "Machine",
+            "Barstools and Dreamers",
+            "Free Somehow",
+            "Up All Night",
+            "Cosmic Confidante",
+            "Love Tractor"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Little By Little, You Should Be Glad, This Part of Town, All Time Low, Blight, I'm Not Alone, Tie Your Shoes, Heaven, Play A Train Song, Climb To Safety",
+          "songTitles": [
+            "Little By Little",
+            "You Should Be Glad",
+            "This Part of Town",
+            "All Time Low",
+            "Blight",
+            "I'm Not Alone",
+            "Tie Your Shoes",
+            "Heaven",
+            "Play A Train Song",
+            "Climb To Safety"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Pilgrims, End Of The Show",
+          "songTitles": [
+            "Pilgrims",
+            "End Of The Show"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/11/Widespread-Panic-20251123-Timmermans-2002.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "11/22/25",
+      "isoDate": "2025-11-22",
+      "venue": "The Capitol Theatre",
+      "city": "Port Chester",
+      "state": "NY",
+      "location": "Port Chester, NY",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-22-port-chester-ny-the-capitol-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-the-capitol-theatre-port-chester-ny-11-22-2025-mp3-flac-or-online-music-streaming/45438.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Fishwater, Better Off, Fishwater, Pleas, Bust it Big, We Walk Each Other Home, The Last Straw, Nobody's Loss, Halloween Face",
+          "songTitles": [
+            "Fishwater",
+            "Better Off",
+            "Fishwater",
+            "Pleas",
+            "Bust it Big",
+            "We Walk Each Other Home",
+            "The Last Straw",
+            "Nobody's Loss",
+            "Halloween Face"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Holden Oversoul, Ride Me High, Papa's Home, Drums, Papa's Home, Good Morning Little School Girl, Surprise Valley, Goin' Out West, Surprise Valley, Porch Song",
+          "songTitles": [
+            "Holden Oversoul",
+            "Ride Me High",
+            "Papa's Home",
+            "Drums",
+            "Papa's Home",
+            "Good Morning Little School Girl",
+            "Surprise Valley",
+            "Goin' Out West",
+            "Surprise Valley",
+            "Porch Song"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Cortez the Killer, Runnin' Down A Dream",
+          "songTitles": [
+            "Cortez the Killer",
+            "Runnin' Down A Dream"
+          ]
+        }
+      ],
+      "notes": [
+        "Good Morning Little School Girl, Surprise Valley > Goin' Out West > Surprise Valley, Porch Song, Cortez the Killer, and Runnin' Down a Dream wth Warren Haynes on guitar and vocals"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/11/Widespread-Panic-20251122-Timmermans-0029.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "11/21/25",
+      "isoDate": "2025-11-21",
+      "venue": "The Capitol Theatre",
+      "city": "Port Chester",
+      "state": "NY",
+      "location": "Port Chester, NY",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-21-port-chester-ny-the-capitol-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-the-capitol-theatre-port-chester-ny-11-21-2025-mp3-flac-or-online-music-streaming/45437.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Wondering, Send Your Mind, Goodpeople, Space Wrangler, Walkin' (For Your Love), Down, Trashy, Big Wooly Mammoth, Imitation Leather Shoes",
+          "songTitles": [
+            "Wondering",
+            "Send Your Mind",
+            "Goodpeople",
+            "Space Wrangler",
+            "Walkin' (For Your Love)",
+            "Down",
+            "Trashy",
+            "Big Wooly Mammoth",
+            "Imitation Leather Shoes"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Pigeons, Little Lilly, Worry, Tackle Box Hero, Smokestack Lightning, Henry Parsons Died, Saint Ex, Honky Red, Blue Indian, North",
+          "songTitles": [
+            "Pigeons",
+            "Little Lilly",
+            "Worry",
+            "Tackle Box Hero",
+            "Smokestack Lightning",
+            "Henry Parsons Died",
+            "Saint Ex",
+            "Honky Red",
+            "Blue Indian",
+            "North"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Expiration Day, Ain't Life Grand",
+          "songTitles": [
+            "Expiration Day",
+            "Ain't Life Grand"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/11/Widespread-Panic-20251121-Timmermans-0736.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "11/01/25",
+      "isoDate": "2025-11-01",
+      "venue": "Enmarket Arena",
+      "city": "Savannah",
+      "state": "GA",
+      "location": "Savannah, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-01-savannah-ga-enmarket-arena/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-enmarket-arena-savannah-ga-11-01-2025-mp3-flac-or-online-music-streaming/44858.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Thought Sausage, Pickin' Up The Pieces, Bear's Gone Fishin', Hatfield, Rock, Little By Little, You Got Yours, Blackout Blues",
+          "songTitles": [
+            "Thought Sausage",
+            "Pickin' Up The Pieces",
+            "Bear's Gone Fishin'",
+            "Hatfield",
+            "Rock",
+            "Little By Little",
+            "You Got Yours",
+            "Blackout Blues"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Disco, Bust it Big, Aunt Avis, Diner, Party at Your Mama's House, Ribs and Whiskey, Second Skin, Tie Your Shoes, Bust it Big, Chilly Water",
+          "songTitles": [
+            "Disco",
+            "Bust it Big",
+            "Aunt Avis",
+            "Diner",
+            "Party at Your Mama's House",
+            "Ribs and Whiskey",
+            "Second Skin",
+            "Tie Your Shoes",
+            "Bust it Big",
+            "Chilly Water"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Four Cornered Room, Slippin Into Darkness, Lawyers Guns And Money",
+          "songTitles": [
+            "Four Cornered Room",
+            "Slippin Into Darkness",
+            "Lawyers Guns And Money"
+          ]
+        }
+      ],
+      "notes": [
+        "Donate to Second Harvest of Coastal Georgia Food Bank 🍎",
+        "Slippin' Into Darkness w/ Steve Lopez on percussion"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/11/Widespread-Panic-20251101-Timmermans-0483.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "10/31/25",
+      "isoDate": "2025-10-31",
+      "venue": "Enmarket Arena",
+      "city": "Savannah",
+      "state": "GA",
+      "location": "Savannah, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-31-savannah-ga-enmarket-arena/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-enmarket-arena-savannah-ga-10-31-2025-mp3-flac-or-online-music-streaming/44857.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Gradle, All Time Low, Down In A Hole, Impossible, You Should Be Glad, Proving Ground, Riders On The Storm, Proving Ground, Tall Boy",
+          "songTitles": [
+            "Gradle",
+            "All Time Low",
+            "Down In A Hole",
+            "Impossible",
+            "You Should Be Glad",
+            "Proving Ground",
+            "Riders On The Storm",
+            "Proving Ground",
+            "Tall Boy"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Greta, Conrad The Caterpillar, Who Are You, Protein Drink, Sewing Machine, Free Somehow, Pilgrims, Crazy, You're Lost Little Girl, Jack, King Baby, Red Hot Mama, White Rabbit, Red Hot Mama",
+          "songTitles": [
+            "Greta",
+            "Conrad The Caterpillar",
+            "Who Are You",
+            "Protein Drink",
+            "Sewing Machine",
+            "Free Somehow",
+            "Pilgrims",
+            "Crazy",
+            "You're Lost Little Girl",
+            "Jack",
+            "King Baby",
+            "Red Hot Mama",
+            "White Rabbit",
+            "Red Hot Mama"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Dream Song, Black Hole Sun, Climb To Safety",
+          "songTitles": [
+            "Dream Song",
+            "Black Hole Sun",
+            "Climb To Safety"
+          ]
+        }
+      ],
+      "notes": [
+        "Donate to Second Harvest of Coastal Georgia Food Bank 🍎"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/11/Widespread-Panic-20251031-Timmermans-6915.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "10/26/25",
+      "isoDate": "2025-10-26",
+      "venue": "The Riverside Theater",
+      "city": "Milwaukee",
+      "state": "WI",
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-26-milwaukee-wi-the-riverside-theater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-riverside-theater-milwaukee-wi-10-26-2025-mp3-flac-or-online-music-streaming/43031.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Airplane, Pleas, Old Neighborhood, Small Town, Visiting Day, Up All Night, Fishing, A of D, Mr. Soul",
+          "songTitles": [
+            "Airplane",
+            "Pleas",
+            "Old Neighborhood",
+            "Small Town",
+            "Visiting Day",
+            "Up All Night",
+            "Fishing",
+            "A of D",
+            "Mr. Soul"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Little Kin, Dirty Business, Blight, Papa's Home, Drums, Sharon, Jamais Vu (The World Has Changed), Gimme, Ride Me High, Fishwater",
+          "songTitles": [
+            "Little Kin",
+            "Dirty Business",
+            "Blight",
+            "Papa's Home",
+            "Drums",
+            "Sharon",
+            "Jamais Vu (The World Has Changed)",
+            "Gimme",
+            "Ride Me High",
+            "Fishwater"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Cosmic Confidante, Soul Kitchen, Postcard",
+          "songTitles": [
+            "Cosmic Confidante",
+            "Soul Kitchen",
+            "Postcard"
+          ]
+        },
+        {
+          "label": "E2",
+          "songs": "Love Tractor",
+          "songTitles": [
+            "Love Tractor"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/10/Widespread-Panic-20251026-Timmermans-0019.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "10/25/25",
+      "isoDate": "2025-10-25",
+      "venue": "The Riverside Theater",
+      "city": "Milwaukee",
+      "state": "WI",
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-25-milwaukee-wi-the-riverside-theater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-riverside-theater-milwaukee-wi-10-25-2025-mp3-flac-or-online-music-streaming/43030.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "The Take Out, Driving Song, B of D, Driving Song, Porch Song, We Walk Each Other Home, Christmas Katie, Radio Child, Don't Wanna Lose You, Flat Foot Flewzy",
+          "songTitles": [
+            "The Take Out",
+            "Driving Song",
+            "B of D",
+            "Driving Song",
+            "Porch Song",
+            "We Walk Each Other Home",
+            "Christmas Katie",
+            "Radio Child",
+            "Don't Wanna Lose You",
+            "Flat Foot Flewzy"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "From the Cradle, Down, Holden Oversoul, Mercy, Machine, Barstools and Dreamers, Little By Little, Vacation, Pigeons, Action Man",
+          "songTitles": [
+            "From the Cradle",
+            "Down",
+            "Holden Oversoul",
+            "Mercy",
+            "Machine",
+            "Barstools and Dreamers",
+            "Little By Little",
+            "Vacation",
+            "Pigeons",
+            "Action Man"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Little Wing, Ain't Life Grand",
+          "songTitles": [
+            "Little Wing",
+            "Ain't Life Grand"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/10/Widespread-Panic-20251025-Timmermans-2501.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "10/24/25",
+      "isoDate": "2025-10-24",
+      "venue": "The Riverside Theater",
+      "city": "Milwaukee",
+      "state": "WI",
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-24-milwaukee-wi-the-riverside-theater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-riverside-theater-milwaukee-wi-10-24-2025-mp3-flac-or-online-music-streaming/43029.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Blue Indian, Contentment Blues, Henry Parsons Died, Goodpeople, Dark Bar, Goodpeople, Happy, 1x1, King Baby, Halloween Face",
+          "songTitles": [
+            "Blue Indian",
+            "Contentment Blues",
+            "Henry Parsons Died",
+            "Goodpeople",
+            "Dark Bar",
+            "Goodpeople",
+            "Happy",
+            "1x1",
+            "King Baby",
+            "Halloween Face"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Big Wooly Mammoth, Wondering, Walkin' (For Your Love), Space Wrangler, Blue Carousel, Rebirtha, I'm Not Alone, Honky Red, Surprise Valley, Drums, Surprise Valley, Bowlegged Woman, Knock-Kneed Man",
+          "songTitles": [
+            "Big Wooly Mammoth",
+            "Wondering",
+            "Walkin' (For Your Love)",
+            "Space Wrangler",
+            "Blue Carousel",
+            "Rebirtha",
+            "I'm Not Alone",
+            "Honky Red",
+            "Surprise Valley",
+            "Drums",
+            "Surprise Valley",
+            "Bowlegged Woman, Knock-Kneed Man"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Help Me Somebody, End Of The Show",
+          "songTitles": [
+            "Help Me Somebody",
+            "End Of The Show"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/10/Widespread-Panic-20251024-Timmermans-1182.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "10/04/25",
+      "isoDate": "2025-10-04",
+      "venue": "Mempho Music Festival",
+      "city": "Memphis",
+      "state": "TN",
+      "location": "Memphis, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-04-memphis-tn-mempho-music-festival/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-mempho-music-festival-memphis-tn-10-04-2025-mp3-flac-or-online-music-streaming/43028.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Bust it Big, Travelin' Light, This Part of Town, Imitation Leather Shoes, Travelin' Man, The Waker, Jamais Vu (The World Has Changed), Greta, Life During Wartime",
+          "songTitles": [
+            "Bust it Big",
+            "Travelin' Light",
+            "This Part of Town",
+            "Imitation Leather Shoes",
+            "Travelin' Man",
+            "The Waker",
+            "Jamais Vu (The World Has Changed)",
+            "Greta",
+            "Life During Wartime"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "For What It's Worth, Tall Boy, King Baby, Saint Ex, Party at Your Mama's House, Diner, C. Brown, All Time Low, Chilly Water",
+          "songTitles": [
+            "For What It's Worth",
+            "Tall Boy",
+            "King Baby",
+            "Saint Ex",
+            "Party at Your Mama's House",
+            "Diner",
+            "C. Brown",
+            "All Time Low",
+            "Chilly Water"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Cosmic Confidante, Rockin' In The Free World",
+          "songTitles": [
+            "Cosmic Confidante",
+            "Rockin' In The Free World"
+          ]
+        }
+      ],
+      "notes": [
+        "Photos by Bob Bayne, Ian Rawn, and Josh Timmermans"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/10/MemphoMF-20251004-Widespread-Panic-Timmermans-0633.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
+    {
+      "date": "10/03/25",
+      "isoDate": "2025-10-03",
+      "venue": "Mempho Music Festival",
+      "city": "Memphis",
+      "state": "TN",
+      "location": "Memphis, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-03-memphis-tn-mempho-music-festival/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-mempho-music-festival-memphis-tn-10-03-2025-mp3-flac-or-online-music-streaming/43027.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Disco, Pleas, Love Tractor, Shut Up and Drive, I'm Not Alone, Little By Little, Thought Sausage, Up All Night, Junior",
+          "songTitles": [
+            "Disco",
+            "Pleas",
+            "Love Tractor",
+            "Shut Up and Drive",
+            "I'm Not Alone",
+            "Little By Little",
+            "Thought Sausage",
+            "Up All Night",
+            "Junior"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "One Arm Steve, Surprise Valley, Blackout Blues, Straight to Hell, Impossible, Jack, Bear's Gone Fishin', Tie Your Shoes, Protein Drink, Sewing Machine",
+          "songTitles": [
+            "One Arm Steve",
+            "Surprise Valley",
+            "Blackout Blues",
+            "Straight to Hell",
+            "Impossible",
+            "Jack",
+            "Bear's Gone Fishin'",
+            "Tie Your Shoes",
+            "Protein Drink",
+            "Sewing Machine"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Keep Me In Your Heart, Porch Song",
+          "songTitles": [
+            "Keep Me In Your Heart",
+            "Porch Song"
+          ]
+        }
+      ],
+      "notes": [
+        "Straight to Hell with Kevin Kinney on Guitar and Vocals",
+        "Photos by Bob Bayne, Rob O'Brien, Ian Rawn, and Josh Timmermans"
+      ],
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2025/10/MemphoMF-20251003-Widespread-Panic-Timmermans-0666.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0
+    },
     {
       "date": "09/13/25",
       "isoDate": "2025-09-13",
@@ -11,21 +775,53 @@
       "city": "Richmond",
       "state": "VA",
       "location": "Richmond, VA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-09-13-richmond-va-allianz-amphitheater-at-riverfront/",
+      "streamUrl": "https://nugs.net/widespreadpanic",
       "sets": [
         {
           "label": "1",
-          "songs": "Little By Little, Who Do You Belong To?, Rock, Steven's Cat > Driving Song > Blue Carousel > Driving Song > Papa's Home, You Got Yours, Ain't Life Grand"
+          "songs": "Little By Little, Who Do You Belong To?, Rock, Steven's Cat > Driving Song > Blue Carousel > Driving Song > Papa's Home, You Got Yours, Ain't Life Grand",
+          "songTitles": [
+            "Little By Little",
+            "Who Do You Belong To?",
+            "Rock",
+            "Steven's Cat",
+            "Driving Song",
+            "Blue Carousel",
+            "Driving Song",
+            "Papa's Home",
+            "You Got Yours",
+            "Ain't Life Grand"
+          ]
         },
         {
           "label": "2",
-          "songs": "The Harder They Come, Pigeons, Tackle Box Hero, City of Dreams, Running Down A Dream, Second Skin > Ride Me High > Coconut, Ribs and Whiskey"
+          "songs": "The Harder They Come, Pigeons, Tackle Box Hero, City of Dreams, Running Down A Dream, Second Skin > Ride Me High > Coconut, Ribs and Whiskey",
+          "songTitles": [
+            "The Harder They Come",
+            "Pigeons",
+            "Tackle Box Hero",
+            "City Of Dreams",
+            "Runnin' Down A Dream",
+            "Second Skin",
+            "Ride Me High",
+            "Coconut",
+            "Ribs and Whiskey"
+          ]
         },
         {
           "label": "E",
-          "songs": "Cosmic Confidante, Blight > Climb To Safety"
+          "songs": "Cosmic Confidante, Blight > Climb To Safety",
+          "songTitles": [
+            "Cosmic Confidante",
+            "Blight",
+            "Climb To Safety"
+          ]
         }
       ],
-      "notes": [],
+      "notes": [
+        "Photos by Josh Timmermans"
+      ],
       "image": "https://blogger.googleusercontent.com/img/a/AVvXsEi8XQI5PuM4_xZfLV8I2xLkQd1ufB6crt2UKoOXRIMdwCYh9huHbQPfrEzbd56gFND8eP_9vn3GmED9qs8fh2DGfzeJ3Y43dlTPX8s9wLJHI4na5uef0iO1X2tQJQMBXa3C1DZhF_8VygAKWEdZr7bE9oJ9yRRXrtW-VPyruZyZ86-nHr9wp6h5r9Qsyp0=w640-h426",
       "imageWidth": 2048,
       "imageHeight": 1366
@@ -37,18 +833,47 @@
       "city": "Richmond",
       "state": "VA",
       "location": "Richmond, VA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-09-12-richmond-va-allianz-amphitheater-at-riverfront/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-allianz-amphitheater-at-riverfront-richmond-va-09-12-2025-mp3-flac-or-online-music-streaming/43025.html",
       "sets": [
         {
           "label": "1",
-          "songs": "Fishwater, Tall Boy, Walkin' (For Your Love), We Walk Each Other Home, Good People > Dark Bar > Good People, The Last Straw > Me and the Devil Blues > Halloween Face"
+          "songs": "Fishwater, Tall Boy, Walkin' (For Your Love), We Walk Each Other Home, Good People > Dark Bar > Good People, The Last Straw > Me and the Devil Blues > Halloween Face",
+          "songTitles": [
+            "Fishwater",
+            "Tall Boy",
+            "Walkin' (For Your Love)",
+            "We Walk Each Other Home",
+            "Goodpeople",
+            "Dark Bar",
+            "Goodpeople",
+            "The Last Straw",
+            "Me and The Devil Blues",
+            "Halloween Face"
+          ]
         },
         {
           "label": "2",
-          "songs": "Machine > Barstools and Dreamers, Hatfield, Big Wooly Mammoth > Bust It Big > Trashy > King Baby > Pilgrims > Space Wrangler"
+          "songs": "Machine > Barstools and Dreamers, Hatfield, Big Wooly Mammoth > Bust It Big > Trashy > King Baby > Pilgrims > Space Wrangler",
+          "songTitles": [
+            "Machine",
+            "Barstools and Dreamers",
+            "Hatfield",
+            "Big Wooly Mammoth",
+            "Bust it Big",
+            "Trashy",
+            "King Baby",
+            "Pilgrims",
+            "Space Wrangler"
+          ]
         },
         {
           "label": "E",
-          "songs": "Honky Red > Red Hot Mama"
+          "songs": "Honky Red > Red Hot Mama",
+          "songTitles": [
+            "Honky Red",
+            "Red Hot Mama"
+          ]
         }
       ],
       "notes": [
@@ -59,24 +884,1329 @@
       "imageHeight": 960
     },
     {
+      "date": "08/23/25",
+      "isoDate": "2025-08-23",
+      "venue": "MGM Music Hall at Fenway Park",
+      "city": "Boston",
+      "state": "MA",
+      "location": "Boston, MA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-23-boston-ma-mgm-music-hall-at-fenway/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-mgm-music-hall-at-fenway-boston-ma-08-23-2025-mp3-flac-or-online-music-streaming/43024.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Thought Sausage, Dyin' Man, Holden Oversoul > Worry, This Part Of Town, Little By Little, Rebirtha > Red Beans",
+          "songTitles": [
+            "Thought Sausage",
+            "Dyin' Man",
+            "Holden Oversoul",
+            "Worry",
+            "This Part of Town",
+            "Little By Little",
+            "Rebirtha",
+            "Red Beans"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Disco > Pigeons, Cosmic Confidante, Surprise Valley > Party At Your Mama's House > Low Spark Of High Heeled Boys > All Time Low > Low Spark Of High Heeled Boys > Surprise Valley, Postcard",
+          "songTitles": [
+            "Disco",
+            "Pigeons",
+            "Cosmic Confidante",
+            "Surprise Valley",
+            "Party at Your Mama's House",
+            "Low Spark Of High-Heeled Boys",
+            "All Time Low",
+            "Low Spark Of High-Heeled Boys",
+            "Surprise Valley",
+            "Postcard"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Blue Indian, Dear Prudence, Porch Song",
+          "songTitles": [
+            "Blue Indian",
+            "Dear Prudence",
+            "Porch Song"
+          ]
+        }
+      ],
+      "notes": [
+        "Photos by Josh Timmermans"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiXSpec6aAhE3Z2RAF2N62sOydVCL4XUs-x4L-ygEsxPsFnuy-DsOsz1ylEdHs_i3V56Yo1Pdu3v8WI5YDOQhDOWogGjoHtnzjW4aljTbE2-fPXZ4KagsoSegCtKYLUgXrwSEDmwA_1cw84RQD5qaJe6swu0SCI-zuZyFDcGxZyBCq782iVVp_NNkB-37A=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "08/22/25",
+      "isoDate": "2025-08-22",
+      "venue": "MGM Music Hall at Fenway Park",
+      "city": "Boston",
+      "state": "MA",
+      "location": "Boston, MA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-22-boston-ma-mgm-music-hall-at-fenway/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-mgm-music-hall-at-fenway-boston-ma-08-22-2025-mp3-flac-or-online-music-streaming/43023.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Arleen > Little Lilly > Henry Parsons Died, Aunt Avis > Greta > Gimme > Jack, Smokestack Lightning > Action Man",
+          "songTitles": [
+            "Arleen",
+            "Little Lilly",
+            "Henry Parsons Died",
+            "Aunt Avis",
+            "Greta",
+            "Gimme",
+            "Jack",
+            "Smokestack Lightning",
+            "Action Man"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Little Kin, Diner > Goin' Out West > Tie Your Shoes > Bust It Big > Drums > Saint Ex, Climb To Safety",
+          "songTitles": [
+            "Little Kin",
+            "Diner",
+            "Goin' Out West",
+            "Tie Your Shoes",
+            "Bust it Big",
+            "Drums",
+            "Saint Ex",
+            "Climb To Safety"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "For What It's Worth > Love Tractor",
+          "songTitles": [
+            "For What It's Worth",
+            "Love Tractor"
+          ]
+        }
+      ],
+      "notes": [
+        "Photos by Josh Timmermans"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEg2vIB-DZuoZEih76liYB_rGYHhV4YKxZ34pqxqcFajuIZ0E738VrUhehmRPi_MCSup1BXj3CMk2jhDazOyr4iaJ_rCnBkiGmS-XFGano4xH4NrJZo37HHCHNcgYGTbr_eBIMz4YvwL0en_Vm80JGM_hC2t4hQl8gYU4v3zgU_hedrpIiftuPISkJU2XPQ=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "08/21/25",
+      "isoDate": "2025-08-21",
+      "venue": "MGM Music Hall at Fenway Park",
+      "city": "Boston",
+      "state": "MA",
+      "location": "Boston, MA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-21-boston-ma-mgm-music-hall-at-fenway/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-mgm-music-hall-at-fenway-boston-ma-08-21-2025-mp3-flac-or-online-music-streaming/43022.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "One Arm Steve, Pleas, Bowlegged Woman, Bear's Gone Fishin' > Shut Up And Drive, Tall Boy, Cease Fire > Fixin' To Die, Imitation Leather Shoes",
+          "songTitles": [
+            "One Arm Steve",
+            "Pleas",
+            "Bowlegged Woman, Knock-Kneed Man",
+            "Bear's Gone Fishin'",
+            "Shut Up and Drive",
+            "Tall Boy",
+            "Cease Fire",
+            "Fixin' To Die",
+            "Imitation Leather Shoes"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Knocking 'Round The Zoo, Contentment Blues, Small Town, Tackle Box Hero, You Got Yours, Ride Me High¹ > Ain't Life Grand¹, Don't Be Denied, King Baby > Chilly Water",
+          "songTitles": [
+            "Knockin' Around The Zoo",
+            "Contentment Blues",
+            "Small Town",
+            "Tackle Box Hero",
+            "You Got Yours",
+            "Ride Me High",
+            "Ain't Life Grand",
+            "Don't Be Denied",
+            "King Baby",
+            "Chilly Water"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Life During Wartime",
+          "songTitles": [
+            "Life During Wartime"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Chuck Leavell on keyboards"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiUmM-LUQbZL1Ie6mwO82n4MleECtpZsS7FBH_oCGTPZR2AZqJrW0wj2EynrjMY2yz_BYp9frfgszjGzo2G9C4CYX1k6quHf-iIwjuYxMrxES2zXPb0xrGxzUwumh2wkQ2OvlsldLHdWYtghLBIpwSCVObwpN-5tlrhP21zYUPJ9E3EZSrIcVkT-AVF2us=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "08/09/25",
+      "isoDate": "2025-08-09",
+      "venue": "Everwise Amphitheater at White River State Park",
+      "city": "Indianapolis",
+      "state": "IN",
+      "location": "Indianapolis, IN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-09-indianapolis-in-everwise-amphitheater-at-white-river-state-park/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-everwise-amphitheater-at-white-river-state-park-indianapolis-in-08-09-2025-mp3-flac-or-online-music-streaming/43021.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Driving Song > Walkin' (For Your Love) > Driving Song > Ribs And Whiskey, Cotton Was King > Pickin' Up The Pieces, Visiting Day, Let It Rock > Travelin' Light",
+          "songTitles": [
+            "Driving Song",
+            "Walkin' (For Your Love)",
+            "Driving Song",
+            "Ribs and Whiskey",
+            "Cotton Was King",
+            "Pickin' Up The Pieces",
+            "Visiting Day",
+            "Let It Rock",
+            "Travelin' Light"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Fishwater > Little By Little > I Walk On Guilded Splinters > All Time Low > Papa's Home > May Your Glass Be Filled, Space Wrangler, Porch Song, Genesis, Conrad",
+          "songTitles": [
+            "Fishwater",
+            "Little By Little",
+            "I Walk On Guilded Splinters",
+            "All Time Low",
+            "Papa's Home",
+            "May Your Glass Be Filled",
+            "Space Wrangler",
+            "Porch Song",
+            "Genesis",
+            "Conrad The Caterpillar"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Nobody's Loss, Lawyers, Guns, And Money",
+          "songTitles": [
+            "Nobody's Loss",
+            "Lawyers Guns And Money"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjb32dk1YSVkiJCgfSmqMZ7hn2FK3Z0JJ9fwkcswencB82T2c9hkG5eekW8JHYnnAikg5K_YcTJyVAZUNlHWGP2DtuAh_AmK6zzrFmlhKJASfbCbtZPEUvDV37nkc1IbkGiXr51J8HETn3qOXW6rdQWz58KuNhB8DgLdHqigvu3IqpsjxDKfMWLsw0hkLY=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1363
+    },
+    {
+      "date": "08/08/25",
+      "isoDate": "2025-08-08",
+      "venue": "Everwise Amphitheater at White River State Park",
+      "city": "Indianapolis",
+      "state": "IN",
+      "location": "Indianapolis, IN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-08-indianapolis-in-everwise-amphitheater-at-white-river-state-park/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-everwise-amphitheater-at-white-river-state-park-indianapolis-in-08-08-2025-mp3-flac-or-online-music-streaming/43020.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Wondering > Up All Night > Radio Child > Makes Sense To Me, Christmas Katie > Machine > Barstools and Dreamers, Trashy > Halloween Face",
+          "songTitles": [
+            "Wondering",
+            "Up All Night",
+            "Radio Child",
+            "Makes Sense To Me",
+            "Christmas Katie",
+            "Machine",
+            "Barstools and Dreamers",
+            "Trashy",
+            "Halloween Face"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Surprise Valley > C. Brown, Impossible, Protein Drink > Sewing Machine > Drums > Surprise Valley > Airplane > Pilgrims > Red Hot Mama",
+          "songTitles": [
+            "Surprise Valley",
+            "C. Brown",
+            "Impossible",
+            "Protein Drink",
+            "Sewing Machine",
+            "Drums",
+            "Surprise Valley",
+            "Airplane",
+            "Pilgrims",
+            "Red Hot Mama"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Big Wooly Mammoth > Blackout Blues",
+          "songTitles": [
+            "Big Wooly Mammoth",
+            "Blackout Blues"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEj_-8Kg9qV4F5TlfKWAcLjNddEbYCu3LBYYQmzQWwPcA4RDxeRPmRZg9qqJFRumjP_J180QfCG5mkbzyhqq5serPFi4p4nJPICmzYz3jApdKuxvWbyXKTO4_s1KlRh9OzLeGiPQQwbXB75VFtJoFS1XqGjJuP2DpfBQ4ZNv3bOH4Agp3wWn3pPZOWTWZj4=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "07/26/25",
+      "isoDate": "2025-07-26",
+      "venue": "Civic Center",
+      "city": "Asheville",
+      "state": "NC",
+      "location": "Asheville, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-07-26-asheville-nc-exploreasheville-com-arena-at-harrahs-cherokee-center-in-asheville/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-exploreasheville.com-arena-asheville-nc-07-26-2025-mp3-flac-or-online-music-streaming/43019.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Goodpeople, Rebirtha > Greta > Cream Puff War, I'm Not Alone, Small Town, Blight¹ > This Part Of Town¹, Blue Indian",
+          "songTitles": [
+            "Goodpeople",
+            "Rebirtha",
+            "Greta",
+            "Cream Puff War",
+            "I'm Not Alone",
+            "Small Town",
+            "Blight",
+            "This Part of Town",
+            "Blue Indian"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "And It Stoned Me, Climb To Safety > Hatfield, Keep Me in Your Heart, North > Drums > Saint Ex > Disco > Pigeons, Flat Foot Flewzy",
+          "songTitles": [
+            "And It Stoned Me",
+            "Climb To Safety",
+            "Hatfield",
+            "Keep Me In Your Heart",
+            "North",
+            "Drums",
+            "Saint Ex",
+            "Disco",
+            "Pigeons",
+            "Flat Foot Flewzy"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Expiration Day¹, Ain't Life Grand², War Pigs",
+          "songTitles": [
+            "Expiration Day",
+            "Ain't Life Grand",
+            "War Pigs"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with John Keane on pedal steel",
+        "with John Keane on pedal steel/vocals",
+        "Only 'War Pigs'"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiiNfKMnqxiPSBA-mLhit2LhLD5ZYUpF9mrp6wblU3Q1lcInR5JVzGImp9q5nVYlVZRB1kuMy000aJNH3WCoeJsPmOusVvRcKvDSGFy3PNbEaOthyPNtrUcmSRWcNqfwjk4WzxipalbkQK3jaeKRvR7gu9fx7IhQQDiGaFOolNEpqiowXNiEbE5Wngr5YM=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "07/25/25",
+      "isoDate": "2025-07-25",
+      "venue": "Civic Center",
+      "city": "Asheville",
+      "state": "NC",
+      "location": "Asheville, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-07-25-asheville-nc-exploreasheville-com-arena-at-harrahs-cherokee-center-in-asheville/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-exploreasheville.com-arena-asheville-nc-07-25-2025-mp3-flac-or-online-music-streaming/43018.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Rumble > Henry Parsons Died, Tall Boy > Rock, We Walk Each Other Home, Party At Your Mama's House > Stop Breakin' Down Blues, Degenerate¹, Sleeping Man², Chainsaw City³",
+          "songTitles": [
+            "Rumble",
+            "Henry Parsons Died",
+            "Tall Boy",
+            "Rock",
+            "We Walk Each Other Home",
+            "Party at Your Mama's House",
+            "Stop Breakin' Down Blues",
+            "Degenerate",
+            "Sleeping Man",
+            "Chainsaw City"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Iron Man, King Baby > Second Skin > Diner > Ride Me High, Postcard, Love Tractor, Running Down A Dream",
+          "songTitles": [
+            "Iron Man",
+            "King Baby",
+            "Second Skin",
+            "Diner",
+            "Ride Me High",
+            "Postcard",
+            "Love Tractor",
+            "Runnin' Down A Dream"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "City of Dreams⁴, There Is A Time⁴, Porch Song²",
+          "songTitles": [
+            "City Of Dreams",
+            "There is a Time",
+            "Porch Song"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with John Keane on acoustic guitar/vocals",
+        "² with John Keane on guitar",
+        "³ with John Keane on guitar/vocals, Steve Lopez on percussion",
+        "⁴ with John Keane on pedal steel"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjGG6a7NtXF4w4C9HFpKsk0U5Uib2T1dE0Lw_qq5rZWofm-t468tEZdaopxulJUPnaLkxuPkQA53RdEBbfoghyYUkUpMn-Lip6IPeOk5jjHOCiZbm9YJdy2-aZTIgonKyEMMTFELkCRbKXkPERMFKNPnfKSkFXQjhmnqYpK8rZPGYsVGeVBw1CyvpwpUiY=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1363
+    },
+    {
+      "date": "07/24/25",
+      "isoDate": "2025-07-24",
+      "venue": "Civic Center",
+      "city": "Asheville",
+      "state": "NC",
+      "location": "Asheville, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-07-24-asheville-nc-exploreasheville-com-arena-at-harrahs-cherokee-center-in-asheville/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-exploreasheville.com-arena-asheville-nc-07-24-2025-mp3-flac-or-online-music-streaming/43017.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Little Lilly > Little By Little, Little Kin, Better Off > Trashy > One Arm Steve, Fishing¹, Travelin' Man¹ > The Waker¹",
+          "songTitles": [
+            "Little Lilly",
+            "Little By Little",
+            "Little Kin",
+            "Better Off",
+            "Trashy",
+            "One Arm Steve",
+            "Fishing",
+            "Travelin' Man",
+            "The Waker"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Slippin' Into Darkness² > Travelin' Light, Thought Sausage, Bear's Gone Fishin' > Jamais Vu > Halloween Face, Fairies Wear Boots, Holden Oversoul > All Time Low",
+          "songTitles": [
+            "Slippin Into Darkness",
+            "Travelin' Light",
+            "Thought Sausage",
+            "Bear's Gone Fishin'",
+            "Jamais Vu (The World Has Changed)",
+            "Halloween Face",
+            "Fairies Wear Boots",
+            "Holden Oversoul",
+            "All Time Low"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Old Joe³, Mr. Soul⁴",
+          "songTitles": [
+            "Old Joe",
+            "Mr. Soul"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with John Keane on acoustic guitar/vocals",
+        "² with Steve Lopez on percussion",
+        "³ with John Keane on pedal steel",
+        "⁴ with John Keane on guitar"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEh-AQtsDjaaMu7dSRtcOKAKvNSXht3iESWDbtQbhpVqyW4ZfuoLLXG4KYzyK1IHQfGBJ4JwZEKYN2LW0ZN0ueJdmtq0sOvzo_PznEAfNHpG4xC49HYtjawB_BKgI733I6_I4Kz0LUH0w5yZbYdWthoa63kEJVIfQ-yUgriesGUmuxuDDvngmNogqUuSPVA=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "06/29/25",
+      "isoDate": "2025-06-29",
+      "venue": "Red Rocks",
+      "city": "Morrison",
+      "state": "CO",
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-29-morrison-co-red-rocks-amphitheatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-red-rocks-amphitheatre-morrison-co-06-29-2025-mp3-flac-or-online-music-streaming/43016.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Wondering > The Last Straw > Up All Night > Driving Song > Pilgrims > Driving Song, Life As A Tree, Space Wrangler, Airplane > Action Man",
+          "songTitles": [
+            "Wondering",
+            "The Last Straw",
+            "Up All Night",
+            "Driving Song",
+            "Pilgrims",
+            "Driving Song",
+            "Life as a Tree",
+            "Space Wrangler",
+            "Airplane",
+            "Action Man"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Pigeons, Pleas > King Baby > Saint Ex, Conrad, Dead Flowers¹, Ribs And Whiskey², Surprise Valley² > Tie Your Shoes² > Surprise Valley²",
+          "songTitles": [
+            "Pigeons",
+            "Pleas",
+            "King Baby",
+            "Saint Ex",
+            "Conrad The Caterpillar",
+            "Dead Flowers",
+            "Ribs and Whiskey",
+            "Surprise Valley",
+            "Tie Your Shoes",
+            "Surprise Valley"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Honky Red, Comfortably Numb¹, End Of The Show",
+          "songTitles": [
+            "Honky Red",
+            "Comfortably Numb",
+            "End Of The Show"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Chuck Leavell on keyboards/vocals",
+        "² with Chuck Leavell on keyboards",
+        "Only 'Comfortably Numb'; Last 'Dead Flowers' - 12/29/15, 349 shows"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiO8kaisipbvSxaAeY6HIX0yyhhp5UfshqvL39LcOwm--CEM-knxdn_IRSPXpGtSIPxUTJhbrsxlAjWfzzuoE3dh4yxDrAbEBxaS73sRtk0zR0NHdCj-uSGOLa4s3eeTeIrLv2PO85D0cNP4Ti2_ltBY19w_xxO9G0JL9dCf84WALgdco8U8XFJtq4SMjc=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "06/28/25",
+      "isoDate": "2025-06-28",
+      "venue": "Red Rocks",
+      "city": "Morrison",
+      "state": "CO",
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-28-morrison-co-red-rocks-amphitheatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-red-rocks-amphitheatre-morrison-co-06-28-2025-mp3-flac-or-online-music-streaming/43015.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Barstools and Dreamers, Sharon, Junior, Holden Oversoul, Shut Up And Drive, Goodpeople, Tail Dragger¹, Blue Indian¹, Ain't Life Grand¹",
+          "songTitles": [
+            "Barstools and Dreamers",
+            "Sharon",
+            "Junior",
+            "Holden Oversoul",
+            "Shut Up and Drive",
+            "Goodpeople",
+            "Tail Dragger",
+            "Blue Indian",
+            "Ain't Life Grand"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Knocking 'Round The Zoo, You Got Yours, Jack, Give, Protein Drink > Sewing Machine, Papa's Home > Drums > Papa's Home¹ > Me And The Devil Blues¹, Jessica¹",
+          "songTitles": [
+            "Knockin' Around The Zoo",
+            "You Got Yours",
+            "Jack",
+            "Give",
+            "Protein Drink",
+            "Sewing Machine",
+            "Papa's Home",
+            "Drums",
+            "Papa's Home",
+            "Me and The Devil Blues",
+            "Jessica"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Low Spark Of High Heeled Boys¹ > Chilly Water¹",
+          "songTitles": [
+            "Low Spark Of High-Heeled Boys",
+            "Chilly Water"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Chuck Leavell on keyboards"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEhiXjQIUcJDivex3BU-PHyn634LMWP2tUDp9u_p0re3bym4SktH5RJiVbf7IiqAvpk-r0V1UKmj52DaIDwS6FeAzeZkiKtulNtfVFufLbsBjhrDtNCJ9gJEbiigb-Uq1KZskVDnBAI6n_6pupUnyKsJpkUQQpdhKScZklfpd181ZbZlS8lCVYxekPdqmAE=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "06/27/25",
+      "isoDate": "2025-06-27",
+      "venue": "Red Rocks",
+      "city": "Morrison",
+      "state": "CO",
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-27-morrison-co-red-rocks-amphitheatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-red-rocks-amphitheatre-morrison-co-06-27-2025-mp3-flac-or-online-music-streaming/43014.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Send Your Mind, Walkin' (For Your Love), Cotton Was King, Henry Parsons Died, We Walk Each Other Home, Climb To Safety¹, Time Is Free¹ > Blight¹ > Stop Breakin' Down Blues¹",
+          "songTitles": [
+            "Send Your Mind",
+            "Walkin' (For Your Love)",
+            "Cotton Was King",
+            "Henry Parsons Died",
+            "We Walk Each Other Home",
+            "Climb To Safety",
+            "Time is Free",
+            "Blight",
+            "Stop Breakin' Down Blues"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Porch Song, Can't Get High > Little By Little, Small Town > Disco > Second Skin > Goin' Out West, The Harder They Come¹, Mercy¹ > Fishwater¹",
+          "songTitles": [
+            "Porch Song",
+            "Can't Get High",
+            "Little By Little",
+            "Small Town",
+            "Disco",
+            "Second Skin",
+            "Goin' Out West",
+            "The Harder They Come",
+            "Mercy",
+            "Fishwater"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "You Can't Always Get What You Want², I'm So Glad²",
+          "songTitles": [
+            "You Can't Always Get What You Want",
+            "I'm So Glad"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Chuck Leavell on keyboards",
+        "² with Chuck Leavell on keyboards/vocals",
+        "Last 'The Harder They Come' - 09/12/15, 355 shows"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjMlAuMXJMpSehbhqLoe6TdRyZCwoVzb97jBhL_96JTPWpPOXkehhC9xSXMX2Rueyfofh0CXzIk98SFlLOAYvcUE8fTEPdUzu9eGow8rHiz_5-YFr1tosvFu0901YKnUK2OFeHWltHGQ2pQbwNa7lr559NQXhqFEn_I15aAnDj5SO6lQwaHRv0QZau9XgA=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "06/06/25",
+      "isoDate": "2025-06-06",
+      "venue": "Chicago Theatre",
+      "city": "Chicago",
+      "state": "IL",
+      "location": "Chicago, IL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-06-chicago-il-the-chicago-theatre/",
+      "streamUrl": "https://nugs.net/widespreadpanic",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Let's Get The Show On The Road, Ain't Life Grand, Little Kin > Trashy > Pleas, Diner > Wondering, Chainsaw City¹, North¹",
+          "songTitles": [
+            "Let's Get The Show On The Road",
+            "Ain't Life Grand",
+            "Little Kin",
+            "Trashy",
+            "Pleas",
+            "Diner",
+            "Wondering",
+            "Chainsaw City",
+            "North"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Jack, Bear's Gone Fishin' > Tie Your Shoes > Hatfield > Dyin' Man, None of Us Are Free, Cease Fire > Jamais Vu > King Baby > Love Tractor",
+          "songTitles": [
+            "Jack",
+            "Bear's Gone Fishin'",
+            "Tie Your Shoes",
+            "Hatfield",
+            "Dyin' Man",
+            "None Of Us Are Free",
+            "Cease Fire",
+            "Jamais Vu (The World Has Changed)",
+            "King Baby",
+            "Love Tractor"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Travelin' Man > The Waker, Blue Indian",
+          "songTitles": [
+            "Travelin' Man",
+            "The Waker",
+            "Blue Indian"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Jerry Joseph on guitar/vocals",
+        "'Highway To Heaven' rap by JB during 'Diner'"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEj47gRtwDSa2Val3a4q17zapjnj23cc-DNmRRAPmJpH5qFkxe2JovevCGcTqVbhjgCeQ9HjJ0ReZDCqCYe1bMI_lZSFH6j8KVZYOEzYrc0Gy5Yn3jMUbX57Ix7fWMfaKc3dTVW2XS8PeYg8bDpzg6NUVyB1GyPKv2ckR5eu3hk9zrYx6Fb1kr5cRQ3Na0U=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "06/05/25",
+      "isoDate": "2025-06-05",
+      "venue": "Chicago Theatre",
+      "city": "Chicago",
+      "state": "IL",
+      "location": "Chicago, IL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-05-chicago-il-the-chicago-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-chicago-theatre-chicago-il-06-05-2025-mp3-flac-or-online-music-streaming/41321.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Greta > Worry, Space Wrangler, I'm Not Alone > Aunt Avis, Rebirtha > Better Off, Don't Wanna Lose You, Halloween Face",
+          "songTitles": [
+            "Greta",
+            "Worry",
+            "Space Wrangler",
+            "I'm Not Alone",
+            "Aunt Avis",
+            "Rebirtha",
+            "Better Off",
+            "Don't Wanna Lose You",
+            "Halloween Face"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Fishing¹, Bust It Big², Ribs And Whiskey², Pickin' Up The Pieces¹, Surprise Valley² > Red Hot Mama² > Arleen² > Red Hot Mama² > Surprise Valley², Chilly Water²",
+          "songTitles": [
+            "Fishing",
+            "Bust it Big",
+            "Ribs and Whiskey",
+            "Pickin' Up The Pieces",
+            "Surprise Valley",
+            "Red Hot Mama",
+            "Arleen",
+            "Red Hot Mama",
+            "Surprise Valley",
+            "Chilly Water"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "All Time Low¹, Rockin' In The Free World¹",
+          "songTitles": [
+            "All Time Low",
+            "Rockin' In The Free World"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Billy Strings on guitar/vocals",
+        "² with Billy Strings on guitar"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjT4vkyDMnXBrDlrvZV2sjX59TqjJ-vZi5_Gw5W9K8YBKqvoqyc0qITOccjJqZUgN0aLAE06ihW0XrEyQlcGoD54oo2TWUUIEaGm3lelFhn81EOyqhNzqdi2zWztNrDWtVxte6KEslbY0M4dczYYRTE9mX8UT0IBVYMC68HDH3a-Kcb0JHnZbhchcshU80=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "06/04/25",
+      "isoDate": "2025-06-04",
+      "venue": "Chicago Theatre",
+      "city": "Chicago",
+      "state": "IL",
+      "location": "Chicago, IL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-04-chicago-il-the-chicago-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-chicago-theatre-chicago-il-06-04-2025-mp3-flac-or-online-music-streaming/41320.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "From The Cradle > Imitation Leather Shoes, Weight Of The World > Party At Your Mama's House > Stop Breakin' Down Blues, This Part Of Town, Big Wooly Mammoth > Radio Child, Little By Little",
+          "songTitles": [
+            "From the Cradle",
+            "Imitation Leather Shoes",
+            "Weight of the World",
+            "Party at Your Mama's House",
+            "Stop Breakin' Down Blues",
+            "This Part of Town",
+            "Big Wooly Mammoth",
+            "Radio Child",
+            "Little By Little"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Travelin' Light, Goodpeople > Dark Bar > Goodpeople > Pigeons, Mercy > Drums > Rock, Climb To Safety, For What It's Worth, Life During Wartime",
+          "songTitles": [
+            "Travelin' Light",
+            "Goodpeople",
+            "Dark Bar",
+            "Goodpeople",
+            "Pigeons",
+            "Mercy",
+            "Drums",
+            "Rock",
+            "Climb To Safety",
+            "For What It's Worth",
+            "Life During Wartime"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "We Walk Each Other Home, Porch Song",
+          "songTitles": [
+            "We Walk Each Other Home",
+            "Porch Song"
+          ]
+        }
+      ],
+      "notes": [
+        "'L.A. Woman' and 'Mountain Jam' teases during 'Party At Your Mama's House'"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiYXL5k0cwYWH3mVT1NRVislNxtcjHel03y4qjYsUw7s_NRaztgBZYGsqbdWqh8Omuhs1kbUSwgiEEvZMHHtIPl8uU4hlzXpSks7OKSH_pPITWEL2JWLdusp9WQ4hK06CEqBpBqRTyktcngSUvXRqknUeqfz-6UftgK6s6xl-tlPdCwlgCzXIFh0XP6_Vk=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "05/17/25",
+      "isoDate": "2025-05-17",
+      "venue": "Credit One Stadium",
+      "city": "Charleston",
+      "state": "SC",
+      "location": "Charleston, SC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-05-17-charleston-sc-credit-one-stadium/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-credit-one-stadium-charleston-sc-05-17-2025-mp3-flac-or-online-music-streaming/41319.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Walkin' (For Your Love), The Last Straw > Fishwater, And It Stoned Me, Diner > Papa Johnny Road, Junior, Small Town > Running Down A Dream",
+          "songTitles": [
+            "Walkin' (For Your Love)",
+            "The Last Straw",
+            "Fishwater",
+            "And It Stoned Me",
+            "Diner",
+            "Papa Johnny Road",
+            "Junior",
+            "Small Town",
+            "Runnin' Down A Dream"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Blackout Blues > You Got Yours > Sharon, King Baby > Airplane > Action Man > Gimme, Ride Me High > Papa's Home > Dear Mr. Fantasy > Papa's Home, I'm So Glad",
+          "songTitles": [
+            "Blackout Blues",
+            "You Got Yours",
+            "Sharon",
+            "King Baby",
+            "Airplane",
+            "Action Man",
+            "Gimme",
+            "Ride Me High",
+            "Papa's Home",
+            "Dear Mr. Fantasy",
+            "Papa's Home",
+            "I'm So Glad"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Honky Red, Postcard, Little Wing",
+          "songTitles": [
+            "Honky Red",
+            "Postcard",
+            "Little Wing"
+          ]
+        }
+      ],
+      "notes": [
+        "Photos by Josh Timmermans"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhLyAQFGDSTeD13FZhTYSNAhmlTvkC8I9ZDgiHkHeZGMx0-79zVmVK6UoDtOAcB90y6mJlWM8Z-fcPx8jw7tGQh51NhRAY4KhWLKdzRfFxIqGx5BuC9Sl4fEo-fTm7Q-aYY5Ejz2bzUSAzjTYPKWuUvzGuIHdnwoUiIZT20-8prvPBQxNnR-WYyPnu-Z8A/w640-h426/498578606_18503373475061746_2301537196688069608_n.jpg",
+      "imageWidth": 1440,
+      "imageHeight": 960
+    },
+    {
+      "date": "05/16/25",
+      "isoDate": "2025-05-16",
+      "venue": "Credit One Stadium",
+      "city": "Charleston",
+      "state": "SC",
+      "location": "Charleston, SC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-05-16-charleston-sc-credit-one-stadium/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-credit-one-stadium-charleston-sc-05-16-2025-mp3-flac-or-online-music-streaming/41318.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Wondering, Weak Brain, Narrow Mind, Little By Little, Up All Night > C. Brown, Sleeping Man, Good Morning Little School Girl > Old Neighborhood > Love Tractor",
+          "songTitles": [
+            "Wondering",
+            "Weak Brain, Narrow Mind",
+            "Little By Little",
+            "Up All Night",
+            "C. Brown",
+            "Sleeping Man",
+            "Good Morning Little School Girl",
+            "Old Neighborhood",
+            "Love Tractor"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Sparks Fly > Henry Parsons Died, Tackle Box Hero > Second Skin > Goin' Out West, Pilgrims, Driving Song > Bowlegged Woman > Driving Song > Saint Ex",
+          "songTitles": [
+            "Sparks Fly",
+            "Henry Parsons Died",
+            "Tackle Box Hero",
+            "Second Skin",
+            "Goin' Out West",
+            "Pilgrims",
+            "Driving Song",
+            "Bowlegged Woman, Knock-Kneed Man",
+            "Driving Song",
+            "Saint Ex"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Cosmic Confidante, Tall Boy",
+          "songTitles": [
+            "Cosmic Confidante",
+            "Tall Boy"
+          ]
+        }
+      ],
+      "notes": [
+        "Last 'Good Morning Little School Girl' - 10/22/23, 32 shows; 'Good Morning Little School Girl' rap during 'Love Tractor'; 'Love Tractor' rap during 'Good Morning Little School Girl'; Last 'Sparks Fly' - 10/29/03, 1148 shows"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjVZoHGbRn-6dQwY0haJffndIuEjpWnWsQS06SduYMI40BK8VIgUAjIkgAbfNli9vwl_Z-muY3SDMF7wxZYFYMcAIfWzWdCEa74aHpQTQuPx4Mj1CKfTM6ROt4_Qpr8VLM-WhYzZrC6Oj3Z4tEAcYrKHC2BjxSaPQiedLqhB5LsR27ShHG7Qv8uajFvQp4=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1366
+    },
+    {
+      "date": "04/26/25",
+      "isoDate": "2025-04-26",
+      "venue": "Ascend Amphitheater",
+      "city": "Nashville",
+      "state": "TN",
+      "location": "Nashville, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-04-26-nashville-tn-ascend-amphitheater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-ascend-amphitheater-nashville-tn-04-26-2025-mp3-flac-or-online-music-streaming/41317.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "One Arm Steve, Pleas > Bust It Big, Down, Me and the Devil Blues, Space Wrangler, Little Lilly¹ > Pickin' Up the Pieces¹, Ain't Life Grand¹",
+          "songTitles": [
+            "One Arm Steve",
+            "Pleas",
+            "Bust it Big",
+            "Down",
+            "Me and The Devil Blues",
+            "Space Wrangler",
+            "Little Lilly",
+            "Pickin' Up The Pieces",
+            "Ain't Life Grand"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Thought Sausage, Machine > Barstools and Dreamers, Blue Carousel > Bear's Gone Fishin' > I'm Not Alone, Blight > Halloween Face, I Walk On Guilded Splinters > Drums > Black Sabbath > Fairies Wear Boots > Black Sabbath",
+          "songTitles": [
+            "Thought Sausage",
+            "Machine",
+            "Barstools and Dreamers",
+            "Blue Carousel",
+            "Bear's Gone Fishin'",
+            "I'm Not Alone",
+            "Blight",
+            "Halloween Face",
+            "I Walk On Guilded Splinters",
+            "Drums",
+            "Black Sabbath",
+            "Fairies Wear Boots"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Blue Indian, All Time Low",
+          "songTitles": [
+            "Blue Indian",
+            "All Time Low"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Jarrod Walker on mandolin",
+        "Last 'Black Sabbath' - 10/28/16, 264 shows"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEgpHvfbDwNrf7tyTy2B_PsJXWIsD8KNv5B_8N0U2OA9IXHG-rfcXfrGPjApnI7i3UzOtGzQC4hAiNXhrTkmBUPf54xrj-vy3-7Z6U4PhphQuRFd-6_thuU16DjyjysX2nESgNz3rm6D8B-6vTcsb91fZEz522s7s4SMv81AFTqkkSx1gL3oVEO4iBcJ30Q=w640-h426",
+      "imageWidth": 2160,
+      "imageHeight": 1440
+    },
+    {
+      "date": "04/25/25",
+      "isoDate": "2025-04-25",
+      "venue": "Ascend Amphitheater",
+      "city": "Nashville",
+      "state": "TN",
+      "location": "Nashville, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-04-25-nashville-tn-ascend-amphitheater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-ascend-amphitheater-nashville-tn-04-25-2025-mp3-flac-or-online-music-streaming/41316.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Mr. Soul, Makes Sense To Me, Little Kin, Goodpeople > Pigeons > Proving Ground > Jack > Proving Ground > Goodpeople, Climb To Safety",
+          "songTitles": [
+            "Mr. Soul",
+            "Makes Sense To Me",
+            "Little Kin",
+            "Goodpeople",
+            "Pigeons",
+            "Proving Ground",
+            "Jack",
+            "Proving Ground",
+            "Goodpeople",
+            "Climb To Safety"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Disco > Greta > Jam > Tie Your Shoes > Rock, We Walk Each Other Home, Rebirtha > Ribs and Whiskey, King Baby > Godzilla > Chilly Water",
+          "songTitles": [
+            "Disco",
+            "Greta",
+            "Tie Your Shoes",
+            "Rock",
+            "We Walk Each Other Home",
+            "Rebirtha",
+            "Ribs and Whiskey",
+            "King Baby",
+            "Godzilla",
+            "Chilly Water"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Expiration Day, Protein Drink > Sewing Machine",
+          "songTitles": [
+            "Expiration Day",
+            "Protein Drink",
+            "Sewing Machine"
+          ]
+        }
+      ],
+      "notes": [
+        "'I'm Your Captain (Closer to Home)' rap by JB and Dave during 'Rock'"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEj3ncB5vGV-7GvYZytXwroinvdxnJnyv3FqDwqdAFICfld9qjFK6OtWT8m9nBNChIygIQT21_zK_-M8Ym9Sslj8maKH9epOWiOvJcNa2FSb6KH3etS10kgh-4lkD5KllckJUhtxgD9fUyoQiD12CCGe0bldGbKPnuypJTzuvx9jRy2-mbCTwGokDFEIkH0=w640-h426",
+      "imageWidth": 2160,
+      "imageHeight": 1440
+    },
+    {
+      "date": "04/24/25",
+      "isoDate": "2025-04-24",
+      "venue": "Ascend Amphitheater",
+      "city": "Nashville",
+      "state": "TN",
+      "location": "Nashville, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-04-24-nashville-tn-ascend-amphitheater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-ascend-amphitheater-nashville-tn-04-24-2025-mp3-flac-or-online-music-streaming/41315.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Send Your Mind, Coconut, Porch Song, Party At Your Mama's House > Stop Breakin' Down Blues, Surprise Valley > No Sugar Tonight/New Mother Nature > Surprise Valley, Conrad",
+          "songTitles": [
+            "Send Your Mind",
+            "Coconut",
+            "Porch Song",
+            "Party at Your Mama's House",
+            "Stop Breakin' Down Blues",
+            "Surprise Valley",
+            "No Sugar Tonight / New Mother Nature",
+            "Surprise Valley",
+            "Conrad The Caterpillar"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Big Wooly Mammoth > Jam > Hatfield, Little By Little, Small Town > Imitation Leather Shoes, Holden Oversoul¹, Trashy¹ > Fixin' To Die¹ > Red Hot Mama¹",
+          "songTitles": [
+            "Big Wooly Mammoth",
+            "Hatfield",
+            "Little By Little",
+            "Small Town",
+            "Imitation Leather Shoes",
+            "Holden Oversoul",
+            "Trashy",
+            "Fixin' To Die",
+            "Red Hot Mama"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Keep Me in Your Heart, Lawyers, Guns, And Money",
+          "songTitles": [
+            "Keep Me In Your Heart",
+            "Lawyers Guns And Money"
+          ]
+        }
+      ],
+      "notes": [
+        "¹ with Daniel Donato on guitar",
+        "'Third Stone From The Sun' and 'Jingo' teases before 'Hatfield'"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjwBUOJaMUnwnvfEi02PiOtmjuzuT7zDyJk4-gvBu5zQJBWuDfrCOvUzxfvMhSeDg0sif9YPGBu3KHL_9pviPEQSGH7_zmije7OfR21EV_kSAu6wlJb5nmp9fOU9ww1Yd6nnh81bJB7RqPDf_F_C4r5j8EZQK1YIEZuKfk5EnV7R0VDm6kE8w_vA7TFgYU=w640-h426",
+      "imageWidth": 2160,
+      "imageHeight": 1440
+    },
+    {
+      "date": "03/23/25",
+      "isoDate": "2025-03-23",
+      "venue": "St. Augustine Amphitheatre",
+      "city": "St. Augustine",
+      "state": "FL",
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-03-23-st-augustine-fl-st-augustine-amphitheatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-st.-augustine-amphitheatre-st.-augustine-fl-03-23-2025-mp3-flac-or-online-music-streaming/41314.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Driving Song > Jack > Bust It Big > Driving Song > Wondering, Dyin' Man, Shut Up And Drive, Holden Oversoul > Christmas Katie > Action Man",
+          "songTitles": [
+            "Driving Song",
+            "Jack",
+            "Bust it Big",
+            "Driving Song",
+            "Wondering",
+            "Dyin' Man",
+            "Shut Up and Drive",
+            "Holden Oversoul",
+            "Christmas Katie",
+            "Action Man"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Pigeons, Cosmic Confidante > Saint Ex, Ride Me High > Low Spark Of High Heeled Boys > Arleen > Low Spark Of High Heeled Boys > Postcard, May Your Glass Be Filled, Halloween Face, Ain't Life Grand",
+          "songTitles": [
+            "Pigeons",
+            "Cosmic Confidante",
+            "Saint Ex",
+            "Ride Me High",
+            "Low Spark Of High-Heeled Boys",
+            "Arleen",
+            "Low Spark Of High-Heeled Boys",
+            "Postcard",
+            "May Your Glass Be Filled",
+            "Halloween Face",
+            "Ain't Life Grand"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Vacation, Blackout Blues",
+          "songTitles": [
+            "Vacation",
+            "Blackout Blues"
+          ]
+        }
+      ],
+      "notes": [
+        "'Good Morning Little Schoolgirl', 'Ribs And Whiskey' and 'Cokane in My Brain' raps by JB during 'Arleen'"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEgHzu407q3D76qSZj0fTDyaFKdyXRs8B-OUDXc-bc_nKGSpNxvmglDb-wDePJfszV5Lyjt5actCeIgk-8OpDOiVwxpi4XWapriW2WW8JY-iAsvGKHwxGt9QiMWhJV93UtaDkrZ1bdWl-PUg6-0rzcC7if4K_zSUcsHaEFblsTAiz6SCh0VJgF4ypabV1XY=w640-h426",
+      "imageWidth": 2160,
+      "imageHeight": 1440
+    },
+    {
+      "date": "03/22/25",
+      "isoDate": "2025-03-22",
+      "venue": "St. Augustine Amphitheatre",
+      "city": "St. Augustine",
+      "state": "FL",
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-03-22-st-augustine-fl-st-augustine-amphitheatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-st.-augustine-amphitheatre-st.-augustine-fl-03-22-2025-mp3-flac-or-online-music-streaming/41313.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Tall Boy > Walk On, Walkin’ (For Your Love), We Walk Each Other Home, Up All Night, Honky Red, Pilgrims, Space Wrangler",
+          "songTitles": [
+            "Tall Boy",
+            "Walk On",
+            "Walkin' (For Your Love)",
+            "We Walk Each Other Home",
+            "Up All Night",
+            "Honky Red",
+            "Pilgrims",
+            "Space Wrangler"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Second Skin > Rebirtha > Sleeping Man, Don’t Wanna Lose You, Machine > Barstools and Dreamers, King Baby > Love Tractor, You Wreck Me",
+          "songTitles": [
+            "Second Skin",
+            "Rebirtha",
+            "Sleeping Man",
+            "Don't Wanna Lose You",
+            "Machine",
+            "Barstools and Dreamers",
+            "King Baby",
+            "Love Tractor",
+            "You Wreck Me"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Airplane, Climb To Safety",
+          "songTitles": [
+            "Airplane",
+            "Climb To Safety"
+          ]
+        }
+      ],
+      "notes": [
+        "'Turn On Your Love Light' jam during 'Walk On'; Last 'Don't Wanna Lose You' - 06/23/23, 39 shows"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjPP6-sxpimCVa23O012ogWmMTwJb_d-dRzIhxGxep-qMDbMVg-NYImfmVGuFxwg8P7fJScHOp516IXIvdalG8FqibbDpO-E2oZJAtKk3r56KTf-zDCvGCoJbZOOn0FC5u9-ItZUBSQCKlO-yx-0QYiGOkFlr882d6nLKjieviur2sN98L7y74ZW52dzkA=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1365
+    },
+    {
+      "date": "03/21/25",
+      "isoDate": "2025-03-21",
+      "venue": "St. Augustine Amphitheatre",
+      "city": "St. Augustine",
+      "state": "FL",
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-03-21-st-augustine-fl-st-augustine-amphitheatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-st.-augustine-amphitheatre-st.-augustine-fl-03-21-2025-mp3-flac-or-online-music-streaming/41312.html",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Disco > Diner > C. Brown, Good People > Dark Bar > Good People, Cotton Was King, Can’t Get High > Henry Parsons Died",
+          "songTitles": [
+            "Disco",
+            "Diner",
+            "C. Brown",
+            "Goodpeople",
+            "Dark Bar",
+            "Goodpeople",
+            "Cotton Was King",
+            "Can't Get High",
+            "Henry Parsons Died"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Little By Little, Stop-Go > Goin' Out West > Rock, Tackle Box Hero, One Kind Favor > Fishwater > Drums > Maggot Brain > For What It’s Worth > Fishwater",
+          "songTitles": [
+            "Little By Little",
+            "Stop-Go",
+            "Goin' Out West",
+            "Rock",
+            "Tackle Box Hero",
+            "One Kind Favor",
+            "Fishwater",
+            "Drums",
+            "Maggot Brain",
+            "For What It's Worth",
+            "Fishwater"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Life During Wartime",
+          "songTitles": [
+            "Life During Wartime"
+          ]
+        }
+      ],
+      "notes": [
+        "'Fire On The Mountain' and 'Three Little Birds' teases during 'Stop-Go'; Last 'One Kind Favor' – 07/24/22, 84 shows; 'Wang Dang Doodle' and 'The Other One' teases during 'One Kind Favor'; Last 'Maggot Brain' – 04/18/23, 47 shows; 'Maggot Brain' with spoken word introduction"
+      ],
+      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEgywbYUNG9KLiyQqcEvN4F7nXJaXzlKlC8V04atoee57F5huR_lCYGCWsYYnVoY2tQP3jgP9J3T2dEXo1ZevNS4rSuD5Qut5zpaKtaefCUrMplFYyqbfnocvTcHLL6BUYK04DEBWBiIVoy6hGuDF3k1HYbZpzcUwiaQuNfffnyvNxGqVMDsXphM54qc-kA=w640-h426",
+      "imageWidth": 2048,
+      "imageHeight": 1363
+    },
+    {
       "date": "02/16/25",
       "isoDate": "2025-02-16",
       "venue": "Hard Rock Live at Etess Arena",
       "city": "Atlantic City",
       "state": "NJ",
       "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-02-16-atlantic-city-nj-hard-rock-live-at-etess-arena/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-hard-rock-live-at-etess-arena-atlantic-city-nj-02-16-2025-mp3-flac-or-online-music-streaming/41311.html",
       "sets": [
         {
           "label": "1",
-          "songs": "Little Kin, Little Lilly > Wondering, Blue Carousel > Papa's Home > You Got Yours > Papa's Home, Pickin' Up The Pieces¹, All Time Low"
+          "songs": "Little Kin, Little Lilly > Wondering, Blue Carousel > Papa's Home > You Got Yours > Papa's Home, Pickin' Up The Pieces¹, All Time Low",
+          "songTitles": [
+            "Little Kin",
+            "Little Lilly",
+            "Wondering",
+            "Blue Carousel",
+            "Papa's Home",
+            "Drums",
+            "You Got Yours",
+            "Papa's Home",
+            "Pickin' Up The Pieces",
+            "All Time Low"
+          ]
         },
         {
           "label": "2",
-          "songs": "Sometimes > King Baby > Smokestack Lightning¹ > Tail Dragger¹, Driving Song¹ > The Take Out¹ > Porch Song¹ > Driving Song¹ > Blackout Blues¹, Four Cornered Room > Machine Gun > Chilly Water¹"
+          "songs": "Sometimes > King Baby > Smokestack Lightning¹ > Tail Dragger¹, Driving Song¹ > The Take Out¹ > Porch Song¹ > Driving Song¹ > Blackout Blues¹, Four Cornered Room > Machine Gun > Chilly Water¹",
+          "songTitles": [
+            "Sometimes",
+            "King Baby",
+            "Smokestack Lightning",
+            "Tail Dragger",
+            "Driving Song",
+            "The Take Out",
+            "Porch Song",
+            "Driving Song",
+            "Blackout Blues",
+            "Four Cornered Room",
+            "Chilly Water"
+          ]
         },
         {
           "label": "E",
-          "songs": "Dear Prudence², End Of The Show"
+          "songs": "Dear Prudence², End Of The Show",
+          "songTitles": [
+            "Dear Prudence",
+            "End Of The Show"
+          ]
         }
       ],
       "notes": [
@@ -93,18 +2223,45 @@
       "city": "Atlantic City",
       "state": "NJ",
       "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-02-15-atlantic-city-nj-hard-rock-live-at-etess-arena/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-hard-rock-live-at-etess-arena-atlantic-city-nj-02-15-2025-mp3-flac-or-online-music-streaming/41310.html",
       "sets": [
         {
           "label": "1",
-          "songs": "Holden Oversoul > Bust It Big, Down, Party At Your Mama's House¹ > Stop Breakin' Down Blues¹, Trashy² > Honky Red, Halloween Face"
+          "songs": "Holden Oversoul > Bust It Big, Down, Party At Your Mama's House¹ > Stop Breakin' Down Blues¹, Trashy² > Honky Red, Halloween Face",
+          "songTitles": [
+            "Holden Oversoul",
+            "Bust it Big",
+            "Down",
+            "Party at Your Mama's House",
+            "Stop Breakin' Down Blues",
+            "Trashy",
+            "Honky Red",
+            "Halloween Face"
+          ]
         },
         {
           "label": "2",
-          "songs": "Pigeons, Ride Me High³, Chainsaw City⁴, Mercy > Big Wooly Mammoth¹, Degenerate⁵, Blight > Blue Indian⁶, Heroes (David Bowie)⁷"
+          "songs": "Pigeons, Ride Me High³, Chainsaw City⁴, Mercy > Big Wooly Mammoth¹, Degenerate⁵, Blight > Blue Indian⁶, Heroes (David Bowie)⁷",
+          "songTitles": [
+            "Pigeons",
+            "Ride Me High",
+            "Chainsaw City",
+            "Mercy",
+            "Big Wooly Mammoth",
+            "Degenerate",
+            "Blight",
+            "Blue Indian",
+            "Heroes (David Bowie)"
+          ]
         },
         {
           "label": "E",
-          "songs": "We Walk Each Other Home, I'm So Glad⁸"
+          "songs": "We Walk Each Other Home, I'm So Glad⁸",
+          "songTitles": [
+            "We Walk Each Other Home",
+            "I'm So Glad"
+          ]
         }
       ],
       "notes": [
@@ -122,18 +2279,50 @@
       "city": "Atlantic City",
       "state": "NJ",
       "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-02-14-atlantic-city-nj-hard-rock-live-at-etess-arena/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-hard-rock-live-at-etess-arena-atlantic-city-nj-02-14-2025-mp3-flac-or-online-music-streaming/41309.html",
       "sets": [
         {
           "label": "1",
-          "songs": "Ain't Life Grand > Pleas > Tall Boy > Little By Little, Hatfield, Steven's Cat, Rebirtha > Ribs & Whiskey, Saint Ex"
+          "songs": "Ain't Life Grand > Pleas > Tall Boy > Little By Little, Hatfield, Steven's Cat, Rebirtha > Ribs & Whiskey, Saint Ex",
+          "songTitles": [
+            "Ain't Life Grand",
+            "Pleas",
+            "Tall Boy",
+            "Little By Little",
+            "Hatfield",
+            "Steven's Cat",
+            "Rebirtha",
+            "Ribs and Whiskey",
+            "Saint Ex"
+          ]
         },
         {
           "label": "2",
-          "songs": "Walkin' (For Your Love), Greta > I'm Not Alone, Fishing¹ > Travelin' Man² > The Waker³, Surprise Valley > Drums > Surprise Valley, Junior, Genesis⁴, Bowlegged Woman⁴ > Love Tractor"
+          "songs": "Walkin' (For Your Love), Greta > I'm Not Alone, Fishing¹ > Travelin' Man² > The Waker³, Surprise Valley > Drums > Surprise Valley, Junior, Genesis⁴, Bowlegged Woman⁴ > Love Tractor",
+          "songTitles": [
+            "Walkin' (For Your Love)",
+            "Greta",
+            "I'm Not Alone",
+            "Fishing",
+            "Travelin' Man",
+            "The Waker",
+            "Surprise Valley",
+            "Drums",
+            "Surprise Valley",
+            "Junior",
+            "Genesis",
+            "Bowlegged Woman, Knock-Kneed Man",
+            "Love Tractor"
+          ]
         },
         {
           "label": "E",
-          "songs": "Keep Me In Your Heart⁵, Red Hot Mama"
+          "songs": "Keep Me In Your Heart⁵, Red Hot Mama",
+          "songTitles": [
+            "Keep Me In Your Heart",
+            "Red Hot Mama"
+          ]
         }
       ],
       "notes": [
@@ -143,628 +2332,6 @@
       "image": "https://blogger.googleusercontent.com/img/a/AVvXsEh5rlugKBoKsMls5ykcAL8E1OKTUKa5C0D9TX928-JxbQXrQIPFxbOGABRxtdclPAeP5egLzVM5I0s-1XVZG539MrkKLxoOFnkrFpAtfa24Hn8oVHnGjpsHZp09IeRPqXHRfLvdYPBvkmACRrfaLhLK_rsQZMJlTQj6gBj15Z9y2SH7PHKlwkRZsuBkbkU=w640-h426",
       "imageWidth": 1280,
       "imageHeight": 853
-    },
-    {
-      "date": "03/22/25",
-      "isoDate": "2025-03-22",
-      "venue": "St. Augustine Amphitheatre",
-      "city": "St. Augustine",
-      "state": "FL",
-      "location": "St. Augustine, FL",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Tall Boy > Walk On, Walkin’ (For Your Love), We Walk Each Other Home, Up All Night, Honky Red, Pilgrims, Space Wrangler"
-        },
-        {
-          "label": "2",
-          "songs": "Second Skin > Rebirtha > Sleeping Man, Don’t Wanna Lose You, Machine > Barstools and Dreamers, King Baby > Love Tractor, You Wreck Me"
-        },
-        {
-          "label": "E",
-          "songs": "Airplane, Climb To Safety"
-        }
-      ],
-      "notes": [
-        "'Turn On Your Love Light' jam during 'Walk On'; Last 'Don't Wanna Lose You' - 06/23/23, 39 shows"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjPP6-sxpimCVa23O012ogWmMTwJb_d-dRzIhxGxep-qMDbMVg-NYImfmVGuFxwg8P7fJScHOp516IXIvdalG8FqibbDpO-E2oZJAtKk3r56KTf-zDCvGCoJbZOOn0FC5u9-ItZUBSQCKlO-yx-0QYiGOkFlr882d6nLKjieviur2sN98L7y74ZW52dzkA=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1365
-    },
-    {
-      "date": "03/21/25",
-      "isoDate": "2025-03-21",
-      "venue": "St. Augustine Amphitheatre",
-      "city": "St. Augustine",
-      "state": "FL",
-      "location": "St. Augustine, FL",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Disco > Diner > C. Brown, Good People > Dark Bar > Good People, Cotton Was King, Can’t Get High > Henry Parsons Died"
-        },
-        {
-          "label": "2",
-          "songs": "Little By Little, Stop-Go > Goin' Out West > Rock, Tackle Box Hero, One Kind Favor > Fishwater > Drums > Maggot Brain > For What It’s Worth > Fishwater"
-        },
-        {
-          "label": "E",
-          "songs": "Life During Wartime"
-        }
-      ],
-      "notes": [
-        "'Fire On The Mountain' and 'Three Little Birds' teases during 'Stop-Go'; Last 'One Kind Favor' – 07/24/22, 84 shows; 'Wang Dang Doodle' and 'The Other One' teases during 'One Kind Favor'; Last 'Maggot Brain' – 04/18/23, 47 shows; 'Maggot Brain' with spoken word introduction"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEgywbYUNG9KLiyQqcEvN4F7nXJaXzlKlC8V04atoee57F5huR_lCYGCWsYYnVoY2tQP3jgP9J3T2dEXo1ZevNS4rSuD5Qut5zpaKtaefCUrMplFYyqbfnocvTcHLL6BUYK04DEBWBiIVoy6hGuDF3k1HYbZpzcUwiaQuNfffnyvNxGqVMDsXphM54qc-kA=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1363
-    },
-    {
-      "date": "03/23/25",
-      "isoDate": "2025-03-23",
-      "venue": "St. Augustine Amphitheatre",
-      "city": "St. Augustine",
-      "state": "FL",
-      "location": "St. Augustine, FL",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Driving Song > Jack > Bust It Big > Driving Song > Wondering, Dyin' Man, Shut Up And Drive, Holden Oversoul > Christmas Katie > Action Man"
-        },
-        {
-          "label": "2",
-          "songs": "Pigeons, Cosmic Confidante > Saint Ex, Ride Me High > Low Spark Of High Heeled Boys > Arleen > Low Spark Of High Heeled Boys > Postcard, May Your Glass Be Filled, Halloween Face, Ain't Life Grand"
-        },
-        {
-          "label": "E",
-          "songs": "Vacation, Blackout Blues"
-        }
-      ],
-      "notes": [
-        "'Good Morning Little Schoolgirl', 'Ribs And Whiskey' and 'Cokane in My Brain' raps by JB during 'Arleen'"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEgHzu407q3D76qSZj0fTDyaFKdyXRs8B-OUDXc-bc_nKGSpNxvmglDb-wDePJfszV5Lyjt5actCeIgk-8OpDOiVwxpi4XWapriW2WW8JY-iAsvGKHwxGt9QiMWhJV93UtaDkrZ1bdWl-PUg6-0rzcC7if4K_zSUcsHaEFblsTAiz6SCh0VJgF4ypabV1XY=w640-h426",
-      "imageWidth": 2160,
-      "imageHeight": 1440
-    },
-    {
-      "date": "04/24/25",
-      "isoDate": "2025-04-24",
-      "venue": "Ascend Amphitheater",
-      "city": "Nashville",
-      "state": "TN",
-      "location": "Nashville, TN",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Send Your Mind, Coconut, Porch Song, Party At Your Mama's House > Stop Breakin' Down Blues, Surprise Valley > No Sugar Tonight/New Mother Nature > Surprise Valley, Conrad"
-        },
-        {
-          "label": "2",
-          "songs": "Big Wooly Mammoth > Jam > Hatfield, Little By Little, Small Town > Imitation Leather Shoes, Holden Oversoul¹, Trashy¹ > Fixin' To Die¹ > Red Hot Mama¹"
-        },
-        {
-          "label": "E",
-          "songs": "Keep Me in Your Heart, Lawyers, Guns, And Money"
-        }
-      ],
-      "notes": [
-        "¹ with Daniel Donato on guitar",
-        "'Third Stone From The Sun' and 'Jingo' teases before 'Hatfield'"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjwBUOJaMUnwnvfEi02PiOtmjuzuT7zDyJk4-gvBu5zQJBWuDfrCOvUzxfvMhSeDg0sif9YPGBu3KHL_9pviPEQSGH7_zmije7OfR21EV_kSAu6wlJb5nmp9fOU9ww1Yd6nnh81bJB7RqPDf_F_C4r5j8EZQK1YIEZuKfk5EnV7R0VDm6kE8w_vA7TFgYU=w640-h426",
-      "imageWidth": 2160,
-      "imageHeight": 1440
-    },
-    {
-      "date": "04/25/25",
-      "isoDate": "2025-04-25",
-      "venue": "Ascend Amphitheater",
-      "city": "Nashville",
-      "state": "TN",
-      "location": "Nashville, TN",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Mr. Soul, Makes Sense To Me, Little Kin, Goodpeople > Pigeons > Proving Ground > Jack > Proving Ground > Goodpeople, Climb To Safety"
-        },
-        {
-          "label": "2",
-          "songs": "Disco > Greta > Jam > Tie Your Shoes > Rock, We Walk Each Other Home, Rebirtha > Ribs and Whiskey, King Baby > Godzilla > Chilly Water"
-        },
-        {
-          "label": "E",
-          "songs": "Expiration Day, Protein Drink > Sewing Machine"
-        }
-      ],
-      "notes": [
-        "'I'm Your Captain (Closer to Home)' rap by JB and Dave during 'Rock'"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEj3ncB5vGV-7GvYZytXwroinvdxnJnyv3FqDwqdAFICfld9qjFK6OtWT8m9nBNChIygIQT21_zK_-M8Ym9Sslj8maKH9epOWiOvJcNa2FSb6KH3etS10kgh-4lkD5KllckJUhtxgD9fUyoQiD12CCGe0bldGbKPnuypJTzuvx9jRy2-mbCTwGokDFEIkH0=w640-h426",
-      "imageWidth": 2160,
-      "imageHeight": 1440
-    },
-    {
-      "date": "04/26/25",
-      "isoDate": "2025-04-26",
-      "venue": "Ascend Amphitheater",
-      "city": "Nashville",
-      "state": "TN",
-      "location": "Nashville, TN",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "One Arm Steve, Pleas > Bust It Big, Down, Me and the Devil Blues, Space Wrangler, Little Lilly¹ > Pickin' Up the Pieces¹, Ain't Life Grand¹"
-        },
-        {
-          "label": "2",
-          "songs": "Thought Sausage, Machine > Barstools and Dreamers, Blue Carousel > Bear's Gone Fishin' > I'm Not Alone, Blight > Halloween Face, I Walk On Guilded Splinters > Drums > Black Sabbath > Fairies Wear Boots > Black Sabbath"
-        },
-        {
-          "label": "E",
-          "songs": "Blue Indian, All Time Low"
-        }
-      ],
-      "notes": [
-        "¹ with Jarrod Walker on mandolin",
-        "Last 'Black Sabbath' - 10/28/16, 264 shows"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEgpHvfbDwNrf7tyTy2B_PsJXWIsD8KNv5B_8N0U2OA9IXHG-rfcXfrGPjApnI7i3UzOtGzQC4hAiNXhrTkmBUPf54xrj-vy3-7Z6U4PhphQuRFd-6_thuU16DjyjysX2nESgNz3rm6D8B-6vTcsb91fZEz522s7s4SMv81AFTqkkSx1gL3oVEO4iBcJ30Q=w640-h426",
-      "imageWidth": 2160,
-      "imageHeight": 1440
-    },
-    {
-      "date": "05/16/25",
-      "isoDate": "2025-05-16",
-      "venue": "Credit One Stadium",
-      "city": "Charleston",
-      "state": "SC",
-      "location": "Charleston, SC",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Wondering, Weak Brain, Narrow Mind, Little By Little, Up All Night > C. Brown, Sleeping Man, Good Morning Little School Girl > Old Neighborhood > Love Tractor"
-        },
-        {
-          "label": "2",
-          "songs": "Sparks Fly > Henry Parsons Died, Tackle Box Hero > Second Skin > Goin' Out West, Pilgrims, Driving Song > Bowlegged Woman > Driving Song > Saint Ex"
-        },
-        {
-          "label": "E",
-          "songs": "Cosmic Confidante, Tall Boy"
-        }
-      ],
-      "notes": [
-        "Last 'Good Morning Little School Girl' - 10/22/23, 32 shows; 'Good Morning Little School Girl' rap during 'Love Tractor'; 'Love Tractor' rap during 'Good Morning Little School Girl'; Last 'Sparks Fly' - 10/29/03, 1148 shows"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjVZoHGbRn-6dQwY0haJffndIuEjpWnWsQS06SduYMI40BK8VIgUAjIkgAbfNli9vwl_Z-muY3SDMF7wxZYFYMcAIfWzWdCEa74aHpQTQuPx4Mj1CKfTM6ROt4_Qpr8VLM-WhYzZrC6Oj3Z4tEAcYrKHC2BjxSaPQiedLqhB5LsR27ShHG7Qv8uajFvQp4=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "05/17/25",
-      "isoDate": "2025-05-17",
-      "venue": "Credit One Stadium",
-      "city": "Charleston",
-      "state": "SC",
-      "location": "Charleston, SC",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Walkin' (For Your Love), The Last Straw > Fishwater, And It Stoned Me, Diner > Papa Johnny Road, Junior, Small Town > Running Down A Dream"
-        },
-        {
-          "label": "2",
-          "songs": "Blackout Blues > You Got Yours > Sharon, King Baby > Airplane > Action Man > Gimme, Ride Me High > Papa's Home > Dear Mr. Fantasy > Papa's Home, I'm So Glad"
-        },
-        {
-          "label": "E",
-          "songs": "Honky Red, Postcard, Little Wing"
-        }
-      ],
-      "notes": [],
-      "image": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhLyAQFGDSTeD13FZhTYSNAhmlTvkC8I9ZDgiHkHeZGMx0-79zVmVK6UoDtOAcB90y6mJlWM8Z-fcPx8jw7tGQh51NhRAY4KhWLKdzRfFxIqGx5BuC9Sl4fEo-fTm7Q-aYY5Ejz2bzUSAzjTYPKWuUvzGuIHdnwoUiIZT20-8prvPBQxNnR-WYyPnu-Z8A/w640-h426/498578606_18503373475061746_2301537196688069608_n.jpg",
-      "imageWidth": 1440,
-      "imageHeight": 960
-    },
-    {
-      "date": "06/04/25",
-      "isoDate": "2025-06-04",
-      "venue": "Chicago Theatre",
-      "city": "Chicago",
-      "state": "IL",
-      "location": "Chicago, IL",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "From The Cradle > Imitation Leather Shoes, Weight Of The World > Party At Your Mama's House > Stop Breakin' Down Blues, This Part Of Town, Big Wooly Mammoth > Radio Child, Little By Little"
-        },
-        {
-          "label": "2",
-          "songs": "Travelin' Light, Goodpeople > Dark Bar > Goodpeople > Pigeons, Mercy > Drums > Rock, Climb To Safety, For What It's Worth, Life During Wartime"
-        },
-        {
-          "label": "E",
-          "songs": "We Walk Each Other Home, Porch Song"
-        }
-      ],
-      "notes": [
-        "'L.A. Woman' and 'Mountain Jam' teases during 'Party At Your Mama's House'"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiYXL5k0cwYWH3mVT1NRVislNxtcjHel03y4qjYsUw7s_NRaztgBZYGsqbdWqh8Omuhs1kbUSwgiEEvZMHHtIPl8uU4hlzXpSks7OKSH_pPITWEL2JWLdusp9WQ4hK06CEqBpBqRTyktcngSUvXRqknUeqfz-6UftgK6s6xl-tlPdCwlgCzXIFh0XP6_Vk=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "06/05/25",
-      "isoDate": "2025-06-05",
-      "venue": "Chicago Theatre",
-      "city": "Chicago",
-      "state": "IL",
-      "location": "Chicago, IL",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Greta > Worry, Space Wrangler, I'm Not Alone > Aunt Avis, Rebirtha > Better Off, Don't Wanna Lose You, Halloween Face"
-        },
-        {
-          "label": "2",
-          "songs": "Fishing¹, Bust It Big², Ribs And Whiskey², Pickin' Up The Pieces¹, Surprise Valley² > Red Hot Mama² > Arleen² > Red Hot Mama² > Surprise Valley², Chilly Water²"
-        },
-        {
-          "label": "E",
-          "songs": "All Time Low¹, Rockin' In The Free World¹"
-        }
-      ],
-      "notes": [
-        "¹ with Billy Strings on guitar/vocals",
-        "² with Billy Strings on guitar"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjT4vkyDMnXBrDlrvZV2sjX59TqjJ-vZi5_Gw5W9K8YBKqvoqyc0qITOccjJqZUgN0aLAE06ihW0XrEyQlcGoD54oo2TWUUIEaGm3lelFhn81EOyqhNzqdi2zWztNrDWtVxte6KEslbY0M4dczYYRTE9mX8UT0IBVYMC68HDH3a-Kcb0JHnZbhchcshU80=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "06/06/25",
-      "isoDate": "2025-06-06",
-      "venue": "Chicago Theatre",
-      "city": "Chicago",
-      "state": "IL",
-      "location": "Chicago, IL",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Let's Get The Show On The Road, Ain't Life Grand, Little Kin > Trashy > Pleas, Diner > Wondering, Chainsaw City¹, North¹"
-        },
-        {
-          "label": "2",
-          "songs": "Jack, Bear's Gone Fishin' > Tie Your Shoes > Hatfield > Dyin' Man, None of Us Are Free, Cease Fire > Jamais Vu > King Baby > Love Tractor"
-        },
-        {
-          "label": "E",
-          "songs": "Travelin' Man > The Waker, Blue Indian"
-        }
-      ],
-      "notes": [
-        "¹ with Jerry Joseph on guitar/vocals",
-        "'Highway To Heaven' rap by JB during 'Diner'"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEj47gRtwDSa2Val3a4q17zapjnj23cc-DNmRRAPmJpH5qFkxe2JovevCGcTqVbhjgCeQ9HjJ0ReZDCqCYe1bMI_lZSFH6j8KVZYOEzYrc0Gy5Yn3jMUbX57Ix7fWMfaKc3dTVW2XS8PeYg8bDpzg6NUVyB1GyPKv2ckR5eu3hk9zrYx6Fb1kr5cRQ3Na0U=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "06/27/25",
-      "isoDate": "2025-06-27",
-      "venue": "Red Rocks",
-      "city": "Morrison",
-      "state": "CO",
-      "location": "Morrison, CO",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Send Your Mind, Walkin' (For Your Love), Cotton Was King, Henry Parsons Died, We Walk Each Other Home, Climb To Safety¹, Time Is Free¹ > Blight¹ > Stop Breakin' Down Blues¹"
-        },
-        {
-          "label": "2",
-          "songs": "Porch Song, Can't Get High > Little By Little, Small Town > Disco > Second Skin > Goin' Out West, The Harder They Come¹, Mercy¹ > Fishwater¹"
-        },
-        {
-          "label": "E",
-          "songs": "You Can't Always Get What You Want², I'm So Glad²"
-        }
-      ],
-      "notes": [
-        "¹ with Chuck Leavell on keyboards",
-        "² with Chuck Leavell on keyboards/vocals",
-        "Last 'The Harder They Come' - 09/12/15, 355 shows"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjMlAuMXJMpSehbhqLoe6TdRyZCwoVzb97jBhL_96JTPWpPOXkehhC9xSXMX2Rueyfofh0CXzIk98SFlLOAYvcUE8fTEPdUzu9eGow8rHiz_5-YFr1tosvFu0901YKnUK2OFeHWltHGQ2pQbwNa7lr559NQXhqFEn_I15aAnDj5SO6lQwaHRv0QZau9XgA=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "06/28/25",
-      "isoDate": "2025-06-28",
-      "venue": "Red Rocks",
-      "city": "Morrison",
-      "state": "CO",
-      "location": "Morrison, CO",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Barstools and Dreamers, Sharon, Junior, Holden Oversoul, Shut Up And Drive, Goodpeople, Tail Dragger¹, Blue Indian¹, Ain't Life Grand¹"
-        },
-        {
-          "label": "2",
-          "songs": "Knocking 'Round The Zoo, You Got Yours, Jack, Give, Protein Drink > Sewing Machine, Papa's Home > Drums > Papa's Home¹ > Me And The Devil Blues¹, Jessica¹"
-        },
-        {
-          "label": "E",
-          "songs": "Low Spark Of High Heeled Boys¹ > Chilly Water¹"
-        }
-      ],
-      "notes": [
-        "¹ with Chuck Leavell on keyboards"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEhiXjQIUcJDivex3BU-PHyn634LMWP2tUDp9u_p0re3bym4SktH5RJiVbf7IiqAvpk-r0V1UKmj52DaIDwS6FeAzeZkiKtulNtfVFufLbsBjhrDtNCJ9gJEbiigb-Uq1KZskVDnBAI6n_6pupUnyKsJpkUQQpdhKScZklfpd181ZbZlS8lCVYxekPdqmAE=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "06/29/25",
-      "isoDate": "2025-06-29",
-      "venue": "Red Rocks",
-      "city": "Morrison",
-      "state": "CO",
-      "location": "Morrison, CO",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Wondering > The Last Straw > Up All Night > Driving Song > Pilgrims > Driving Song, Life As A Tree, Space Wrangler, Airplane > Action Man"
-        },
-        {
-          "label": "2",
-          "songs": "Pigeons, Pleas > King Baby > Saint Ex, Conrad, Dead Flowers¹, Ribs And Whiskey², Surprise Valley² > Tie Your Shoes² > Surprise Valley²"
-        },
-        {
-          "label": "E",
-          "songs": "Honky Red, Comfortably Numb¹, End Of The Show"
-        }
-      ],
-      "notes": [
-        "¹ with Chuck Leavell on keyboards/vocals",
-        "² with Chuck Leavell on keyboards",
-        "Only 'Comfortably Numb'; Last 'Dead Flowers' - 12/29/15, 349 shows"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiO8kaisipbvSxaAeY6HIX0yyhhp5UfshqvL39LcOwm--CEM-knxdn_IRSPXpGtSIPxUTJhbrsxlAjWfzzuoE3dh4yxDrAbEBxaS73sRtk0zR0NHdCj-uSGOLa4s3eeTeIrLv2PO85D0cNP4Ti2_ltBY19w_xxO9G0JL9dCf84WALgdco8U8XFJtq4SMjc=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "07/24/25",
-      "isoDate": "2025-07-24",
-      "venue": "Civic Center",
-      "city": "Asheville",
-      "state": "NC",
-      "location": "Asheville, NC",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Little Lilly > Little By Little, Little Kin, Better Off > Trashy > One Arm Steve, Fishing¹, Travelin' Man¹ > The Waker¹"
-        },
-        {
-          "label": "2",
-          "songs": "Slippin' Into Darkness² > Travelin' Light, Thought Sausage, Bear's Gone Fishin' > Jamais Vu > Halloween Face, Fairies Wear Boots, Holden Oversoul > All Time Low"
-        },
-        {
-          "label": "E",
-          "songs": "Old Joe³, Mr. Soul⁴"
-        }
-      ],
-      "notes": [
-        "¹ with John Keane on acoustic guitar/vocals",
-        "² with Steve Lopez on percussion",
-        "³ with John Keane on pedal steel",
-        "⁴ with John Keane on guitar"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEh-AQtsDjaaMu7dSRtcOKAKvNSXht3iESWDbtQbhpVqyW4ZfuoLLXG4KYzyK1IHQfGBJ4JwZEKYN2LW0ZN0ueJdmtq0sOvzo_PznEAfNHpG4xC49HYtjawB_BKgI733I6_I4Kz0LUH0w5yZbYdWthoa63kEJVIfQ-yUgriesGUmuxuDDvngmNogqUuSPVA=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "07/25/25",
-      "isoDate": "2025-07-25",
-      "venue": "Civic Center",
-      "city": "Asheville",
-      "state": "NC",
-      "location": "Asheville, NC",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Rumble > Henry Parsons Died, Tall Boy > Rock, We Walk Each Other Home, Party At Your Mama's House > Stop Breakin' Down Blues, Degenerate¹, Sleeping Man², Chainsaw City³"
-        },
-        {
-          "label": "2",
-          "songs": "Iron Man, King Baby > Second Skin > Diner > Ride Me High, Postcard, Love Tractor, Running Down A Dream"
-        },
-        {
-          "label": "E",
-          "songs": "City of Dreams⁴, There Is A Time⁴, Porch Song²"
-        }
-      ],
-      "notes": [
-        "¹ with John Keane on acoustic guitar/vocals",
-        "² with John Keane on guitar",
-        "³ with John Keane on guitar/vocals, Steve Lopez on percussion",
-        "⁴ with John Keane on pedal steel"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjGG6a7NtXF4w4C9HFpKsk0U5Uib2T1dE0Lw_qq5rZWofm-t468tEZdaopxulJUPnaLkxuPkQA53RdEBbfoghyYUkUpMn-Lip6IPeOk5jjHOCiZbm9YJdy2-aZTIgonKyEMMTFELkCRbKXkPERMFKNPnfKSkFXQjhmnqYpK8rZPGYsVGeVBw1CyvpwpUiY=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1363
-    },
-    {
-      "date": "07/26/25",
-      "isoDate": "2025-07-26",
-      "venue": "Civic Center",
-      "city": "Asheville",
-      "state": "NC",
-      "location": "Asheville, NC",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Goodpeople, Rebirtha > Greta > Cream Puff War, I'm Not Alone, Small Town, Blight¹ > This Part Of Town¹, Blue Indian"
-        },
-        {
-          "label": "2",
-          "songs": "And It Stoned Me, Climb To Safety > Hatfield, Keep Me in Your Heart, North > Drums > Saint Ex > Disco > Pigeons, Flat Foot Flewzy"
-        },
-        {
-          "label": "E",
-          "songs": "Expiration Day¹, Ain't Life Grand², War Pigs"
-        }
-      ],
-      "notes": [
-        "¹ with John Keane on pedal steel",
-        "with John Keane on pedal steel/vocals",
-        "Only 'War Pigs'"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiiNfKMnqxiPSBA-mLhit2LhLD5ZYUpF9mrp6wblU3Q1lcInR5JVzGImp9q5nVYlVZRB1kuMy000aJNH3WCoeJsPmOusVvRcKvDSGFy3PNbEaOthyPNtrUcmSRWcNqfwjk4WzxipalbkQK3jaeKRvR7gu9fx7IhQQDiGaFOolNEpqiowXNiEbE5Wngr5YM=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "08/08/25",
-      "isoDate": "2025-08-08",
-      "venue": "Everwise Amphitheater at White River State Park",
-      "city": "Indianapolis",
-      "state": "IN",
-      "location": "Indianapolis, IN",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Wondering > Up All Night > Radio Child > Makes Sense To Me, Christmas Katie > Machine > Barstools and Dreamers, Trashy > Halloween Face"
-        },
-        {
-          "label": "2",
-          "songs": "Surprise Valley > C. Brown, Impossible, Protein Drink > Sewing Machine > Drums > Surprise Valley > Airplane > Pilgrims > Red Hot Mama"
-        },
-        {
-          "label": "E",
-          "songs": "Big Wooly Mammoth > Blackout Blues"
-        }
-      ],
-      "notes": [],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEj_-8Kg9qV4F5TlfKWAcLjNddEbYCu3LBYYQmzQWwPcA4RDxeRPmRZg9qqJFRumjP_J180QfCG5mkbzyhqq5serPFi4p4nJPICmzYz3jApdKuxvWbyXKTO4_s1KlRh9OzLeGiPQQwbXB75VFtJoFS1XqGjJuP2DpfBQ4ZNv3bOH4Agp3wWn3pPZOWTWZj4=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "08/09/25",
-      "isoDate": "2025-08-09",
-      "venue": "Everwise Amphitheater at White River State Park",
-      "city": "Indianapolis",
-      "state": "IN",
-      "location": "Indianapolis, IN",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Driving Song > Walkin' (For Your Love) > Driving Song > Ribs And Whiskey, Cotton Was King > Pickin' Up The Pieces, Visiting Day, Let It Rock > Travelin' Light"
-        },
-        {
-          "label": "2",
-          "songs": "Fishwater > Little By Little > I Walk On Guilded Splinters > All Time Low > Papa's Home > May Your Glass Be Filled, Space Wrangler, Porch Song, Genesis, Conrad"
-        },
-        {
-          "label": "E",
-          "songs": "Nobody's Loss, Lawyers, Guns, And Money"
-        }
-      ],
-      "notes": [],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEjb32dk1YSVkiJCgfSmqMZ7hn2FK3Z0JJ9fwkcswencB82T2c9hkG5eekW8JHYnnAikg5K_YcTJyVAZUNlHWGP2DtuAh_AmK6zzrFmlhKJASfbCbtZPEUvDV37nkc1IbkGiXr51J8HETn3qOXW6rdQWz58KuNhB8DgLdHqigvu3IqpsjxDKfMWLsw0hkLY=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1363
-    },
-    {
-      "date": "08/21/25",
-      "isoDate": "2025-08-21",
-      "venue": "MGM Music Hall at Fenway Park",
-      "city": "Boston",
-      "state": "MA",
-      "location": "Boston, MA",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "One Arm Steve, Pleas, Bowlegged Woman, Bear's Gone Fishin' > Shut Up And Drive, Tall Boy, Cease Fire > Fixin' To Die, Imitation Leather Shoes"
-        },
-        {
-          "label": "2",
-          "songs": "Knocking 'Round The Zoo, Contentment Blues, Small Town, Tackle Box Hero, You Got Yours, Ride Me High¹ > Ain't Life Grand¹, Don't Be Denied, King Baby > Chilly Water"
-        },
-        {
-          "label": "E",
-          "songs": "Life During Wartime"
-        }
-      ],
-      "notes": [
-        "¹ with Chuck Leavell on keyboards"
-      ],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiUmM-LUQbZL1Ie6mwO82n4MleECtpZsS7FBH_oCGTPZR2AZqJrW0wj2EynrjMY2yz_BYp9frfgszjGzo2G9C4CYX1k6quHf-iIwjuYxMrxES2zXPb0xrGxzUwumh2wkQ2OvlsldLHdWYtghLBIpwSCVObwpN-5tlrhP21zYUPJ9E3EZSrIcVkT-AVF2us=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "08/22/25",
-      "isoDate": "2025-08-22",
-      "venue": "MGM Music Hall at Fenway Park",
-      "city": "Boston",
-      "state": "MA",
-      "location": "Boston, MA",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Arleen > Little Lilly > Henry Parsons Died, Aunt Avis > Greta > Gimme > Jack, Smokestack Lightning > Action Man"
-        },
-        {
-          "label": "2",
-          "songs": "Little Kin, Diner > Goin' Out West > Tie Your Shoes > Bust It Big > Drums > Saint Ex, Climb To Safety"
-        },
-        {
-          "label": "E",
-          "songs": "For What It's Worth > Love Tractor"
-        }
-      ],
-      "notes": [],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEg2vIB-DZuoZEih76liYB_rGYHhV4YKxZ34pqxqcFajuIZ0E738VrUhehmRPi_MCSup1BXj3CMk2jhDazOyr4iaJ_rCnBkiGmS-XFGano4xH4NrJZo37HHCHNcgYGTbr_eBIMz4YvwL0en_Vm80JGM_hC2t4hQl8gYU4v3zgU_hedrpIiftuPISkJU2XPQ=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
-    },
-    {
-      "date": "08/23/25",
-      "isoDate": "2025-08-23",
-      "venue": "MGM Music Hall at Fenway Park",
-      "city": "Boston",
-      "state": "MA",
-      "location": "Boston, MA",
-      "sets": [
-        {
-          "label": "1",
-          "songs": "Thought Sausage, Dyin' Man, Holden Oversoul > Worry, This Part Of Town, Little By Little, Rebirtha > Red Beans"
-        },
-        {
-          "label": "2",
-          "songs": "Disco > Pigeons, Cosmic Confidante, Surprise Valley > Party At Your Mama's House > Low Spark Of High Heeled Boys > All Time Low > Low Spark Of High Heeled Boys > Surprise Valley, Postcard"
-        },
-        {
-          "label": "E",
-          "songs": "Blue Indian, Dear Prudence, Porch Song"
-        }
-      ],
-      "notes": [],
-      "image": "https://blogger.googleusercontent.com/img/a/AVvXsEiXSpec6aAhE3Z2RAF2N62sOydVCL4XUs-x4L-ygEsxPsFnuy-DsOsz1ylEdHs_i3V56Yo1Pdu3v8WI5YDOQhDOWogGjoHtnzjW4aljTbE2-fPXZ4KagsoSegCtKYLUgXrwSEDmwA_1cw84RQD5qaJe6swu0SCI-zuZyFDcGxZyBCq782iVVp_NNkB-37A=w640-h426",
-      "imageWidth": 2048,
-      "imageHeight": 1366
     }
   ],
   "tourDates": [
@@ -774,7 +2341,8 @@
       "venue": "Hard Rock Live at Etess Arena",
       "city": "Atlantic City",
       "state": "NJ",
-      "location": "Atlantic City, NJ"
+      "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-02-14-atlantic-city-nj-hard-rock-live-at-etess-arena/"
     },
     {
       "date": "02/15/25",
@@ -782,7 +2350,8 @@
       "venue": "Hard Rock Live at Etess Arena",
       "city": "Atlantic City",
       "state": "NJ",
-      "location": "Atlantic City, NJ"
+      "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-02-15-atlantic-city-nj-hard-rock-live-at-etess-arena/"
     },
     {
       "date": "02/16/25",
@@ -790,7 +2359,8 @@
       "venue": "Hard Rock Live at Etess Arena",
       "city": "Atlantic City",
       "state": "NJ",
-      "location": "Atlantic City, NJ"
+      "location": "Atlantic City, NJ",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-02-16-atlantic-city-nj-hard-rock-live-at-etess-arena/"
     },
     {
       "date": "03/21/25",
@@ -798,7 +2368,8 @@
       "venue": "St. Augustine Amphitheatre",
       "city": "St. Augustine",
       "state": "FL",
-      "location": "St. Augustine, FL"
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-03-21-st-augustine-fl-st-augustine-amphitheatre/"
     },
     {
       "date": "03/22/25",
@@ -806,7 +2377,8 @@
       "venue": "St. Augustine Amphitheatre",
       "city": "St. Augustine",
       "state": "FL",
-      "location": "St. Augustine, FL"
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-03-22-st-augustine-fl-st-augustine-amphitheatre/"
     },
     {
       "date": "03/23/25",
@@ -814,7 +2386,8 @@
       "venue": "St. Augustine Amphitheatre",
       "city": "St. Augustine",
       "state": "FL",
-      "location": "St. Augustine, FL"
+      "location": "St. Augustine, FL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-03-23-st-augustine-fl-st-augustine-amphitheatre/"
     },
     {
       "date": "04/24/25",
@@ -822,7 +2395,8 @@
       "venue": "Ascend Amphitheater",
       "city": "Nashville",
       "state": "TN",
-      "location": "Nashville, TN"
+      "location": "Nashville, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-04-24-nashville-tn-ascend-amphitheater/"
     },
     {
       "date": "04/25/25",
@@ -830,7 +2404,8 @@
       "venue": "Ascend Amphitheater",
       "city": "Nashville",
       "state": "TN",
-      "location": "Nashville, TN"
+      "location": "Nashville, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-04-25-nashville-tn-ascend-amphitheater/"
     },
     {
       "date": "04/26/25",
@@ -838,7 +2413,8 @@
       "venue": "Ascend Amphitheater",
       "city": "Nashville",
       "state": "TN",
-      "location": "Nashville, TN"
+      "location": "Nashville, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-04-26-nashville-tn-ascend-amphitheater/"
     },
     {
       "date": "05/16/25",
@@ -846,7 +2422,8 @@
       "venue": "Credit One Stadium",
       "city": "Charleston",
       "state": "SC",
-      "location": "Charleston, SC"
+      "location": "Charleston, SC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-05-16-charleston-sc-credit-one-stadium/"
     },
     {
       "date": "05/17/25",
@@ -854,7 +2431,8 @@
       "venue": "Credit One Stadium",
       "city": "Charleston",
       "state": "SC",
-      "location": "Charleston, SC"
+      "location": "Charleston, SC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-05-17-charleston-sc-credit-one-stadium/"
     },
     {
       "date": "06/04/25",
@@ -862,7 +2440,8 @@
       "venue": "The Chicago Theatre",
       "city": "Chicago",
       "state": "IL",
-      "location": "Chicago, IL"
+      "location": "Chicago, IL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-04-chicago-il-the-chicago-theatre/"
     },
     {
       "date": "06/05/25",
@@ -870,7 +2449,8 @@
       "venue": "The Chicago Theatre",
       "city": "Chicago",
       "state": "IL",
-      "location": "Chicago, IL"
+      "location": "Chicago, IL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-05-chicago-il-the-chicago-theatre/"
     },
     {
       "date": "06/06/25",
@@ -878,7 +2458,8 @@
       "venue": "The Chicago Theatre",
       "city": "Chicago",
       "state": "IL",
-      "location": "Chicago, IL"
+      "location": "Chicago, IL",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-06-chicago-il-the-chicago-theatre/"
     },
     {
       "date": "06/27/25",
@@ -886,7 +2467,8 @@
       "venue": "Red Rocks Amphitheatre",
       "city": "Morrison",
       "state": "CO",
-      "location": "Morrison, CO"
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-27-morrison-co-red-rocks-amphitheatre/"
     },
     {
       "date": "06/28/25",
@@ -894,7 +2476,8 @@
       "venue": "Red Rocks Amphitheatre",
       "city": "Morrison",
       "state": "CO",
-      "location": "Morrison, CO"
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-28-morrison-co-red-rocks-amphitheatre/"
     },
     {
       "date": "06/29/25",
@@ -902,31 +2485,35 @@
       "venue": "Red Rocks Amphitheatre",
       "city": "Morrison",
       "state": "CO",
-      "location": "Morrison, CO"
+      "location": "Morrison, CO",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-06-29-morrison-co-red-rocks-amphitheatre/"
     },
     {
       "date": "07/24/25",
       "isoDate": "2025-07-24",
-      "venue": "ExploreAsheville.com Arena at Harrah's Cherokee Center",
+      "venue": "ExploreAsheville.com Arena at Harrah's Cherokee Center in Asheville",
       "city": "Asheville",
       "state": "NC",
-      "location": "Asheville, NC"
+      "location": "Asheville, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-07-24-asheville-nc-exploreasheville-com-arena-at-harrahs-cherokee-center-in-asheville/"
     },
     {
       "date": "07/25/25",
       "isoDate": "2025-07-25",
-      "venue": "ExploreAsheville.com Arena at Harrah's Cherokee Center",
+      "venue": "ExploreAsheville.com Arena at Harrah's Cherokee Center in Asheville",
       "city": "Asheville",
       "state": "NC",
-      "location": "Asheville, NC"
+      "location": "Asheville, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-07-25-asheville-nc-exploreasheville-com-arena-at-harrahs-cherokee-center-in-asheville/"
     },
     {
       "date": "07/26/25",
       "isoDate": "2025-07-26",
-      "venue": "ExploreAsheville.com Arena at Harrah's Cherokee Center",
+      "venue": "ExploreAsheville.com Arena at Harrah's Cherokee Center in Asheville",
       "city": "Asheville",
       "state": "NC",
-      "location": "Asheville, NC"
+      "location": "Asheville, NC",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-07-26-asheville-nc-exploreasheville-com-arena-at-harrahs-cherokee-center-in-asheville/"
     },
     {
       "date": "08/08/25",
@@ -934,7 +2521,8 @@
       "venue": "Everwise Amphitheater at White River State Park",
       "city": "Indianapolis",
       "state": "IN",
-      "location": "Indianapolis, IN"
+      "location": "Indianapolis, IN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-08-indianapolis-in-everwise-amphitheater-at-white-river-state-park/"
     },
     {
       "date": "08/09/25",
@@ -942,7 +2530,8 @@
       "venue": "Everwise Amphitheater at White River State Park",
       "city": "Indianapolis",
       "state": "IN",
-      "location": "Indianapolis, IN"
+      "location": "Indianapolis, IN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-09-indianapolis-in-everwise-amphitheater-at-white-river-state-park/"
     },
     {
       "date": "08/21/25",
@@ -950,7 +2539,8 @@
       "venue": "MGM Music Hall at Fenway",
       "city": "Boston",
       "state": "MA",
-      "location": "Boston, MA"
+      "location": "Boston, MA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-21-boston-ma-mgm-music-hall-at-fenway/"
     },
     {
       "date": "08/22/25",
@@ -958,7 +2548,8 @@
       "venue": "MGM Music Hall at Fenway",
       "city": "Boston",
       "state": "MA",
-      "location": "Boston, MA"
+      "location": "Boston, MA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-22-boston-ma-mgm-music-hall-at-fenway/"
     },
     {
       "date": "08/23/25",
@@ -966,7 +2557,8 @@
       "venue": "MGM Music Hall at Fenway",
       "city": "Boston",
       "state": "MA",
-      "location": "Boston, MA"
+      "location": "Boston, MA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-08-23-boston-ma-mgm-music-hall-at-fenway/"
     },
     {
       "date": "09/12/25",
@@ -974,7 +2566,8 @@
       "venue": "Allianz Amphitheater at Riverfront",
       "city": "Richmond",
       "state": "VA",
-      "location": "Richmond, VA"
+      "location": "Richmond, VA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-09-12-richmond-va-allianz-amphitheater-at-riverfront/"
     },
     {
       "date": "09/13/25",
@@ -982,7 +2575,8 @@
       "venue": "Allianz Amphitheater at Riverfront",
       "city": "Richmond",
       "state": "VA",
-      "location": "Richmond, VA"
+      "location": "Richmond, VA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-09-13-richmond-va-allianz-amphitheater-at-riverfront/"
     },
     {
       "date": "10/03/25",
@@ -990,7 +2584,8 @@
       "venue": "Mempho Music Festival",
       "city": "Memphis",
       "state": "TN",
-      "location": "Memphis, TN"
+      "location": "Memphis, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-03-memphis-tn-mempho-music-festival/"
     },
     {
       "date": "10/04/25",
@@ -998,7 +2593,8 @@
       "venue": "Mempho Music Festival",
       "city": "Memphis",
       "state": "TN",
-      "location": "Memphis, TN"
+      "location": "Memphis, TN",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-04-memphis-tn-mempho-music-festival/"
     },
     {
       "date": "10/24/25",
@@ -1006,7 +2602,8 @@
       "venue": "The Riverside Theater",
       "city": "Milwaukee",
       "state": "WI",
-      "location": "Milwaukee, WI"
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-24-milwaukee-wi-the-riverside-theater/"
     },
     {
       "date": "10/25/25",
@@ -1014,7 +2611,8 @@
       "venue": "The Riverside Theater",
       "city": "Milwaukee",
       "state": "WI",
-      "location": "Milwaukee, WI"
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-25-milwaukee-wi-the-riverside-theater/"
     },
     {
       "date": "10/26/25",
@@ -1022,7 +2620,81 @@
       "venue": "The Riverside Theater",
       "city": "Milwaukee",
       "state": "WI",
-      "location": "Milwaukee, WI"
+      "location": "Milwaukee, WI",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-26-milwaukee-wi-the-riverside-theater/"
+    },
+    {
+      "date": "10/31/25",
+      "isoDate": "2025-10-31",
+      "venue": "Enmarket Arena",
+      "city": "Savannah",
+      "state": "GA",
+      "location": "Savannah, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-10-31-savannah-ga-enmarket-arena/"
+    },
+    {
+      "date": "11/01/25",
+      "isoDate": "2025-11-01",
+      "venue": "Enmarket Arena",
+      "city": "Savannah",
+      "state": "GA",
+      "location": "Savannah, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-01-savannah-ga-enmarket-arena/"
+    },
+    {
+      "date": "11/21/25",
+      "isoDate": "2025-11-21",
+      "venue": "The Capitol Theatre",
+      "city": "Port Chester",
+      "state": "NY",
+      "location": "Port Chester, NY",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-21-port-chester-ny-the-capitol-theatre/"
+    },
+    {
+      "date": "11/22/25",
+      "isoDate": "2025-11-22",
+      "venue": "The Capitol Theatre",
+      "city": "Port Chester",
+      "state": "NY",
+      "location": "Port Chester, NY",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-22-port-chester-ny-the-capitol-theatre/"
+    },
+    {
+      "date": "11/23/25",
+      "isoDate": "2025-11-23",
+      "venue": "The Capitol Theatre",
+      "city": "Port Chester",
+      "state": "NY",
+      "location": "Port Chester, NY",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-11-23-port-chester-ny-the-capitol-theatre/"
+    },
+    {
+      "date": "12/29/25",
+      "isoDate": "2025-12-29",
+      "venue": "The Fox Theatre",
+      "city": "Atlanta",
+      "state": "GA",
+      "location": "Atlanta, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-12-29-atlanta-ga-the-fox-theatre/"
+    },
+    {
+      "date": "12/30/25",
+      "isoDate": "2025-12-30",
+      "venue": "The Fox Theatre",
+      "city": "Atlanta",
+      "state": "GA",
+      "location": "Atlanta, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-12-30-atlanta-ga-the-fox-theatre/"
+    },
+    {
+      "date": "12/31/25",
+      "isoDate": "2025-12-31",
+      "venue": "The Fox Theatre",
+      "city": "Atlanta",
+      "state": "GA",
+      "location": "Atlanta, GA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2025-12-31-atlanta-ga-the-fox-theatre/"
     }
-  ]
+  ],
+  "sourceOfficialUrl": "https://widespreadpanic.com/shows/"
 }

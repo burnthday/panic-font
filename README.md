@@ -10,6 +10,22 @@ npm run build
 
 The site is written to `dist/`. If Google credentials are not present, the build uses the CSV snapshots in `data/source/`.
 
+Run the full local verification before publishing or committing data changes:
+
+```bash
+npm run qa
+```
+
+That builds the site, checks generated lifetime playstats against Everyday Companion, checks current-tour counts against the raw setlists, checks Burnthday-specific page rules, and runs production readiness checks. Sandwiches count once per show for the tour-count math.
+
+The generated build also writes a machine-readable freshness report:
+
+```text
+dist/data/freshness.json
+```
+
+That report records the build time, active sheet title, latest posted setlist, marker legend, source URLs, totals, and whether the prior-song stats are strict publish data or temporary EC-lag data.
+
 ## 2025 Setlists
 
 The imported 2025 tour setlists live in `data/source/setlists-2025.json`.
@@ -32,6 +48,22 @@ TOUR_YEAR=2026 npm run refresh:setlists
 
 The checked-in setlist JSON keeps two versions of each set: `songTitles` are canonical official titles used for counting, and `songs` is the display string with `>` transitions. This keeps sandwich songs visible in the setlist while counting each song only once per show.
 
+To refresh the full public data layer for the active tour:
+
+```bash
+TOUR_YEAR=2026 npm run refresh:strict
+```
+
+That imports current Everyday Companion playstats, refreshes official Widespread Panic setlists, requires setlist transition markers, regenerates the pre-tour EC song stats used for Shelf/Purgatory math, builds, and validates the result.
+
+For the morning after a show, use the fast local path:
+
+```bash
+TOUR_YEAR=2026 npm run postshow
+```
+
+That updates official WSP setlists, enriches `>` markers when Archive data exists, rebuilds, and validates current-tour counts. It also allows a temporary EC-lag baseline for new bustouts: if EC has not posted the latest current-year play yet, the importer can still use EC's existing played-page/playstats row plus the local official setlist to keep lifetime count and last-played date visible locally. Use `refresh:strict` before publishing.
+
 ## Lifetime Play Stats
 
 Shelf, Purgatory, and The Woodshed use lifetime count and last-played metadata from `data/source/everyday-companion-playstats.json`. Refresh that snapshot with:
@@ -48,7 +80,35 @@ After a build, verify that generated lifetime stats still match Everyday Compani
 npm run validate:playstats
 ```
 
-The deployment workflow runs that validation before publishing, so mismatched lifetime totals stop the deploy instead of leaking to the live boards.
+Verify the current-tour board counts and generated prior-song coverage with:
+
+```bash
+npm run validate:tour-data
+```
+
+The deployment workflow runs both validations before publishing, so mismatched lifetime totals, bad tour counts, or missing prior-song stats stop the deploy instead of leaking to the live boards.
+
+The production gate is:
+
+```bash
+npm run validate:production
+```
+
+It verifies the generated freshness report, important Blogger redirects, core legacy routes, sitemap coverage, security/cache headers, strict prior-song data, Cloudflare workflow shape, and absence of root-level secret files.
+
+## Prior Tour Song Stats
+
+The 2026 Shelf/Purgatory return logic uses generated rows in `data/source/everyday-companion-prior-song-stats.json`. Regenerate them with:
+
+```bash
+npm run import:ec-prior-stats -- --year 2026 --require-all
+```
+
+For each song played in the current tour, the importer reads that song's Everyday Companion played-history page and captures the first play in the tour year. The EC row's SLP value becomes the pre-tour shows-since-last-played number, the previous history row supplies the last-played date, and the row position supplies the lifetime total before the tour. The build uses official WSP setlists for current-tour counts, so songs repeated inside one show still count once.
+
+When `--require-all` is used, a missing EC played-history row stops the import. That keeps automated deploys from publishing guessed bustout math when EC has not caught up yet.
+
+For a local post-show build only, `npm run postshow` passes `--allow-ec-lag`. That mode writes rows with `sourceStatus: "ec-lag-local-setlist-baseline"` when EC has not posted the current-year played-history row yet.
 
 ## Blogger Archive
 
@@ -89,6 +149,10 @@ GOOGLE_SERVICE_ACCOUNT_JSON
 ```
 
 The Cloudflare API token needs Pages edit access for the account that owns the `burnthday` Pages project.
+
+The workflow refreshes official setlists, EC lifetime playstats, EC prior song stats, and transition markers before building. If required EC prior stats are missing, the workflow fails before deploy so the current live site stays untouched.
+
+Review branches run `.github/workflows/ci.yml`, which executes `npm run qa` without deploying. The deploy workflow only publishes after strict refresh and full QA pass.
 
 ## Cloudflare Pages
 

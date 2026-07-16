@@ -26,29 +26,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Import Blogger setlists
-        run: npm run import:blogger
-        continue-on-error: true
-
-      - name: Import Everyday Companion playstats
-        run: npm run import:playstats
-        continue-on-error: true
-
-      - name: Import official setlists
-        run: npm run import:official-setlists -- --year 2026
-        continue-on-error: true
-
-      - name: Enrich setlist transitions
-        run: npm run enrich:setlist-transitions -- --year 2026 --require-all
-
-      - name: Build site
-        run: npm run build
+      - name: Refresh strict public data
+        run: TOUR_YEAR=2026 npm run refresh:strict
         env:
           GOOGLE_SHEET_ID: ${{ vars.GOOGLE_SHEET_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
 
-      - name: Validate Everyday Companion playstats
-        run: npm run validate:playstats
+      - name: Run production QA
+        run: npm run qa
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
