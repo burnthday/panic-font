@@ -57,12 +57,12 @@ const primaryNavItems = [
 ];
 
 const footerNavItems = [
-  ["Home", "/"],
-  ["Rumors", "/p/rumors"],
-  ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
-  ["Song Origins", "/p/widespread-panic-song-origins-and"],
+  ["Song List", "/"],
+  ["The Shelf", "/p/theshelf"],
   ["Tour In Review", "/p/burnthdays-widespread-panic-tours-in"],
-  ["@Burnthday", "https://twitter.com/burnthday"],
+  ["Song Origins", "/p/widespread-panic-song-origins-and"],
+  ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
+  ["Rumors", "/p/rumors"],
   ["About", "/p/about"]
 ];
 
@@ -1955,13 +1955,21 @@ function renderSiteFooter(data) {
   const year = data?.site?.year || new Date().getFullYear();
   return `<footer class="site-foot">
   <div class="site-foot-inner">
-    <nav class="social-links" aria-label="Burnthday social links">
-      <a href="https://www.facebook.com/burnthday">burnthday on Facebook</a>
-      <a href="https://twitter.com/burnthday">burnthday on Twitter</a>
-      <a href="https://www.instagram.com/burnthday/">burnthday on Instagram</a>
+    <div class="footer-lead">
+      <a class="footer-brand" href="/">BURNTHDAY</a>
+      <p>The working Widespread Panic song list, setlists, and tour data.</p>
+    </div>
+    <nav class="footer-links" aria-label="Explore Burnthday">
+      <strong>EXPLORE</strong>
+      ${footerNavItems.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join("")}
     </nav>
-    ${renderNavLinks(footerNavItems, "footer-links", "Footer links", true)}
-    <p>All Rights Reserved. Burnthday © ${escapeHtml(String(year))} | The Widespread Panic Spread Sheet</p>
+    <nav class="social-links" aria-label="Follow Burnthday">
+      <strong>FOLLOW</strong>
+      <a href="https://www.facebook.com/burnthday"><span class="social-mark facebook" aria-hidden="true">f</span><span>Facebook</span></a>
+      <a href="https://twitter.com/burnthday"><span class="social-mark x" aria-hidden="true">X</span><span>X</span></a>
+      <a href="https://www.instagram.com/burnthday/"><span class="social-mark instagram" aria-hidden="true"></span><span>Instagram</span></a>
+    </nav>
+    <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
   </div>
 </footer>`;
 }
@@ -2559,7 +2567,7 @@ function renderCss() {
 
 :root {
   color-scheme: light;
-  --paper: #fffdfa;
+  --paper: #f7f7f6;
   --ink: #111111;
   --muted: #5f5a55;
   --line: rgba(0, 0, 0, 0.12);
@@ -4151,48 +4159,134 @@ sup {
   width: 100%;
   margin: 0;
   border-top: 1px solid var(--line);
-  background: #ffffff;
-  padding: 28px 20px 30px;
-  text-align: center;
+  background: #efefed;
+  padding: 48px 28px 24px;
   color: var(--ink);
   font-size: 14px;
   line-height: 1.4;
 }
 
 .site-foot-inner {
-  width: min(1180px, 100%);
+  width: min(1380px, 100%);
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(280px, 1.35fr) minmax(300px, 1fr) minmax(180px, 0.6fr);
+  gap: 48px;
+  align-items: start;
 }
 
 .site-foot a {
-  color: #007cbb;
+  color: var(--ink);
   text-decoration: none;
 }
 
-.social-links,
-.footer-links {
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px 10px;
+.footer-lead {
+  max-width: 430px;
+}
+
+.footer-brand {
+  display: inline-block;
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 750;
+  letter-spacing: 0;
+}
+
+.footer-lead p {
+  max-width: 380px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.footer-links,
+.social-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 22px;
+}
+
+.footer-links > strong,
+.social-links > strong {
+  grid-column: 1 / -1;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.footer-links a {
+  width: max-content;
+  max-width: 100%;
+  font-size: 14px;
+  text-underline-offset: 4px;
+}
+
+.footer-links a:hover,
+.footer-links a:focus-visible,
+.social-links a:hover span:last-child,
+.social-links a:focus-visible span:last-child {
+  text-decoration: underline;
 }
 
 .social-links {
-  margin-bottom: 16px;
-  font-size: 13px;
+  grid-template-columns: 1fr;
 }
 
-.footer-links {
-  margin-bottom: 14px;
+.social-links a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: max-content;
+  font-size: 14px;
+}
+
+.social-mark {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
 }
 
-.footer-links span {
-  color: var(--ink);
+.social-mark.instagram::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid #ffffff;
+  border-radius: 3px;
 }
 
-.site-foot p {
-  margin: 0;
+.social-mark.instagram::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.footer-legal {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 0;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 @media (max-width: 900px) {
@@ -4203,6 +4297,15 @@ sup {
 
   .site-head {
     width: min(100% - 28px, 1180px);
+  }
+
+  .site-foot-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-lead,
+  .footer-legal {
+    grid-column: 1 / -1;
   }
 
   .masthead-row {
@@ -4629,16 +4732,27 @@ sup {
   }
 
   .site-foot {
-    padding: 24px 18px 26px;
+    padding: 34px 18px 22px;
   }
 
-  .social-links,
+  .site-foot-inner {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer-lead,
+  .footer-legal {
+    grid-column: 1;
+  }
+
   .footer-links {
-    gap: 8px 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px 18px;
   }
 
-  .footer-links span {
-    display: none;
+  .footer-legal {
+    flex-wrap: wrap;
+    gap: 4px 7px;
   }
 }
 
