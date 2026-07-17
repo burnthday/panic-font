@@ -224,6 +224,9 @@ async function loadPriorSongStats() {
   try {
     const raw = await readFile(path.join(root, "data", "source", "everyday-companion-prior-song-stats.json"), "utf8");
     const payload = JSON.parse(raw);
+    const rows = payload.rows || [];
+    const bridgeRows = rows.filter((row) => row.sourceStatus === "ec-lag-verified-local-bridge").length;
+    const unverifiedLagRows = rows.filter((row) => row.sourceStatus && row.sourceStatus !== "ec-lag-verified-local-bridge").length;
     return {
       source: payload.source || "Everyday Companion Song Stats",
       sourceUrl: payload.sourceUrl || "",
@@ -231,7 +234,9 @@ async function loadPriorSongStats() {
       tourYear: payload.tourYear || "",
       allowEcLag: Boolean(payload.allowEcLag),
       missing: payload.missing || [],
-      rows: payload.rows || []
+      rows,
+      bridgeRows,
+      unverifiedLagRows
     };
   } catch {
     return { source: "", sourceUrl: "", importedAt: "", rows: [] };
@@ -518,7 +523,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     .filter((row) => isPublicSongTitle(row.title))
     .map((row) => mergePlaystats(row, playstatsByKey.get(normalizeTitle(row.title))));
   const rawCurrentTour = source.currentTour.map(normalizeCurrentTourRow).filter((row) => isPublicSongTitle(row.title));
-  const setlists = [...(source.setlists.setlists || [])].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
+  let setlists = [...(source.setlists.setlists || [])].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
   const tourDates = [...(source.setlists.tourDates || [])].sort((a, b) => a.isoDate.localeCompare(b.isoDate));
   const setlistYear = inferSetlistYear(source.setlists);
   const latestYear = setlistYear || inferLatestYear(rawCurrentTour) || inferLatestYear(baseCatalog) || new Date().getFullYear();
@@ -530,15 +535,16 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
   const postedShowCount = setlists.length;
   const boardShow = pickBoardShow(tourDates, setlists);
-  const latestShow = setlists[0] || null;
+  let latestShow = setlists[0] || null;
   const todayIso = currentDateIso("America/Los_Angeles");
   const isShowDayPreview = Boolean(
     boardShow?.isoDate &&
     boardShow.isoDate <= todayIso &&
     (!latestShow?.isoDate || boardShow.isoDate > latestShow.isoDate)
   );
-  const featuredShow = isShowDayPreview
-    ? { ...boardShow, sets: [], notes: [] }
+  const currentRunImage = setlists.find((show) => show.location === boardShow?.location && show.image)?.image || "";
+  let featuredShow = isShowDayPreview
+    ? { ...boardShow, image: boardShow.image || currentRunImage, sets: [], notes: [] }
     : latestShow;
 
   const songs = catalog.map((row) => {
@@ -570,6 +576,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       seedTotal,
       seedSlp,
       seedLast,
+      tourFirstIso: parsedTour?.firstIso || parseDateKey(sheetTour?.first),
       tourCount,
       nickCount,
       playedThisTour,
@@ -583,6 +590,13 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       isAddOn: false
     };
   });
+
+  const songsByKey = new Map(songs.map((song) => [song.key, song]));
+  setlists = setlists.map((show) => addGeneratedBustoutNotes(show, songsByKey));
+  latestShow = setlists[0] || null;
+  featuredShow = isShowDayPreview
+    ? { ...boardShow, image: boardShow.image || currentRunImage, sets: [], notes: [] }
+    : latestShow;
 
   const originals = songs.filter((row) => row.type === "Original");
   const covers = songs.filter((row) => row.type === "Cover");
@@ -599,7 +613,9 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       priorSongStatsUrl: hasPriorSongStats ? source.priorSongStats?.sourceUrl || "" : "",
       priorSongStatsImportedAt: hasPriorSongStats ? source.priorSongStats?.importedAt || "" : "",
       priorSongStatsAllowEcLag: Boolean(source.priorSongStats?.allowEcLag),
-      priorSongStatsMissing: Array.isArray(source.priorSongStats?.missing) ? source.priorSongStats.missing.length : 0
+      priorSongStatsMissing: Array.isArray(source.priorSongStats?.missing) ? source.priorSongStats.missing.length : 0,
+      priorSongStatsBridgeRows: source.priorSongStats?.bridgeRows || 0,
+      priorSongStatsUnverifiedLagRows: source.priorSongStats?.unverifiedLagRows || 0
     },
     site: {
       name: "Burnthday",
@@ -649,11 +665,33 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   };
 }
 
+function addGeneratedBustoutNotes(show, songsByKey) {
+  const existingNotes = show.notes || [];
+  const generatedNotes = [];
+  const seen = new Set();
+
+  for (const set of show.sets || []) {
+    for (const title of set.songTitles || splitDisplaySetSongs(set.songs)) {
+      const key = normalizeTitle(title);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+
+      const song = songsByKey.get(key);
+      if (!song || song.tourFirstIso !== show.isoDate || song.seedSlp < 50 || !song.seedLast) continue;
+      if (existingNotes.some((note) => /\blast\b/i.test(note) && normalizeTitle(note).includes(key))) continue;
+      generatedNotes.push(`Last '${song.title}' - ${song.seedLast}, ${song.seedSlp} shows`);
+    }
+  }
+
+  return generatedNotes.length ? { ...show, notes: [...existingNotes, ...generatedNotes] } : show;
+}
+
 function buildFreshnessReport(data, archiveEntries = [], songOrigins = [], generatedReviews = []) {
   const latestShow = data.site.latestShow || null;
   const boardShow = data.site.boardShow || null;
   const featuredShow = data.site.featuredShow || latestShow;
   const priorStatsStrict = Boolean(data.source.priorSongStatsUrl) && !data.source.priorSongStatsAllowEcLag && data.source.priorSongStatsMissing === 0;
+  const priorStatsPublishSafe = Boolean(data.source.priorSongStatsUrl) && data.source.priorSongStatsMissing === 0 && data.source.priorSongStatsUnverifiedLagRows === 0;
 
   return {
     generatedAt: data.generatedAt,
@@ -670,9 +708,11 @@ function buildFreshnessReport(data, archiveEntries = [], songOrigins = [], gener
     sources: data.source,
     integrity: {
       strictPriorStats: priorStatsStrict,
+      publishSafePriorStats: priorStatsPublishSafe,
       publicPlaystatsSource: Boolean(data.source.playstatsUrl),
       publicSetlistSource: Boolean(data.source.setlistUrl),
-      noEcLagRowsInPublishData: !data.source.priorSongStatsAllowEcLag,
+      ecLagBridgeRows: data.source.priorSongStatsBridgeRows,
+      noUnverifiedEcLagRowsInPublishData: data.source.priorSongStatsUnverifiedLagRows === 0,
       priorStatsMissingRows: data.source.priorSongStatsMissing,
       currentTourSongs: data.totals.currentTourSongs,
       currentTourPlays: data.totals.currentTourPlays,
@@ -1065,6 +1105,10 @@ async function copyAssets() {
   );
 
   await copyDirectory(path.join(root, "assets"), path.join(dist, "assets"));
+  await copyFile(
+    path.join(root, "node_modules", "@fontsource-variable", "geist", "files", "geist-latin-wght-normal.woff2"),
+    path.join(dist, "assets", "geist-latin-wght-normal.woff2")
+  );
 }
 
 async function copyDirectory(sourceDir, targetDir) {
@@ -1723,7 +1767,6 @@ function renderHtml(data) {
     ${renderSiteHeader()}
 
     <main>
-      ${renderHomeSectionNav(data)}
       ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
       ${renderSheetKey(data)}
@@ -1756,7 +1799,7 @@ function renderFitScriptBody() {
           let size = Number.parseFloat(computed.fontSize);
           if (!Number.isFinite(size)) return;
 
-          const titleFloor = window.matchMedia("(max-width: 560px)").matches ? 18 : 24;
+          const titleFloor = window.matchMedia("(max-width: 560px)").matches ? 20 : 24;
           const minSize = Math.max(titleFloor, size * 0.46);
           title.style.fontSize = size + "px";
 
@@ -1837,26 +1880,6 @@ function renderNavigationScriptBody() {
       if (link.origin === window.location.origin && linkPath === currentPath) link.setAttribute("aria-current", "page");
     });
   })();`;
-}
-
-function renderHomeSectionNav(data) {
-  const featuredLabel = data.site.isShowDayPreview ? "Current Show" : "Latest Setlist";
-  const items = [
-    [featuredLabel, "#latest-setlist"],
-    ["Song List", "#song-list"],
-    ["Shelf Watch", "#shelf-watch"],
-    ["The Shelf", "#shelf"],
-    ["Purgatory", "#purgatory"],
-    ["Nick + Woodshed", "#nick-johnson"],
-    ["Setlists", "#setlists"],
-    ["Tour Dates", "#tour-dates"]
-  ];
-  const links = items.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join('<span aria-hidden="true">/</span>');
-
-  return `<nav class="home-sections" aria-label="On this page">
-  <strong>ON THIS PAGE</strong>
-  <div class="home-section-links">${links}</div>
-</nav>`;
 }
 
 function renderSiteFooter(data) {
@@ -1940,9 +1963,11 @@ function renderWoodshedBoard(data) {
 }
 
 function renderNickJohnsonFeature(data) {
-  const played = (data.catalog || []).filter((row) => row.playedWithNick && row.nickCount > 0).sort(byTitle);
-  const originals = played.filter((row) => row.type === "Original");
-  const covers = played.filter((row) => row.type === "Cover");
+  const played = (data.catalog || [])
+    .filter((row) => row.playedWithNick && row.nickCount > 0)
+    .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
+  const featuredSongs = played.slice(0, 10);
+  const remainingSongs = played.slice(featuredSongs.length);
   const shows = (data.setlists || []).filter(isNickJohnsonShow).length;
   const plays = sum(played.map((row) => row.nickCount));
   const woodshed = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
@@ -1958,18 +1983,27 @@ function renderNickJohnsonFeature(data) {
     ${renderNickStat(plays, "song plays")}
     ${renderNickStat(woodshed, "still in The Woodshed")}
   </div>
-  <details class="nick-played-panel">
-    <summary><span>SONGS PLAYED WITH NICK</span><strong>${formatNumber(played.length)}</strong></summary>
-    <div class="nick-played-sheet">
-      ${renderSongPanel("nick-played-originals", "ORIGINALS", originals, { nickMode: true })}
-      ${renderSongPanel("nick-played-covers", "COVERS", covers, { nickMode: true })}
-    </div>
-  </details>
+  <div class="nick-ranking-heading"><h3>MOST PLAYED WITH NICK</h3><span>plays per show</span></div>
+  ${renderNickRanking(featuredSongs)}
+  ${remainingSongs.length ? `<details class="nick-played-panel">
+    <summary><span>VIEW REMAINING SONGS</span><strong>${formatNumber(remainingSongs.length)}</strong></summary>
+    ${renderNickRanking(remainingSongs, { start: featuredSongs.length + 1, compact: true })}
+  </details>` : ""}
 </section>`;
 }
 
 function renderNickStat(value, label) {
   return `<div class="nick-stat"><strong>${formatNumber(value)}</strong><span>${escapeHtml(label)}</span></div>`;
+}
+
+function renderNickRanking(songs, options = {}) {
+  const start = options.start || 1;
+  const classes = options.compact ? "nick-ranking is-compact" : "nick-ranking";
+  return `<ol class="${classes}" start="${start}">${songs.map((song, index) => `<li value="${start + index}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}">
+    <span class="nick-rank" aria-hidden="true">${start + index}</span>
+    <span class="nick-song"><strong>${escapeHtml(song.title.toUpperCase())}</strong><small>${escapeHtml(song.type)}</small></span>
+    <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong><small>${song.nickCount === 1 ? "play" : "plays"}</small></span>
+  </li>`).join("")}</ol>`;
 }
 
 function renderSheetKey(data) {
@@ -2371,6 +2405,14 @@ function renderCss() {
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Geist";
+  src: url("/assets/geist-latin-wght-normal.woff2") format("woff2-variations");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   color-scheme: light;
   --paper: #fffdfa;
@@ -2381,6 +2423,7 @@ function renderCss() {
   --green: #2d7c52;
   --blue: #286e9e;
   --cream: #f7f1e8;
+  --ui-font: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * {
@@ -2397,7 +2440,7 @@ body {
   min-width: 320px;
   color: var(--ink);
   background: var(--paper);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ui-font);
   overflow-x: clip;
 }
 
@@ -2469,7 +2512,7 @@ a {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   padding: 13px 0 14px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ui-font);
   font-size: clamp(16px, 1.25vw, 19px);
   font-weight: 600;
   line-height: 1;
@@ -2500,48 +2543,6 @@ a {
 main {
   width: min(1880px, calc(100% - 56px));
   margin: 34px auto 56px;
-}
-
-.home-sections {
-  width: min(1180px, 100%);
-  display: flex;
-  align-items: baseline;
-  gap: 18px;
-  margin: 0 auto 26px;
-  border-bottom: 1px solid var(--line);
-  padding: 0 0 11px;
-  font-size: 13px;
-  line-height: 1.2;
-}
-
-.home-sections > strong {
-  flex: 0 0 auto;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-.home-section-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 12px;
-  min-width: 0;
-}
-
-.home-section-links a {
-  color: var(--muted);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-
-.home-section-links a:hover,
-.home-section-links a:focus-visible {
-  color: var(--ink);
-  border-bottom-color: currentColor;
-}
-
-.home-section-links span {
-  color: rgba(0, 0, 0, 0.3);
 }
 
 #latest-setlist,
@@ -2676,7 +2677,7 @@ main {
 .sheet-key {
   margin: 0;
   padding: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--ui-font);
 }
 
 .sheet-key-sheet {
@@ -2836,13 +2837,13 @@ main {
 .songs.grid4 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  column-gap: clamp(24px, 3.5vw, 68px);
+  column-gap: clamp(20px, 3vw, 58px);
 }
 
 .songs.grid3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: clamp(22px, 3vw, 56px);
+  column-gap: clamp(18px, 2.6vw, 48px);
 }
 
 .songs .col {
@@ -2852,7 +2853,7 @@ main {
 }
 
 .rotation-song {
-  --song-font-size: 22px;
+  --song-font-size: 21px;
   display: flex;
   align-items: baseline;
   max-width: 100%;
@@ -2956,12 +2957,10 @@ sup {
 
 .hand-addon {
   font-family: "PanicHand", sans-serif;
-  font-size: 0.82em;
-  letter-spacing: -0.045em;
+  font-size: 0.78em;
+  letter-spacing: 0;
   line-height: 1;
   display: inline-block;
-  transform: scaleY(1.08);
-  transform-origin: left center;
   vertical-align: -0.02em;
 }
 
@@ -3011,10 +3010,10 @@ sup {
 }
 
 .shelf-watch-song strong {
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 20px;
+  font-family: var(--ui-font);
+  font-size: 16px;
   line-height: 1.05;
-  font-weight: 400;
+  font-weight: 650;
 }
 
 .shelf-watch-song span,
@@ -3036,10 +3035,10 @@ sup {
 .shelf-watch-slp strong,
 .shelf-watch-remaining strong {
   flex: 0 0 auto;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 25px;
+  font-family: var(--ui-font);
+  font-size: 23px;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 650;
 }
 
 .shelf-watch-remaining {
@@ -3066,10 +3065,10 @@ sup {
 }
 
 .nick-stat strong {
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 30px;
+  font-family: var(--ui-font);
+  font-size: 28px;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 650;
 }
 
 .nick-stat span {
@@ -3079,8 +3078,86 @@ sup {
   text-transform: uppercase;
 }
 
+.nick-ranking-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nick-ranking-heading h3 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.nick-ranking-heading span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.nick-ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nick-ranking li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 11px 0;
+}
+
+.nick-rank {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+}
+
+.nick-song,
+.nick-plays {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nick-song strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  line-height: 1.1;
+  font-weight: 650;
+}
+
+.nick-song small,
+.nick-plays small {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.1;
+}
+
+.nick-plays {
+  min-width: 50px;
+  text-align: right;
+}
+
+.nick-plays strong {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
 .nick-played-panel {
-  margin-top: 14px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -3092,8 +3169,9 @@ sup {
   gap: 12px;
   min-height: 44px;
   cursor: pointer;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 18px;
+  font-family: var(--ui-font);
+  font-size: 13px;
+  font-weight: 700;
   letter-spacing: 0;
 }
 
@@ -3104,7 +3182,7 @@ sup {
 .nick-played-panel summary::after {
   content: "+";
   justify-self: end;
-  font-family: system-ui, sans-serif;
+  font-family: var(--ui-font);
   font-size: 22px;
   font-weight: 400;
 }
@@ -3114,20 +3192,18 @@ sup {
 }
 
 .nick-played-panel summary strong {
-  font-family: system-ui, sans-serif;
+  font-family: var(--ui-font);
   color: var(--muted);
   font-size: 13px;
   font-weight: 600;
 }
 
-.nick-played-sheet {
+.nick-played-panel .nick-ranking {
   border-top: 1px solid var(--line);
-  padding: 22px 0 26px;
-  font-family: "MilkRun", system-ui, sans-serif;
 }
 
-.nick-played-sheet .song-panel + .song-panel {
-  margin-top: 24px;
+.nick-ranking.is-compact li {
+  padding: 9px 0;
 }
 
 .community-links {
@@ -3172,18 +3248,18 @@ sup {
 
 .section-heading h2 {
   margin: 0;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 30px;
+  font-family: var(--ui-font);
+  font-size: 26px;
   line-height: 1;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--ink);
   letter-spacing: 0;
 }
 
 .section-heading span {
   color: var(--muted);
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 15px;
+  font-family: var(--ui-font);
+  font-size: 13px;
 }
 
 .setlist-feature {
@@ -3333,7 +3409,8 @@ sup {
 }
 
 .tour-dates li span {
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: var(--ui-font);
+  font-variant-numeric: tabular-nums;
 }
 
 .tour-dates li strong {
@@ -3834,7 +3911,7 @@ sup {
   }
 
   .rotation-song {
-    --song-font-size: 22px;
+    --song-font-size: 20px;
   }
 
   .board-ledger,
@@ -3876,7 +3953,7 @@ sup {
   }
 
   .rotation-song {
-    --song-font-size: 20px;
+    --song-font-size: 19px;
   }
 
   .songs.grid4,
@@ -3990,33 +4067,16 @@ sup {
     color: #b94a4a;
   }
 
-  .home-sections {
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-  }
-
-  .home-sections > strong {
-    flex-basis: 100%;
-  }
-
-  .home-section-links {
-    gap: 8px 10px;
-    font-size: 12px;
-  }
-
   .laminate {
     padding: 13px 12px 18px;
   }
 
   .header-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     grid-template-areas:
-      "left right"
-      "title title";
-    gap: 6px 8px;
+      "left title right";
+    gap: 4px;
+    align-items: center;
     margin-bottom: 24px;
   }
 
@@ -4028,21 +4088,26 @@ sup {
     grid-area: right;
   }
 
+  .nums {
+    gap: 2px;
+  }
+
   .board-title {
     grid-area: title;
   }
 
   .marker-num {
-    width: clamp(32px, 9vw, 44px);
-    height: clamp(37px, 10vw, 50px);
+    width: 20px;
+    height: 24px;
   }
 
   .board-title h1 {
-    font-size: clamp(34px, 12vw, 52px);
+    font-size: 24px;
+    line-height: 1;
   }
 
   .section-heading h2 {
-    font-size: 32px;
+    font-size: 24px;
   }
 
   .board-ledger {
@@ -4146,6 +4211,17 @@ sup {
 
   .footer-links span {
     display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .marker-num {
+    width: 18px;
+    height: 22px;
+  }
+
+  .board-title h1 {
+    font-size: 22px;
   }
 }
 

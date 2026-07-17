@@ -1,10 +1,11 @@
 {
   "source": "Everyday Companion played pages",
   "sourceUrl": "https://everydaycompanion.com/playstats/playstats.asp",
-  "importedAt": "2026-07-16T04:36:56.425Z",
+  "importedAt": "2026-07-17T14:57:40.363Z",
   "tourYear": 2026,
-  "allowEcLag": false,
-  "generationRule": "For each current-tour song, use the first EC played-page row in the tour year. The row's # column is the LTP/SLP entering that play; previous row supplies LTP date; row index supplies totalBefore.",
+  "allowEcLag": true,
+  "ecLatestShowIso": "2026-07-11",
+  "generationRule": "For each current-tour song, prefer the first EC played-page row in the tour year. If EC has not posted that row, add the exact number of locally verified official shows after EC's latest posted show and before the song's first local tour play to EC's SLP baseline.",
   "rows": [
     {
       "title": "1x1",
@@ -1979,6 +1980,24 @@
       "firstCurrentDate": "03/22/26",
       "lastCurrentDate": "03/22/26",
       "totalAtImport": 36
+    },
+    {
+      "title": "Time Zones",
+      "code": "TIMZON",
+      "sourceUrl": "https://everydaycompanion.com/played/TIMZON.asp",
+      "asOfShow": "2026-07-16",
+      "asOfShowCode": "",
+      "ltpDate": "12/30/23",
+      "ltp": 84,
+      "totalBefore": 126,
+      "currentTourPlaysFromHistory": 0,
+      "currentTourPlaysFromLocalSetlists": 1,
+      "firstCurrentDate": "07/16/26",
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 126,
+      "ecLatestShowIso": "2026-07-11",
+      "localBridgeShows": 0,
+      "sourceStatus": "ec-lag-verified-local-bridge"
     },
     {
       "title": "Trashy",

@@ -26,6 +26,7 @@ async function main() {
   const currentSongs = currentTourSongStats(setlists, currentTour, year);
   const importRows = [];
   const missing = [];
+  const fetchedSongs = [];
 
   await mapLimit(currentSongs, concurrency, async (song) => {
     const { title } = song;
@@ -38,12 +39,22 @@ async function main() {
     const sourceUrl = `${basePlayedUrl}${encodeURIComponent(playstat.code)}.asp`;
     const html = await fetchText(sourceUrl);
     const history = parsePlayedHistory(html);
+    fetchedSongs.push({ song, playstat, sourceUrl, history });
+  });
+
+  const ecLatestShowIso = fetchedSongs
+    .flatMap(({ history }) => history.map((row) => row.isoDate).filter(Boolean))
+    .sort()
+    .at(-1) || "";
+
+  for (const { song, playstat, sourceUrl, history } of fetchedSongs) {
+    const { title } = song;
     const prior =
       priorStatsForYear(title, playstat.code, sourceUrl, history, year) ||
-      (allowEcLag ? priorStatsFromLocalSetlists(title, playstat.code, sourceUrl, history, playstat, song) : null);
+      (allowEcLag ? priorStatsFromLocalSetlists(title, playstat.code, sourceUrl, history, playstat, song, setlists, ecLatestShowIso) : null);
     if (prior) importRows.push(prior);
     else missing.push({ title, code: playstat.code, reason: `No ${year} play found on EC played page` });
-  });
+  }
 
   importRows.sort((a, b) => a.title.localeCompare(b.title));
   missing.sort((a, b) => a.title.localeCompare(b.title));
@@ -54,8 +65,9 @@ async function main() {
     importedAt: new Date().toISOString(),
     tourYear: year,
     allowEcLag,
+    ecLatestShowIso,
     generationRule: allowEcLag
-      ? "For each current-tour song, prefer the first EC played-page row in the tour year. If EC has not posted that current-year row yet, use the local setlist's first tour play plus EC's latest played-page/playstats row as a temporary pre-bustout baseline."
+      ? "For each current-tour song, prefer the first EC played-page row in the tour year. If EC has not posted that row, add the exact number of locally verified official shows after EC's latest posted show and before the song's first local tour play to EC's SLP baseline."
       : "For each current-tour song, use the first EC played-page row in the tour year. The row's # column is the LTP/SLP entering that play; previous row supplies LTP date; row index supplies totalBefore.",
     rows: importRows,
     missing
@@ -233,11 +245,16 @@ function priorStatsForYear(title, code, sourceUrl, history, targetYear) {
   };
 }
 
-function priorStatsFromLocalSetlists(title, code, sourceUrl, history, playstat, localSong) {
+function priorStatsFromLocalSetlists(title, code, sourceUrl, history, playstat, localSong, setlists, ecLatestShowIso) {
   if (!localSong?.firstIsoDate) return null;
 
   const priorIndex = findLastIndex(history, (row) => row.isoDate && row.isoDate < localSong.firstIsoDate);
   const priorPlay = priorIndex >= 0 ? history[priorIndex] : null;
+  const localBridgeShows = new Set(
+    (setlists.setlists || [])
+      .filter((show) => show.isoDate > ecLatestShowIso && show.isoDate < localSong.firstIsoDate)
+      .map((show) => show.isoDate)
+  ).size;
 
   return {
     title,
@@ -246,14 +263,16 @@ function priorStatsFromLocalSetlists(title, code, sourceUrl, history, playstat, 
     asOfShow: localSong.firstIsoDate,
     asOfShowCode: "",
     ltpDate: priorPlay?.date || playstat.last || "",
-    ltp: playstat.slp,
+    ltp: playstat.slp + localBridgeShows,
     totalBefore: priorIndex >= 0 ? priorIndex + 1 : 0,
     currentTourPlaysFromHistory: 0,
     currentTourPlaysFromLocalSetlists: localSong.count,
     firstCurrentDate: isoToShortDate(localSong.firstIsoDate),
     lastCurrentDate: isoToShortDate(localSong.lastIsoDate || localSong.firstIsoDate),
     totalAtImport: history.length,
-    sourceStatus: "ec-lag-local-setlist-baseline"
+    ecLatestShowIso,
+    localBridgeShows,
+    sourceStatus: "ec-lag-verified-local-bridge"
   };
 }
 

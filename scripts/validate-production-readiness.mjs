@@ -44,7 +44,7 @@ function checkFreshness(freshness, siteData) {
   record("Freshness show-day state matches generated site data", freshness.site?.isShowDayPreview === Boolean(siteData.site?.isShowDayPreview), JSON.stringify(freshness.site));
   record("Freshness latest setlist matches generated site data", sameShow(freshness.site?.latestSetlist, siteData.site?.latestShow), JSON.stringify(freshness.site?.latestSetlist));
   record("Freshness totals match generated tour data", sameTotals(freshness.totals, siteData.totals), JSON.stringify(freshness.totals));
-  record("Prior song stats are strict publish data", freshness.integrity?.strictPriorStats === true && freshness.integrity?.noEcLagRowsInPublishData === true && freshness.integrity?.priorStatsMissingRows === 0, JSON.stringify(freshness.integrity));
+  record("Prior song stats are publish-safe verified data", freshness.integrity?.publishSafePriorStats === true && freshness.integrity?.noUnverifiedEcLagRowsInPublishData === true && freshness.integrity?.priorStatsMissingRows === 0, JSON.stringify(freshness.integrity));
   record("Freshness report documents operator commands", Boolean(freshness.commands?.localQa && freshness.commands?.postShowLocal && freshness.commands?.automaticPublishRefresh && freshness.commands?.strictReconcile), JSON.stringify(freshness.commands));
 }
 

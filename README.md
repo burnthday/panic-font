@@ -24,7 +24,7 @@ The generated build also writes a machine-readable freshness report:
 dist/data/freshness.json
 ```
 
-That report records the build time, active sheet title, latest posted setlist, marker legend, source URLs, totals, and whether the prior-song stats are strict publish data or temporary EC-lag data.
+That report records the build time, active sheet title, latest posted setlist, marker legend, source URLs, totals, and whether prior-song stats came directly from EC or include a verified local bridge over newer official shows.
 
 ## 2025 Setlists
 
@@ -116,7 +116,7 @@ For each song played in the current tour, the importer reads that song's Everyda
 
 When `--require-all` is used, a missing EC played-history row stops the import. That keeps automated deploys from publishing guessed bustout math when EC has not caught up yet.
 
-For a local post-show build only, `npm run postshow` passes `--allow-ec-lag`. That mode writes rows with `sourceStatus: "ec-lag-local-setlist-baseline"` when EC has not posted the current-year played-history row yet.
+For a local post-show build only, `npm run postshow` passes `--allow-ec-lag`. When EC has not posted the current-year played-history row, the importer finds EC's newest posted show and adds only the official local shows between that date and the song's first local tour play to EC's SLP baseline. Those auditable rows use `sourceStatus: "ec-lag-verified-local-bridge"`; missing or unverified rows still stop production validation.
 
 ## Blogger Archive
 

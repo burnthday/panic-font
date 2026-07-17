@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-16T04:34:20.613Z",
+  "importedAt": "2026-07-17T14:42:59.703Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1466,6 +1466,65 @@
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wspdd1502026-07-11",
       "transitionSourceTitle": "Widespread Panic Live at Hayden Homes Amphhitheater on 2026-07-11"
+    },
+    {
+      "date": "07/16/2026",
+      "isoDate": "2026-07-16",
+      "venue": "Fox Theater",
+      "city": "Oakland",
+      "state": "CA",
+      "location": "Oakland, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-16-oakland-ca-fox-theater/",
+      "streamUrl": "https://nugs.net/widespreadpanic",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Airplane > Rebirtha > Space Wrangler, Better Off, Time Zones, Walkin' (For Your Love), Gradle > You Got Yours > Lawyers Guns And Money",
+          "songTitles": [
+            "Airplane",
+            "Rebirtha",
+            "Space Wrangler",
+            "Better Off",
+            "Time Zones",
+            "Walkin' (For Your Love)",
+            "Gradle",
+            "You Got Yours",
+            "Lawyers Guns And Money"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Ribs and Whiskey, Big Wooly Mammoth > Send Your Mind, Sleepy Monkey, This Part of Town > Pigeons, Mercy > Good Morning Little School Girl > King Baby > Fishwater",
+          "songTitles": [
+            "Ribs and Whiskey",
+            "Big Wooly Mammoth",
+            "Send Your Mind",
+            "Sleepy Monkey",
+            "This Part of Town",
+            "Pigeons",
+            "Mercy",
+            "Good Morning Little School Girl",
+            "King Baby",
+            "Fishwater"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Knockin' Around The Zoo, All Time Low",
+          "songTitles": [
+            "Knockin' Around The Zoo",
+            "All Time Low"
+          ]
+        }
+      ],
+      "notes": [
+        "Entire show with Nick Johnson on guitar"
+      ],
+      "image": "",
+      "imageWidth": 0,
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-16",
+      "transitionSourceTitle": "Widespread Panic Live at The Fox Theatre on 2026-07-16"
     }
   ],
   "tourDates": [
@@ -1851,7 +1910,7 @@
   "transitionSource": {
     "label": "Internet Archive Live Music Archive",
     "sourceUrl": "https://archive.org/details/WidespreadPanic",
-    "importedAt": "2026-07-16T04:36:15.087Z",
+    "importedAt": "2026-07-17T14:45:00.946Z",
     "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
   }
 }

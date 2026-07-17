@@ -28,5 +28,7 @@
   "engines": {
     "node": ">=20"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@fontsource-variable/geist": "5.2.9"
+  }
 }

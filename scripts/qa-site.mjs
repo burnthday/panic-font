@@ -154,7 +154,9 @@ function checkShelfWatch(html, siteData) {
 
 function checkNickJohnsonFeature(html, siteData) {
   const feature = sectionHtml(html, "nick-johnson");
-  const played = (siteData.catalog || []).filter((song) => song.playedWithNick && song.nickCount > 0);
+  const played = (siteData.catalog || [])
+    .filter((song) => song.playedWithNick && song.nickCount > 0)
+    .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
   const nickShows = (siteData.setlists || []).filter((show) => (show.notes || []).some((note) => /\bnick johnson\b/i.test(note) && /\bguitar\b/i.test(note))).length;
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
@@ -169,10 +171,20 @@ function checkNickJohnsonFeature(html, siteData) {
     assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Nick Johnson summary reports ${label}`);
   }
 
-  const missingCounts = played
-    .filter((song) => !songChunks(feature, song.title.toUpperCase()).some((chunk) => chunk.includes(`<sup>${song.nickCount}</sup>`)))
-    .map((song) => `${song.title} (${song.nickCount})`);
-  record("Every Nick Johnson song keeps its per-show play count", missingCounts.length === 0, missingCounts.slice(0, 20).join("\n"));
+  assertIncludes(feature, "<h3>MOST PLAYED WITH NICK</h3>", "Nick Johnson feature presents a ranked most-played view");
+  record("Nick Johnson feature is not another laminated song sheet", !feature.includes("nick-played-sheet") && !feature.includes("song-panel"));
+  const renderedRanking = [...feature.matchAll(/data-song-title="([^"]+)" data-nick-count="(\d+)"/g)]
+    .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
+  record(
+    "Nick Johnson songs are ranked by plays with alphabetical tie-breaking",
+    arraysEqual(renderedRanking.map((song) => song.title), played.map((song) => song.title)),
+    renderedRanking.slice(0, 20).map((song) => `${song.title}: ${song.count}`).join("\n")
+  );
+  record(
+    "Every Nick Johnson song keeps its per-show play count",
+    renderedRanking.length === played.length && renderedRanking.every((song, index) => song.count === played[index].nickCount),
+    `${renderedRanking.length} rendered vs ${played.length} expected`
+  );
   record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
 }
 
@@ -213,6 +225,13 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(bend, "[Entire show with Nick Johnson on guitar]", "Nick Johnson full-show note stays bracketed");
   record("Steve Lopez is not inside bracket notes", !/\[[^\]]*Steve Lopez[^\]]*\]/i.test(stripTags(bend)));
   record("No asterisk guest notation remains on the Bend setlist", !/\*\s*with Steve Lopez/i.test(stripTags(bend)));
+
+  const oakland = cardHtml(html, "07/16/2026 Fox Theater, Oakland, CA");
+  assertIncludes(oakland, "Airplane &gt; Rebirtha &gt; Space Wrangler", "Oakland I preserves the opening segues");
+  assertIncludes(oakland, "Gradle &gt; You Got Yours &gt; Lawyers Guns And Money", "Oakland I preserves the first-set closing segues");
+  assertIncludes(oakland, "Mercy &gt; Good Morning Little School Girl &gt; King Baby &gt; Fishwater", "Oakland I preserves the second-set closing segues");
+  assertIncludes(oakland, "[Entire show with Nick Johnson on guitar]", "Oakland I keeps the full-show Nick note bracketed");
+  assertIncludes(oakland, "[Last &#39;Time Zones&#39; - 12/30/23, 84 shows]", "Oakland I calculates Time Zones SLP from the verified prior-play ledger");
 }
 
 function checkGuestAnnotations(homeHtml, review2025Html) {
@@ -254,25 +273,10 @@ function checkNavigation(html, siteData) {
   const topNav = linkTexts(sectionByClass(html, "jump-links"));
   const mobileNav = linkTexts(sectionByClass(html, "mobile-nav-links"));
   const footerNav = linkTexts(sectionByClass(html, "footer-links"));
-  const homeSectionHtml = sectionByClass(html, "home-sections");
-  const expectedHomeSections = [
-    siteData.site?.isShowDayPreview ? "Current Show" : "Latest Setlist",
-    "Song List",
-    "Shelf Watch",
-    "The Shelf",
-    "Purgatory",
-    "Nick + Woodshed",
-    "Setlists",
-    "Tour Dates"
-  ];
-  const expectedHomeHrefs = ["#latest-setlist", "#song-list", "#shelf-watch", "#shelf", "#purgatory", "#nick-johnson", "#setlists", "#tour-dates"];
-  const homeHrefs = [...homeSectionHtml.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => match[1]);
-
   record("Top nav matches old Burnthday nav", arraysEqual(topNav, expectedTop), topNav.join(" | "));
   record("Mobile menu matches the complete top navigation", arraysEqual(mobileNav, expectedTop), mobileNav.join(" | "));
   assertIncludes(html, '<details class="mobile-nav">', "Homepage has an accessible mobile navigation menu");
-  record("Homepage section index names every major destination", arraysEqual(linkTexts(homeSectionHtml), expectedHomeSections), linkTexts(homeSectionHtml).join(" | "));
-  record("Homepage section index targets the correct sections", arraysEqual(homeHrefs, expectedHomeHrefs), homeHrefs.join(" | "));
+  record("Homepage omits the redundant On This Page jump row", !html.includes('class="home-sections"') && !html.includes("ON THIS PAGE"));
   record("Footer nav matches old Burnthday footer", arraysEqual(footerNav, expectedFooter), footerNav.join(" | "));
   record("Footer intentionally excludes The Shelf", !footerNav.includes("The Shelf"), footerNav.join(" | "));
   assertIncludes(html, "burnthday on Facebook", "Footer includes Facebook text link");
