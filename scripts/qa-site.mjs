@@ -296,6 +296,10 @@ async function checkLegacyPages() {
   record("Rumors page does not use invented placeholder copy", !/I am not trying to become a rumor mill/i.test(rumorsText));
   record("Tour In Review page uses imported legacy copy", /Burnthday's Widespread Panic Tour In Review/.test(tourText));
   record("Shelf page uses imported shelf copy", /The Shelf/i.test(shelfText) && /Purgatory/i.test(shelfText));
+  for (const [label, html] of [["Rumors", rumors], ["Tour In Review", tourReview], ["The Shelf", shelf]]) {
+    assertIncludes(html, 'document.querySelectorAll(".jump-links a, .mobile-nav-links a")', `${label} page initializes its active navigation state`);
+    assertIncludes(html, 'path === "/index" ? "/" : path', `${label} page normalizes the legacy homepage URL`);
+  }
 }
 
 function checkMarkerLegend(html, siteData) {

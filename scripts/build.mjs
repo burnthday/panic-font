@@ -1789,12 +1789,6 @@ function renderFitScriptBody() {
         });
       }
 
-      const currentPath = window.location.pathname.replace(/\\.html$/i, "").replace(/\\/$/, "") || "/";
-      document.querySelectorAll(".jump-links a, .mobile-nav-links a").forEach((link) => {
-        const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\\.html$/i, "").replace(/\\/$/, "") || "/";
-        if (link.origin === window.location.origin && linkPath === currentPath) link.setAttribute("aria-current", "page");
-      });
-
       fitBoardTitles();
       fitSongRows();
       window.addEventListener("resize", () => window.requestAnimationFrame(() => {
@@ -1827,7 +1821,22 @@ function renderSiteHeader() {
     <summary><span>MENU</span><span class="menu-icon" aria-hidden="true"><i></i><i></i><i></i></span></summary>
     ${renderNavLinks(primaryNavItems, "mobile-nav-links", "Primary navigation")}
   </details>
+  <script>${renderNavigationScriptBody()}</script>
 </header>`;
+}
+
+function renderNavigationScriptBody() {
+  return `(() => {
+    const normalizePath = (value) => {
+      const path = value.replace(/\\.html$/i, "").replace(/\\/$/, "") || "/";
+      return path === "/index" ? "/" : path;
+    };
+    const currentPath = normalizePath(window.location.pathname);
+    document.querySelectorAll(".jump-links a, .mobile-nav-links a").forEach((link) => {
+      const linkPath = normalizePath(new URL(link.href, window.location.origin).pathname);
+      if (link.origin === window.location.origin && linkPath === currentPath) link.setAttribute("aria-current", "page");
+    });
+  })();`;
 }
 
 function renderHomeSectionNav(data) {
@@ -4137,6 +4146,12 @@ sup {
 
   .footer-links span {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-icon i {
+    transition: none;
   }
 }
 `;
