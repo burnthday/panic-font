@@ -547,7 +547,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const currentRunImage = setlists.find((show) => show.location === boardShow?.location && show.image)?.image || "";
   const previewFallbackImage = setlists.find((show) => show.location !== boardShow?.location && show.image)?.image || currentRunImage;
   let featuredShow = isShowDayPreview
-    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [] }
+    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [], liveStreamUrl: "https://www.twitch.tv/widespreadpanic" }
     : latestShow;
 
   const songs = catalog.map((row) => {
@@ -598,7 +598,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   setlists = setlists.map((show) => addGeneratedBustoutNotes(show, songsByKey));
   latestShow = setlists[0] || null;
   featuredShow = isShowDayPreview
-    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [] }
+    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [], liveStreamUrl: "https://www.twitch.tv/widespreadpanic" }
     : latestShow;
 
   const originals = songs.filter((row) => row.type === "Original");
@@ -2219,12 +2219,18 @@ function renderSetlistImage(show) {
 
 function renderSetlistText(show) {
   const annotations = buildSetlistAnnotations(show);
+  const hasPostedSetlist = (show.sets || []).some((set) => (set.songTitles || []).length || clean(set.songs));
+  const links = [
+    show.sourceUrl ? `<a href="${escapeAttr(show.sourceUrl)}">${hasPostedSetlist ? "Official Setlist &amp; Photos" : "Show Details"}</a>` : "",
+    show.streamUrl ? `<a href="${escapeAttr(show.streamUrl)}">Listen at Nugs.net</a>` : "",
+    show.liveStreamUrl ? `<a href="${escapeAttr(show.liveStreamUrl)}">Listen Live on Twitch</a>` : ""
+  ].filter(Boolean).join("");
   return `<div class="setlist-text">
     <h3>${escapeHtml(formatSetlistHeading(show))}</h3>
     ${(show.sets || []).map((set) => `<p><strong>${escapeHtml(set.label)}:</strong> ${renderSetSongs(set, annotations)}</p>`).join("")}
     ${renderSetlistGuestNotes(annotations)}
     ${renderSetlistNotes(annotations)}
-    ${(show.sourceUrl || show.streamUrl) ? `<p class="setlist-links">${show.sourceUrl ? `<a href="${escapeAttr(show.sourceUrl)}">Official Page</a>` : ""}${show.streamUrl ? `<a href="${escapeAttr(show.streamUrl)}">Stream</a>` : ""}</p>` : ""}
+    ${links ? `<p class="setlist-links">${links}</p>` : ""}
   </div>`;
 }
 
