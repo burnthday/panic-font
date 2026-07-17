@@ -25,6 +25,7 @@ async function main() {
   checkShelfWatch(homeHtml, siteData);
   checkNickJohnsonFeature(homeHtml, siteData);
   checkTourDates(homeHtml, siteData);
+  await checkMobileTourDateCss();
   await checkSetlistImageOrientation(siteData);
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
@@ -238,6 +239,18 @@ function checkTourDates(html, siteData) {
   record("Tour Dates renders every scheduled date once", (feature.match(/<li class="is-(?:posted|upcoming)">/g) || []).length === siteData.tourDates.length);
   record("Tour Dates gives every row a clear status", (feature.match(/Setlist posted|Upcoming/g) || []).length === siteData.tourDates.length);
   record("Tour Dates uses neutral status copy instead of green styling hooks", !feature.includes("green"));
+}
+
+async function checkMobileTourDateCss() {
+  const styles = await readText("dist/styles.css");
+  record(
+    "Mobile Tour Dates reserve intrinsic width for the full date",
+    /\.tour-dates li\s*\{[^}]*grid-template-columns:\s*max-content minmax\(0, 1fr\);/s.test(styles)
+  );
+  record(
+    "Mobile Tour Date status stays below the venue",
+    /\.tour-dates li em\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*3;/s.test(styles)
+  );
 }
 
 async function checkSetlistImageOrientation(siteData) {
