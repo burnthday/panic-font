@@ -1799,7 +1799,7 @@ function renderHtml(data) {
       ${renderShelfWatch(data)}
       ${renderShelfBoard(data)}
       ${renderWoodshedBoard(data)}
-      ${renderSetlists(data, { skipLatest: !data.site.isShowDayPreview })}
+      ${renderSetlists(data, { skipFeaturedRun: true })}
       ${renderTourDates(data)}
       ${renderCommunityLinks()}
     </main>
@@ -2159,21 +2159,34 @@ function renderSong(row, options = {}) {
 }
 
 function renderLatestSetlist(data) {
-  if (data.site.isShowDayPreview) return "";
   const featured = data.site.featuredShow || data.setlists[0];
   if (!featured) return "";
 
+  const completedRunShows = data.site.isShowDayPreview
+    ? data.setlists.filter((show) => show.location === featured.location && show.isoDate < featured.isoDate)
+    : [];
+  const heading = data.site.isShowDayPreview ? "CURRENT TOUR STOP" : "LATEST SETLIST";
+
   return `<section class="latest-setlist" id="latest-setlist">
   <div class="section-heading">
-    <h2>LATEST SETLIST</h2>
+    <h2>${heading}</h2>
   </div>
   ${renderFeaturedSetlist(featured)}
+  ${completedRunShows.length ? `<div class="setlist-grid current-stop-setlists">${completedRunShows.map(renderSetlistCard).join("")}</div>` : ""}
 </section>`;
 }
 
 function renderSetlists(data, options = {}) {
-  const setlists = options.skipLatest ? data.setlists.slice(1) : data.setlists;
-  const postedLabel = options.skipLatest ? `${setlists.length} older posted` : `${data.totals.postedSetlists} posted`;
+  const featured = data.site.featuredShow || data.setlists[0];
+  const featuredRunDates = options.skipFeaturedRun
+    ? new Set(
+        data.site.isShowDayPreview
+          ? data.setlists.filter((show) => show.location === featured?.location && show.isoDate < featured?.isoDate).map((show) => show.isoDate)
+          : featured?.isoDate ? [featured.isoDate] : []
+      )
+    : new Set();
+  const setlists = data.setlists.filter((show) => !featuredRunDates.has(show.isoDate));
+  const postedLabel = featuredRunDates.size ? `${setlists.length} older posted` : `${data.totals.postedSetlists} posted`;
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
     <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>

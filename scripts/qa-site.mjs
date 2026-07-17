@@ -71,13 +71,12 @@ function checkNoPublicPanicStreamLinks(files, htmlByFile) {
 function checkCorePageState(html, siteData) {
   assertIncludes(html, `<h1>WIDESPREAD PANIC ${siteData.site.year} TOUR</h1>`, "Homepage leads with the tour title");
   for (const label of ["Song Possibilities", "The Shelf", "Purgatory", "Nick Stats", "Setlists"]) assertIncludes(sectionByClass(html, "home-trail"), label, `Homepage trail links to ${label}`);
-  if (siteData.site?.isShowDayPreview) record("Homepage omits the empty Current Show block", !html.includes('id="latest-setlist"') && !html.includes("CURRENT SHOW"));
-  else assertIncludes(html, '<section class="latest-setlist" id="latest-setlist">', "Homepage has latest-setlist section");
+  assertIncludes(html, '<section class="latest-setlist" id="latest-setlist">', "Homepage has top-of-page setlist section");
   assertIncludes(html, '<section class="laminate primary-board" id="song-list">', "Homepage has song-list laminate");
   const boardTitle = [siteData.site?.boardShow?.location, siteData.site?.boardShow?.runLabel].filter(Boolean).join(" ").toUpperCase();
   assertIncludes(html, `<h1>${escapeHtml(boardTitle)}</h1>`, `Song List title matches board show: ${boardTitle}`);
 
-  if (!siteData.site?.isShowDayPreview) record("Latest setlist appears above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
+  record("Current tour-stop setlists appear above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
   record("Sheet key appears below Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"'));
   record("Shelf Watch appears between the Sheet Key and Shelf", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="shelf-watch"') && indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"'));
   record("Shelf and Purgatory appear below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"'));
@@ -211,12 +210,16 @@ async function checkLatestSetlist(html, siteData) {
   const heading = `${featuredShow?.date || ""} ${featuredShow?.venue || ""}, ${featuredShow?.location || ""}`;
   if (!siteData.site?.isShowDayPreview) assertIncludes(featured, escapeHtml(heading), "Featured-show heading matches generated site data");
 
-  const renderedLabels = [...featured.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
+  const featuredCard = featured.split('<div class="setlist-grid current-stop-setlists">')[0];
+  const renderedLabels = [...featuredCard.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
   if (siteData.site?.isShowDayPreview) {
-    record("Show-day preview is intentionally not rendered", featured === "");
+    assertIncludes(featured, "<h2>CURRENT TOUR STOP</h2>", "Show-day section is labeled Current Tour Stop");
+    assertIncludes(featured, escapeHtml(heading), "Tonight's blank setlist is featured first");
+    record("Tonight's setlist remains blank until songs are posted", renderedLabels.length === 0, renderedLabels.join(", "));
 
     const completedHeading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
-    record("Latest completed show moves into the setlist archive", Boolean(cardHtml(sectionHtml(html, "setlists"), escapeHtml(completedHeading))), completedHeading);
+    record("Latest completed show from the tour stop stays above the Song List", Boolean(cardHtml(featured, escapeHtml(completedHeading))), completedHeading);
+    record("Top tour-stop show is not duplicated in the lower archive", !cardHtml(sectionHtml(html, "setlists"), escapeHtml(completedHeading)), completedHeading);
   } else {
     assertIncludes(featured, "<h2>LATEST SETLIST</h2>", "Completed featured show is labeled Latest Setlist");
     const sourceSegueCount = sum((latestShow?.sets || []).map((set) => (set.songs.match(/\s>\s/g) || []).length));
