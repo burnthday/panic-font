@@ -60,6 +60,7 @@ Letter spacing is always `0`. Never use negative letter spacing to force a fit. 
 - Song columns collapse from four to two to one. Titles remain one line and are fitted without hiding the tour count.
 - Desktop navigation becomes the compact menu below 560px.
 - The older setlist archive remains open on desktop and collapses behind one clearly labeled disclosure on mobile. Do not add accordions to Tour Dates, Tour Stats, or primary current-show information.
+- Mobile Tour Dates use a two-column date/content layout; status sits on its own line below the venue so long locations can never compete with it.
 - No horizontal page overflow is acceptable at 320px or wider.
 
 ## Color

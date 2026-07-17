@@ -4717,10 +4717,16 @@ sup {
   }
 
   .tour-dates li {
-    grid-template-columns: 78px minmax(0, 1fr) auto;
+    grid-template-columns: 78px minmax(0, 1fr);
     gap: 4px 10px;
     align-items: start;
     padding: 12px 0;
+  }
+
+  .tour-dates li strong,
+  .tour-dates li span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .tour-dates li span {
@@ -4728,9 +4734,10 @@ sup {
   }
 
   .tour-dates li em {
-    grid-column: 3;
-    grid-row: 1 / span 2;
-    align-self: center;
+    grid-column: 2;
+    grid-row: 3;
+    justify-self: start;
+    margin-top: 3px;
   }
 
   .archive-list li {
