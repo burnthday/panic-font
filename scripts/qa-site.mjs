@@ -26,7 +26,7 @@ async function main() {
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml, siteData);
-  checkLegacyPages();
+  await checkLegacyPages(siteData);
   await checkLocalAssets(allHtml);
 
   const failed = checks.filter((check) => !check.passed);
@@ -299,7 +299,7 @@ function checkNavigation(html, siteData) {
   assertIncludes(html, "The Widespread Panic Spread Sheet", "Footer keeps Spread Sheet title");
 }
 
-async function checkLegacyPages() {
+async function checkLegacyPages(siteData) {
   const [rumors, tourReview, shelf] = await Promise.all([
     readText("dist/p/rumors.html"),
     readText("dist/p/burnthdays-widespread-panic-tours-in.html"),
@@ -313,6 +313,14 @@ async function checkLegacyPages() {
   record("Rumors page does not use invented placeholder copy", !/I am not trying to become a rumor mill/i.test(rumorsText));
   record("Tour In Review page uses imported legacy copy", /Burnthday's Widespread Panic Tour In Review/.test(tourText));
   record("Shelf page uses imported shelf copy", /The Shelf/i.test(shelfText) && /Purgatory/i.test(shelfText));
+  assertIncludes(shelf, `<h2>${siteData.site.year} Shelf Update</h2>`, "Shelf page leads with the current generated update");
+  assertIncludes(shelf, `${siteData.rules.rotationSlpLimit}</strong><span>show cutoff</span>`, "Shelf page states the active cutoff");
+  assertIncludes(shelf, `${siteData.boards.shelfOriginals.length + siteData.boards.shelfCovers.length}</strong><span>on The Shelf</span>`, "Shelf page count matches the generated Shelf");
+  assertIncludes(shelf, `${siteData.boards.purgatoryOriginals.length + siteData.boards.purgatoryCovers.length}</strong><span>in Purgatory</span>`, "Shelf page count matches generated Purgatory");
+  for (const song of siteData.boards.shelfWatch || []) {
+    assertIncludes(shelf, `${song.effectiveSlp} shows since ${song.lastDisplay}`, `Shelf page Watch matches ${song.title}`);
+  }
+  record("Shelf page preserves the historical updates after the current update", indexOf(shelf, `${siteData.site.year} Shelf Update`) < indexOf(shelf, "Previous Shelf Updates") && /The Shelf Updated: April 1st, 2019/.test(shelfText));
   for (const [label, html] of [["Rumors", rumors], ["Tour In Review", tourReview], ["The Shelf", shelf]]) {
     assertIncludes(html, 'document.querySelectorAll(".jump-links a, .mobile-nav-links a")', `${label} page initializes its active navigation state`);
     assertIncludes(html, 'path === "/index" ? "/" : path', `${label} page normalizes the legacy homepage URL`);

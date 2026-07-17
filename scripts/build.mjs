@@ -1331,6 +1331,10 @@ function renderShelfInfoPage(data, oldShelfEntry) {
   const year = data.site.year;
   const movedFromShelf = data.catalog.filter((row) => row.playedFromShelf).sort(byTitle);
   const movedFromPurgatory = data.catalog.filter((row) => row.playedFromPurgatory).sort(byTitle);
+  const shelf = [...data.boards.shelfOriginals, ...data.boards.shelfCovers];
+  const purgatory = [...data.boards.purgatoryOriginals, ...data.boards.purgatoryCovers];
+  const watch = data.boards.shelfWatch || [];
+  const latestDate = data.site.latestShow?.date || "the latest posted show";
   const description = `Burnthday's Widespread Panic Shelf and Purgatory notes for the ${year} tour.`;
 
   return `<!doctype html>
@@ -1354,13 +1358,30 @@ function renderShelfInfoPage(data, oldShelfEntry) {
           <p>The Widespread Panic Spread Sheet</p>
           <h1>The Shelf</h1>
         </header>
-        ${oldShelfEntry?.content ? `<div class="archive-content">${oldShelfEntry.content}</div>` : ""}
+        <section class="shelf-current-update">
+          <h2>${escapeHtml(String(year))} Shelf Update</h2>
+          <div class="shelf-explainer">
+            <p>The Shelf used to be something I could clean up between tours. One tour can last a full year now, so that does not really work anymore. For the current sheet, a song moves to The Shelf after 200 shows without a play. Purgatory is still for songs they played once and never came back to.</p>
+            <p>This is no longer a list I move around by feel. It updates from the setlist ledger after every posted show. Through ${escapeHtml(latestDate)}, there are ${formatNumber(shelf.length)} songs on The Shelf and ${formatNumber(purgatory.length)} in Purgatory.</p>
+          </div>
+          <div class="shelf-current-counts" aria-label="Current Shelf totals">
+            <div><strong>${formatNumber(shelf.length)}</strong><span>on The Shelf</span></div>
+            <div><strong>${formatNumber(purgatory.length)}</strong><span>in Purgatory</span></div>
+            <div><strong>${formatNumber(data.rules.rotationSlpLimit)}</strong><span>show cutoff</span></div>
+          </div>
+          <div class="movement-block shelf-watch-block">
+            <h3>Shelf Watch</h3>
+            <p>These are the closest songs still on the possibilities sheet. Nothing in the current rotation has crossed 200.</p>
+            <ul class="movement-list shelf-page-watch">${watch.map((row) => `<li><strong>${escapeHtml(row.title)}</strong><span>${formatNumber(row.effectiveSlp)} shows since ${escapeHtml(row.lastDisplay)}; ${formatNumber(Math.max(0, data.rules.rotationSlpLimit - row.effectiveSlp))} to The Shelf.</span></li>`).join("")}</ul>
+          </div>
+        </section>
         <section class="shelf-movement">
           <h2>${escapeHtml(String(year))} Movement</h2>
           ${renderMovementList("Off The Shelf", movedFromShelf, "None.")}
           ${renderMovementList("Out Of Purgatory", movedFromPurgatory, "None.")}
           <p class="shelf-page-links"><a href="/#shelf">Current Shelf</a> <span>|</span> <a href="/#purgatory">Current Purgatory</a> <span>|</span> <a href="/">Current Song List</a></p>
         </section>
+        ${oldShelfEntry?.content ? `<section class="legacy-shelf-notes"><h2>Previous Shelf Updates</h2><p class="legacy-note">The original Shelf notes and updates are preserved below.</p><div class="archive-content">${oldShelfEntry.content}</div></section>` : ""}
       </article>
     </main>
     ${renderSiteFooter(data)}
@@ -3620,6 +3641,47 @@ sup {
   margin: 0 0 14px;
 }
 
+.shelf-current-update h2 {
+  margin: 0 0 14px;
+  font-family: var(--ui-font);
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.shelf-current-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 22px 0 8px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.shelf-current-counts div {
+  display: grid;
+  gap: 3px;
+  padding: 15px 16px 16px 0;
+}
+
+.shelf-current-counts div + div {
+  border-left: 1px solid var(--line);
+  padding-left: 16px;
+}
+
+.shelf-current-counts strong {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.shelf-current-counts span,
+.shelf-watch-block > p {
+  color: var(--muted);
+}
+
+.shelf-page-watch li {
+  grid-template-columns: minmax(180px, auto) minmax(0, 1fr);
+}
+
 .shelf-page-links {
   color: var(--muted);
 }
@@ -4043,6 +4105,20 @@ sup {
 }
 
 @media (max-width: 720px) {
+  .shelf-current-counts {
+    grid-template-columns: 1fr;
+  }
+
+  .shelf-current-counts div + div {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding-left: 0;
+  }
+
+  .shelf-page-watch li {
+    grid-template-columns: 1fr;
+  }
+
   .nick-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
