@@ -248,11 +248,18 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(oakland, "Airplane &gt; Rebirtha &gt; Space Wrangler", "Oakland I preserves the opening segues");
   assertIncludes(oakland, "Gradle &gt; You Got Yours &gt; Lawyers Guns And Money", "Oakland I preserves the first-set closing segues");
   assertIncludes(oakland, "Mercy &gt; Good Morning Little School Girl &gt; King Baby &gt; Fishwater", "Oakland I preserves the second-set closing segues");
-  assertIncludes(oakland, "[Entire show with Nick Johnson on guitar]", "Oakland I keeps the full-show Nick note bracketed");
-  assertIncludes(oakland, "[Last &#39;Time Zones&#39; - 12/30/23, 84 shows]", "Oakland I calculates Time Zones SLP from the verified prior-play ledger");
+  assertIncludes(oakland, "[Entire show with Nick Johnson on guitar; Last &#39;Time Zones&#39; - 12/30/23, 84 shows]", "Oakland I combines the Nick and LTP notes in one bracket");
 }
 
 function checkGuestAnnotations(homeHtml, review2025Html) {
+  const bracketLines = [homeHtml, review2025Html]
+    .flatMap((html) => [...html.matchAll(/<p class="notes">([\s\S]*?)<\/p>/g)])
+    .map((match) => stripTags(match[1]));
+  const malformedBracketLines = bracketLines.filter((line) => (line.match(/\[/g) || []).length !== 1 || (line.match(/\]/g) || []).length !== 1);
+  record("Every setlist note line uses one bracket pair", malformedBracketLines.length === 0, malformedBracketLines.join("\n"));
+  const misorderedNickLines = bracketLines.filter((line) => /Nick Johnson/i.test(line) && !/^\s*\[Entire show with Nick Johnson on guitar(?:;|\])/i.test(line));
+  record("Nick Johnson note always leads the bracketed note line", misorderedNickLines.length === 0, misorderedNickLines.join("\n"));
+
   const atlanta = cardHtml(review2025Html, "12/30/25 The Fox Theatre, Atlanta, GA");
   for (const title of ["Mercy", "Bust it Big", "Chilly Water", "Pickin&#39; Up The Pieces", "Climb To Safety"]) {
     assertIncludes(atlanta, `${title}<sup class="guest-sup">1</sup>`, `12/30/25 numbers Billy Strings sit-in on ${decodeHtml(title)}`);

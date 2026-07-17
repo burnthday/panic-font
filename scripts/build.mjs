@@ -2414,9 +2414,21 @@ function renderSetlistGuestNotes(annotations) {
 
 function renderSetlistNotes(annotations) {
   if (!annotations.bracketNotes.length) return "";
-  return `<p class="notes">${annotations.bracketNotes.map((note) => {
-    return `<span>[${escapeHtml(note.text)}]</span>`;
-  }).join(" ")}</p>`;
+  const normalizedNotes = annotations.bracketNotes.map((note) => ({ text: normalizeBracketNote(note.text) }));
+  const orderedNotes = normalizedNotes.sort((left, right) => {
+    const leftIsEntireShow = /^entire show with Nick Johnson on guitar$/i.test(left.text);
+    const rightIsEntireShow = /^entire show with Nick Johnson on guitar$/i.test(right.text);
+    return Number(rightIsEntireShow) - Number(leftIsEntireShow);
+  });
+  return `<p class="notes"><span>[${orderedNotes.map((note) => escapeHtml(note.text)).join("; ")}]</span></p>`;
+}
+
+function normalizeBracketNote(value) {
+  const text = clean(value);
+  if (/^(?:entire show\s+)?with Nick Johnson on (?:lead )?guitar$/i.test(text)) {
+    return "Entire show with Nick Johnson on guitar";
+  }
+  return text;
 }
 
 function splitDisplaySetSongs(value) {
