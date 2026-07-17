@@ -1742,7 +1742,15 @@ function renderFitScriptBody() {
           if (!text) return;
 
           song.style.removeProperty("--song-font-size");
+          const baseSize = Number.parseFloat(window.getComputedStyle(song).fontSize) || 22;
+          const minimumSize = song.classList.contains("is-hand-addon") ? 15 : 16;
           const fits = () => text.scrollWidth <= text.clientWidth + 1 && song.scrollWidth <= song.clientWidth + 1;
+          let fittedSize = baseSize;
+
+          while (!fits() && fittedSize > minimumSize) {
+            fittedSize = Math.max(minimumSize, fittedSize - 0.5);
+            song.style.setProperty("--song-font-size", fittedSize + "px");
+          }
 
           song.classList.toggle("is-overflowing", !fits());
         });
@@ -2006,23 +2014,46 @@ function buildSetlistAnnotations(show) {
   const guestNotes = [];
   const bracketNotes = [];
   const songTitles = [...new Set((show.sets || []).flatMap((set) => set.songTitles || splitDisplaySetSongs(set.songs)))];
+  const inlineMarkers = collectInlineGuestMarkers(show);
+  const markersBySong = new Map([...inlineMarkers.markersBySong].map(([key, markers]) => [key, [...markers]]));
+  const reservedMarkers = new Set(inlineMarkers.allMarkers);
+  const claimedMarkers = new Set();
 
   for (const note of show.notes || []) {
+    const numberedGuests = parseNumberedGuestNotes(note);
+    if (numberedGuests.length) {
+      for (const guest of numberedGuests) {
+        guestNotes.push(guest);
+        claimedMarkers.add(guest.marker);
+        reservedMarkers.add(guest.marker);
+      }
+      continue;
+    }
+
     const guest = parseGuestNote(note, songTitles);
     if (guest) {
-      const marker = String(guestNotes.length + 1);
+      const matchingInlineMarkers = [...new Set(guest.songKeys.flatMap((key) => markersBySong.get(key) || []))]
+        .filter((marker) => !claimedMarkers.has(marker));
+      const marker = matchingInlineMarkers.length === 1
+        ? matchingInlineMarkers[0]
+        : nextGuestMarker(reservedMarkers);
+
       guestNotes.push({ ...guest, marker });
+      claimedMarkers.add(marker);
+      reservedMarkers.add(marker);
+
+      for (const key of guest.songKeys) addGuestMarker(markersBySong, key, marker);
+      continue;
+    }
+
+    const standaloneGuest = normalizeGuestCredit(note);
+    const unclaimedInlineMarkers = [...inlineMarkers.allMarkers].filter((marker) => !claimedMarkers.has(marker));
+    if (standaloneGuest && unclaimedInlineMarkers.length === 1) {
+      const marker = unclaimedInlineMarkers[0];
+      guestNotes.push({ marker, text: standaloneGuest, songKeys: [] });
+      claimedMarkers.add(marker);
     } else {
       bracketNotes.push({ text: note });
-    }
-  }
-
-  const markersBySong = new Map();
-  for (const guest of guestNotes) {
-    for (const key of guest.songKeys) {
-      const markers = markersBySong.get(key) || [];
-      markers.push(guest.marker);
-      markersBySong.set(key, markers);
     }
   }
 
@@ -2032,21 +2063,92 @@ function buildSetlistAnnotations(show) {
 function parseGuestNote(note, songTitles) {
   const text = clean(note);
   if (!text || /^entire show\b/i.test(text)) return null;
-  const match = text.match(/^(.+?)\s+with\s+([A-Z][^;]+?\s+on\s+[^;]+)$/);
+  const match = text.match(/^(.+?)\s+(?:with|w\/|wth)\s*(.+)$/i);
   if (!match) return null;
 
   const titlePart = match[1].replace(/^["']|["']$/g, "");
-  const titleKey = normalizeTitle(titlePart);
+  const guestText = normalizeGuestCredit(`with ${match[2]}`);
+  if (!guestText) return null;
+
+  const titleKey = normalizeTitleCollection(titlePart);
   const songKeys = songTitles
     .map((title) => ({ title, key: normalizeTitle(title) }))
     .filter(({ key }) => key && (titleKey.includes(key) || key.includes(titleKey)))
     .map(({ key }) => key);
 
-  return songKeys.length ? { songKeys: [...new Set(songKeys)], text: `with ${match[2].trim()}` } : null;
+  return songKeys.length ? { songKeys: [...new Set(songKeys)], text: guestText } : null;
+}
+
+function parseNumberedGuestNotes(note) {
+  const text = clean(note);
+  const matches = [...text.matchAll(/([⁰¹²³⁴⁵⁶⁷⁸⁹]+)\s*/g)];
+  if (!matches.length || matches[0].index !== 0) return [];
+
+  const guests = matches.map((match, index) => {
+    const start = match.index + match[0].length;
+    const end = matches[index + 1]?.index ?? text.length;
+    const credit = normalizeGuestCredit(text.slice(start, end));
+    return credit ? { marker: superscriptToDigits(match[1]), text: credit, songKeys: [] } : null;
+  });
+
+  return guests.every(Boolean) ? guests : [];
+}
+
+function normalizeGuestCredit(value) {
+  const text = clean(value).replace(/^w\/\s*/i, "with ").replace(/^with\s+/i, "with ");
+  if (!/^with\s+/i.test(text)) return "";
+  if (!/\b(?:guitars?|vocals?|keys?|keyboards?|percussion|mandolin|fiddle|horns?|sax(?:ophone)?|pedal steel|drums?|bass)\b/i.test(text)) return "";
+  return `with ${text.replace(/^with\s+/i, "").trim()}`;
+}
+
+function collectInlineGuestMarkers(show) {
+  const markersBySong = new Map();
+  const allMarkers = new Set();
+
+  for (const set of show.sets || []) {
+    const display = String(set.songs || "");
+    const lowerDisplay = display.toLowerCase();
+    let cursor = 0;
+
+    for (const title of set.songTitles || []) {
+      const index = lowerDisplay.indexOf(String(title).toLowerCase(), cursor);
+      if (index < 0) break;
+
+      const markerMatch = display.slice(index + title.length).match(/^([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/);
+      if (markerMatch) {
+        const marker = superscriptToDigits(markerMatch[1]);
+        const key = normalizeTitle(title);
+        addGuestMarker(markersBySong, key, marker);
+        allMarkers.add(marker);
+      }
+
+      cursor = index + title.length + (markerMatch?.[0].length || 0);
+    }
+  }
+
+  return { markersBySong, allMarkers };
+}
+
+function addGuestMarker(markersBySong, key, marker) {
+  if (!key || !marker) return;
+  const markers = markersBySong.get(key) || [];
+  if (!markers.includes(marker)) markers.push(marker);
+  markersBySong.set(key, markers);
+}
+
+function nextGuestMarker(reservedMarkers) {
+  let marker = 1;
+  while (reservedMarkers.has(String(marker))) marker += 1;
+  return String(marker);
+}
+
+function superscriptToDigits(value) {
+  const digits = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9" };
+  return [...String(value || "")].map((character) => digits[character] || "").join("");
 }
 
 function renderSetSongs(set, annotations) {
-  if (!(set.songTitles || []).length) return escapeHtml(set.songs || "");
+  if (!(set.songTitles || []).length) return renderRawSetDisplay(set.songs || "");
 
   const display = String(set.songs || "");
   const lowerDisplay = display.toLowerCase();
@@ -2055,21 +2157,31 @@ function renderSetSongs(set, annotations) {
 
   for (const title of set.songTitles || []) {
     const index = lowerDisplay.indexOf(String(title).toLowerCase(), cursor);
-    if (index < 0) return escapeHtml(set.songs || "");
+    if (index < 0) return renderRawSetDisplay(set.songs || "");
 
     html += escapeHtml(display.slice(cursor, index));
-    html += renderSetSongTitle(display.slice(index, index + title.length), annotations, title);
-    cursor = index + title.length;
+    const titleEnd = index + title.length;
+    const inlineMarkerMatch = display.slice(titleEnd).match(/^([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/);
+    const inlineMarkers = inlineMarkerMatch ? [superscriptToDigits(inlineMarkerMatch[1])] : [];
+    html += renderSetSongTitle(display.slice(index, titleEnd), annotations, title, inlineMarkers);
+    cursor = titleEnd + (inlineMarkerMatch?.[0].length || 0);
   }
 
   html += escapeHtml(display.slice(cursor));
   return html;
 }
 
-function renderSetSongTitle(displayTitle, annotations, canonicalTitle = displayTitle) {
-  const markers = annotations.markersBySong.get(normalizeTitle(canonicalTitle)) || [];
+function renderSetSongTitle(displayTitle, annotations, canonicalTitle = displayTitle, inlineMarkers = []) {
+  const markers = [...new Set([...(annotations.markersBySong.get(normalizeTitle(canonicalTitle)) || []), ...inlineMarkers])];
   const markerText = markers.length ? `<sup class="guest-sup">${escapeHtml(markers.join(","))}</sup>` : "";
   return `${escapeHtml(displayTitle)}${markerText}`;
+}
+
+function renderRawSetDisplay(value) {
+  return String(value || "").split(/([⁰¹²³⁴⁵⁶⁷⁸⁹]+)/).map((part) => {
+    if (/^[⁰¹²³⁴⁵⁶⁷⁸⁹]+$/.test(part)) return `<sup class="guest-sup">${escapeHtml(superscriptToDigits(part))}</sup>`;
+    return escapeHtml(part);
+  }).join("");
 }
 
 function renderSetlistGuestNotes(annotations) {
@@ -2529,13 +2641,13 @@ main {
 .songs.grid4 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  column-gap: clamp(46px, 7vw, 144px);
+  column-gap: clamp(24px, 3.5vw, 68px);
 }
 
 .songs.grid3 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: clamp(34px, 6vw, 116px);
+  column-gap: clamp(22px, 3vw, 56px);
 }
 
 .songs .col {
@@ -2545,7 +2657,7 @@ main {
 }
 
 .rotation-song {
-  --song-font-size: 24px;
+  --song-font-size: 22px;
   display: flex;
   align-items: baseline;
   max-width: 100%;
@@ -2601,6 +2713,8 @@ main {
 
 .rotation-song sup {
   flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
 }
 
 .marker-mask {
@@ -3801,26 +3915,39 @@ function rowBelongsToYear(row, year) {
     .some((date) => Number(date.slice(0, 4)) === Number(year));
 }
 
-function normalizeTitle(title) {
-  const normalized = clean(title)
+const NORMALIZED_TITLE_ALIASES = {
+  bowleggedwomanknockkneedman: "bowleggedwoman",
+  conradthecaterpillar: "conrad",
+  heroesdavidbowie: "heroesdb",
+  jamaisvutheworldhaschanged: "jamaisvu",
+  knockinaroundthezoo: "knockingroundthezoo",
+  nobodysfault: "nobodysfaultbutmine",
+  runnindownadream: "runningdownadream",
+  thismustbetheplacenavemelody: "thismustbetheplacenaivemelody",
+  wrm: "wurm"
+};
+
+function normalizeTitleBase(title) {
+  return clean(title)
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\u00d7/g, "x")
     .replace(/&/g, "and")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "");
-  const aliases = {
-    bowleggedwomanknockkneedman: "bowleggedwoman",
-    conradthecaterpillar: "conrad",
-    heroesdavidbowie: "heroesdb",
-    jamaisvutheworldhaschanged: "jamaisvu",
-    knockinaroundthezoo: "knockingroundthezoo",
-    nobodysfault: "nobodysfaultbutmine",
-    runnindownadream: "runningdownadream",
-    thismustbetheplacenavemelody: "thismustbetheplacenaivemelody",
-    wrm: "wurm"
-  };
-  return aliases[normalized] || normalized;
+}
+
+function normalizeTitle(title) {
+  const normalized = normalizeTitleBase(title);
+  return NORMALIZED_TITLE_ALIASES[normalized] || normalized;
+}
+
+function normalizeTitleCollection(value) {
+  let normalized = normalizeTitleBase(value);
+  for (const [alias, canonical] of Object.entries(NORMALIZED_TITLE_ALIASES)) {
+    normalized = normalized.replaceAll(alias, canonical);
+  }
+  return normalized;
 }
 
 function titleCase(value) {

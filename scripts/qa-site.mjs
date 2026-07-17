@@ -9,9 +9,10 @@ const distDir = path.join(root, "dist");
 const checks = [];
 
 async function main() {
-  const [homeHtml, siteData] = await Promise.all([
+  const [homeHtml, siteData, review2025Html] = await Promise.all([
     readText("dist/index.html"),
-    readJson("dist/data/site-data.json")
+    readJson("dist/data/site-data.json"),
+    readText("dist/2025/12/widespread-panic-2025-tour-in-review.html")
   ]);
   const allHtmlFiles = await listFiles(distDir, (filePath) => filePath.endsWith(".html"));
   const allHtml = await Promise.all(allHtmlFiles.map((filePath) => readFile(filePath, "utf8")));
@@ -19,7 +20,9 @@ async function main() {
   checkNoPublicPanicStreamLinks(allHtmlFiles, allHtml);
   checkCanonicalSongNames(allHtmlFiles, allHtml);
   checkCorePageState(homeHtml, siteData);
+  checkTourSongCounts(homeHtml, siteData);
   checkLatestSetlist(homeHtml);
+  checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml);
   checkLegacyPages();
   await checkLocalAssets(allHtml);
@@ -94,6 +97,20 @@ function checkCorePageState(html, siteData) {
   assertSongHtml(html, "FREE SOMEHOW", ["<sup>2</sup>"], "Song List Free Somehow shows current tour count");
 }
 
+function checkTourSongCounts(html, siteData) {
+  const songList = sectionHtml(html, "song-list");
+  const missing = (siteData.catalog || [])
+    .filter((song) => song.playedThisTour && song.tourCount > 0)
+    .filter((song) => !songChunks(songList, song.title.toUpperCase()).some((chunk) => chunk.includes(`<sup>${song.tourCount}</sup>`)))
+    .map((song) => `${song.title} (${song.tourCount})`);
+
+  record(
+    "Every song played this tour keeps its tiny play count",
+    missing.length === 0,
+    missing.slice(0, 20).join("\n")
+  );
+}
+
 function checkLatestSetlist(html) {
   const latest = sectionHtml(html, "latest-setlist");
   assertIncludes(latest, "07/11/2026 Hayden Homes Amphitheater, Bend, OR", "Latest setlist is 07/11/2026 Bend");
@@ -106,6 +123,39 @@ function checkLatestSetlist(html) {
 
   const pTags = latest.match(/<p><strong>(?:1|2|E):<\/strong>[\s\S]*?<\/p>/g) || [];
   record("Latest setlist has one line each for 1, 2, and E", pTags.length === 3);
+}
+
+function checkGuestAnnotations(homeHtml, review2025Html) {
+  const atlanta = cardHtml(review2025Html, "12/30/25 The Fox Theatre, Atlanta, GA");
+  for (const title of ["Mercy", "Bust it Big", "Chilly Water", "Pickin&#39; Up The Pieces", "Climb To Safety"]) {
+    assertIncludes(atlanta, `${title}<sup class="guest-sup">1</sup>`, `12/30/25 numbers Billy Strings sit-in on ${decodeHtml(title)}`);
+  }
+  assertIncludes(atlanta, '<sup class="guest-sup">1</sup> with Billy Strings on Guitar', "12/30/25 has keyed Billy Strings guest note");
+  record("12/30/25 Billy Strings sit-in is not bracketed", !/<p class="notes">[\s\S]*Billy Strings/i.test(atlanta));
+
+  const portChester = cardHtml(review2025Html, "11/22/25 The Capitol Theatre, Port Chester, NY");
+  for (const title of ["Good Morning Little School Girl", "Porch Song", "Cortez the Killer", "Runnin&#39; Down A Dream"]) {
+    assertIncludes(portChester, `${title}<sup class="guest-sup">1</sup>`, `11/22/25 numbers Warren Haynes sit-in on ${decodeHtml(title)}`);
+  }
+  assertIncludes(portChester, '<sup class="guest-sup">1</sup> with Warren Haynes on guitar and vocals', "11/22/25 normalizes the Warren Haynes guest credit");
+
+  const atlanticCity = cardHtml(review2025Html, "02/15/25 Hard Rock Live at Etess Arena, Atlantic City, NJ");
+  assertIncludes(atlanticCity, 'Party At Your Mama&#39;s House<sup class="guest-sup">1</sup>', "Legacy 2025 inline guest marker renders as a real superscript");
+  assertIncludes(atlanticCity, 'I&#39;m So Glad<sup class="guest-sup">8</sup>', "Legacy 2025 marker sequence reaches guest number 8");
+  assertIncludes(atlanticCity, '<sup class="guest-sup">8</sup> with John Keane on electric guitar, Jason Crosby on keys', "Legacy 2025 combined guest credits stay keyed");
+
+  const playa = cardHtml(homeHtml, "01/23/2026 Hard Rock Hotel Riviera Maya, Riviera Maya, Quintana Roo");
+  assertIncludes(playa, 'And It Stoned Me<sup class="guest-sup">1</sup>', "01/23/26 numbers Sierra Hull sit-in songs");
+  assertIncludes(playa, 'Second Skin<sup class="guest-sup">2</sup>', "01/23/26 numbers Adam MacDougall sit-in songs");
+  assertIncludes(playa, '<sup class="guest-sup">1</sup> with Sierra Hull', "01/23/26 has keyed Sierra Hull note");
+  assertIncludes(playa, '<sup class="guest-sup">2</sup> with Adam MacDougall', "01/23/26 has keyed Adam MacDougall note");
+
+  const unkeyedGuestCredits = [homeHtml, review2025Html]
+    .flatMap((html) => [...html.matchAll(/<p class="notes">([\s\S]*?)<\/p>/g)])
+    .flatMap((match) => [...stripTags(match[1]).matchAll(/\[([^\]]+)\]/g)].map((note) => note[1]))
+    .filter((note) => /(?:\bwith\b|\bw\/|\bwth\b).*(?:guitar|keys?|keyboards?|percussion|vocals?|mandolin|fiddle|horns?|sax(?:ophone)?|drums?|bass)/i.test(note))
+    .filter((note) => !/^(?:entire show\s+)?with Nick Johnson\b/i.test(note));
+  record("No song-specific guest credit remains inside brackets", unkeyedGuestCredits.length === 0, unkeyedGuestCredits.join("\n"));
 }
 
 function checkNavigation(html) {
@@ -218,10 +268,31 @@ function songChunks(html, title) {
 }
 
 function sectionHtml(html, id) {
-  const start = indexOf(html, `id="${id}"`);
+  const idIndex = indexOf(html, `id="${id}"`);
+  if (idIndex < 0) return "";
+
+  const start = html.lastIndexOf("<section", idIndex);
   if (start < 0) return "";
-  const next = html.indexOf('<section class="', start + 1);
-  return next > start ? html.slice(start, next) : html.slice(start);
+
+  const tagPattern = /<\/?section\b[^>]*>/g;
+  tagPattern.lastIndex = start;
+  let depth = 0;
+  let match;
+
+  while ((match = tagPattern.exec(html))) {
+    depth += match[0].startsWith("</") ? -1 : 1;
+    if (depth === 0) return html.slice(start, tagPattern.lastIndex);
+  }
+
+  return html.slice(start);
+}
+
+function cardHtml(html, heading) {
+  const headingIndex = html.indexOf(`<h3>${heading}</h3>`);
+  if (headingIndex < 0) return "";
+  const start = html.lastIndexOf('<article class="setlist-card', headingIndex);
+  const end = html.indexOf("</article>", headingIndex);
+  return start >= 0 && end > start ? html.slice(start, end + "</article>".length) : "";
 }
 
 function sectionByClass(html, className) {
