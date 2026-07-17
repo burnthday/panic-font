@@ -8,8 +8,9 @@ const root = path.resolve(__dirname, "..");
 const checks = [];
 
 async function main() {
-  const [freshness, redirects, headers, sitemap, workflow, packageJson] = await Promise.all([
+  const [freshness, siteData, redirects, headers, sitemap, workflow, packageJson] = await Promise.all([
     readJson("dist/data/freshness.json"),
+    readJson("dist/data/site-data.json"),
     readText("dist/_redirects"),
     readText("dist/_headers"),
     readText("dist/sitemap.xml"),
@@ -17,7 +18,7 @@ async function main() {
     readJson("package.json")
   ]);
 
-  checkFreshness(freshness);
+  checkFreshness(freshness, siteData);
   await checkCoreRoutes();
   checkRedirects(redirects);
   checkHeaders(headers);
@@ -35,14 +36,22 @@ async function main() {
   if (failed.length) process.exitCode = 1;
 }
 
-function checkFreshness(freshness) {
+function checkFreshness(freshness, siteData) {
   record("Freshness report has generatedAt", isIsoDate(freshness.generatedAt), freshness.generatedAt);
   record("Freshness report names 2026 tour", freshness.site?.year === 2026 && /Widespread Panic 2026 Tour/.test(freshness.site?.title || ""), JSON.stringify(freshness.site));
-  record("Board show is Oakland, CA I", freshness.site?.boardShow?.isoDate === "2026-07-16" && freshness.site?.boardShow?.location === "Oakland, CA" && freshness.site?.boardShow?.runLabel === "I", JSON.stringify(freshness.site?.boardShow));
-  record("Latest setlist is Bend, OR on 2026-07-11", freshness.site?.latestSetlist?.isoDate === "2026-07-11" && freshness.site?.latestSetlist?.location === "Bend, OR", JSON.stringify(freshness.site?.latestSetlist));
-  record("Freshness totals match current tour", freshness.totals?.currentTourSongs === 155 && freshness.totals?.currentTourPlays === 490 && freshness.totals?.postedSetlists === 25 && freshness.totals?.tourDates === 42, JSON.stringify(freshness.totals));
+  record("Freshness board show matches generated site data", sameShow(freshness.site?.boardShow, siteData.site?.boardShow), JSON.stringify(freshness.site?.boardShow));
+  record("Freshness latest setlist matches generated site data", sameShow(freshness.site?.latestSetlist, siteData.site?.latestShow), JSON.stringify(freshness.site?.latestSetlist));
+  record("Freshness totals match generated tour data", sameTotals(freshness.totals, siteData.totals), JSON.stringify(freshness.totals));
   record("Prior song stats are strict publish data", freshness.integrity?.strictPriorStats === true && freshness.integrity?.noEcLagRowsInPublishData === true && freshness.integrity?.priorStatsMissingRows === 0, JSON.stringify(freshness.integrity));
-  record("Freshness report documents operator commands", Boolean(freshness.commands?.localQa && freshness.commands?.postShowLocal && freshness.commands?.strictPublishRefresh), JSON.stringify(freshness.commands));
+  record("Freshness report documents operator commands", Boolean(freshness.commands?.localQa && freshness.commands?.postShowLocal && freshness.commands?.automaticPublishRefresh && freshness.commands?.strictReconcile), JSON.stringify(freshness.commands));
+}
+
+function sameShow(left, right) {
+  return Boolean(left && right) && ["isoDate", "venue", "location", "runLabel"].every((key) => (left[key] || "") === (right[key] || ""));
+}
+
+function sameTotals(left, right) {
+  return Boolean(left && right) && ["currentTourSongs", "currentTourPlays", "postedSetlists", "tourDates"].every((key) => left[key] === right[key]);
 }
 
 async function checkCoreRoutes() {
@@ -107,7 +116,10 @@ function checkSitemap(sitemap) {
 
 function checkAutomation(workflow, packageJson) {
   record("QA script includes production readiness", /validate:production/.test(packageJson.scripts?.qa || ""), packageJson.scripts?.qa || "");
-  record("Deploy workflow runs strict refresh before publishing", /npm run refresh:strict/.test(workflow), workflow);
+  record("Deploy workflow runs the EC-independent automatic refresh", /npm run refresh:automatic/.test(workflow), workflow);
+  record("Scheduled deploy does not require Everyday Companion", !/refresh:strict|import:playstats|import:ec-prior-stats/.test(workflow), workflow);
+  record("Automatic refresh stages data before replacing the ledger", /refresh-automatic\.mjs/.test(packageJson.scripts?.["refresh:automatic"] || ""), packageJson.scripts?.["refresh:automatic"] || "");
+  record("QA and deploy wait for a complete refresh", (workflow.match(/if: steps\.refresh\.outputs\.ready == 'true'/g) || []).length === 2, workflow);
   record("Deploy workflow runs full QA before publishing", /npm run qa/.test(workflow), workflow);
   record("Deploy workflow does not allow critical data imports to fail open", !/continue-on-error:\s*true/.test(workflow), workflow);
   record("Deploy workflow still targets Cloudflare Pages", /pages deploy dist --project-name burnthday/.test(workflow), workflow);

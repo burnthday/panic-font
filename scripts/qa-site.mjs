@@ -21,7 +21,7 @@ async function main() {
   checkCanonicalSongNames(allHtmlFiles, allHtml);
   checkCorePageState(homeHtml, siteData);
   checkTourSongCounts(homeHtml, siteData);
-  checkLatestSetlist(homeHtml);
+  checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml);
   checkLegacyPages();
@@ -69,7 +69,8 @@ function checkNoPublicPanicStreamLinks(files, htmlByFile) {
 function checkCorePageState(html, siteData) {
   assertIncludes(html, '<section class="latest-setlist" id="latest-setlist">', "Homepage has latest-setlist section");
   assertIncludes(html, '<section class="laminate primary-board" id="song-list">', "Homepage has song-list laminate");
-  assertIncludes(html, '<h1>OAKLAND, CA I</h1>', "Song List title is next show: OAKLAND, CA I");
+  const boardTitle = [siteData.site?.boardShow?.location, siteData.site?.boardShow?.runLabel].filter(Boolean).join(" ").toUpperCase();
+  assertIncludes(html, `<h1>${escapeHtml(boardTitle)}</h1>`, `Song List title matches board show: ${boardTitle}`);
 
   record("Latest setlist appears above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
   record("Sheet key appears below Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"'));
@@ -77,10 +78,10 @@ function checkCorePageState(html, siteData) {
   record("The Woodshed appears below Purgatory", indexOf(html, 'id="purgatory"') < indexOf(html, 'id="woodshed"'));
   record("Older setlists appear below The Woodshed", indexOf(html, 'id="woodshed"') < indexOf(html, 'id="setlists"'));
 
-  record("2026 unique songs total is 155", siteData.totals?.currentTourSongs === 155);
-  record("2026 per-show tour plays total is 490", siteData.totals?.currentTourPlays === 490);
-  record("2026 posted shows total is 25", siteData.totals?.postedSetlists === 25);
-  record("2026 tour dates total is 42", siteData.totals?.tourDates === 42);
+  record("Unique-song total matches the current-tour ledger", siteData.totals?.currentTourSongs === siteData.currentTour?.length);
+  record("Tour-play total matches per-song counts", siteData.totals?.currentTourPlays === sum(siteData.currentTour?.map((song) => song.tourCount)));
+  record("Shows-played total matches posted setlists", siteData.totals?.postedSetlists === siteData.setlists?.length);
+  record("Tour-date total matches the official schedule", siteData.totals?.tourDates === siteData.tourDates?.length);
 
   assertIncludes(html, "Tiny Number", "Sheet key explains Tiny Number");
   assertIncludes(html, "Times played this tour", "Sheet key says tiny numbers are times played this tour");
@@ -88,13 +89,13 @@ function checkCorePageState(html, siteData) {
   assertIncludes(html, "not yet played with Nick Johnson", "The Woodshed explains Nick Johnson logic");
   checkMarkerLegend(html, siteData);
 
-  assertSongHtml(html, "JUST KISSED MY BABY", ["<sup>1</sup>", "(03/21/26)"], "Song List add-on keeps 2026 play date");
+  assertCurrentTourSong(html, siteData, "Just Kissed My Baby", "Song List add-on keeps its tour count and play date");
   assertSongHtml(html, "JUST KISSED MY BABY", ["<sup>165</sup>", "05/01/16"], "Shelf bustout keeps prior last-played date");
-  assertSongHtml(html, "LOW RIDER", ["<sup>2</sup>", "(07/07/26)"], "Song List Low Rider add-on has tour count and current-tour date");
+  assertCurrentTourSong(html, siteData, "Low Rider", "Song List Low Rider keeps its tour count and current-tour date");
   assertSongHtml(html, "LOW RIDER", ["<sup>157</sup>", "11/04/09"], "Shelf Low Rider keeps prior last-played date");
-  assertSongHtml(html, "ROOM AT THE TOP", ["<sup>1</sup>", "(07/05/26)"], "Song List Room At The Top add-on has current-tour date");
+  assertCurrentTourSong(html, siteData, "Room at the Top", "Song List Room At The Top keeps its tour count and current-tour date");
   assertSongHtml(html, "ROOM AT THE TOP", ["<sup>2</sup>", "03/24/24"], "Purgatory Room At The Top keeps prior last-played date");
-  assertSongHtml(html, "FREE SOMEHOW", ["<sup>2</sup>"], "Song List Free Somehow shows current tour count");
+  assertCurrentTourSong(html, siteData, "Free Somehow", "Song List Free Somehow shows its current tour count", { requireDate: false });
 }
 
 function checkTourSongCounts(html, siteData) {
@@ -111,18 +112,27 @@ function checkTourSongCounts(html, siteData) {
   );
 }
 
-function checkLatestSetlist(html) {
+function checkLatestSetlist(html, siteData) {
   const latest = sectionHtml(html, "latest-setlist");
-  assertIncludes(latest, "07/11/2026 Hayden Homes Amphitheater, Bend, OR", "Latest setlist is 07/11/2026 Bend");
-  assertIncludes(latest, "Blue Indian &gt; Chainsaw City", "Latest setlist preserves segues");
-  assertIncludes(latest, 'Chainsaw City<sup class="guest-sup">1</sup>', "Steve Lopez is a guest superscript on Chainsaw City");
-  assertIncludes(latest, '<sup class="guest-sup">1</sup> with Steve Lopez on percussion', "Steve Lopez guest note is keyed to the superscript");
-  assertIncludes(latest, "[Entire show with Nick Johnson on guitar]", "Nick Johnson full-show note stays bracketed");
-  record("Steve Lopez is not inside bracket notes", !/\[[^\]]*Steve Lopez[^\]]*\]/i.test(stripTags(latest)));
-  record("No asterisk guest notation remains in latest setlist", !/\*\s*with Steve Lopez/i.test(stripTags(latest)));
+  const latestShow = siteData.setlists?.[0];
+  const heading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
+  assertIncludes(latest, escapeHtml(heading), "Latest-setlist heading matches the newest ledger show");
 
-  const pTags = latest.match(/<p><strong>(?:1|2|E):<\/strong>[\s\S]*?<\/p>/g) || [];
-  record("Latest setlist has one line each for 1, 2, and E", pTags.length === 3);
+  const sourceSegueCount = sum((latestShow?.sets || []).map((set) => (set.songs.match(/\s>\s/g) || []).length));
+  const renderedSegueCount = (latest.match(/&gt;/g) || []).length;
+  record("Latest setlist preserves every source segue", sourceSegueCount > 0 && renderedSegueCount >= sourceSegueCount, `source=${sourceSegueCount} rendered=${renderedSegueCount}`);
+
+  const renderedLabels = [...latest.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
+  const sourceLabels = (latestShow?.sets || []).map((set) => set.label);
+  record("Latest setlist renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
+
+  const bendHeading = "07/11/2026 Hayden Homes Amphitheater, Bend, OR";
+  const bend = latest.includes(bendHeading) ? latest : cardHtml(html, bendHeading);
+  assertIncludes(bend, 'Chainsaw City<sup class="guest-sup">1</sup>', "Steve Lopez is a guest superscript on Chainsaw City");
+  assertIncludes(bend, '<sup class="guest-sup">1</sup> with Steve Lopez on percussion', "Steve Lopez guest note is keyed to the superscript");
+  assertIncludes(bend, "[Entire show with Nick Johnson on guitar]", "Nick Johnson full-show note stays bracketed");
+  record("Steve Lopez is not inside bracket notes", !/\[[^\]]*Steve Lopez[^\]]*\]/i.test(stripTags(bend)));
+  record("No asterisk guest notation remains on the Bend setlist", !/\*\s*with Steve Lopez/i.test(stripTags(bend)));
 }
 
 function checkGuestAnnotations(homeHtml, review2025Html) {
@@ -191,18 +201,14 @@ async function checkLegacyPages() {
 }
 
 function checkMarkerLegend(html, siteData) {
-  const expected = [
-    ["Black", "07/11/26 Bend, OR II"],
-    ["Green", "07/10/26 Bend, OR I"],
-    ["Blue", "07/08/26 Missoula, MT II"],
-    ["Red", "07/07/26 Missoula, MT I"]
-  ];
+  const colors = ["Black", "Green", "Blue", "Red"];
   const legend = siteData.site?.markerLegend || [];
-  const matchesData = expected.every(([color, label], index) => {
+  const latestDates = [...new Set((siteData.setlists || []).map((show) => show.isoDate).filter(Boolean))].slice(0, 4);
+  const matchesData = latestDates.every((isoDate, index) => {
     const item = legend[index];
-    return item?.color === color && item?.label === label;
+    return item?.color === colors[index] && item?.isoDate === isoDate && Boolean(item?.label);
   });
-  const matchesHtml = expected.every(([color, label]) => html.includes(color) && html.includes(label));
+  const matchesHtml = legend.every((item) => html.includes(item.color) && html.includes(item.label));
   record("Marker legend matches the last four posted shows", matchesData && matchesHtml, JSON.stringify(legend));
 }
 
@@ -250,6 +256,14 @@ function assertSongHtml(html, title, pieces, label) {
   const matches = songChunks(html, title);
   const found = matches.some((match) => pieces.every((piece) => match.includes(piece)));
   record(label, found, matches.map((match) => stripTags(match)).join(" | "));
+}
+
+function assertCurrentTourSong(html, siteData, title, label, options = {}) {
+  const song = (siteData.catalog || []).find((row) => row.title.toLowerCase() === title.toLowerCase());
+  const pieces = song ? [`<sup>${song.tourCount}</sup>`] : [];
+  if (song && options.requireDate !== false) pieces.push(`(${song.lastDisplay})`);
+  const matches = songChunks(sectionHtml(html, "song-list"), title.toUpperCase());
+  record(label, Boolean(song) && matches.some((match) => pieces.every((piece) => match.includes(piece))), matches.map((match) => stripTags(match)).join(" | "));
 }
 
 function songChunks(html, title) {
@@ -341,6 +355,14 @@ function normalizeText(value) {
 
 function arraysEqual(left, right) {
   return left.length === right.length && left.every((value, index) => value === right[index]);
+}
+
+function sum(values = []) {
+  return values.reduce((total, value) => total + (Number(value) || 0), 0);
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function escapeRegExp(value) {

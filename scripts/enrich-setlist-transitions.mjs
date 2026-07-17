@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -10,6 +10,7 @@ const year = args.year || process.env.TOUR_YEAR || String(new Date().getFullYear
 const input = args.in || path.join(root, "data", "source", `setlists-${year}.json`);
 const output = args.out || input;
 const requireAll = Boolean(args.requireAll || process.env.REQUIRE_SETLIST_TRANSITIONS === "1");
+const statusFile = args.statusFile || "";
 
 const archiveSearchBase = "https://archive.org/advancedsearch.php";
 const archiveDetailsBase = "https://archive.org/details/";
@@ -54,8 +55,14 @@ async function main() {
   if (misses.length) {
     console.log(`Unchanged shows:\n${misses.slice(0, 20).join("\n")}${misses.length > 20 ? `\n+${misses.length - 20} more` : ""}`);
   }
+  if (statusFile) {
+    await mkdir(path.dirname(statusFile), { recursive: true });
+    await writeFile(statusFile, `${JSON.stringify({ year, ready: misses.length === 0, enriched, unchanged, misses }, null, 2)}\n`, "utf8");
+  }
   if (requireAll && misses.length) {
-    throw new Error(`Refusing to write ${year} setlists because ${misses.length} show(s) are missing Archive transition markers.`);
+    const error = new Error(`Refusing to write ${year} setlists because ${misses.length} show(s) are missing Archive transition markers.`);
+    error.exitCode = 75;
+    throw error;
   }
 
   await writeFile(output, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
@@ -450,6 +457,7 @@ function parseArgs(values) {
     if (value === "--year") parsed.year = values[++index];
     else if (value === "--in") parsed.in = values[++index];
     else if (value === "--out") parsed.out = values[++index];
+    else if (value === "--status-file") parsed.statusFile = values[++index];
     else if (value === "--require-all") parsed.requireAll = true;
   }
   return parsed;
@@ -457,5 +465,5 @@ function parseArgs(values) {
 
 main().catch((error) => {
   console.error(error);
-  process.exit(1);
+  process.exit(error.exitCode || 1);
 });

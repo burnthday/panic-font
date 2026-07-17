@@ -48,13 +48,21 @@ TOUR_YEAR=2026 npm run refresh:setlists
 
 The checked-in setlist JSON keeps two versions of each set: `songTitles` are canonical official titles used for counting, and `songs` is the display string with `>` transitions. This keeps sandwich songs visible in the setlist while counting each song only once per show.
 
-To refresh the full public data layer for the active tour:
+For the daily, CI-safe refresh used by GitHub Actions:
+
+```bash
+TOUR_YEAR=2026 npm run refresh:automatic
+```
+
+That imports official Widespread Panic setlists into a temporary file, defers same-day shows, requires Internet Archive transition metadata for every eligible show, and only then replaces the local tour ledger. If a setlist or its `>` transitions are not ready, the automation holds the last complete build. It never guesses transitions and it does not require Everyday Companion to be reachable.
+
+Everyday Companion remains the reconciliation source for lifetime totals and prior-play data. When EC is reachable and you intentionally want to refresh those committed baseline snapshots, run:
 
 ```bash
 TOUR_YEAR=2026 npm run refresh:strict
 ```
 
-That imports current Everyday Companion playstats, refreshes official Widespread Panic setlists, requires setlist transition markers, regenerates the pre-tour EC song stats used for Shelf/Purgatory math, builds, and validates the result.
+That manual strict path imports EC playstats and prior-song stats, refreshes official setlists and transitions, then rebuilds and validates the result. EC is deliberately not a blocking dependency of the scheduled deployment because EC can lag after shows and currently blocks GitHub-hosted runners.
 
 For the morning after a show, use the fast local path:
 
@@ -62,7 +70,7 @@ For the morning after a show, use the fast local path:
 TOUR_YEAR=2026 npm run postshow
 ```
 
-That updates official WSP setlists, enriches `>` markers when Archive data exists, rebuilds, and validates current-tour counts. It also allows a temporary EC-lag baseline for new bustouts: if EC has not posted the latest current-year play yet, the importer can still use EC's existing played-page/playstats row plus the local official setlist to keep lifetime count and last-played date visible locally. Use `refresh:strict` before publishing.
+That updates official WSP setlists, enriches `>` markers when Archive data exists, rebuilds, and validates current-tour counts. It also allows a temporary EC-lag baseline for new bustouts: if EC has not posted the latest current-year play yet, the importer can still use EC's existing played-page/playstats row plus the local official setlist to keep lifetime count and last-played date visible locally. Use `refresh:automatic` for unattended publishing and `refresh:strict` only when reconciling the EC baseline.
 
 ## Lifetime Play Stats
 

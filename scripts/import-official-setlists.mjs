@@ -146,6 +146,11 @@ function isSetlistNote(note) {
   return !(
     /^tickets?\b/i.test(note) ||
     /^\d+-day tickets?$/i.test(note) ||
+    /^Widespread Panic is pleased to offer\b/i.test(note) ||
+    /free live audio streams?/i.test(note) ||
+    /^(?:Nugs app|YouTube|Facebook|Twitch)\b/i.test(note) ||
+    /^Showtime is\b/i.test(note) ||
+    /How to listen free\b/i.test(note) ||
     /^(january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}$/i.test(note)
   );
 }

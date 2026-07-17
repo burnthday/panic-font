@@ -662,7 +662,8 @@ function buildFreshnessReport(data, archiveEntries = [], songOrigins = [], gener
     commands: {
       localQa: "npm run qa",
       postShowLocal: "TOUR_YEAR=2026 npm run postshow",
-      strictPublishRefresh: "TOUR_YEAR=2026 npm run refresh:strict"
+      automaticPublishRefresh: "TOUR_YEAR=2026 npm run refresh:automatic",
+      strictReconcile: "TOUR_YEAR=2026 npm run refresh:strict"
     }
   };
 }
