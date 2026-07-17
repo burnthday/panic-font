@@ -17,6 +17,8 @@ const sheetRanges = {
 
 const config = {
   rotationSlpLimit: 200,
+  shelfWatchWindow: 50,
+  shelfWatchLimit: 6,
   typeOverrides: {
     "ASTRONOMY DOMINE JAM": "Cover",
     "BLACK HOLE SUN": "Cover",
@@ -612,8 +614,11 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     },
     rules: {
       rotationSlpLimit: config.rotationSlpLimit,
+      shelfWatchWindow: config.shelfWatchWindow,
+      shelfWatchLimit: config.shelfWatchLimit,
       purgatory: "Songs with one lifetime play stay in Purgatory. If played this tour, they stay marked black until the next tour reset.",
       shelf: "Shelf songs that return this tour stay marked black until the next tour reset.",
+      shelfWatch: `Shelf Watch shows up to ${config.shelfWatchLimit} unplayed songs within ${config.shelfWatchWindow} shows of the ${config.rotationSlpLimit}-show Shelf cutoff.`,
       woodshed: "The Woodshed contains songs on the current sheet that have not been played with Nick Johnson on guitar."
     },
     totals: {
@@ -751,6 +756,13 @@ function buildBoards(songs) {
   const shelfRows = songs.filter((row) => row.total > 1 && (row.effectiveSlp >= config.rotationSlpLimit || row.playedFromShelf)).sort(byTitle);
   const purgatoryRows = songs.filter((row) => row.total === 1 || row.playedFromPurgatory).sort(byTitle);
   const woodshedRows = active.filter((row) => row.total > 1 && !row.playedWithNick).sort(byTitle);
+  const shelfWatch = songs
+    .filter((row) => row.total > 1
+      && !row.playedThisTour
+      && row.effectiveSlp >= config.rotationSlpLimit - config.shelfWatchWindow
+      && row.effectiveSlp < config.rotationSlpLimit)
+    .sort((left, right) => right.effectiveSlp - left.effectiveSlp || byTitle(left, right))
+    .slice(0, config.shelfWatchLimit);
   const needsClassification = songs.filter((row) => row.type === "Unclassified").sort(byTitle);
 
   return {
@@ -760,6 +772,7 @@ function buildBoards(songs) {
     shelfCovers: shelfRows.filter((row) => row.type === "Cover"),
     purgatoryOriginals: purgatoryRows.filter((row) => row.type === "Original"),
     purgatoryCovers: purgatoryRows.filter((row) => row.type === "Cover"),
+    shelfWatch,
     woodshedOriginals: woodshedRows.filter((row) => row.type === "Original"),
     woodshedCovers: woodshedRows.filter((row) => row.type === "Cover"),
     needsClassification
@@ -1713,6 +1726,7 @@ function renderHtml(data) {
       ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
       ${renderSheetKey(data)}
+      ${renderShelfWatch(data)}
       ${renderShelfBoard(data)}
       ${renderWoodshedBoard(data)}
       ${renderSetlists(data, { skipLatest: !data.site.isShowDayPreview })}
@@ -1860,6 +1874,27 @@ function renderShelfBoard(data) {
 </section>`;
 }
 
+function renderShelfWatch(data) {
+  const songs = data.boards.shelfWatch || [];
+  if (!songs.length) return "";
+
+  const cutoff = data.rules.rotationSlpLimit;
+  return `<section class="shelf-watch" id="shelf-watch">
+  <div class="section-heading">
+    <h2>SHELF WATCH</h2>
+    <span>songs nearing the ${escapeHtml(String(cutoff))}-show cutoff</span>
+  </div>
+  <ol class="shelf-watch-list">${songs.map((song) => {
+    const remaining = Math.max(0, cutoff - song.effectiveSlp);
+    return `<li data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}">
+      <div class="shelf-watch-song"><strong>${escapeHtml(song.title.toUpperCase())}</strong><span>last played ${escapeHtml(song.lastDisplay)}</span></div>
+      <div class="shelf-watch-slp"><strong>${formatNumber(song.effectiveSlp)}</strong><span>shows since last played</span></div>
+      <div class="shelf-watch-remaining"><strong>${formatNumber(remaining)}</strong><span>to Shelf</span></div>
+    </li>`;
+  }).join("")}</ol>
+</section>`;
+}
+
 function renderWoodshedBoard(data) {
   const count = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
   return `${renderNickJohnsonFeature(data)}
@@ -1927,6 +1962,7 @@ function renderSheetKey(data) {
       <h3>Other Sheets</h3>
       <dl>
         <div><dt>Shelf</dt><dd>Songs outside the rotation window, with lifetime count and last-played date.</dd></div>
+        <div><dt>Shelf Watch</dt><dd>Songs within ${escapeHtml(String(data.rules.shelfWatchWindow))} shows of the ${escapeHtml(String(data.rules.rotationSlpLimit))}-show Shelf cutoff.</dd></div>
         <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
         <div><dt>The Woodshed</dt><dd>Songs on the current sheet not yet played with Nick Johnson on guitar.</dd></div>
       </dl>
@@ -2843,6 +2879,7 @@ sup {
 .latest-setlist,
 .setlist-section,
 .tour-date-section,
+.shelf-watch,
 .nick-feature {
   width: min(1180px, 100%);
   margin: 36px auto;
@@ -2855,6 +2892,65 @@ sup {
 .latest-setlist .setlist-feature {
   margin-bottom: 0;
   border-color: rgba(0, 0, 0, 0.28);
+}
+
+.shelf-watch-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.shelf-watch-list li {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.5fr) minmax(210px, 0.8fr) minmax(110px, 0.35fr);
+  gap: 24px;
+  align-items: center;
+  min-width: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+
+.shelf-watch-song {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.shelf-watch-song strong {
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 20px;
+  line-height: 1.05;
+  font-weight: 400;
+}
+
+.shelf-watch-song span,
+.shelf-watch-slp span,
+.shelf-watch-remaining span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.shelf-watch-slp,
+.shelf-watch-remaining {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.shelf-watch-slp strong,
+.shelf-watch-remaining strong {
+  flex: 0 0 auto;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.shelf-watch-remaining {
+  justify-self: end;
 }
 
 .nick-summary {
@@ -3703,6 +3799,7 @@ sup {
   .setlist-section,
   .tour-date-section,
   .tour-review-main,
+  .shelf-watch,
   .nick-feature {
     width: min(calc(100% - 20px), 1180px);
   }
@@ -3797,6 +3894,29 @@ sup {
   .review-top-songs {
     grid-template-columns: 1fr;
     columns: 1;
+  }
+
+  .shelf-watch-list li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px 12px;
+    padding: 11px 0;
+  }
+
+  .shelf-watch-song {
+    grid-column: 1 / -1;
+  }
+
+  .shelf-watch-slp {
+    grid-column: 1;
+  }
+
+  .shelf-watch-remaining {
+    grid-column: 2;
+  }
+
+  .shelf-watch-slp strong,
+  .shelf-watch-remaining strong {
+    font-size: 22px;
   }
 
   .song-panel {

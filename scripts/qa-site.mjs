@@ -21,6 +21,7 @@ async function main() {
   checkCanonicalSongNames(allHtmlFiles, allHtml);
   checkCorePageState(homeHtml, siteData);
   checkTourSongCounts(homeHtml, siteData);
+  checkShelfWatch(homeHtml, siteData);
   checkNickJohnsonFeature(homeHtml, siteData);
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
@@ -75,7 +76,8 @@ function checkCorePageState(html, siteData) {
 
   record("Latest setlist appears above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
   record("Sheet key appears below Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"'));
-  record("Shelf and Purgatory appear below Sheet Key", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"'));
+  record("Shelf Watch appears between the Sheet Key and Shelf", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="shelf-watch"') && indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"'));
+  record("Shelf and Purgatory appear below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"'));
   record("The Woodshed appears below Purgatory", indexOf(html, 'id="purgatory"') < indexOf(html, 'id="woodshed"'));
   record("Older setlists appear below The Woodshed", indexOf(html, 'id="woodshed"') < indexOf(html, 'id="setlists"'));
 
@@ -111,6 +113,43 @@ function checkTourSongCounts(html, siteData) {
     missing.length === 0,
     missing.slice(0, 20).join("\n")
   );
+}
+
+function checkShelfWatch(html, siteData) {
+  const cutoff = Number(siteData.rules?.rotationSlpLimit) || 200;
+  const window = Number(siteData.rules?.shelfWatchWindow) || 50;
+  const limit = Number(siteData.rules?.shelfWatchLimit) || 6;
+  const expected = (siteData.catalog || [])
+    .filter((song) => song.total > 1
+      && !song.playedThisTour
+      && song.effectiveSlp >= cutoff - window
+      && song.effectiveSlp < cutoff)
+    .sort((left, right) => right.effectiveSlp - left.effectiveSlp || left.title.localeCompare(right.title))
+    .slice(0, limit);
+  const actual = siteData.boards?.shelfWatch || [];
+  const feature = sectionHtml(html, "shelf-watch");
+
+  assertIncludes(feature, "<h2>SHELF WATCH</h2>", "Homepage has Shelf Watch");
+  record(
+    "Shelf Watch is derived from the closest eligible SLP values",
+    arraysEqual(actual.map((song) => song.title), expected.map((song) => song.title)),
+    actual.map((song) => `${song.title}: ${song.effectiveSlp}`).join("\n")
+  );
+  record(
+    "Shelf Watch excludes played, one-time, and already-shelved songs",
+    actual.every((song) => song.total > 1 && !song.playedThisTour && song.effectiveSlp < cutoff),
+    actual.filter((song) => song.total <= 1 || song.playedThisTour || song.effectiveSlp >= cutoff).map((song) => song.title).join("\n")
+  );
+
+  for (const song of expected) {
+    const remaining = cutoff - song.effectiveSlp;
+    assertIncludes(feature, `data-song-title="${escapeAttribute(song.title)}" data-slp="${song.effectiveSlp}"`, `Shelf Watch includes ${song.title} at ${song.effectiveSlp} SLP`);
+    assertIncludes(feature, `last played ${song.lastDisplay}`, `Shelf Watch gives ${song.title}'s last-played date`);
+    const rowStart = feature.indexOf(`data-song-title="${escapeAttribute(song.title)}"`);
+    const rowEnd = feature.indexOf("</li>", rowStart);
+    const row = rowStart >= 0 && rowEnd > rowStart ? feature.slice(rowStart, rowEnd) : "";
+    assertIncludes(row, `<strong>${remaining}</strong><span>to Shelf</span>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
+  }
 }
 
 function checkNickJohnsonFeature(html, siteData) {
