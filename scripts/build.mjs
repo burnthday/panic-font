@@ -545,8 +545,9 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     (!latestShow?.isoDate || boardShow.isoDate > latestShow.isoDate)
   );
   const currentRunImage = setlists.find((show) => show.location === boardShow?.location && show.image)?.image || "";
+  const previewFallbackImage = setlists.find((show) => show.location !== boardShow?.location && show.image)?.image || currentRunImage;
   let featuredShow = isShowDayPreview
-    ? { ...boardShow, image: boardShow.image || currentRunImage, sets: [], notes: [] }
+    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [] }
     : latestShow;
 
   const songs = catalog.map((row) => {
@@ -597,7 +598,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   setlists = setlists.map((show) => addGeneratedBustoutNotes(show, songsByKey));
   latestShow = setlists[0] || null;
   featuredShow = isShowDayPreview
-    ? { ...boardShow, image: boardShow.image || currentRunImage, sets: [], notes: [] }
+    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [] }
     : latestShow;
 
   const originals = songs.filter((row) => row.type === "Original");
@@ -2165,14 +2166,9 @@ function renderLatestSetlist(data) {
   const completedRunShows = data.site.isShowDayPreview
     ? data.setlists.filter((show) => show.location === featured.location && show.isoDate < featured.isoDate)
     : [];
-  const heading = data.site.isShowDayPreview ? "CURRENT TOUR STOP" : "LATEST SETLIST";
-
   return `<section class="latest-setlist" id="latest-setlist">
-  <div class="section-heading">
-    <h2>${heading}</h2>
-  </div>
   ${renderFeaturedSetlist(featured)}
-  ${completedRunShows.length ? `<div class="setlist-grid current-stop-setlists">${completedRunShows.map(renderSetlistCard).join("")}</div>` : ""}
+  ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map(renderFeaturedSetlist).join("")}</div>` : ""}
 </section>`;
 }
 
@@ -3086,7 +3082,12 @@ sup {
 
 .latest-setlist .setlist-feature {
   margin-bottom: 0;
-  border-color: rgba(0, 0, 0, 0.28);
+}
+
+.current-stop-setlists {
+  display: grid;
+  gap: 28px;
+  margin-top: 28px;
 }
 
 .shelf-watch-list {

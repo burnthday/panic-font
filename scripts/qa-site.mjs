@@ -210,16 +210,18 @@ async function checkLatestSetlist(html, siteData) {
   const heading = `${featuredShow?.date || ""} ${featuredShow?.venue || ""}, ${featuredShow?.location || ""}`;
   if (!siteData.site?.isShowDayPreview) assertIncludes(featured, escapeHtml(heading), "Featured-show heading matches generated site data");
 
-  const featuredCard = featured.split('<div class="setlist-grid current-stop-setlists">')[0];
+  const featuredCard = featured.split('<div class="current-stop-setlists">')[0];
   const renderedLabels = [...featuredCard.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
   if (siteData.site?.isShowDayPreview) {
-    assertIncludes(featured, "<h2>CURRENT TOUR STOP</h2>", "Show-day section is labeled Current Tour Stop");
+    record("Show-day setlists have no redundant section label or black rule", !featured.includes("CURRENT TOUR STOP") && !featured.includes('class="section-heading"'));
     assertIncludes(featured, escapeHtml(heading), "Tonight's blank setlist is featured first");
     record("Tonight's setlist remains blank until songs are posted", renderedLabels.length === 0, renderedLabels.join(", "));
 
     const completedHeading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
     record("Latest completed show from the tour stop stays above the Song List", Boolean(cardHtml(featured, escapeHtml(completedHeading))), completedHeading);
     record("Top tour-stop show is not duplicated in the lower archive", !cardHtml(sectionHtml(html, "setlists"), escapeHtml(completedHeading)), completedHeading);
+    const featuredImages = [...featured.matchAll(/<img src="([^"]+)"/g)].map((match) => match[1]);
+    record("Tonight and the latest completed show use different photos", featuredImages.length >= 2 && featuredImages[0] !== featuredImages[1], featuredImages.join(" vs "));
   } else {
     assertIncludes(featured, "<h2>LATEST SETLIST</h2>", "Completed featured show is labeled Latest Setlist");
     const sourceSegueCount = sum((latestShow?.sets || []).map((set) => (set.songs.match(/\s>\s/g) || []).length));
@@ -434,7 +436,9 @@ function sectionHtml(html, id) {
 function cardHtml(html, heading) {
   const headingIndex = html.indexOf(`<h3>${heading}</h3>`);
   if (headingIndex < 0) return "";
-  const start = html.lastIndexOf('<article class="setlist-card', headingIndex);
+  const cardStart = html.lastIndexOf('<article class="setlist-card', headingIndex);
+  const featureStart = html.lastIndexOf('<article class="setlist-feature', headingIndex);
+  const start = Math.max(cardStart, featureStart);
   const end = html.indexOf("</article>", headingIndex);
   return start >= 0 && end > start ? html.slice(start, end + "</article>".length) : "";
 }
