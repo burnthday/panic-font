@@ -1774,6 +1774,12 @@ function renderFitScriptBody() {
         });
       }
 
+      const currentPath = window.location.pathname.replace(/\\.html$/i, "").replace(/\\/$/, "") || "/";
+      document.querySelectorAll(".jump-links a").forEach((link) => {
+        const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\\.html$/i, "").replace(/\\/$/, "") || "/";
+        if (link.origin === window.location.origin && linkPath === currentPath) link.setAttribute("aria-current", "page");
+      });
+
       fitBoardTitles();
       fitSongRows();
       window.addEventListener("resize", () => window.requestAnimationFrame(() => {
@@ -1792,13 +1798,15 @@ function renderFitScriptBody() {
 
 function renderSiteHeader() {
   return `<header class="site-head">
-  <nav class="header-social" aria-label="Burnthday social links">
-    <a class="social-dot facebook" href="https://www.facebook.com/burnthday" aria-label="burnthday on Facebook">f</a>
-    <a class="social-dot twitter" href="https://twitter.com/burnthday" aria-label="burnthday on Twitter">t</a>
-  </nav>
-  <a class="brand" href="/" aria-label="Burnthday">
-    <img class="brand-logo" src="/assets/burnthday-logo.png" alt="Burnthday">
-  </a>
+  <div class="masthead-row">
+    <a class="brand" href="/" aria-label="Burnthday">
+      <img class="brand-logo" src="/assets/burnthday-logo.png" alt="Burnthday">
+    </a>
+    <nav class="header-social" aria-label="Burnthday social links">
+      <a class="social-dot facebook" href="https://www.facebook.com/burnthday" aria-label="burnthday on Facebook">f</a>
+      <a class="social-dot twitter" href="https://twitter.com/burnthday" aria-label="burnthday on Twitter">t</a>
+    </nav>
+  </div>
   ${renderNavLinks(primaryNavItems, "jump-links", "Primary navigation")}
 </header>`;
 }
@@ -1806,13 +1814,15 @@ function renderSiteHeader() {
 function renderSiteFooter(data) {
   const year = data?.site?.year || new Date().getFullYear();
   return `<footer class="site-foot">
-  <nav class="social-links" aria-label="Burnthday social links">
-    <a href="https://www.facebook.com/burnthday">burnthday on Facebook</a>
-    <a href="https://twitter.com/burnthday">burnthday on Twitter</a>
-    <a href="https://www.instagram.com/burnthday/">burnthday on Instagram</a>
-  </nav>
-  ${renderNavLinks(footerNavItems, "footer-links", "Footer links", true)}
-  <p>All Rights Reserved. Burnthday © ${escapeHtml(String(year))} | The Widespread Panic Spread Sheet</p>
+  <div class="site-foot-inner">
+    <nav class="social-links" aria-label="Burnthday social links">
+      <a href="https://www.facebook.com/burnthday">burnthday on Facebook</a>
+      <a href="https://twitter.com/burnthday">burnthday on Twitter</a>
+      <a href="https://www.instagram.com/burnthday/">burnthday on Instagram</a>
+    </nav>
+    ${renderNavLinks(footerNavItems, "footer-links", "Footer links", true)}
+    <p>All Rights Reserved. Burnthday © ${escapeHtml(String(year))} | The Widespread Panic Spread Sheet</p>
+  </div>
 </footer>`;
 }
 
@@ -1852,11 +1862,45 @@ function renderShelfBoard(data) {
 
 function renderWoodshedBoard(data) {
   const count = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
-  return `<section class="laminate woodshed-board" id="woodshed">
+  return `${renderNickJohnsonFeature(data)}
+<section class="laminate woodshed-board" id="woodshed">
   ${renderBoardHeader("THE WOODSHED", `${count} songs not yet played with Nick Johnson on guitar`)}
   ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
 </section>`;
+}
+
+function renderNickJohnsonFeature(data) {
+  const played = (data.catalog || []).filter((row) => row.playedWithNick && row.nickCount > 0).sort(byTitle);
+  const originals = played.filter((row) => row.type === "Original");
+  const covers = played.filter((row) => row.type === "Cover");
+  const shows = (data.setlists || []).filter(isNickJohnsonShow).length;
+  const plays = sum(played.map((row) => row.nickCount));
+  const woodshed = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
+
+  return `<section class="nick-feature" id="nick-johnson">
+  <div class="section-heading">
+    <h2>NICK JOHNSON</h2>
+    <span>${escapeHtml(String(data.site.year))} tour</span>
+  </div>
+  <div class="nick-summary" aria-label="Nick Johnson tour stats">
+    ${renderNickStat(shows, "shows on guitar")}
+    ${renderNickStat(played.length, "unique songs")}
+    ${renderNickStat(plays, "song plays")}
+    ${renderNickStat(woodshed, "still in The Woodshed")}
+  </div>
+  <details class="nick-played-panel">
+    <summary><span>SONGS PLAYED WITH NICK</span><strong>${formatNumber(played.length)}</strong></summary>
+    <div class="nick-played-sheet">
+      ${renderSongPanel("nick-played-originals", "ORIGINALS", originals, { nickMode: true })}
+      ${renderSongPanel("nick-played-covers", "COVERS", covers, { nickMode: true })}
+    </div>
+  </details>
+</section>`;
+}
+
+function renderNickStat(value, label) {
+  return `<div class="nick-stat"><strong>${formatNumber(value)}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
 function renderSheetKey(data) {
@@ -1953,7 +1997,7 @@ function renderSong(row, options = {}) {
   const dateText = options.shelfMode ? shelfDate : row.isAddOn ? row.addOnDate || row.lastDisplay : "";
   const handClass = row.isAddOn ? " hand-addon" : "";
   const title = row.title.toUpperCase();
-  const countValue = options.shelfMode ? row.total : row.tourCount;
+  const countValue = options.nickMode ? row.nickCount : options.shelfMode ? row.total : row.tourCount;
   const songClasses = ["rotation-song", dateText ? "has-date" : "", countValue > 0 ? "has-count" : "", row.isAddOn ? "is-hand-addon" : ""].filter(Boolean).join(" ");
   const marker = stripeAsset ? `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(stripeAsset)}" alt=""></span>` : "";
   const count = countValue > 0 ? `<sup>${countValue}</sup>` : "";
@@ -2292,52 +2336,51 @@ a {
 }
 
 .site-head {
-  width: min(1880px, calc(100% - 56px));
-  margin: 20px auto 0;
+  width: min(1380px, calc(100% - 40px));
+  margin: 18px auto 0;
+}
+
+.masthead-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  grid-template-areas:
-    ". brand social"
-    "nav nav nav";
-  align-items: start;
-  gap: 22px 20px;
+  align-items: center;
+  min-height: 132px;
 }
 
 .brand {
-  grid-area: brand;
+  grid-column: 2;
   display: inline-flex;
   align-items: center;
   justify-self: center;
 }
 
 .brand-logo {
-  width: clamp(280px, 27vw, 470px);
+  width: clamp(270px, 24vw, 370px);
   height: auto;
   display: block;
 }
 
 .header-social {
-  grid-area: social;
+  grid-column: 3;
   justify-self: end;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding-top: 2px;
+  gap: 8px;
 }
 
 .social-dot {
   display: inline-grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
+  width: 34px;
+  height: 34px;
   border-radius: 999px;
   color: #ffffff;
   text-decoration: none;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 36px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1;
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 1px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.75), 0 0 0 1px rgba(0, 0, 0, 0.1);
 }
 
 .social-dot.facebook {
@@ -2349,27 +2392,31 @@ a {
 }
 
 .jump-links {
-  grid-area: nav;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 16px clamp(28px, 4vw, 74px);
+  gap: 10px clamp(22px, 3vw, 48px);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 13px 0 14px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: clamp(24px, 1.8vw, 36px);
+  font-size: clamp(16px, 1.25vw, 19px);
+  font-weight: 600;
   line-height: 1;
 }
 
 .jump-links a {
   display: inline-flex;
   align-items: center;
-  padding: 3px 0 6px;
+  padding: 4px 0;
   text-decoration: none;
-  border-bottom: 1px solid transparent;
+  border-bottom: 2px solid transparent;
   white-space: nowrap;
 }
 
-.jump-links a:first-child {
+.jump-links a[aria-current="page"] {
   color: #b94a4a;
+  border-bottom-color: currentColor;
 }
 
 .jump-links a:hover {
@@ -2795,7 +2842,8 @@ sup {
 
 .latest-setlist,
 .setlist-section,
-.tour-date-section {
+.tour-date-section,
+.nick-feature {
   width: min(1180px, 100%);
   margin: 36px auto;
 }
@@ -2807,6 +2855,90 @@ sup {
 .latest-setlist .setlist-feature {
   margin-bottom: 0;
   border-color: rgba(0, 0, 0, 0.28);
+}
+
+.nick-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.nick-stat {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  padding: 16px 18px 17px 0;
+}
+
+.nick-stat + .nick-stat {
+  border-left: 1px solid var(--line);
+  padding-left: 18px;
+}
+
+.nick-stat strong {
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.nick-stat span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.nick-played-panel {
+  margin-top: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nick-played-panel summary {
+  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 24px;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.nick-played-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.nick-played-panel summary::after {
+  content: "+";
+  justify-self: end;
+  font-family: system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.nick-played-panel[open] summary::after {
+  content: "\\2212";
+}
+
+.nick-played-panel summary strong {
+  font-family: system-ui, sans-serif;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.nick-played-sheet {
+  border-top: 1px solid var(--line);
+  padding: 22px 0 26px;
+  font-family: "MilkRun", system-ui, sans-serif;
+}
+
+.nick-played-sheet .song-panel + .song-panel {
+  margin-top: 24px;
 }
 
 .community-links {
@@ -3398,12 +3530,20 @@ sup {
 }
 
 .site-foot {
-  width: min(1180px, calc(100% - 56px));
-  margin: 0 auto 28px;
+  width: 100%;
+  margin: 0;
+  border-top: 1px solid var(--line);
+  background: #ffffff;
+  padding: 28px 20px 30px;
   text-align: center;
   color: var(--ink);
-  font-size: clamp(18px, 1.65vw, 30px);
-  line-height: 1.35;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.site-foot-inner {
+  width: min(1180px, 100%);
+  margin: 0 auto;
 }
 
 .site-foot a {
@@ -3420,12 +3560,13 @@ sup {
 }
 
 .social-links {
-  margin-bottom: 36px;
-  font-size: clamp(14px, 1.2vw, 18px);
+  margin-bottom: 16px;
+  font-size: 13px;
 }
 
 .footer-links {
-  margin-bottom: 26px;
+  margin-bottom: 14px;
+  font-size: 15px;
 }
 
 .footer-links span {
@@ -3443,20 +3584,15 @@ sup {
   }
 
   .site-head {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "social"
-      "brand"
-      "nav";
-    gap: 16px;
+    width: min(100% - 28px, 1180px);
   }
 
-  .header-social {
-    justify-self: center;
+  .masthead-row {
+    min-height: 112px;
   }
 
   .brand-logo {
-    width: min(390px, 70vw);
+    width: min(320px, 64vw);
   }
 
   .header-row {
@@ -3468,8 +3604,8 @@ sup {
   .jump-links {
     width: 100%;
     justify-content: center;
-    gap: 14px 28px;
-    font-size: 25px;
+    gap: 10px 24px;
+    font-size: 16px;
   }
 
   .nums.left,
@@ -3538,6 +3674,18 @@ sup {
 }
 
 @media (max-width: 720px) {
+  .nick-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nick-stat:nth-child(3) {
+    border-left: 0;
+  }
+
+  .nick-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+
   .rotation-song {
     --song-font-size: 20px;
   }
@@ -3555,32 +3703,47 @@ sup {
   .setlist-section,
   .tour-date-section,
   .tour-review-main,
-  .site-foot {
+  .nick-feature {
     width: min(calc(100% - 20px), 1180px);
   }
 
-  .brand-logo {
-    width: min(330px, 82vw);
+  .masthead-row {
+    grid-template-columns: 1fr;
+    min-height: 98px;
   }
 
-  .social-dot {
-    width: 40px;
-    height: 40px;
-    font-size: 30px;
+  .brand {
+    grid-column: 1;
+  }
+
+  .brand-logo {
+    width: min(270px, 72vw);
+  }
+
+  .header-social {
+    display: none;
   }
 
   .jump-links {
-    font-size: clamp(17px, 5vw, 20px);
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: center;
-    gap: 12px 14px;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 22px;
+    overflow-x: auto;
+    padding: 12px 2px 14px;
+    font-size: 15px;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .jump-links::-webkit-scrollbar {
+    display: none;
   }
 
   .jump-links a {
-    justify-content: center;
-    min-width: 0;
+    flex: 0 0 auto;
     white-space: nowrap;
+    scroll-snap-align: start;
   }
 
   .laminate {
@@ -3686,6 +3849,19 @@ sup {
 
   .origin-body {
     font-size: 16px;
+  }
+
+  .site-foot {
+    padding: 24px 18px 26px;
+  }
+
+  .social-links,
+  .footer-links {
+    gap: 8px 14px;
+  }
+
+  .footer-links span {
+    display: none;
   }
 }
 `;

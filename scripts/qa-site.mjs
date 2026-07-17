@@ -21,6 +21,7 @@ async function main() {
   checkCanonicalSongNames(allHtmlFiles, allHtml);
   checkCorePageState(homeHtml, siteData);
   checkTourSongCounts(homeHtml, siteData);
+  checkNickJohnsonFeature(homeHtml, siteData);
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml);
@@ -110,6 +111,30 @@ function checkTourSongCounts(html, siteData) {
     missing.length === 0,
     missing.slice(0, 20).join("\n")
   );
+}
+
+function checkNickJohnsonFeature(html, siteData) {
+  const feature = sectionHtml(html, "nick-johnson");
+  const played = (siteData.catalog || []).filter((song) => song.playedWithNick && song.nickCount > 0);
+  const nickShows = (siteData.setlists || []).filter((show) => (show.notes || []).some((note) => /\bnick johnson\b/i.test(note) && /\bguitar\b/i.test(note))).length;
+  const nickPlays = sum(played.map((song) => song.nickCount));
+  const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
+
+  assertIncludes(feature, "<h2>NICK JOHNSON</h2>", "Homepage has the restrained Nick Johnson feature");
+  for (const [value, label] of [
+    [nickShows, "shows on guitar"],
+    [played.length, "unique songs"],
+    [nickPlays, "song plays"],
+    [woodshed.length, "still in The Woodshed"]
+  ]) {
+    assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Nick Johnson summary reports ${label}`);
+  }
+
+  const missingCounts = played
+    .filter((song) => !songChunks(feature, song.title.toUpperCase()).some((chunk) => chunk.includes(`<sup>${song.nickCount}</sup>`)))
+    .map((song) => `${song.title} (${song.nickCount})`);
+  record("Every Nick Johnson song keeps its per-show play count", missingCounts.length === 0, missingCounts.slice(0, 20).join("\n"));
+  record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
 }
 
 async function checkLatestSetlist(html, siteData) {
