@@ -2504,13 +2504,20 @@ function splitDisplaySetSongs(value) {
 }
 
 function renderTourDates(data) {
+  const posted = data.tourDates.filter((date) => date.isPosted).length;
+  const upcoming = data.tourDates.length - posted;
   return `<section class="tour-date-section" id="tour-dates">
   <div class="section-heading">
     <h2>${escapeHtml(String(data.site.year))} TOUR DATES</h2>
-    <span>${data.totals.tourDates} listed</span>
+    <span>${formatNumber(posted)} played · ${formatNumber(upcoming)} ahead</span>
   </div>
   <ol class="tour-dates">
-    ${data.tourDates.map((date) => `<li class="${date.isPosted ? "is-posted" : ""}"><span>${escapeHtml(date.date)}</span><strong>${escapeHtml(date.location)}</strong><em>${escapeHtml(date.venue)}</em></li>`).join("")}
+    ${data.tourDates.map((date) => `<li class="${date.isPosted ? "is-posted" : "is-upcoming"}">
+      <time>${escapeHtml(date.date)}</time>
+      <strong>${escapeHtml(date.location)}</strong>
+      <span>${escapeHtml(date.venue)}</span>
+      <em>${date.isPosted ? "Setlist posted" : "Upcoming"}</em>
+    </li>`).join("")}
   </ol>
 </section>`;
 }
@@ -2686,12 +2693,12 @@ a {
 }
 
 main {
-  width: min(1880px, calc(100% - 56px));
+  width: min(1540px, calc(100% - 56px));
   margin: 34px auto 56px;
 }
 
 .home-intro {
-  width: min(1540px, 100%);
+  width: 100%;
   margin: 0 auto 30px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--line);
@@ -3153,7 +3160,7 @@ sup {
 .shelf-watch,
 .tour-stats,
 .nick-feature {
-  width: min(1180px, 100%);
+  width: 100%;
   margin: 36px auto;
 }
 
@@ -3689,35 +3696,45 @@ sup {
   list-style: none;
   padding: 0;
   margin: 0;
-  columns: 2;
-  column-gap: 24px;
+  border-top: 1px solid var(--line);
 }
 
 .tour-dates li {
-  break-inside: avoid;
   display: grid;
-  grid-template-columns: 76px 120px 1fr;
-  gap: 8px;
-  padding: 7px 0;
+  grid-template-columns: 100px minmax(160px, 0.65fr) minmax(220px, 1.35fr) 100px;
+  gap: 18px;
+  align-items: baseline;
+  min-height: 48px;
+  padding: 13px 0 12px;
   border-bottom: 1px solid var(--line);
 }
 
-.tour-dates li span {
+.tour-dates li time {
   font-family: var(--ui-font);
   font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 .tour-dates li strong {
-  font-weight: 700;
+  font-weight: 650;
+}
+
+.tour-dates li span {
+  color: var(--muted);
 }
 
 .tour-dates li em {
+  justify-self: end;
   color: var(--muted);
   font-style: normal;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: uppercase;
 }
 
-.tour-dates li.is-posted span {
-  color: var(--green);
+.tour-dates li.is-upcoming {
+  background: rgba(0, 0, 0, 0.018);
 }
 
 .archive-list a {
@@ -4257,10 +4274,6 @@ sup {
     grid-template-columns: 1fr;
   }
 
-  .tour-dates {
-    columns: 1;
-  }
-
   .origin-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -4332,14 +4345,17 @@ sup {
 
   main,
   .site-head,
+  .tour-review-main {
+    width: min(calc(100% - 20px), 1180px);
+  }
+
   .latest-setlist,
   .setlist-section,
   .tour-date-section,
-  .tour-review-main,
   .shelf-watch,
   .tour-stats,
   .nick-feature {
-    width: min(calc(100% - 20px), 1180px);
+    width: 100%;
   }
 
   .masthead-row {
@@ -4548,11 +4564,20 @@ sup {
   }
 
   .tour-dates li {
-    grid-template-columns: 72px 1fr;
+    grid-template-columns: 78px minmax(0, 1fr) auto;
+    gap: 4px 10px;
+    align-items: start;
+    padding: 12px 0;
+  }
+
+  .tour-dates li span {
+    grid-column: 2;
   }
 
   .tour-dates li em {
-    grid-column: 2;
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    align-self: center;
   }
 
   .archive-list li {

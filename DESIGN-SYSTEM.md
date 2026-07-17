@@ -49,6 +49,7 @@ Letter spacing is always `0`. Never use negative letter spacing to force a fit. 
 - Setlist photography is landscape (`16:9`), unframed, and outside decorative cards.
 - The latest completed setlist appears above the Song List. Older setlists move into the setlist section below the sheets.
 - Tour Stats is a website data view below the Sheet Key, never part of the laminated Song List. It defaults to most-played songs and supports sorting by song, plays, show percentage, last play, and type.
+- Homepage sections share one content rail and left edge. Tour Dates is a single chronological schedule with neutral posted/upcoming states; green is reserved for the original marker system.
 
 ## Responsive Behavior
 

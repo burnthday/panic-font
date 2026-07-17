@@ -24,6 +24,7 @@ async function main() {
   checkTourStats(homeHtml, siteData);
   checkShelfWatch(homeHtml, siteData);
   checkNickJohnsonFeature(homeHtml, siteData);
+  checkTourDates(homeHtml, siteData);
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml, siteData);
@@ -226,6 +227,16 @@ function checkNickJohnsonFeature(html, siteData) {
   );
   record("Nick Johnson ranking includes zero-play rotation songs at the bottom", renderedRanking.some((song) => song.count === 0) && renderedRanking.slice(-1)[0]?.count === 0);
   record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
+}
+
+function checkTourDates(html, siteData) {
+  const feature = sectionHtml(html, "tour-dates");
+  const posted = siteData.tourDates.filter((date) => date.isPosted).length;
+  const upcoming = siteData.tourDates.length - posted;
+  assertIncludes(feature, `${posted} played · ${upcoming} ahead`, "Tour Dates summarizes played and upcoming shows");
+  record("Tour Dates renders every scheduled date once", (feature.match(/<li class="is-(?:posted|upcoming)">/g) || []).length === siteData.tourDates.length);
+  record("Tour Dates gives every row a clear status", (feature.match(/Setlist posted|Upcoming/g) || []).length === siteData.tourDates.length);
+  record("Tour Dates uses neutral status copy instead of green styling hooks", !feature.includes("green"));
 }
 
 async function checkLatestSetlist(html, siteData) {
