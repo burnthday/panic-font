@@ -39,5 +39,6 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          accountId: bb75082c91976ca06b7f958041f91239
+          wranglerVersion: 4.111.0
           command: pages deploy dist --project-name burnthday --branch main --commit-dirty=true

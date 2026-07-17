@@ -123,6 +123,8 @@ function checkAutomation(workflow, packageJson) {
   record("Deploy workflow runs full QA before publishing", /npm run qa/.test(workflow), workflow);
   record("Deploy workflow does not allow critical data imports to fail open", !/continue-on-error:\s*true/.test(workflow), workflow);
   record("Deploy workflow still targets Cloudflare Pages", /pages deploy dist --project-name burnthday/.test(workflow), workflow);
+  record("Deploy workflow reads the Cloudflare token from GitHub Secrets", /apiToken:\s*\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/.test(workflow), workflow);
+  record("Deploy workflow pins current Wrangler and the Pages account", /accountId:\s*bb75082c91976ca06b7f958041f91239/.test(workflow) && /wranglerVersion:\s*4\.111\.0/.test(workflow), workflow);
 }
 
 async function checkNoLocalSecretFiles() {
