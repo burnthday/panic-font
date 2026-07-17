@@ -21,7 +21,7 @@ async function main() {
   checkCanonicalSongNames(allHtmlFiles, allHtml);
   checkCorePageState(homeHtml, siteData);
   checkTourSongCounts(homeHtml, siteData);
-  checkLatestSetlist(homeHtml, siteData);
+  await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml);
   checkLegacyPages();
@@ -112,22 +112,38 @@ function checkTourSongCounts(html, siteData) {
   );
 }
 
-function checkLatestSetlist(html, siteData) {
-  const latest = sectionHtml(html, "latest-setlist");
+async function checkLatestSetlist(html, siteData) {
+  const featured = sectionHtml(html, "latest-setlist");
+  const featuredShow = siteData.site?.featuredShow || siteData.setlists?.[0];
   const latestShow = siteData.setlists?.[0];
-  const heading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
-  assertIncludes(latest, escapeHtml(heading), "Latest-setlist heading matches the newest ledger show");
+  const heading = `${featuredShow?.date || ""} ${featuredShow?.venue || ""}, ${featuredShow?.location || ""}`;
+  assertIncludes(featured, escapeHtml(heading), "Featured-show heading matches generated site data");
 
-  const sourceSegueCount = sum((latestShow?.sets || []).map((set) => (set.songs.match(/\s>\s/g) || []).length));
-  const renderedSegueCount = (latest.match(/&gt;/g) || []).length;
-  record("Latest setlist preserves every source segue", sourceSegueCount > 0 && renderedSegueCount >= sourceSegueCount, `source=${sourceSegueCount} rendered=${renderedSegueCount}`);
+  const renderedLabels = [...featured.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
+  if (siteData.site?.isShowDayPreview) {
+    assertIncludes(featured, "<h2>CURRENT SHOW</h2>", "Show-day preview is labeled Current Show");
+    record("Show-day preview keeps the setlist blank", renderedLabels.length === 0, renderedLabels.join(", "));
+    const imageDimensions = await readImageDimensions(featuredShow?.image);
+    record(
+      "Show-day preview has a local landscape show image",
+      /<img src="\/assets\/setlists\//.test(featured) && imageDimensions.width > imageDimensions.height,
+      `${featuredShow?.image || "missing"} ${imageDimensions.width}x${imageDimensions.height}`
+    );
 
-  const renderedLabels = [...latest.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
-  const sourceLabels = (latestShow?.sets || []).map((set) => set.label);
-  record("Latest setlist renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
+    const completedHeading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
+    record("Latest completed show moves into the setlist archive", Boolean(cardHtml(sectionHtml(html, "setlists"), escapeHtml(completedHeading))), completedHeading);
+  } else {
+    assertIncludes(featured, "<h2>LATEST SETLIST</h2>", "Completed featured show is labeled Latest Setlist");
+    const sourceSegueCount = sum((latestShow?.sets || []).map((set) => (set.songs.match(/\s>\s/g) || []).length));
+    const renderedSegueCount = (featured.match(/&gt;/g) || []).length;
+    record("Latest setlist preserves every source segue", sourceSegueCount > 0 && renderedSegueCount >= sourceSegueCount, `source=${sourceSegueCount} rendered=${renderedSegueCount}`);
+
+    const sourceLabels = (latestShow?.sets || []).map((set) => set.label);
+    record("Latest setlist renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
+  }
 
   const bendHeading = "07/11/2026 Hayden Homes Amphitheater, Bend, OR";
-  const bend = latest.includes(bendHeading) ? latest : cardHtml(html, bendHeading);
+  const bend = featured.includes(bendHeading) ? featured : cardHtml(html, bendHeading);
   assertIncludes(bend, 'Chainsaw City<sup class="guest-sup">1</sup>', "Steve Lopez is a guest superscript on Chainsaw City");
   assertIncludes(bend, '<sup class="guest-sup">1</sup> with Steve Lopez on percussion', "Steve Lopez guest note is keyed to the superscript");
   assertIncludes(bend, "[Entire show with Nick Johnson on guitar]", "Nick Johnson full-show note stays bracketed");
@@ -371,6 +387,41 @@ function escapeRegExp(value) {
 
 function escapeAttribute(value) {
   return String(value).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+async function readImageDimensions(publicPath) {
+  if (!String(publicPath || "").startsWith("/assets/")) return { width: 0, height: 0 };
+
+  try {
+    const buffer = await readFile(path.join(distDir, publicPath.replace(/^\/+/, "")));
+    if (buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) {
+      return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+    }
+
+    if (buffer[0] === 0xff && buffer[1] === 0xd8) {
+      const startOfFrameMarkers = new Set([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf]);
+      let offset = 2;
+      while (offset + 8 < buffer.length) {
+        if (buffer[offset] !== 0xff) {
+          offset += 1;
+          continue;
+        }
+        const marker = buffer[offset + 1];
+        offset += 2;
+        if (marker === 0xd8 || marker === 0xd9) continue;
+        const segmentLength = buffer.readUInt16BE(offset);
+        if (startOfFrameMarkers.has(marker)) {
+          return { width: buffer.readUInt16BE(offset + 5), height: buffer.readUInt16BE(offset + 3) };
+        }
+        if (segmentLength < 2) break;
+        offset += segmentLength;
+      }
+    }
+  } catch {
+    // Missing or unreadable images fail the caller's dimensions check.
+  }
+
+  return { width: 0, height: 0 };
 }
 
 function safeDecodePath(value) {

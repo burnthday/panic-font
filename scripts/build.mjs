@@ -166,9 +166,11 @@ async function attachLocalSetlistImages(payload, tourYear = 0) {
   }
 
   const byDate = new Map(files.map((file) => [path.parse(file).name, file]));
-  for (const show of payload.setlists || []) {
-    const file = byDate.get(show.isoDate);
-    if (file) show.image = `/assets/setlists/${tourYear}/${file}`;
+  for (const collection of [payload.setlists, payload.tourDates]) {
+    for (const show of collection || []) {
+      const file = byDate.get(show.isoDate);
+      if (file) show.image = `/assets/setlists/${tourYear}/${file}`;
+    }
   }
   return payload;
 }
@@ -526,6 +528,16 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
   const postedShowCount = setlists.length;
   const boardShow = pickBoardShow(tourDates, setlists);
+  const latestShow = setlists[0] || null;
+  const todayIso = currentDateIso("America/Los_Angeles");
+  const isShowDayPreview = Boolean(
+    boardShow?.isoDate &&
+    boardShow.isoDate <= todayIso &&
+    (!latestShow?.isoDate || boardShow.isoDate > latestShow.isoDate)
+  );
+  const featuredShow = isShowDayPreview
+    ? { ...boardShow, sets: [], notes: [] }
+    : latestShow;
 
   const songs = catalog.map((row) => {
     const key = normalizeTitle(row.title);
@@ -594,7 +606,9 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       deck: "The Widespread Panic Spread Sheet",
       boardShow,
       markerLegend: buildMarkerLegend(lastFourDates, setlists, tourDates),
-      latestShow: setlists[0] || null
+      latestShow,
+      featuredShow,
+      isShowDayPreview
     },
     rules: {
       rotationSlpLimit: config.rotationSlpLimit,
@@ -633,6 +647,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
 function buildFreshnessReport(data, archiveEntries = [], songOrigins = [], generatedReviews = []) {
   const latestShow = data.site.latestShow || null;
   const boardShow = data.site.boardShow || null;
+  const featuredShow = data.site.featuredShow || latestShow;
   const priorStatsStrict = Boolean(data.source.priorSongStatsUrl) && !data.source.priorSongStatsAllowEcLag && data.source.priorSongStatsMissing === 0;
 
   return {
@@ -641,6 +656,8 @@ function buildFreshnessReport(data, archiveEntries = [], songOrigins = [], gener
       title: data.site.title,
       year: data.site.year,
       boardShow: boardShow ? showFreshnessSummary(boardShow) : null,
+      featuredShow: featuredShow ? showFreshnessSummary(featuredShow) : null,
+      isShowDayPreview: Boolean(data.site.isShowDayPreview),
       latestSetlist: latestShow ? showFreshnessSummary(latestShow) : null,
       markerLegend: data.site.markerLegend
     },
@@ -1698,7 +1715,7 @@ function renderHtml(data) {
       ${renderSheetKey(data)}
       ${renderShelfBoard(data)}
       ${renderWoodshedBoard(data)}
-      ${renderSetlists(data, { skipLatest: true })}
+      ${renderSetlists(data, { skipLatest: !data.site.isShowDayPreview })}
       ${renderTourDates(data)}
       ${renderCommunityLinks()}
     </main>
@@ -1946,15 +1963,16 @@ function renderSong(row, options = {}) {
 }
 
 function renderLatestSetlist(data) {
-  const latest = data.setlists[0];
-  if (!latest) return "";
+  const featured = data.site.featuredShow || data.setlists[0];
+  if (!featured) return "";
+  const sectionTitle = data.site.isShowDayPreview ? "CURRENT SHOW" : "LATEST SETLIST";
 
   return `<section class="latest-setlist" id="latest-setlist">
   <div class="section-heading">
-    <h2>LATEST SETLIST</h2>
-    <span>${escapeHtml(latest.date)} ${escapeHtml(latest.location)}</span>
+    <h2>${sectionTitle}</h2>
+    <span>${escapeHtml(featured.date)} ${escapeHtml(featured.location)}</span>
   </div>
-  ${renderFeaturedSetlist(latest)}
+  ${renderFeaturedSetlist(featured)}
 </section>`;
 }
 
@@ -3972,6 +3990,15 @@ function toNumber(value) {
 
 function clean(value) {
   return String(value ?? "").trim();
+}
+
+function currentDateIso(timeZone = "UTC", date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
 }
 
 function isPublicSongTitle(title) {
