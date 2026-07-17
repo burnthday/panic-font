@@ -4717,7 +4717,7 @@ sup {
   }
 
   .tour-dates li {
-    grid-template-columns: 78px minmax(0, 1fr) auto;
+    grid-template-columns: max-content minmax(0, 1fr) auto;
     gap: 4px 10px;
     align-items: start;
     padding: 12px 0;
