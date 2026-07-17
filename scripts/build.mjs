@@ -1797,6 +1797,7 @@ function renderHtml(data) {
       ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
       ${renderSheetKey(data)}
+      ${renderTourStats(data)}
       ${renderShelfWatch(data)}
       ${renderShelfBoard(data)}
       ${renderWoodshedBoard(data)}
@@ -1818,6 +1819,7 @@ function renderHtml(data) {
 function renderHomeIntro(data) {
   const links = [
     ["Song Possibilities", "#song-list"],
+    ["Tour Stats", "#tour-stats"],
     ["The Shelf", "#shelf"],
     ["Purgatory", "#purgatory"],
     ["Nick Stats", "#nick-johnson"],
@@ -1886,7 +1888,33 @@ function renderFitScriptBody() {
 
       if (window.matchMedia("(max-width: 700px)").matches) {
         document.querySelectorAll(".primary-board:not(.tour-review-sheet) .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel, .woodshed-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
-      }`;
+      }
+
+      document.querySelectorAll(".tour-table").forEach((table) => {
+        const body = table.tBodies[0];
+        const buttons = [...table.querySelectorAll("button[data-sort]")];
+        buttons.forEach((button) => button.addEventListener("click", () => {
+          const key = button.dataset.sort;
+          const header = button.closest("th");
+          const current = header.getAttribute("aria-sort");
+          const direction = current === "ascending" ? "descending" : "ascending";
+          const multiplier = direction === "ascending" ? 1 : -1;
+          const numeric = key === "count" || key === "frequency";
+          const rows = [...body.rows].sort((left, right) => {
+            const a = left.dataset[key] || "";
+            const b = right.dataset[key] || "";
+            const comparison = numeric ? Number(a) - Number(b) : a.localeCompare(b);
+            return comparison * multiplier || left.dataset.title.localeCompare(right.dataset.title);
+          });
+          buttons.forEach((item) => {
+            item.closest("th").removeAttribute("aria-sort");
+            item.querySelector("span").textContent = "↕";
+          });
+          header.setAttribute("aria-sort", direction);
+          button.querySelector("span").textContent = direction === "ascending" ? "↑" : "↓";
+          rows.forEach((row) => body.appendChild(row));
+        }));
+      });`;
 }
 
 function renderSiteHeader() {
@@ -1945,18 +1973,53 @@ function renderNavLinks(items, className, label, withPipes = false) {
 }
 
 function renderRotationBoard(data) {
-  const possibilities = data.boards.rotationOriginals.length + data.boards.rotationCovers.length;
-  const averagePerShow = data.totals.postedSetlists ? (data.totals.currentTourPlays / data.totals.postedSetlists).toFixed(1) : "0";
-  const coverage = possibilities ? Math.round((data.totals.currentTourSongs / possibilities) * 100) : 0;
   return `<section class="laminate primary-board" id="song-list">
   ${renderPrimaryBoardHeader(data)}
 	  ${renderSongPanel("rotation-originals", "ORIGINALS", data.boards.rotationOriginals)}
 	  ${renderSongPanel("rotation-covers", "COVERS", data.boards.rotationCovers)}
-	  <div class="board-ledger" aria-label="Tour stats">
-    ${renderStat(data.totals.currentTourSongs, "unique songs")}
-    ${renderStat(averagePerShow, "songs per show")}
-    ${renderStat(data.totals.postedSetlists, "shows played")}
-    ${renderStat(`${coverage}%`, "possibilities played")}
+</section>`;
+}
+
+function renderTourStats(data) {
+  const shows = data.totals.postedSetlists;
+  const plays = data.totals.currentTourPlays;
+  const unique = data.totals.currentTourSongs;
+  const average = shows ? (plays / shows).toFixed(1) : "0";
+  const songs = [...(data.catalog || [])]
+    .filter((song) => song.playedThisTour && song.tourCount > 0)
+    .sort((left, right) => right.tourCount - left.tourCount || left.title.localeCompare(right.title));
+
+  return `<section class="tour-stats" id="tour-stats">
+  <div class="section-heading">
+    <h2>TOUR STATS</h2>
+    <span>${escapeHtml(String(data.site.year))} through ${escapeHtml(data.site.latestShow?.date || "the latest posted show")}</span>
+  </div>
+  <div class="tour-summary" aria-label="Current tour summary">
+    ${renderNickStat(shows, "shows played")}
+    ${renderNickStat(unique, "unique songs")}
+    ${renderNickStat(plays, "song plays")}
+    ${renderNickStat(average, "songs per show")}
+  </div>
+  <div class="tour-table-wrap">
+    <table class="tour-table">
+      <thead><tr>
+        <th scope="col"><button type="button" data-sort="title">Song <span aria-hidden="true">↕</span></button></th>
+        <th scope="col" aria-sort="descending"><button type="button" data-sort="count">Plays <span aria-hidden="true">↓</span></button></th>
+        <th scope="col"><button type="button" data-sort="frequency">Shows <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="last">Last played <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="type">Type <span aria-hidden="true">↕</span></button></th>
+      </tr></thead>
+      <tbody>${songs.map((song) => {
+        const frequency = shows ? Math.round((song.tourCount / shows) * 100) : 0;
+        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}">
+          <th scope="row">${escapeHtml(song.title)}</th>
+          <td>${formatNumber(song.tourCount)}</td>
+          <td>${frequency}%</td>
+          <td>${escapeHtml(song.lastDisplay)}</td>
+          <td>${escapeHtml(song.type)}</td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table>
   </div>
 </section>`;
 }
@@ -3088,6 +3151,7 @@ sup {
 .setlist-section,
 .tour-date-section,
 .shelf-watch,
+.tour-stats,
 .nick-feature {
   width: min(1180px, 100%);
   margin: 36px auto;
@@ -3105,6 +3169,73 @@ sup {
   display: grid;
   gap: 28px;
   margin-top: 28px;
+}
+
+.tour-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.tour-table-wrap {
+  max-height: 560px;
+  overflow: auto;
+  margin-top: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tour-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--ui-font);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tour-table th,
+.tour-table td {
+  border-top: 1px solid var(--line);
+  padding: 11px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.tour-table tbody th {
+  width: 48%;
+  font-weight: 600;
+}
+
+.tour-table thead th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  background: var(--paper);
+  padding: 0;
+}
+
+.tour-table button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 12px;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tour-table button:hover,
+.tour-table button:focus-visible,
+.tour-table th[aria-sort] button {
+  color: var(--ink);
+}
+
+.tour-table button span {
+  margin-left: 4px;
 }
 
 .shelf-watch-list {
@@ -4162,11 +4293,23 @@ sup {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .tour-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .nick-stat:nth-child(3) {
     border-left: 0;
   }
 
   .nick-stat:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+
+  .tour-summary .nick-stat:nth-child(3) {
+    border-left: 0;
+  }
+
+  .tour-summary .nick-stat:nth-child(n + 3) {
     border-top: 1px solid var(--line);
   }
 
@@ -4194,6 +4337,7 @@ sup {
   .tour-date-section,
   .tour-review-main,
   .shelf-watch,
+  .tour-stats,
   .nick-feature {
     width: min(calc(100% - 20px), 1180px);
   }
@@ -4332,6 +4476,24 @@ sup {
 
   .section-heading h2 {
     font-size: 24px;
+  }
+
+  .tour-table-wrap {
+    max-height: 500px;
+  }
+
+  .tour-table th,
+  .tour-table td {
+    padding: 10px 8px;
+  }
+
+  .tour-table button {
+    padding: 11px 8px;
+  }
+
+  .tour-table th:nth-child(5),
+  .tour-table td:nth-child(5) {
+    display: none;
   }
 
   .board-ledger {

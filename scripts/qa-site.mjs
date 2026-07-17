@@ -21,6 +21,7 @@ async function main() {
   checkCanonicalSongNames(allHtmlFiles, allHtml);
   checkCorePageState(homeHtml, siteData);
   checkTourSongCounts(homeHtml, siteData);
+  checkTourStats(homeHtml, siteData);
   checkShelfWatch(homeHtml, siteData);
   checkNickJohnsonFeature(homeHtml, siteData);
   await checkLatestSetlist(homeHtml, siteData);
@@ -70,7 +71,7 @@ function checkNoPublicPanicStreamLinks(files, htmlByFile) {
 
 function checkCorePageState(html, siteData) {
   assertIncludes(html, `<h1>WIDESPREAD PANIC ${siteData.site.year} TOUR</h1>`, "Homepage leads with the tour title");
-  for (const label of ["Song Possibilities", "The Shelf", "Purgatory", "Nick Stats", "Setlists"]) assertIncludes(sectionByClass(html, "home-trail"), label, `Homepage trail links to ${label}`);
+  for (const label of ["Song Possibilities", "Tour Stats", "The Shelf", "Purgatory", "Nick Stats", "Setlists"]) assertIncludes(sectionByClass(html, "home-trail"), label, `Homepage trail links to ${label}`);
   assertIncludes(html, '<section class="latest-setlist" id="latest-setlist">', "Homepage has top-of-page setlist section");
   assertIncludes(html, '<section class="laminate primary-board" id="song-list">', "Homepage has song-list laminate");
   const boardTitle = [siteData.site?.boardShow?.location, siteData.site?.boardShow?.runLabel].filter(Boolean).join(" ").toUpperCase();
@@ -78,7 +79,8 @@ function checkCorePageState(html, siteData) {
 
   record("Current tour-stop setlists appear above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
   record("Sheet key appears below Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"'));
-  record("Shelf Watch appears between the Sheet Key and Shelf", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="shelf-watch"') && indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"'));
+  record("Tour Stats appears below the Sheet Key", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="tour-stats"'));
+  record("Shelf Watch appears between Tour Stats and Shelf", indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="shelf-watch"') && indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"'));
   record("Shelf and Purgatory appear below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"'));
   record("The Woodshed appears below Purgatory", indexOf(html, 'id="purgatory"') < indexOf(html, 'id="woodshed"'));
   record("Older setlists appear below The Woodshed", indexOf(html, 'id="woodshed"') < indexOf(html, 'id="setlists"'));
@@ -87,13 +89,8 @@ function checkCorePageState(html, siteData) {
   record("Tour-play total matches per-song counts", siteData.totals?.currentTourPlays === sum(siteData.currentTour?.map((song) => song.tourCount)));
   record("Shows-played total matches posted setlists", siteData.totals?.postedSetlists === siteData.setlists?.length);
   record("Tour-date total matches the official schedule", siteData.totals?.tourDates === siteData.tourDates?.length);
-  const possibilities = siteData.boards.rotationOriginals.length + siteData.boards.rotationCovers.length;
-  const average = (siteData.totals.currentTourPlays / siteData.totals.postedSetlists).toFixed(1);
-  const coverage = Math.round((siteData.totals.currentTourSongs / possibilities) * 100);
   const ledger = sectionHtml(html, "song-list");
-  assertIncludes(ledger, `<strong>${average}</strong><span>songs per show</span>`, "Song List reports average songs per show");
-  assertIncludes(ledger, `<strong>${coverage}%</strong><span>possibilities played</span>`, "Song List reports possibility-sheet coverage");
-  record("Song List ledger does not repeat total scheduled dates", !ledger.includes("tour dates"));
+  record("Song List laminate contains no website-stat ledger", !ledger.includes("board-ledger") && !ledger.includes("songs per show"));
 
   assertIncludes(html, "Tiny Number", "Sheet key explains Tiny Number");
   assertIncludes(html, "Times played this tour", "Sheet key says tiny numbers are times played this tour");
@@ -108,6 +105,34 @@ function checkCorePageState(html, siteData) {
   assertCurrentTourSong(html, siteData, "Room at the Top", "Song List Room At The Top keeps its tour count and current-tour date");
   assertSongHtml(html, "ROOM AT THE TOP", ["<sup>2</sup>", "03/24/24"], "Purgatory Room At The Top keeps prior last-played date");
   assertCurrentTourSong(html, siteData, "Free Somehow", "Song List Free Somehow shows its current tour count", { requireDate: false });
+}
+
+function checkTourStats(html, siteData) {
+  const feature = sectionHtml(html, "tour-stats");
+  const shows = siteData.totals.postedSetlists;
+  const plays = siteData.totals.currentTourPlays;
+  const songs = (siteData.catalog || [])
+    .filter((song) => song.playedThisTour && song.tourCount > 0)
+    .sort((left, right) => right.tourCount - left.tourCount || left.title.localeCompare(right.title));
+  const average = shows ? (plays / shows).toFixed(1) : "0";
+
+  assertIncludes(feature, "<h2>TOUR STATS</h2>", "Homepage has a separate Tour Stats section");
+  for (const [value, label] of [
+    [shows, "shows played"],
+    [songs.length, "unique songs"],
+    [plays, "song plays"],
+    [average, "songs per show"]
+  ]) assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Tour Stats reports ${label}`);
+
+  for (const key of ["title", "count", "frequency", "last", "type"]) {
+    assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
+  }
+  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-last="([^"]*)" data-type="([^"]+)">/g)]
+    .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
+  record("Tour Stats includes every played song exactly once", rendered.length === songs.length, `${rendered.length} rendered vs ${songs.length} expected`);
+  record("Tour Stats defaults to most played with alphabetical tie-breaking", arraysEqual(rendered.map((song) => song.title), songs.map((song) => song.title.toLowerCase())));
+  record("Tour Stats play counts match the ledger", rendered.every((song, index) => song.count === songs[index].tourCount));
+  record("Tour Stats does not report scheduled tour dates", !feature.includes("tour dates"));
 }
 
 function checkTourSongCounts(html, siteData) {
