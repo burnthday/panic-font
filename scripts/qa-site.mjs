@@ -25,6 +25,7 @@ async function main() {
   checkShelfWatch(homeHtml, siteData);
   checkNickJohnsonFeature(homeHtml, siteData);
   checkTourDates(homeHtml, siteData);
+  await checkSetlistImageOrientation(siteData);
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml, siteData);
@@ -239,6 +240,53 @@ function checkTourDates(html, siteData) {
   record("Tour Dates uses neutral status copy instead of green styling hooks", !feature.includes("green"));
 }
 
+async function checkSetlistImageOrientation(siteData) {
+  const failures = [];
+  for (const show of siteData.setlists || []) {
+    if (!show.image) continue;
+    if (!show.image.startsWith("/assets/setlists/")) {
+      failures.push(`${show.isoDate}: remote image`);
+      continue;
+    }
+    const filename = path.join(distDir, show.image.replace(/^\//, ""));
+    try {
+      const dimensions = jpegDimensions(await readFile(filename));
+      if (!dimensions || dimensions.width < dimensions.height) {
+        failures.push(`${show.isoDate}: ${dimensions ? `${dimensions.width}x${dimensions.height}` : "unreadable"}`);
+      }
+    } catch {
+      failures.push(`${show.isoDate}: missing`);
+    }
+  }
+  record("Every posted 2026 setlist uses a local landscape source image", failures.length === 0, failures.join("\n"));
+}
+
+function jpegDimensions(buffer) {
+  if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) return null;
+  let offset = 2;
+  while (offset + 8 < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+    const marker = buffer[offset + 1];
+    if (marker === 0xd8 || marker === 0xd9) {
+      offset += 2;
+      continue;
+    }
+    const length = buffer.readUInt16BE(offset + 2);
+    if (length < 2) return null;
+    if ([0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf].includes(marker)) {
+      return {
+        height: buffer.readUInt16BE(offset + 5),
+        width: buffer.readUInt16BE(offset + 7)
+      };
+    }
+    offset += 2 + length;
+  }
+  return null;
+}
+
 async function checkLatestSetlist(html, siteData) {
   const featured = sectionHtml(html, "latest-setlist");
   const featuredShow = siteData.site?.featuredShow || siteData.setlists?.[0];
@@ -275,8 +323,13 @@ async function checkLatestSetlist(html, siteData) {
   }
 
   const styles = await readText("dist/styles.css");
-  record("Setlist photography uses a landscape crop", /\.setlist-image img\s*\{[\s\S]*?aspect-ratio:\s*16 \/ 9;[\s\S]*?object-fit:\s*cover;/.test(styles));
+  const imageRule = styles.match(/\.setlist-image img\s*\{([^}]*)\}/)?.[1] || "";
+  record("Setlist photography preserves its natural landscape frame", /height:\s*auto;/.test(imageRule) && /object-fit:\s*contain;/.test(imageRule) && !/object-fit:\s*cover;|aspect-ratio:/.test(imageRule));
   record("Setlist entries are unframed", /\.setlist-card\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;/.test(styles));
+  const archive = sectionHtml(html, "setlists");
+  assertIncludes(archive, '<details class="setlist-archive-panel" open>', "Older setlists remain visible on desktop");
+  assertIncludes(archive, "VIEW OLDER SETLISTS", "Older setlists have one clear mobile disclosure");
+  record("Mobile initialization collapses only the older setlist archive", html.includes('.setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
 
   const bendHeading = "07/11/2026 Hayden Homes Amphitheater, Bend, OR";
   const bend = featured.includes(bendHeading) ? featured : cardHtml(html, bendHeading);

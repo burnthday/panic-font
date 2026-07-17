@@ -46,7 +46,7 @@ Letter spacing is always `0`. Never use negative letter spacing to force a fit. 
 - Site content uses a maximum width of 1180px; the large laminated board may use the wider 1880px canvas.
 - Spacing follows an 8px rhythm where practical. Standard section gaps are 32-36px.
 - Laminated sheets use white paper, a subtle 9px laminate edge, and a maximum 6px radius.
-- Setlist photography is landscape (`16:9`), unframed, and outside decorative cards.
+- Setlist photography must use genuinely landscape source files, remain unframed, and render at its natural aspect ratio. Never use `object-fit: cover` to disguise portrait photography or force a crop.
 - The latest completed setlist appears above the Song List. Older setlists move into the setlist section below the sheets.
 - Tour Stats is a website data view below the Sheet Key, never part of the laminated Song List. It defaults to most-played songs and supports sorting by song, plays, show percentage, last play, and type.
 - Homepage sections share one content rail and left edge. Tour Dates is a single chronological schedule with neutral posted/upcoming states; green is reserved for the original marker system.
@@ -59,6 +59,7 @@ Letter spacing is always `0`. Never use negative letter spacing to force a fit. 
 - On mobile, the numbered corners and location remain on one line and share a balanced visual height.
 - Song columns collapse from four to two to one. Titles remain one line and are fitted without hiding the tour count.
 - Desktop navigation becomes the compact menu below 560px.
+- The older setlist archive remains open on desktop and collapses behind one clearly labeled disclosure on mobile. Do not add accordions to Tour Dates, Tour Stats, or primary current-show information.
 - No horizontal page overflow is acceptable at 320px or wider.
 
 ## Color

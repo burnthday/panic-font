@@ -1887,7 +1887,7 @@ function renderFitScriptBody() {
       });
 
       if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".primary-board:not(.tour-review-sheet) .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel, .woodshed-board .song-panel").forEach((panel) => panel.removeAttribute("open"));
+        document.querySelectorAll(".primary-board:not(.tour-review-sheet) .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel, .woodshed-board .song-panel, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
       }
 
       document.querySelectorAll(".tour-table").forEach((table) => {
@@ -2259,9 +2259,12 @@ function renderSetlists(data, options = {}) {
     <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>
     <span>${escapeHtml(postedLabel)}</span>
   </div>
-  <div class="setlist-grid">
-    ${setlists.map(renderSetlistCard).join("")}
-  </div>
+  <details class="setlist-archive-panel" open>
+    <summary><span>VIEW OLDER SETLISTS</span><strong>${formatNumber(setlists.length)}</strong></summary>
+    <div class="setlist-grid">
+      ${setlists.map(renderSetlistCard).join("")}
+    </div>
+  </details>
 </section>`;
 }
 
@@ -3619,10 +3622,17 @@ sup {
 .setlist-image img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  object-position: center 30%;
+  height: auto;
+  object-fit: contain;
   background: transparent;
+}
+
+.setlist-archive-panel > summary {
+  display: none;
+}
+
+.setlist-archive-panel > .setlist-grid {
+  margin-top: 0;
 }
 
 .setlist-text {
@@ -4431,6 +4441,46 @@ sup {
 
   .rotation-song {
     --song-font-size: 19px;
+  }
+
+  .setlist-archive-panel > summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 46px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 0;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .setlist-archive-panel > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .setlist-archive-panel > summary::after {
+    content: "+";
+    margin-left: 10px;
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  .setlist-archive-panel[open] > summary::after {
+    content: "\\2212";
+  }
+
+  .setlist-archive-panel > summary strong {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .setlist-archive-panel > .setlist-grid {
+    margin-top: 18px;
   }
 
   .songs.grid4,
