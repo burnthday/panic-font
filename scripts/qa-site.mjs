@@ -69,12 +69,15 @@ function checkNoPublicPanicStreamLinks(files, htmlByFile) {
 }
 
 function checkCorePageState(html, siteData) {
-  assertIncludes(html, '<section class="latest-setlist" id="latest-setlist">', "Homepage has latest-setlist section");
+  assertIncludes(html, `<h1>WIDESPREAD PANIC ${siteData.site.year} TOUR</h1>`, "Homepage leads with the tour title");
+  for (const label of ["Song Possibilities", "The Shelf", "Purgatory", "Nick Stats", "Setlists"]) assertIncludes(sectionByClass(html, "home-trail"), label, `Homepage trail links to ${label}`);
+  if (siteData.site?.isShowDayPreview) record("Homepage omits the empty Current Show block", !html.includes('id="latest-setlist"') && !html.includes("CURRENT SHOW"));
+  else assertIncludes(html, '<section class="latest-setlist" id="latest-setlist">', "Homepage has latest-setlist section");
   assertIncludes(html, '<section class="laminate primary-board" id="song-list">', "Homepage has song-list laminate");
   const boardTitle = [siteData.site?.boardShow?.location, siteData.site?.boardShow?.runLabel].filter(Boolean).join(" ").toUpperCase();
   assertIncludes(html, `<h1>${escapeHtml(boardTitle)}</h1>`, `Song List title matches board show: ${boardTitle}`);
 
-  record("Latest setlist appears above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
+  if (!siteData.site?.isShowDayPreview) record("Latest setlist appears above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
   record("Sheet key appears below Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"'));
   record("Shelf Watch appears between the Sheet Key and Shelf", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="shelf-watch"') && indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"'));
   record("Shelf and Purgatory appear below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"'));
@@ -85,6 +88,13 @@ function checkCorePageState(html, siteData) {
   record("Tour-play total matches per-song counts", siteData.totals?.currentTourPlays === sum(siteData.currentTour?.map((song) => song.tourCount)));
   record("Shows-played total matches posted setlists", siteData.totals?.postedSetlists === siteData.setlists?.length);
   record("Tour-date total matches the official schedule", siteData.totals?.tourDates === siteData.tourDates?.length);
+  const possibilities = siteData.boards.rotationOriginals.length + siteData.boards.rotationCovers.length;
+  const average = (siteData.totals.currentTourPlays / siteData.totals.postedSetlists).toFixed(1);
+  const coverage = Math.round((siteData.totals.currentTourSongs / possibilities) * 100);
+  const ledger = sectionHtml(html, "song-list");
+  assertIncludes(ledger, `<strong>${average}</strong><span>songs per show</span>`, "Song List reports average songs per show");
+  assertIncludes(ledger, `<strong>${coverage}%</strong><span>possibilities played</span>`, "Song List reports possibility-sheet coverage");
+  record("Song List ledger does not repeat total scheduled dates", !ledger.includes("tour dates"));
 
   assertIncludes(html, "Tiny Number", "Sheet key explains Tiny Number");
   assertIncludes(html, "Times played this tour", "Sheet key says tiny numbers are times played this tour");
@@ -157,6 +167,9 @@ function checkNickJohnsonFeature(html, siteData) {
   const played = (siteData.catalog || [])
     .filter((song) => song.playedWithNick && song.nickCount > 0)
     .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
+  const rotation = (siteData.catalog || [])
+    .filter((song) => song.effectiveSlp < siteData.rules.rotationSlpLimit || song.playedThisTour)
+    .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
   const nickShows = (siteData.setlists || []).filter((show) => (show.notes || []).some((note) => /\bnick johnson\b/i.test(note) && /\bguitar\b/i.test(note))).length;
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
@@ -172,19 +185,22 @@ function checkNickJohnsonFeature(html, siteData) {
   }
 
   assertIncludes(feature, "<h3>MOST PLAYED WITH NICK</h3>", "Nick Johnson feature presents a ranked most-played view");
+  const completion = Math.round((played.length / rotation.length) * 100);
+  assertIncludes(feature, `<strong>${completion}%</strong><span>${played.length} of ${rotation.length} current possibilities played</span>`, "Nick Johnson feature shows rotation completion");
   record("Nick Johnson feature is not another laminated song sheet", !feature.includes("nick-played-sheet") && !feature.includes("song-panel"));
   const renderedRanking = [...feature.matchAll(/data-song-title="([^"]+)" data-nick-count="(\d+)"/g)]
     .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
   record(
     "Nick Johnson songs are ranked by plays with alphabetical tie-breaking",
-    arraysEqual(renderedRanking.map((song) => song.title), played.map((song) => song.title)),
+    arraysEqual(renderedRanking.map((song) => song.title), rotation.map((song) => song.title)),
     renderedRanking.slice(0, 20).map((song) => `${song.title}: ${song.count}`).join("\n")
   );
   record(
     "Every Nick Johnson song keeps its per-show play count",
-    renderedRanking.length === played.length && renderedRanking.every((song, index) => song.count === played[index].nickCount),
-    `${renderedRanking.length} rendered vs ${played.length} expected`
+    renderedRanking.length === rotation.length && renderedRanking.every((song, index) => song.count === rotation[index].nickCount),
+    `${renderedRanking.length} rendered vs ${rotation.length} expected`
   );
+  record("Nick Johnson ranking includes zero-play rotation songs at the bottom", renderedRanking.some((song) => song.count === 0) && renderedRanking.slice(-1)[0]?.count === 0);
   record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
 }
 
@@ -193,18 +209,11 @@ async function checkLatestSetlist(html, siteData) {
   const featuredShow = siteData.site?.featuredShow || siteData.setlists?.[0];
   const latestShow = siteData.setlists?.[0];
   const heading = `${featuredShow?.date || ""} ${featuredShow?.venue || ""}, ${featuredShow?.location || ""}`;
-  assertIncludes(featured, escapeHtml(heading), "Featured-show heading matches generated site data");
+  if (!siteData.site?.isShowDayPreview) assertIncludes(featured, escapeHtml(heading), "Featured-show heading matches generated site data");
 
   const renderedLabels = [...featured.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
   if (siteData.site?.isShowDayPreview) {
-    assertIncludes(featured, "<h2>CURRENT SHOW</h2>", "Show-day preview is labeled Current Show");
-    record("Show-day preview keeps the setlist blank", renderedLabels.length === 0, renderedLabels.join(", "));
-    const imageDimensions = await readImageDimensions(featuredShow?.image);
-    record(
-      "Show-day preview has a local landscape show image",
-      /<img src="\/assets\/setlists\//.test(featured) && imageDimensions.width > imageDimensions.height,
-      `${featuredShow?.image || "missing"} ${imageDimensions.width}x${imageDimensions.height}`
-    );
+    record("Show-day preview is intentionally not rendered", featured === "");
 
     const completedHeading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
     record("Latest completed show moves into the setlist archive", Boolean(cardHtml(sectionHtml(html, "setlists"), escapeHtml(completedHeading))), completedHeading);
@@ -217,6 +226,10 @@ async function checkLatestSetlist(html, siteData) {
     const sourceLabels = (latestShow?.sets || []).map((set) => set.label);
     record("Latest setlist renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
   }
+
+  const styles = await readText("dist/styles.css");
+  record("Setlist photography uses a landscape crop", /\.setlist-image img\s*\{[\s\S]*?aspect-ratio:\s*16 \/ 9;[\s\S]*?object-fit:\s*cover;/.test(styles));
+  record("Setlist entries are unframed", /\.setlist-card\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;/.test(styles));
 
   const bendHeading = "07/11/2026 Hayden Homes Amphitheater, Bend, OR";
   const bend = featured.includes(bendHeading) ? featured : cardHtml(html, bendHeading);

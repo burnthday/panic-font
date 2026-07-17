@@ -534,6 +534,8 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const currentTourByKey = new Map(currentTour.map((row) => [normalizeTitle(row.title), row]));
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
   const postedShowCount = setlists.length;
+  const playstatsAsOfIso = maxIso(rawPlaystats.map((row) => parseDateKey(row.last)));
+  const showsAfterPlaystats = setlists.filter((show) => show.isoDate > playstatsAsOfIso).length;
   const boardShow = pickBoardShow(tourDates, setlists);
   let latestShow = setlists[0] || null;
   const todayIso = currentDateIso("America/Los_Angeles");
@@ -567,7 +569,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
     const effectiveSlp = playedThisTour
       ? showsSinceLastPlayed(setlists, lastForSlp)
       : hasPlaystats
-        ? row.slp
+        ? row.slp + showsAfterPlaystats
         : row.slp + postedShowCount;
 
     return {
@@ -615,7 +617,9 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       priorSongStatsAllowEcLag: Boolean(source.priorSongStats?.allowEcLag),
       priorSongStatsMissing: Array.isArray(source.priorSongStats?.missing) ? source.priorSongStats.missing.length : 0,
       priorSongStatsBridgeRows: source.priorSongStats?.bridgeRows || 0,
-      priorSongStatsUnverifiedLagRows: source.priorSongStats?.unverifiedLagRows || 0
+      priorSongStatsUnverifiedLagRows: source.priorSongStats?.unverifiedLagRows || 0,
+      playstatsAsOfIso,
+      showsAfterPlaystats
     },
     site: {
       name: "Burnthday",
@@ -1767,6 +1771,7 @@ function renderHtml(data) {
     ${renderSiteHeader()}
 
     <main>
+      ${renderHomeIntro(data)}
       ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
       ${renderSheetKey(data)}
@@ -1786,6 +1791,20 @@ function renderHtml(data) {
   </body>
 </html>
 `;
+}
+
+function renderHomeIntro(data) {
+  const links = [
+    ["Song Possibilities", "#song-list"],
+    ["The Shelf", "#shelf"],
+    ["Purgatory", "#purgatory"],
+    ["Nick Stats", "#nick-johnson"],
+    ["Setlists", "#setlists"]
+  ];
+  return `<header class="home-intro">
+    <h1>WIDESPREAD PANIC ${escapeHtml(String(data.site.year))} TOUR</h1>
+    <nav class="home-trail" aria-label="Homepage sections">${links.map(([label, href]) => `<a href="${href}">${escapeHtml(label)}</a>`).join('<span aria-hidden="true">&gt;</span>')}</nav>
+  </header>`;
 }
 
 function renderFitScriptBody() {
@@ -1904,16 +1923,18 @@ function renderNavLinks(items, className, label, withPipes = false) {
 }
 
 function renderRotationBoard(data) {
-  const latest = data.site.latestShow;
+  const possibilities = data.boards.rotationOriginals.length + data.boards.rotationCovers.length;
+  const averagePerShow = data.totals.postedSetlists ? (data.totals.currentTourPlays / data.totals.postedSetlists).toFixed(1) : "0";
+  const coverage = possibilities ? Math.round((data.totals.currentTourSongs / possibilities) * 100) : 0;
   return `<section class="laminate primary-board" id="song-list">
   ${renderPrimaryBoardHeader(data)}
 	  ${renderSongPanel("rotation-originals", "ORIGINALS", data.boards.rotationOriginals)}
 	  ${renderSongPanel("rotation-covers", "COVERS", data.boards.rotationCovers)}
 	  <div class="board-ledger" aria-label="Tour stats">
     ${renderStat(data.totals.currentTourSongs, "unique songs")}
-    ${renderStat(data.totals.currentTourPlays, "song plays")}
+    ${renderStat(averagePerShow, "songs per show")}
     ${renderStat(data.totals.postedSetlists, "shows played")}
-    ${renderStat(data.totals.tourDates, "tour dates")}
+    ${renderStat(`${coverage}%`, "possibilities played")}
   </div>
 </section>`;
 }
@@ -1963,14 +1984,16 @@ function renderWoodshedBoard(data) {
 }
 
 function renderNickJohnsonFeature(data) {
-  const played = (data.catalog || [])
-    .filter((row) => row.playedWithNick && row.nickCount > 0)
+  const rotation = (data.catalog || [])
+    .filter((row) => row.effectiveSlp < data.rules.rotationSlpLimit || row.playedThisTour)
     .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
+  const played = rotation.filter((row) => row.nickCount > 0);
   const featuredSongs = played.slice(0, 10);
-  const remainingSongs = played.slice(featuredSongs.length);
+  const remainingSongs = rotation.slice(featuredSongs.length);
   const shows = (data.setlists || []).filter(isNickJohnsonShow).length;
   const plays = sum(played.map((row) => row.nickCount));
   const woodshed = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
+  const completion = rotation.length ? Math.round((played.length / rotation.length) * 100) : 0;
 
   return `<section class="nick-feature" id="nick-johnson">
   <div class="section-heading">
@@ -1983,10 +2006,14 @@ function renderNickJohnsonFeature(data) {
     ${renderNickStat(plays, "song plays")}
     ${renderNickStat(woodshed, "still in The Woodshed")}
   </div>
+  <div class="nick-progress" aria-label="${completion}% of current song possibilities played with Nick Johnson">
+    <div><strong>${completion}%</strong><span>${formatNumber(played.length)} of ${formatNumber(rotation.length)} current possibilities played</span></div>
+    <span class="nick-progress-track"><i style="width:${completion}%"></i></span>
+  </div>
   <div class="nick-ranking-heading"><h3>MOST PLAYED WITH NICK</h3><span>plays per show</span></div>
   ${renderNickRanking(featuredSongs)}
   ${remainingSongs.length ? `<details class="nick-played-panel">
-    <summary><span>VIEW REMAINING SONGS</span><strong>${formatNumber(remainingSongs.length)}</strong></summary>
+    <summary><span>VIEW ALL SONGS, INCLUDING ZERO PLAYS</span><strong>${formatNumber(remainingSongs.length)}</strong></summary>
     ${renderNickRanking(remainingSongs, { start: featuredSongs.length + 1, compact: true })}
   </details>` : ""}
 </section>`;
@@ -1999,7 +2026,7 @@ function renderNickStat(value, label) {
 function renderNickRanking(songs, options = {}) {
   const start = options.start || 1;
   const classes = options.compact ? "nick-ranking is-compact" : "nick-ranking";
-  return `<ol class="${classes}" start="${start}">${songs.map((song, index) => `<li value="${start + index}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}">
+  return `<ol class="${classes}" start="${start}">${songs.map((song, index) => `<li class="${song.nickCount === 0 ? "is-zero" : ""}" value="${start + index}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}">
     <span class="nick-rank" aria-hidden="true">${start + index}</span>
     <span class="nick-song"><strong>${escapeHtml(song.title.toUpperCase())}</strong><small>${escapeHtml(song.type)}</small></span>
     <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong><small>${song.nickCount === 1 ? "play" : "plays"}</small></span>
@@ -2111,14 +2138,13 @@ function renderSong(row, options = {}) {
 }
 
 function renderLatestSetlist(data) {
+  if (data.site.isShowDayPreview) return "";
   const featured = data.site.featuredShow || data.setlists[0];
   if (!featured) return "";
-  const sectionTitle = data.site.isShowDayPreview ? "CURRENT SHOW" : "LATEST SETLIST";
 
   return `<section class="latest-setlist" id="latest-setlist">
   <div class="section-heading">
-    <h2>${sectionTitle}</h2>
-    <span>${escapeHtml(featured.date)} ${escapeHtml(featured.location)}</span>
+    <h2>LATEST SETLIST</h2>
   </div>
   ${renderFeaturedSetlist(featured)}
 </section>`;
@@ -2389,7 +2415,8 @@ function renderCommunityLinks() {
 }
 
 function renderStat(value, label) {
-  return `<div class="stat"><strong>${formatNumber(value)}</strong><span>${escapeHtml(label)}</span></div>`;
+  const displayValue = typeof value === "string" && value.endsWith("%") ? value : formatNumber(value);
+  return `<div class="stat"><strong>${escapeHtml(String(displayValue))}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
 function renderCss() {
@@ -2543,6 +2570,40 @@ a {
 main {
   width: min(1880px, calc(100% - 56px));
   margin: 34px auto 56px;
+}
+
+.home-intro {
+  width: min(1540px, 100%);
+  margin: 0 auto 30px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.home-intro h1 {
+  margin: 0 0 14px;
+  font-family: var(--ui-font);
+  font-size: clamp(30px, 4vw, 56px);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.home-trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-family: var(--ui-font);
+  font-size: 14px;
+}
+
+.home-trail a {
+  color: var(--ink);
+  text-underline-offset: 3px;
+}
+
+.home-trail span {
+  color: var(--muted);
 }
 
 #latest-setlist,
@@ -3052,6 +3113,43 @@ sup {
   border-bottom: 1px solid var(--line);
 }
 
+.nick-progress {
+  display: grid;
+  gap: 9px;
+  margin: 22px 0 4px;
+}
+
+.nick-progress > div {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.nick-progress strong {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.nick-progress span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.nick-progress-track {
+  display: block;
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  background: #e8e8e6;
+}
+
+.nick-progress-track i {
+  display: block;
+  height: 100%;
+  background: var(--red);
+}
+
 .nick-stat {
   min-width: 0;
   display: grid;
@@ -3206,6 +3304,11 @@ sup {
   padding: 9px 0;
 }
 
+.nick-ranking li.is-zero .nick-song,
+.nick-ranking li.is-zero .nick-plays {
+  color: var(--muted);
+}
+
 .community-links {
   width: min(1180px, 100%);
   margin: 34px auto 46px;
@@ -3268,10 +3371,10 @@ sup {
   gap: 18px;
   align-items: start;
   margin-bottom: 18px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #ffffff;
-  padding: 14px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
 }
 
 .setlist-feature.no-image {
@@ -3285,17 +3388,17 @@ sup {
 }
 
 .setlist-card {
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #ffffff;
-  padding: 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0 0 22px;
 }
 
 .setlist-image {
   margin: 0 0 12px;
-  background: #ffffff;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -3311,9 +3414,9 @@ sup {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  object-fit: contain;
-  object-position: center center;
-  background: #ffffff;
+  object-fit: cover;
+  object-position: center 30%;
+  background: transparent;
 }
 
 .setlist-text {
