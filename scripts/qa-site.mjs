@@ -217,7 +217,7 @@ async function checkLatestSetlist(html, siteData) {
     assertIncludes(featured, escapeHtml(heading), "Tonight's blank setlist is featured first");
     record("Tonight's setlist remains blank until songs are posted", renderedLabels.length === 0, renderedLabels.join(", "));
     assertIncludes(featuredCard, ">Show Details</a>", "Tonight links to show details");
-    assertIncludes(featuredCard, 'href="https://www.twitch.tv/widespreadpanic">Listen Live on Twitch</a>', "Tonight alone links to the live Twitch audio");
+    record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));
     record("Tonight does not advertise a post-show Nugs archive", !featuredCard.includes("Listen at Nugs.net"));
 
     const completedHeading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
@@ -226,7 +226,6 @@ async function checkLatestSetlist(html, siteData) {
     record("Top tour-stop show is not duplicated in the lower archive", !cardHtml(sectionHtml(html, "setlists"), escapeHtml(completedHeading)), completedHeading);
     assertIncludes(completedRunShow, ">Official Setlist &amp; Photos</a>", "Completed show identifies the official setlist and photos");
     assertIncludes(completedRunShow, ">Listen at Nugs.net</a>", "Completed show labels the Nugs audio clearly");
-    record("Completed show does not keep the live Twitch link", !completedRunShow.includes("Listen Live on Twitch"));
     const featuredImages = [...featured.matchAll(/<img src="([^"]+)"/g)].map((match) => match[1]);
     record("Tonight and the latest completed show use different photos", featuredImages.length >= 2 && featuredImages[0] !== featuredImages[1], featuredImages.join(" vs "));
   } else {
