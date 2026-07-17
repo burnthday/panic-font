@@ -2472,6 +2472,14 @@ function renderCss() {
   --blue: #286e9e;
   --cream: #f7f1e8;
   --ui-font: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --type-display: 48px;
+  --type-archive-title: 48px;
+  --type-section: 26px;
+  --type-subsection: 18px;
+  --type-body: 16px;
+  --type-dense: 15px;
+  --type-small: 13px;
+  --type-micro: 12px;
 }
 
 * {
@@ -2561,7 +2569,7 @@ a {
   border-bottom: 1px solid var(--line);
   padding: 13px 0 14px;
   font-family: var(--ui-font);
-  font-size: clamp(16px, 1.25vw, 19px);
+  font-size: 18px;
   font-weight: 600;
   line-height: 1;
 }
@@ -2603,7 +2611,7 @@ main {
 .home-intro h1 {
   margin: 0 0 14px;
   font-family: var(--ui-font);
-  font-size: clamp(30px, 4vw, 56px);
+  font-size: var(--type-display);
   line-height: 1;
   font-weight: 700;
   letter-spacing: 0;
@@ -2690,7 +2698,7 @@ main {
   margin: 0;
   color: var(--red);
   font-family: "PanicHand", sans-serif;
-  font-size: clamp(64px, 6.2vw, 118px);
+  font-size: 96px;
   line-height: 0.95;
   font-weight: 400;
   letter-spacing: 0;
@@ -3341,7 +3349,7 @@ sup {
   width: max-content;
   margin: 0 auto 34px;
   color: #007cbb;
-  font-size: clamp(24px, 2.6vw, 36px);
+  font-size: 32px;
   line-height: 1;
   text-decoration: none;
 }
@@ -3373,7 +3381,7 @@ sup {
 .section-heading h2 {
   margin: 0;
   font-family: var(--ui-font);
-  font-size: 26px;
+  font-size: var(--type-section);
   line-height: 1;
   font-weight: 700;
   color: var(--ink);
@@ -3444,7 +3452,7 @@ sup {
   min-width: 0;
   overflow-wrap: break-word;
   word-break: normal;
-  font-size: 15px;
+  font-size: var(--type-dense);
   line-height: 1.35;
 }
 
@@ -3587,7 +3595,7 @@ sup {
 .archive-title h1 {
   margin: 0;
   font-family: "MilkRun", system-ui, sans-serif;
-  font-size: clamp(28px, 4vw, 48px);
+  font-size: var(--type-archive-title);
   line-height: 1;
   font-weight: 400;
 }
@@ -3644,7 +3652,7 @@ sup {
 .shelf-current-update h2 {
   margin: 0 0 14px;
   font-family: var(--ui-font);
-  font-size: 30px;
+  font-size: var(--type-section);
   line-height: 1;
   font-weight: 700;
 }
@@ -3843,7 +3851,7 @@ sup {
 .origin-hero h1 {
   margin: 0;
   font-family: "MilkRun", system-ui, sans-serif;
-  font-size: clamp(34px, 5vw, 64px);
+  font-size: 56px;
   line-height: 0.95;
   font-weight: 400;
 }
@@ -4062,7 +4070,7 @@ sup {
   }
 
   .board-title h1 {
-    font-size: clamp(34px, 7.8vw, 56px);
+    font-size: 48px;
     white-space: nowrap;
     overflow-wrap: normal;
   }
@@ -4142,6 +4150,12 @@ sup {
 }
 
 @media (max-width: 560px) {
+  :root {
+    --type-display: 30px;
+    --type-archive-title: 34px;
+    --type-section: 24px;
+  }
+
   main,
   .site-head,
   .latest-setlist,
@@ -4377,6 +4391,23 @@ sup {
 
   .origin-body {
     font-size: 16px;
+  }
+
+  .origin-hero h1 {
+    font-size: 38px;
+  }
+
+  .shelf-explainer {
+    font-size: 16px;
+  }
+
+  .shelf-movement h2,
+  .legacy-shelf-notes h2 {
+    font-size: 24px;
+  }
+
+  .movement-block h3 {
+    font-size: 20px;
   }
 
   .site-foot {

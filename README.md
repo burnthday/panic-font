@@ -2,6 +2,8 @@
 
 Static Cloudflare Pages build for Burnthday's Widespread Panic Spread Sheet.
 
+The visual roles, typography scale, responsive rules, and non-negotiable spreadsheet behavior are documented in [DESIGN-SYSTEM.md](DESIGN-SYSTEM.md).
+
 ## Local Build
 
 ```bash
