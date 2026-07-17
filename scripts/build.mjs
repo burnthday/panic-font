@@ -1723,6 +1723,7 @@ function renderHtml(data) {
     ${renderSiteHeader()}
 
     <main>
+      ${renderHomeSectionNav(data)}
       ${renderLatestSetlist(data)}
       ${renderRotationBoard(data)}
       ${renderSheetKey(data)}
@@ -1789,7 +1790,7 @@ function renderFitScriptBody() {
       }
 
       const currentPath = window.location.pathname.replace(/\\.html$/i, "").replace(/\\/$/, "") || "/";
-      document.querySelectorAll(".jump-links a").forEach((link) => {
+      document.querySelectorAll(".jump-links a, .mobile-nav-links a").forEach((link) => {
         const linkPath = new URL(link.href, window.location.origin).pathname.replace(/\\.html$/i, "").replace(/\\/$/, "") || "/";
         if (link.origin === window.location.origin && linkPath === currentPath) link.setAttribute("aria-current", "page");
       });
@@ -1822,7 +1823,31 @@ function renderSiteHeader() {
     </nav>
   </div>
   ${renderNavLinks(primaryNavItems, "jump-links", "Primary navigation")}
+  <details class="mobile-nav">
+    <summary><span>MENU</span><span class="menu-icon" aria-hidden="true"><i></i><i></i><i></i></span></summary>
+    ${renderNavLinks(primaryNavItems, "mobile-nav-links", "Primary navigation")}
+  </details>
 </header>`;
+}
+
+function renderHomeSectionNav(data) {
+  const featuredLabel = data.site.isShowDayPreview ? "Current Show" : "Latest Setlist";
+  const items = [
+    [featuredLabel, "#latest-setlist"],
+    ["Song List", "#song-list"],
+    ["Shelf Watch", "#shelf-watch"],
+    ["The Shelf", "#shelf"],
+    ["Purgatory", "#purgatory"],
+    ["Nick + Woodshed", "#nick-johnson"],
+    ["Setlists", "#setlists"],
+    ["Tour Dates", "#tour-dates"]
+  ];
+  const links = items.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join('<span aria-hidden="true">/</span>');
+
+  return `<nav class="home-sections" aria-label="On this page">
+  <strong>ON THIS PAGE</strong>
+  <div class="home-section-links">${links}</div>
+</nav>`;
 }
 
 function renderSiteFooter(data) {
@@ -2459,9 +2484,68 @@ a {
   border-bottom-color: currentColor;
 }
 
+.mobile-nav {
+  display: none;
+}
+
 main {
   width: min(1880px, calc(100% - 56px));
   margin: 34px auto 56px;
+}
+
+.home-sections {
+  width: min(1180px, 100%);
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  margin: 0 auto 26px;
+  border-bottom: 1px solid var(--line);
+  padding: 0 0 11px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.home-sections > strong {
+  flex: 0 0 auto;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.home-section-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  min-width: 0;
+}
+
+.home-section-links a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.home-section-links a:hover,
+.home-section-links a:focus-visible {
+  color: var(--ink);
+  border-bottom-color: currentColor;
+}
+
+.home-section-links span {
+  color: rgba(0, 0, 0, 0.3);
+}
+
+#latest-setlist,
+#song-list,
+#sheet-key,
+#shelf-watch,
+#shelf,
+#purgatory,
+#nick-johnson,
+#woodshed,
+#setlists,
+#tour-dates {
+  scroll-margin-top: 18px;
 }
 
 .laminate {
@@ -3822,25 +3906,96 @@ sup {
   }
 
   .jump-links {
-    display: flex;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 22px;
-    overflow-x: auto;
-    padding: 12px 2px 14px;
-    font-size: 15px;
-    scrollbar-width: none;
-    scroll-snap-type: x proximity;
-  }
-
-  .jump-links::-webkit-scrollbar {
     display: none;
   }
 
-  .jump-links a {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    scroll-snap-align: start;
+  .mobile-nav {
+    display: block;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .mobile-nav summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 46px;
+    padding: 0 2px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .mobile-nav summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .menu-icon {
+    width: 20px;
+    height: 16px;
+    display: grid;
+    align-content: space-between;
+  }
+
+  .menu-icon i {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: currentColor;
+    transition: transform 140ms ease, opacity 140ms ease;
+  }
+
+  .mobile-nav[open] .menu-icon i:first-child {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .mobile-nav[open] .menu-icon i:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-nav[open] .menu-icon i:last-child {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .mobile-nav-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 20px;
+    border-top: 1px solid var(--line);
+    padding: 7px 0 10px;
+  }
+
+  .mobile-nav-links a {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .mobile-nav-links a[aria-current="page"] {
+    color: #b94a4a;
+  }
+
+  .home-sections {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+
+  .home-sections > strong {
+    flex-basis: 100%;
+  }
+
+  .home-section-links {
+    gap: 8px 10px;
+    font-size: 12px;
   }
 
   .laminate {

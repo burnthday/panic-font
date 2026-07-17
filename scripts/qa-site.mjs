@@ -25,7 +25,7 @@ async function main() {
   checkNickJohnsonFeature(homeHtml, siteData);
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
-  checkNavigation(homeHtml);
+  checkNavigation(homeHtml, siteData);
   checkLegacyPages();
   await checkLocalAssets(allHtml);
 
@@ -248,13 +248,31 @@ function checkGuestAnnotations(homeHtml, review2025Html) {
   record("No song-specific guest credit remains inside brackets", unkeyedGuestCredits.length === 0, unkeyedGuestCredits.join("\n"));
 }
 
-function checkNavigation(html) {
+function checkNavigation(html, siteData) {
   const expectedTop = ["Home", "Rumors", "Lyrics & Chords", "Song Origins", "Tour In Review", "The Shelf", "About"];
   const expectedFooter = ["Home", "Rumors", "Lyrics & Chords", "Song Origins", "Tour In Review", "@Burnthday", "About"];
   const topNav = linkTexts(sectionByClass(html, "jump-links"));
+  const mobileNav = linkTexts(sectionByClass(html, "mobile-nav-links"));
   const footerNav = linkTexts(sectionByClass(html, "footer-links"));
+  const homeSectionHtml = sectionByClass(html, "home-sections");
+  const expectedHomeSections = [
+    siteData.site?.isShowDayPreview ? "Current Show" : "Latest Setlist",
+    "Song List",
+    "Shelf Watch",
+    "The Shelf",
+    "Purgatory",
+    "Nick + Woodshed",
+    "Setlists",
+    "Tour Dates"
+  ];
+  const expectedHomeHrefs = ["#latest-setlist", "#song-list", "#shelf-watch", "#shelf", "#purgatory", "#nick-johnson", "#setlists", "#tour-dates"];
+  const homeHrefs = [...homeSectionHtml.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => match[1]);
 
   record("Top nav matches old Burnthday nav", arraysEqual(topNav, expectedTop), topNav.join(" | "));
+  record("Mobile menu matches the complete top navigation", arraysEqual(mobileNav, expectedTop), mobileNav.join(" | "));
+  assertIncludes(html, '<details class="mobile-nav">', "Homepage has an accessible mobile navigation menu");
+  record("Homepage section index names every major destination", arraysEqual(linkTexts(homeSectionHtml), expectedHomeSections), linkTexts(homeSectionHtml).join(" | "));
+  record("Homepage section index targets the correct sections", arraysEqual(homeHrefs, expectedHomeHrefs), homeHrefs.join(" | "));
   record("Footer nav matches old Burnthday footer", arraysEqual(footerNav, expectedFooter), footerNav.join(" | "));
   record("Footer intentionally excludes The Shelf", !footerNav.includes("The Shelf"), footerNav.join(" | "));
   assertIncludes(html, "burnthday on Facebook", "Footer includes Facebook text link");
