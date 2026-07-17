@@ -71,6 +71,8 @@ async function checkCoreRoutes() {
 
 function checkRedirects(redirects) {
   const required = [
+    "https://www.burnthday.com/* https://burnthday.com/:splat 301",
+    "http://www.burnthday.com/* https://burnthday.com/:splat 301",
     "/tour-in-review /p/burnthdays-widespread-panic-tours-in 301",
     "/tour-in-review/ /p/burnthdays-widespread-panic-tours-in 301",
     "/2025/02/widespread-panic-2025-tour.html /2025/12/widespread-panic-2025-tour-in-review 301",

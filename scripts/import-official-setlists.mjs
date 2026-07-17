@@ -209,6 +209,7 @@ function normalizeSetLabel(value) {
 
 function normalizeSongTitle(value) {
   return value
+    .replace(/\bBowlegged Woman,\s*Knock-Kneed Man\b/gi, "Bowlegged Woman")
     .replace(/\u00d7/g, " x ")
     .replace(/\s+/g, " ")
     .trim();

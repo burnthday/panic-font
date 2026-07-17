@@ -93,7 +93,7 @@ function currentTourSongStats(setlists, currentTour, targetYear) {
     for (const set of show.sets || []) {
       for (const title of set.songTitles || splitSetSongs(set.songs)) {
         if (!isPublicSongTitle(title)) continue;
-        songsThisShow.set(normalizeTitle(title), cleanTitle(title));
+        songsThisShow.set(normalizeTitle(title), canonicalSongTitle(title));
       }
     }
 
@@ -114,7 +114,7 @@ function currentTourSongStats(setlists, currentTour, targetYear) {
 
   for (const row of currentTour || []) {
     if (!rowBelongsToYear(row, targetYear)) continue;
-    const title = cleanTitle(row["Song Title"] || row.Title || row.Song);
+    const title = canonicalSongTitle(row["Song Title"] || row.Title || row.Song);
     if (!isPublicSongTitle(title)) continue;
 
     const key = normalizeTitle(title);
@@ -353,6 +353,15 @@ function normalizeTitle(title) {
     wrm: "wurm"
   };
   return aliases[normalized] || normalized;
+}
+
+function canonicalSongTitle(title) {
+  const cleaned = cleanTitle(title);
+  const aliases = {
+    bowleggedwoman: "Bowlegged Woman",
+    bowleggedwomanknockkneedman: "Bowlegged Woman"
+  };
+  return aliases[normalizeTitle(cleaned)] || cleaned;
 }
 
 function parseDateKey(value) {

@@ -237,6 +237,7 @@ function isCatalogDumpLine(line) {
 
 function normalizeSetText(value) {
   return value
+    .replace(/\bBowlegged Woman,\s*Knock-Kneed Man\b/gi, "Bowlegged Woman")
     .replace(/\s+/g, " ")
     .replace(/\s+>/g, " >")
     .replace(/>\s+/g, "> ")

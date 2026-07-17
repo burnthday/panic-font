@@ -3579,6 +3579,8 @@ function renderRedirects(archiveEntries = [], generatedReviews = []) {
   }).filter(Boolean));
   const review2025Path = reviewByYear.get("2025") || "/";
   const lines = [
+    "https://www.burnthday.com/* https://burnthday.com/:splat 301",
+    "http://www.burnthday.com/* https://burnthday.com/:splat 301",
     "/tour-in-review /p/burnthdays-widespread-panic-tours-in 301",
     "/tour-in-review/ /p/burnthdays-widespread-panic-tours-in 301",
     `/2025/02/widespread-panic-2025-tour.html ${review2025Path} 301`,

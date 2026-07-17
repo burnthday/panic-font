@@ -191,7 +191,7 @@
       "sets": [
         {
           "label": "1",
-          "songs": "Postcard > Pilgrims, Walkin' (For Your Love), And It Stoned Me, Pickin' Up The Pieces, Fishwater > Low Spark Of High-Heeled Boys > Bowlegged Woman, Knock-Kneed Man > Low Spark Of High-Heeled Boys > Fishwater",
+          "songs": "Postcard > Pilgrims, Walkin' (For Your Love), And It Stoned Me, Pickin' Up The Pieces, Fishwater > Low Spark Of High-Heeled Boys > Bowlegged Woman > Low Spark Of High-Heeled Boys > Fishwater",
           "songTitles": [
             "Postcard",
             "Pilgrims",
@@ -200,7 +200,7 @@
             "Pickin' Up The Pieces",
             "Fishwater",
             "Low Spark Of High-Heeled Boys",
-            "Bowlegged Woman, Knock-Kneed Man",
+            "Bowlegged Woman",
             "Low Spark Of High-Heeled Boys",
             "Fishwater"
           ]
@@ -630,9 +630,9 @@
         },
         {
           "label": "E",
-          "songs": "Bowlegged Woman, Knock-Kneed Man, Chilly Water, Disco, Red Hot Mama, Porch Song",
+          "songs": "Bowlegged Woman, Chilly Water, Disco, Red Hot Mama, Porch Song",
           "songTitles": [
-            "Bowlegged Woman, Knock-Kneed Man",
+            "Bowlegged Woman",
             "Chilly Water",
             "Disco",
             "Red Hot Mama",
@@ -1195,7 +1195,7 @@
         },
         {
           "label": "2",
-          "songs": "For What It's Worth, King Baby, Sleeping Man, Driving Song > Rebirtha > Driving Song > The Last Straw, Mountain Jam, Bowlegged Woman, Knock-Kneed Man",
+          "songs": "For What It's Worth, King Baby, Sleeping Man, Driving Song > Rebirtha > Driving Song > The Last Straw, Mountain Jam, Bowlegged Woman",
           "songTitles": [
             "For What It's Worth",
             "King Baby",
@@ -1205,7 +1205,7 @@
             "Driving Song",
             "The Last Straw",
             "Mountain Jam",
-            "Bowlegged Woman, Knock-Kneed Man"
+            "Bowlegged Woman"
           ]
         },
         {

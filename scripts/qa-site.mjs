@@ -17,6 +17,7 @@ async function main() {
   const allHtml = await Promise.all(allHtmlFiles.map((filePath) => readFile(filePath, "utf8")));
 
   checkNoPublicPanicStreamLinks(allHtmlFiles, allHtml);
+  checkCanonicalSongNames(allHtmlFiles, allHtml);
   checkCorePageState(homeHtml, siteData);
   checkLatestSetlist(homeHtml);
   checkNavigation(homeHtml);
@@ -32,6 +33,20 @@ async function main() {
 
   console.log(`\nSite QA: ${checks.length - failed.length}/${checks.length} checks passed`);
   if (failed.length) process.exitCode = 1;
+}
+
+function checkCanonicalSongNames(files, htmlByFile) {
+  const offenders = [];
+  for (let index = 0; index < files.length; index += 1) {
+    if (/Bowlegged Woman,\s*Knock-Kneed Man/i.test(htmlByFile[index])) {
+      offenders.push(path.relative(root, files[index]));
+    }
+  }
+  record(
+    "Generated HTML uses canonical Bowlegged Woman title",
+    offenders.length === 0,
+    offenders.slice(0, 10).join("\n")
+  );
 }
 
 function checkNoPublicPanicStreamLinks(files, htmlByFile) {
