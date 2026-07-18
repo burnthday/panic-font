@@ -192,7 +192,8 @@ async function loadBloggerArchive() {
   archiveMediaByName = await loadArchiveMediaByName();
   const entries = [...raw.matchAll(/<entry\b[\s\S]*?<\/entry>/g)].map((match) => parseBloggerEntry(match[0]));
   const seenPaths = new Map();
-  return entries
+  const prepared = entries
+    .filter((entry) => entry.type !== "COMMENT")
     .filter((entry) => entry.content || entry.title || entry.filename)
     .map((entry, index) => {
       const basePath = archivePathFor(entry, index);
@@ -205,7 +206,17 @@ async function loadBloggerArchive() {
         title: entry.title || titleFromFilename(pagePath) || `Burnthday Archive ${index + 1}`,
         isReview: isReviewEntry(entry, pagePath)
       };
-    })
+    });
+  const titleCounts = new Map();
+  for (const entry of prepared) {
+    const key = clean(entry.title).toLowerCase();
+    titleCounts.set(key, (titleCounts.get(key) || 0) + 1);
+  }
+  return prepared
+    .map((entry) => ({
+      ...entry,
+      hasDuplicateTitle: (titleCounts.get(clean(entry.title).toLowerCase()) || 0) > 1
+    }))
     .sort((a, b) => (b.published || "").localeCompare(a.published || ""));
 }
 
@@ -279,6 +290,7 @@ function parseBloggerEntry(xml) {
   const updated = decodeXml(stripTags(readXmlTag(xml, "updated"))).trim();
   const filename = decodeXml(stripTags(readXmlTag(xml, "blogger:filename"))).trim();
   const metaDescription = decodeXml(stripTags(readXmlTag(xml, "blogger:metaDescription"))).trim();
+  const type = decodeXml(stripTags(readXmlTag(xml, "blogger:type"))).trim().toUpperCase();
   const categories = [...xml.matchAll(/<category\b[^>]*term=(["'])(.*?)\1/gi)].map((match) => decodeXml(match[2]).trim()).filter(Boolean);
   const links = [...xml.matchAll(/<link\b([^>]*)\/?>/gi)].map((match) => ({
     rel: readXmlAttr(match[1], "rel"),
@@ -292,6 +304,7 @@ function parseBloggerEntry(xml) {
     updated,
     filename,
     metaDescription,
+    type,
     categories,
     sourceUrl: links.find((link) => link.rel === "alternate")?.href || ""
   };
@@ -1175,9 +1188,35 @@ async function writeStaticPage(pagePath, html) {
 }
 
 function finalizeHtml(html) {
-  const value = String(html || "");
+  const value = normalizeMetaDescriptionHtml(String(html || ""));
   if (!/<\/head>/i.test(value) || /name="robots" content="noindex"/i.test(value)) return value;
-  return value.replace(/<\/head>/i, `${renderAnalyticsHead()}\n  </head>`);
+  return value.replace(/<\/head>/i, `${renderSocialMeta(value)}${renderAnalyticsHead()}\n  </head>`);
+}
+
+function normalizeMetaDescriptionHtml(html) {
+  const title = decodeXml(stripTags(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || "Burnthday"))
+    .replace(/\s*\|\s*Burnthday\s*$/i, "");
+  return html.replace(/<meta name="description" content="([^"]*)">/i, (_match, description) => {
+    const text = decodeXml(description) || `${title} from Burnthday.`;
+    return `<meta name="description" content="${escapeAttr(fitMetaText(text, 155))}">`;
+  });
+}
+
+function renderSocialMeta(html) {
+  if (/property="og:title"/i.test(html)) return "";
+  const title = html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || "Burnthday";
+  const description = html.match(/<meta name="description" content="([^"]*)">/i)?.[1] || "";
+  const canonical = html.match(/<link rel="canonical" href="([^"]*)">/i)?.[1] || "";
+  if (!canonical) return "";
+  const type = /<article\b/i.test(html) ? "article" : "website";
+  return `<meta property="og:type" content="${type}">
+    <meta property="og:title" content="${title}">
+    <meta property="og:description" content="${description}">
+    <meta property="og:url" content="${canonical}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="${title}">
+    <meta name="twitter:description" content="${description}">
+    `;
 }
 
 function renderAnalyticsHead() {
@@ -1382,8 +1421,9 @@ function analyzeTourSongs(setlists, catalog) {
 }
 
 function renderArchivePage(entry, data) {
-  const title = `${entry.title} | Burnthday`;
-  const description = entry.metaDescription || stripTags(entry.content).replace(/\s+/g, " ").trim().slice(0, 180);
+  const datedTitle = entry.hasDuplicateTitle ? `${entry.title} - ${formatArchiveDate(entry.published)}` : entry.title;
+  const title = fitMetaText(`${datedTitle} | Burnthday`, 68);
+  const description = archiveMetaDescription(entry);
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -1415,6 +1455,24 @@ function renderArchivePage(entry, data) {
   </body>
 </html>
 `;
+}
+
+function archiveMetaDescription(entry) {
+  const content = String(entry.content || "")
+    .replace(/<script\b[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[\s\S]*?<\/style>/gi, " ");
+  const text = clean(entry.metaDescription) || decodeXml(stripTags(content)).replace(/\s+/g, " ").trim()
+    || `${entry.title} from Burnthday's Widespread Panic archive.`;
+  return fitMetaText(text, 155);
+}
+
+function fitMetaText(value, maxLength) {
+  const text = clean(value).replace(/\s+/g, " ");
+  if (text.length <= maxLength) return text;
+  const clipped = text.slice(0, maxLength - 3);
+  const boundary = clipped.lastIndexOf(" ");
+  const end = boundary > maxLength * 0.7 ? boundary : clipped.length;
+  return `${clipped.slice(0, end).replace(/[\s,;:.-]+$/, "")}...`;
 }
 
 function renderShelfInfoPage(data, oldShelfEntry) {
@@ -1778,6 +1836,7 @@ function renderArchiveIndex(entries, data) {
   return renderArchiveListPage({
     title: "Burnthday Archive",
     deck: `${entries.length} preserved Blogger posts and pages from the Takeout export.`,
+    canonicalPath: "/archive/",
     entries,
     data
   });
@@ -1787,6 +1846,7 @@ function renderPagesIndex(entries, data) {
   return renderArchiveListPage({
     title: "Burnthday Pages",
     deck: `${entries.length} preserved Blogger pages from the Takeout export, including About, Song Origins, lyrics, downloads, and old live stream pages.`,
+    canonicalPath: "/pages/",
     entries: entries.sort((a, b) => a.title.localeCompare(b.title)),
     data
   });
@@ -1796,12 +1856,13 @@ function renderTourReviewIndex(entries, data) {
   return renderArchiveListPage({
     title: "Tour In Review",
     deck: `${entries.length} preserved Tour In Review pages and related review posts.`,
+    canonicalPath: "/p/burnthdays-widespread-panic-tours-in",
     entries,
     data
   });
 }
 
-function renderArchiveListPage({ title, deck, entries, data }) {
+function renderArchiveListPage({ title, deck, canonicalPath, entries, data }) {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -1809,6 +1870,7 @@ function renderArchiveListPage({ title, deck, entries, data }) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>${escapeHtml(title)} | Burnthday</title>
     <meta name="description" content="${escapeAttr(deck)}">
+    <link rel="canonical" href="https://burnthday.com${escapeAttr(canonicalPath)}">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>

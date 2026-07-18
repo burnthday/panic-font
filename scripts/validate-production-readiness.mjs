@@ -1,4 +1,4 @@
-import { access, readFile, stat } from "node:fs/promises";
+import { access, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -27,6 +27,7 @@ async function main() {
   checkHeaders(headers);
   checkSitemap(sitemap);
   checkAnalyticsAndSeo(homeHtml, robots, notFoundHtml);
+  await checkGeneratedMetadata();
   checkAutomation(workflow, packageJson);
   await checkNoLocalSecretFiles();
 
@@ -130,6 +131,49 @@ function checkAnalyticsAndSeo(homeHtml, robots, notFoundHtml) {
   record("Robots file advertises the HTTPS sitemap", robots.includes("Sitemap: https://burnthday.com/sitemap.xml"), robots);
   record("Branded 404 exists and is not indexable", /Page Not Found/.test(notFoundHtml) && /name="robots" content="noindex"/.test(notFoundHtml));
   record("404 does not create an Analytics page view", !/googletagmanager|gtag\('config'/.test(notFoundHtml));
+}
+
+async function checkGeneratedMetadata() {
+  const files = (await readdir(path.join(root, "dist"), { recursive: true }))
+    .filter((file) => file.endsWith(".html"));
+  const pages = [];
+  for (const file of files) {
+    const html = await readText(path.join("dist", file));
+    if (/name="robots" content="noindex"/i.test(html)) continue;
+    pages.push({
+      file,
+      title: decodeEntities(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || ""),
+      description: decodeEntities(html.match(/<meta name="description" content="([^"]*)">/i)?.[1] || ""),
+      canonical: html.match(/<link rel="canonical" href="([^"]*)">/i)?.[1] || "",
+      socialTitle: html.match(/<meta property="og:title" content="([^"]*)">/i)?.[1] || ""
+    });
+  }
+
+  const missing = pages.filter((page) => !page.title || !page.description || !page.canonical || !page.socialTitle);
+  const oversized = pages.filter((page) => page.title.length > 70 || page.description.length > 155);
+  const titles = new Map();
+  for (const page of pages) {
+    const group = titles.get(page.title) || [];
+    group.push(page);
+    titles.set(page.title, group);
+  }
+  const conflictingDuplicates = [...titles.values()].filter((group) => {
+    if (group.length < 2) return false;
+    return new Set(group.map((page) => page.canonical)).size > 1;
+  });
+
+  record("Every indexable page has complete SEO metadata", missing.length === 0, missing.map((page) => page.file).join("\n"));
+  record("Generated titles and descriptions fit search result limits", oversized.length === 0, oversized.map((page) => `${page.file}: ${page.title.length}/${page.description.length}`).join("\n"));
+  record("Duplicate titles resolve to one canonical URL", conflictingDuplicates.length === 0, conflictingDuplicates.flat().map((page) => `${page.title}: ${page.file}`).join("\n"));
+}
+
+function decodeEntities(value) {
+  return String(value || "")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
 }
 
 function checkAutomation(workflow, packageJson) {
