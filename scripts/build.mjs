@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, "..");
 const dist = path.join(root, "dist");
 const sheetId = process.env.GOOGLE_SHEET_ID || "1EAJINzjyHFauVqHYLSYpmoJpNARg61ghCGDfOlb-D9s";
 const bloggerFeedPath = process.env.BLOGGER_TAKEOUT_FEED || path.join(root, "data", "source", "blogger-feed.atom");
+const analyticsMeasurementId = "G-R74CMVLLK1";
 let archiveMediaByName = new Map();
 
 const sheetRanges = {
@@ -82,7 +83,8 @@ async function main() {
   await writeRumorsPage(siteData, archiveEntries);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews);
-  await writeFile(path.join(dist, "index.html"), renderHtml(siteData), "utf8");
+  await writeFile(path.join(dist, "index.html"), finalizeHtml(renderHtml(siteData)), "utf8");
+  await writeStaticPage("/404.html", renderNotFoundPage(siteData));
   await writeFile(path.join(dist, "styles.css"), renderCss(), "utf8");
   await writeFile(path.join(dist, "data", "site-data.json"), JSON.stringify(siteData, null, 2), "utf8");
   await writeFile(path.join(dist, "data", "freshness.json"), JSON.stringify(buildFreshnessReport(siteData, archiveEntries, songOrigins, generatedTourReviews), null, 2), "utf8");
@@ -1167,7 +1169,49 @@ async function writeStaticPage(pagePath, html) {
   const target = path.join(dist, relative);
   if (!target.startsWith(dist)) throw new Error(`Refusing to write outside dist: ${pagePath}`);
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, html, "utf8");
+  await writeFile(target, finalizeHtml(html), "utf8");
+}
+
+function finalizeHtml(html) {
+  const value = String(html || "");
+  if (!/<\/head>/i.test(value) || /name="robots" content="noindex"/i.test(value)) return value;
+  return value.replace(/<\/head>/i, `${renderAnalyticsHead()}\n  </head>`);
+}
+
+function renderAnalyticsHead() {
+  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${analyticsMeasurementId}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${analyticsMeasurementId}');
+    </script>`;
+}
+
+function renderNotFoundPage(data) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>Page Not Found | Burnthday</title>
+    <meta name="description" content="That Burnthday page could not be found.">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main">
+      <article class="archive-page">
+        <header class="archive-title"><p>404</p><h1>Page Not Found</h1></header>
+        <p>The page may have moved when Burnthday left Blogger.</p>
+        <p><a href="/">Current Song List</a> <span>|</span> <a href="/archive/">Burnthday Archive</a></p>
+      </article>
+    </main>
+    ${renderSiteFooter(data)}
+  </body>
+</html>`;
 }
 
 async function writeShelfInfoPage(data, entries) {
@@ -1785,10 +1829,24 @@ function renderHtml(data) {
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://burnthday.com/">
+    <meta property="og:image" content="https://burnthday.com/assets/archive-media/burnthday-logo.png">
+    <meta property="og:site_name" content="Burnthday">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="${escapeHtml(data.site.title)} by Burnthday">
+    <meta name="twitter:description" content="${escapeHtml(description)}">
+    <meta name="twitter:image" content="https://burnthday.com/assets/archive-media/burnthday-logo.png">
+    <link rel="canonical" href="https://burnthday.com/">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/styles.css">
+    <script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Burnthday",
+      url: "https://burnthday.com/",
+      description
+    }).replace(/</g, "\\u003c")}</script>
   </head>
   <body>
     ${renderSiteHeader()}

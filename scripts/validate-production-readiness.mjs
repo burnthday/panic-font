@@ -8,14 +8,17 @@ const root = path.resolve(__dirname, "..");
 const checks = [];
 
 async function main() {
-  const [freshness, siteData, redirects, headers, sitemap, workflow, packageJson] = await Promise.all([
+  const [freshness, siteData, redirects, headers, sitemap, workflow, packageJson, homeHtml, robots, notFoundHtml] = await Promise.all([
     readJson("dist/data/freshness.json"),
     readJson("dist/data/site-data.json"),
     readText("dist/_redirects"),
     readText("dist/_headers"),
     readText("dist/sitemap.xml"),
     readText(".github/workflows/deploy.yml"),
-    readJson("package.json")
+    readJson("package.json"),
+    readText("dist/index.html"),
+    readText("dist/robots.txt"),
+    readText("dist/404.html")
   ]);
 
   checkFreshness(freshness, siteData);
@@ -23,6 +26,7 @@ async function main() {
   checkRedirects(redirects);
   checkHeaders(headers);
   checkSitemap(sitemap);
+  checkAnalyticsAndSeo(homeHtml, robots, notFoundHtml);
   checkAutomation(workflow, packageJson);
   await checkNoLocalSecretFiles();
 
@@ -114,6 +118,16 @@ function checkSitemap(sitemap) {
   const urlCount = (sitemap.match(/<url>/g) || []).length;
   record("Sitemap includes core public URLs", missing.length === 0, missing.join("\n"));
   record("Sitemap has substantial archive coverage", urlCount >= 250, `urlCount=${urlCount}`);
+}
+
+function checkAnalyticsAndSeo(homeHtml, robots, notFoundHtml) {
+  record("Homepage installs the Burnthday GA4 stream", /googletagmanager\.com\/gtag\/js\?id=G-R74CMVLLK1/.test(homeHtml) && /gtag\('config', 'G-R74CMVLLK1'\)/.test(homeHtml), "G-R74CMVLLK1");
+  record("Homepage has its HTTPS canonical URL", /<link rel="canonical" href="https:\/\/burnthday\.com\/">/.test(homeHtml));
+  record("Homepage has social sharing metadata", /property="og:image"/.test(homeHtml) && /name="twitter:card" content="summary_large_image"/.test(homeHtml));
+  record("Homepage identifies Burnthday as a WebSite", /"@type":"WebSite"/.test(homeHtml) && /"url":"https:\/\/burnthday\.com\/"/.test(homeHtml));
+  record("Robots file advertises the HTTPS sitemap", robots.includes("Sitemap: https://burnthday.com/sitemap.xml"), robots);
+  record("Branded 404 exists and is not indexable", /Page Not Found/.test(notFoundHtml) && /name="robots" content="noindex"/.test(notFoundHtml));
+  record("404 does not create an Analytics page view", !/googletagmanager|gtag\('config'/.test(notFoundHtml));
 }
 
 function checkAutomation(workflow, packageJson) {
