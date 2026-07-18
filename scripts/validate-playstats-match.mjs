@@ -162,6 +162,7 @@ function normalizeTitle(title) {
   const aliases = {
     bowleggedwomanknockkneedman: "bowleggedwoman",
     conradthecaterpillar: "conrad",
+    jamaisvutheworldhaschanged: "jamaisvu",
     knockinaroundthezoo: "knockingroundthezoo",
     nobodysfault: "nobodysfaultbutmine",
     thismustbetheplacenavemelody: "thismustbetheplacenaivemelody",

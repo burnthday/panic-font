@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-17T14:42:59.703Z",
+  "importedAt": "2026-07-18T14:57:24.614Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -295,7 +295,7 @@
       "notes": [
         "Entire show with Nick Johnson on guitar"
       ],
-      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/02/Widespread-Panic-20260214-Timmermans-0167.jpg",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/02/Widespread-Panic-20260214-Timmermans-1101.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wsp2026-02-14.mk4v.flac24",
@@ -1282,7 +1282,7 @@
       "notes": [
         "Entire show with Nick Johnson on guitar"
       ],
-      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260707-Missoula-Montana-Andy-Tennille-11.jpg",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260707-Missoula-Montana-Andy-Tennille-1.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wsp2026-07-07.kk184KMAm148",
@@ -1400,7 +1400,7 @@
       "notes": [
         "Entire show with Nick Johnson on guitar"
       ],
-      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260710-Bend-Oregon-Andy-Tennille-0132.jpg",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260710-Bend-Oregon-Andy-Tennille-9872.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wspdd1502026-07-10",
@@ -1475,7 +1475,7 @@
       "state": "CA",
       "location": "Oakland, CA",
       "sourceUrl": "https://widespreadpanic.com/shows/2026-07-16-oakland-ca-fox-theater/",
-      "streamUrl": "https://nugs.net/widespreadpanic",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-fox-theater-oakland-ca-07-16-2026-mp3-flac-or-online-music-streaming/47020.html?cgid=ARTIST-58",
       "sets": [
         {
           "label": "1",
@@ -1520,11 +1520,69 @@
       "notes": [
         "Entire show with Nick Johnson on guitar"
       ],
-      "image": "",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260716-Oakland-California-Andy-Tennille-2115.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wsp2026-07-16",
       "transitionSourceTitle": "Widespread Panic Live at The Fox Theatre on 2026-07-16"
+    },
+    {
+      "date": "07/17/2026",
+      "isoDate": "2026-07-17",
+      "venue": "Fox Theater",
+      "city": "Oakland",
+      "state": "CA",
+      "location": "Oakland, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-17-oakland-ca-fox-theater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-fox-theater-oakland-ca-07-17-2026-mp3-flac-or-online-music-streaming/47021.html?cgid=ARTIST-58",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Little Kin, Little Lilly, Little By Little > Little Wing, Bust it Big > Pleas, Shut Up and Drive, C. Brown, You Wreck Me",
+          "songTitles": [
+            "Little Kin",
+            "Little Lilly",
+            "Little By Little",
+            "Little Wing",
+            "Bust it Big",
+            "Pleas",
+            "Shut Up and Drive",
+            "C. Brown",
+            "You Wreck Me"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "One Arm Steve > Hatfield > Tie Your Shoes > Jamais Vu (The World Has Changed), Vampire Blues, Greta > I Walk On Guilded Splinters > Papa's Home, North",
+          "songTitles": [
+            "One Arm Steve",
+            "Hatfield",
+            "Tie Your Shoes",
+            "Jamais Vu (The World Has Changed)",
+            "Vampire Blues",
+            "Greta",
+            "I Walk On Guilded Splinters",
+            "Papa's Home",
+            "North"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Travelin' Man > The Waker",
+          "songTitles": [
+            "Travelin' Man",
+            "The Waker"
+          ]
+        }
+      ],
+      "notes": [
+        "Entire show with Nick Johnson on guitar"
+      ],
+      "image": "",
+      "imageWidth": 0,
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-17.4ch",
+      "transitionSourceTitle": "Widespread Panic - Live at Fox Theater - Oakland, CA on 2026-07-17 (4ch)"
     }
   ],
   "tourDates": [
@@ -1910,7 +1968,7 @@
   "transitionSource": {
     "label": "Internet Archive Live Music Archive",
     "sourceUrl": "https://archive.org/details/WidespreadPanic",
-    "importedAt": "2026-07-17T14:45:00.946Z",
+    "importedAt": "2026-07-18T14:59:35.023Z",
     "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
   }
 }

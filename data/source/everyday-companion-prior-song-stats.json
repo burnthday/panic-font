@@ -1,7 +1,7 @@
 {
   "source": "Everyday Companion played pages",
   "sourceUrl": "https://everydaycompanion.com/playstats/playstats.asp",
-  "importedAt": "2026-07-17T14:57:40.363Z",
+  "importedAt": "2026-07-18T14:59:39.984Z",
   "tourYear": 2026,
   "allowEcLag": true,
   "ecLatestShowIso": "2026-07-11",
@@ -932,6 +932,24 @@
       "totalAtImport": 1
     },
     {
+      "title": "Jamais Vu",
+      "code": "JAMAIS",
+      "sourceUrl": "https://everydaycompanion.com/played/JAMAIS.asp",
+      "asOfShow": "2026-07-17",
+      "asOfShowCode": "",
+      "ltpDate": "10/26/25",
+      "ltp": 35,
+      "totalBefore": 43,
+      "currentTourPlaysFromHistory": 0,
+      "currentTourPlaysFromLocalSetlists": 1,
+      "firstCurrentDate": "07/17/26",
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 43,
+      "ecLatestShowIso": "2026-07-11",
+      "localBridgeShows": 1,
+      "sourceStatus": "ec-lag-verified-local-bridge"
+    },
+    {
       "title": "Junior",
       "code": "JUNIOR",
       "sourceUrl": "https://everydaycompanion.com/played/JUNIOR.asp",
@@ -1112,6 +1130,24 @@
       "firstCurrentDate": "01/20/26",
       "lastCurrentDate": "07/05/26",
       "totalAtImport": 251
+    },
+    {
+      "title": "Little Wing",
+      "code": "LTWING",
+      "sourceUrl": "https://everydaycompanion.com/played/LTWING.asp",
+      "asOfShow": "2026-07-17",
+      "asOfShowCode": "",
+      "ltpDate": "10/25/25",
+      "ltp": 36,
+      "totalBefore": 73,
+      "currentTourPlaysFromHistory": 0,
+      "currentTourPlaysFromLocalSetlists": 1,
+      "firstCurrentDate": "07/17/26",
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 73,
+      "ecLatestShowIso": "2026-07-11",
+      "localBridgeShows": 1,
+      "sourceStatus": "ec-lag-verified-local-bridge"
     },
     {
       "title": "Love Tractor",

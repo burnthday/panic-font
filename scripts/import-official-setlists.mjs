@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,15 +9,17 @@ const args = parseArgs(process.argv.slice(2));
 const year = args.year || process.env.TOUR_YEAR || String(new Date().getFullYear());
 const sitemapUrl = args.sitemap || "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml";
 const output = args.out || path.join(root, "data", "source", `setlists-${year}.json`);
+const overridesInput = args.overrides || path.join(root, "data", "source", `setlist-overrides-${year}.json`);
 
 async function main() {
+  const overrides = await readOverrides(overridesInput);
   const urls = await discoverShowUrls();
   const tourPages = [];
 
   for (const url of urls) {
     const html = await fetchText(url);
     const parsed = parseShowPage(url, html);
-    tourPages.push(parsed);
+    tourPages.push(applyOverride(parsed, overrides[parsed.isoDate]));
   }
 
   const shows = tourPages.filter((show) => show.sets.length);
@@ -35,6 +37,25 @@ async function main() {
   await mkdir(path.dirname(output), { recursive: true });
   await writeFile(output, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
   console.log(`Imported ${payload.setlists.length} ${year} official setlists and ${payload.tourDates.length} tour dates to ${path.relative(root, output)}.`);
+}
+
+async function readOverrides(filename) {
+  try {
+    return JSON.parse(await readFile(filename, "utf8"));
+  } catch (error) {
+    if (error?.code === "ENOENT") return {};
+    throw error;
+  }
+}
+
+function applyOverride(show, override) {
+  if (!override) return show;
+  return {
+    ...show,
+    ...override,
+    sets: override.sets || show.sets,
+    notes: override.notes || show.notes
+  };
 }
 
 function tourDateSummary(show) {

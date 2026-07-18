@@ -366,6 +366,7 @@ function normalizeTitle(title) {
   const aliases = {
     bowleggedwomanknockkneedman: "bowleggedwoman",
     conradthecaterpillar: "conrad",
+    jamaisvutheworldhaschanged: "jamaisvu",
     knockinaroundthezoo: "knockingroundthezoo",
     nobodysfault: "nobodysfaultbutmine",
     thismustbetheplacenavemelody: "thismustbetheplacenaivemelody",
@@ -378,7 +379,8 @@ function canonicalSongTitle(title) {
   const cleaned = cleanTitle(title);
   const aliases = {
     bowleggedwoman: "Bowlegged Woman",
-    bowleggedwomanknockkneedman: "Bowlegged Woman"
+    bowleggedwomanknockkneedman: "Bowlegged Woman",
+    jamaisvu: "Jamais Vu"
   };
   return aliases[normalizeTitle(cleaned)] || cleaned;
 }
