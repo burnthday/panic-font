@@ -45,16 +45,25 @@ async function main() {
 }
 
 function checkCanonicalSongNames(files, htmlByFile) {
-  const offenders = [];
+  const bowleggedOffenders = [];
+  const jamaisVuOffenders = [];
   for (let index = 0; index < files.length; index += 1) {
     if (/Bowlegged Woman,\s*Knock-Kneed Man/i.test(htmlByFile[index])) {
-      offenders.push(path.relative(root, files[index]));
+      bowleggedOffenders.push(path.relative(root, files[index]));
+    }
+    if (/Jamais Vu\s*\(The World Has Changed\)/i.test(htmlByFile[index])) {
+      jamaisVuOffenders.push(path.relative(root, files[index]));
     }
   }
   record(
     "Generated HTML uses canonical Bowlegged Woman title",
-    offenders.length === 0,
-    offenders.slice(0, 10).join("\n")
+    bowleggedOffenders.length === 0,
+    bowleggedOffenders.slice(0, 10).join("\n")
+  );
+  record(
+    "Generated HTML uses canonical Jamais Vu title",
+    jamaisVuOffenders.length === 0,
+    jamaisVuOffenders.slice(0, 10).join("\n")
   );
 }
 

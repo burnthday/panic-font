@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-18T14:57:24.614Z",
+  "importedAt": "2026-07-18T15:09:37.991Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1553,12 +1553,12 @@
         },
         {
           "label": "2",
-          "songs": "One Arm Steve > Hatfield > Tie Your Shoes > Jamais Vu (The World Has Changed), Vampire Blues, Greta > I Walk On Guilded Splinters > Papa's Home, North",
+          "songs": "One Arm Steve > Hatfield > Tie Your Shoes > Jamais Vu > Vampire Blues, Greta > I Walk On Guilded Splinters > Papa's Home, North",
           "songTitles": [
             "One Arm Steve",
             "Hatfield",
             "Tie Your Shoes",
-            "Jamais Vu (The World Has Changed)",
+            "Jamais Vu",
             "Vampire Blues",
             "Greta",
             "I Walk On Guilded Splinters",
@@ -1578,7 +1578,7 @@
       "notes": [
         "Entire show with Nick Johnson on guitar"
       ],
-      "image": "",
+      "image": "/assets/setlists/2026/2026-07-17.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wsp2026-07-17.4ch",
@@ -1968,7 +1968,7 @@
   "transitionSource": {
     "label": "Internet Archive Live Music Archive",
     "sourceUrl": "https://archive.org/details/WidespreadPanic",
-    "importedAt": "2026-07-18T14:59:35.023Z",
+    "importedAt": "2026-07-18T15:11:48.606Z",
     "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
   }
 }

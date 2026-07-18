@@ -335,6 +335,7 @@ function isReviewEntry(entry, pagePath) {
 
 function rewriteArchiveHtml(html) {
   return scrubBlockedExternalLinks(html)
+    .replace(/\bJamais Vu\s*\(The World Has Changed\)/gi, "Jamais Vu")
     .replace(/https?:\/\/[^"'<>\s)]+/gi, (url) => localArchiveMediaUrl(url) || url)
     .replace(/https?:\/\/(?:www\.)?burnthday\.com/gi, "")
     .replace(/https?:\/\/burnthday\.blogspot\.com/gi, "")
@@ -2476,7 +2477,11 @@ function renderSetSongs(set, annotations) {
 function renderSetSongTitle(displayTitle, annotations, canonicalTitle = displayTitle, inlineMarkers = []) {
   const markers = [...new Set([...(annotations.markersBySong.get(normalizeTitle(canonicalTitle)) || []), ...inlineMarkers])];
   const markerText = markers.length ? `<sup class="guest-sup">${escapeHtml(markers.join(","))}</sup>` : "";
-  return `${escapeHtml(displayTitle)}${markerText}`;
+  return `${escapeHtml(canonicalDisplaySongTitle(displayTitle))}${markerText}`;
+}
+
+function canonicalDisplaySongTitle(value) {
+  return String(value || "").replace(/\bJamais Vu\s*\(The World Has Changed\)/gi, "Jamais Vu");
 }
 
 function renderRawSetDisplay(value) {
