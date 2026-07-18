@@ -64,7 +64,8 @@ const footerNavItems = [
   ["Song Origins", "/p/widespread-panic-song-origins-and"],
   ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
   ["Rumors", "/p/rumors"],
-  ["About", "/p/about"]
+  ["About", "/p/about"],
+  ["Privacy", "/p/privacy"]
 ];
 
 async function main() {
@@ -81,6 +82,7 @@ async function main() {
   await writeSongOrigins(songOrigins);
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
+  await writePrivacyPage(siteData);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews);
   await writeFile(path.join(dist, "index.html"), finalizeHtml(renderHtml(siteData)), "utf8");
@@ -1222,6 +1224,48 @@ async function writeShelfInfoPage(data, entries) {
 async function writeRumorsPage(data, entries) {
   const oldRumorsEntry = entries.find((entry) => entry.path === "/p/rumors.html");
   await writeStaticPage("/p/rumors.html", renderRumorsPage(data, oldRumorsEntry));
+}
+
+async function writePrivacyPage(data) {
+  await writeStaticPage("/p/privacy.html", renderPrivacyPage(data));
+}
+
+function renderPrivacyPage(data) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Privacy | Burnthday</title>
+    <meta name="description" content="How Burnthday uses analytics and handles visitor information.">
+    <link rel="canonical" href="https://burnthday.com/p/privacy">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    ${renderSiteHeader()}
+    <main class="archive-main">
+      <article class="archive-page privacy-page">
+        <header class="archive-title">
+          <p>Last updated July 18, 2026</p>
+          <h1>Privacy</h1>
+        </header>
+        <div class="archive-content">
+          <p>Burnthday is an independent Widespread Panic fan site. You do not need an account, and the site does not ask for your name, email address, or payment information.</p>
+          <h2>Analytics</h2>
+          <p>Burnthday uses Google Analytics 4 to understand which pages people visit, how they found the site, and how the site performs on different devices. Google Analytics may use cookies and collect information such as browser and device details, approximate location, referring pages, and interactions with the site. Burnthday uses this information in aggregate to maintain and improve the site.</p>
+          <p>Burnthday does not sell personal information. You can learn how Google handles information in the <a href="https://policies.google.com/privacy">Google Privacy Policy</a> and install the <a href="https://tools.google.com/dlpage/gaoptout">Google Analytics opt-out browser add-on</a>.</p>
+          <h2>External Links</h2>
+          <p>The site links to Widespread Panic, Nugs.net, Facebook, Instagram, X, YouTube, and other independent sources. Those sites have their own privacy practices, and Burnthday does not control them.</p>
+          <h2>Questions</h2>
+          <p>Questions about this page can be sent through <a href="https://www.facebook.com/burnthday">Burnthday on Facebook</a> or <a href="https://www.instagram.com/burnthday/">Burnthday on Instagram</a>.</p>
+        </div>
+      </article>
+    </main>
+    ${renderSiteFooter(data)}
+  </body>
+</html>`;
 }
 
 async function writeGeneratedTourReviewPages(data) {
@@ -4975,6 +5019,10 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
   </url>
   <url>
     <loc>https://burnthday.com/song-origins/</loc>
+    <lastmod>${updated}</lastmod>
+  </url>
+  <url>
+    <loc>https://burnthday.com/p/privacy</loc>
     <lastmod>${updated}</lastmod>
   </url>
   ${songOrigins.map((origin) => `<url>

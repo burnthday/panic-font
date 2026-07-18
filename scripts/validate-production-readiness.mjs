@@ -69,6 +69,7 @@ async function checkCoreRoutes() {
     "dist/p/widespread-panic-song-origins-and.html",
     "dist/p/widespread-panic-dirty-side-down-lyrics.html",
     "dist/p/about.html",
+    "dist/p/privacy.html",
     "dist/song-origins/index.html",
     "dist/tour-in-review/index.html",
     "dist/archive/index.html"
@@ -112,6 +113,7 @@ function checkSitemap(sitemap) {
     "https://burnthday.com/",
     "https://burnthday.com/archive/",
     "https://burnthday.com/song-origins/",
+    "https://burnthday.com/p/privacy",
     "https://burnthday.com/2025/12/widespread-panic-2025-tour-in-review"
   ];
   const missing = required.filter((loc) => !sitemap.includes(`<loc>${loc}</loc>`));

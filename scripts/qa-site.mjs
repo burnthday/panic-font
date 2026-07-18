@@ -411,7 +411,7 @@ function checkGuestAnnotations(homeHtml, review2025Html) {
 
 function checkNavigation(html, siteData) {
   const expectedTop = ["Home", "Rumors", "Lyrics & Chords", "Song Origins", "Tour In Review", "The Shelf", "About"];
-  const expectedFooter = ["Song List", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About"];
+  const expectedFooter = ["Song List", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About", "Privacy"];
   const topNav = linkTexts(sectionByClass(html, "jump-links"));
   const mobileNav = linkTexts(sectionByClass(html, "mobile-nav-links"));
   const footerNav = linkTexts(sectionByClass(html, "footer-links"));
@@ -428,19 +428,23 @@ function checkNavigation(html, siteData) {
 }
 
 async function checkLegacyPages(siteData) {
-  const [rumors, tourReview, shelf] = await Promise.all([
+  const [rumors, tourReview, shelf, privacy] = await Promise.all([
     readText("dist/p/rumors.html"),
     readText("dist/p/burnthdays-widespread-panic-tours-in.html"),
-    readText("dist/p/theshelf.html")
+    readText("dist/p/theshelf.html"),
+    readText("dist/p/privacy.html")
   ]);
   const rumorsText = normalizeText(stripTags(rumors));
   const tourText = normalizeText(stripTags(tourReview));
   const shelfText = normalizeText(stripTags(shelf));
+  const privacyText = normalizeText(stripTags(privacy));
 
   record("Rumors page uses imported legacy copy", /2025 Rumors:/.test(rumorsText) && /100% pure speculation/.test(rumorsText));
   record("Rumors page does not use invented placeholder copy", !/I am not trying to become a rumor mill/i.test(rumorsText));
   record("Tour In Review page uses imported legacy copy", /Burnthday's Widespread Panic Tour In Review/.test(tourText));
   record("Shelf page uses imported shelf copy", /The Shelf/i.test(shelfText) && /Purgatory/i.test(shelfText));
+  record("Privacy page accurately identifies GA4", /Google Analytics 4/.test(privacyText) && /does not sell personal information/.test(privacyText));
+  record("Privacy page links to Google privacy and opt-out controls", /https:\/\/policies\.google\.com\/privacy/.test(privacy) && /https:\/\/tools\.google\.com\/dlpage\/gaoptout/.test(privacy));
   assertIncludes(shelf, `<h2>${siteData.site.year} Shelf Update</h2>`, "Shelf page leads with the current generated update");
   assertIncludes(shelf, `${siteData.rules.rotationSlpLimit}</strong><span>show cutoff</span>`, "Shelf page states the active cutoff");
   assertIncludes(shelf, `${siteData.boards.shelfOriginals.length + siteData.boards.shelfCovers.length}</strong><span>on The Shelf</span>`, "Shelf page count matches the generated Shelf");
