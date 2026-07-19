@@ -138,10 +138,12 @@ function checkTourStats(html, siteData) {
     [average, "songs per show"]
   ]) assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Tour Stats reports ${label}`);
 
-  for (const key of ["title", "count", "frequency", "last", "type"]) {
+  for (const key of ["title", "count", "frequency", "l100", "last", "type"]) {
     assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
   }
-  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-last="([^"]*)" data-type="([^"]+)">/g)]
+  assertIncludes(feature, "data-show-filter", "Tour Stats can highlight songs from one selected show");
+  for (const type of ["all", "original", "cover"]) assertIncludes(feature, `data-type-filter="${type}"`, `Tour Stats includes the ${type} type filter`);
+  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-l100="(\d+)" data-last="([^"]*)" data-type="([^"]+)" data-shows="([^"]*)">/g)]
     .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
   record("Tour Stats includes every played song exactly once", rendered.length === songs.length, `${rendered.length} rendered vs ${songs.length} expected`);
   record("Tour Stats defaults to most played with alphabetical tie-breaking", arraysEqual(rendered.map((song) => song.title), songs.map((song) => song.title.toLowerCase())));
@@ -192,11 +194,11 @@ function checkShelfWatch(html, siteData) {
   for (const song of expected) {
     const remaining = cutoff - song.effectiveSlp;
     assertIncludes(feature, `data-song-title="${escapeAttribute(song.title)}" data-slp="${song.effectiveSlp}"`, `Shelf Watch includes ${song.title} at ${song.effectiveSlp} SLP`);
-    assertIncludes(feature, `last played ${song.lastDisplay}`, `Shelf Watch gives ${song.title}'s last-played date`);
+    assertIncludes(feature, `<td>${song.lastDisplay}</td>`, `Shelf Watch gives ${song.title}'s last-played date`);
     const rowStart = feature.indexOf(`data-song-title="${escapeAttribute(song.title)}"`);
-    const rowEnd = feature.indexOf("</li>", rowStart);
+    const rowEnd = feature.indexOf("</tr>", rowStart);
     const row = rowStart >= 0 && rowEnd > rowStart ? feature.slice(rowStart, rowEnd) : "";
-    assertIncludes(row, `<strong>${remaining}</strong><span>to Shelf</span>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
+    assertIncludes(row, `<td><strong>${remaining}</strong></td>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
   }
 }
 
@@ -225,7 +227,10 @@ function checkNickJohnsonFeature(html, siteData) {
 
   assertIncludes(feature, "<h3>MOST PLAYED WITH NICK</h3>", "Nick Johnson feature presents a ranked most-played view");
   const completion = Math.round((played.length / rotation.length) * 100);
-  assertIncludes(feature, `<strong>${completion}%</strong><span>${played.length} of ${rotation.length} current possibilities played</span>`, "Nick Johnson feature shows rotation completion");
+  assertIncludes(feature, `<strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span>`, "Nick Johnson feature shows rotation completion");
+  assertIncludes(feature, 'class="is-original"', "Nick completion bar separates played originals");
+  assertIncludes(feature, 'class="is-cover"', "Nick completion bar separates played covers");
+  assertIncludes(feature, `${played.length}/${rotation.length} overall`, "Nick completion bar gives the exact overall count");
   record("Nick Johnson feature is not another laminated song sheet", !feature.includes("nick-played-sheet") && !feature.includes("song-panel"));
   const renderedRanking = [...feature.matchAll(/data-song-title="([^"]+)" data-nick-count="(\d+)"/g)]
     .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
@@ -362,6 +367,11 @@ async function checkLatestSetlist(html, siteData) {
   const archive = sectionHtml(html, "setlists");
   assertIncludes(archive, '<details class="setlist-archive-panel" open>', "Older setlists remain visible on desktop");
   assertIncludes(archive, "VIEW OLDER SETLISTS", "Older setlists have one clear mobile disclosure");
+  assertIncludes(archive, 'class="setlist-list"', "Older shows use the compact show-index layout");
+  assertIncludes(archive, 'class="show-action play-action"', "Shows with audio expose a simple listening action");
+  record("Every archived show is individually expandable", (archive.match(/<details class="setlist-row">/g) || []).length === siteData.setlists.length - (siteData.site.featuredRunDates || []).filter((date) => siteData.setlists.some((show) => show.isoDate === date)).length);
+  assertIncludes(html, 'row.classList.toggle("is-selected-show"', "Selected-show songs receive a dedicated highlight state");
+  assertIncludes(html, 'rightSelected - leftSelected', "Selected-show songs move ahead of the remaining tour table");
   record("Mobile initialization collapses Nick Stats and the older setlist archive", html.includes('.nick-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
   record("Mobile initialization leaves every laminated sheet expanded", !html.includes('.song-panel:not(:first-of-type)') && !html.includes('.shelf-board .song-panel') && !html.includes('.purgatory-board .song-panel') && !html.includes('.woodshed-board .song-panel'));
 
@@ -574,12 +584,21 @@ function sectionHtml(html, id) {
 
 function cardHtml(html, heading) {
   const headingIndex = html.indexOf(`<h3>${heading}</h3>`);
-  if (headingIndex < 0) return "";
-  const cardStart = html.lastIndexOf('<article class="setlist-card', headingIndex);
-  const featureStart = html.lastIndexOf('<article class="setlist-feature', headingIndex);
-  const start = Math.max(cardStart, featureStart);
-  const end = html.indexOf("</article>", headingIndex);
-  return start >= 0 && end > start ? html.slice(start, end + "</article>".length) : "";
+  if (headingIndex >= 0) {
+    const cardStart = html.lastIndexOf('<article class="setlist-card', headingIndex);
+    const featureStart = html.lastIndexOf('<article class="setlist-feature', headingIndex);
+    const start = Math.max(cardStart, featureStart);
+    const end = html.indexOf("</article>", headingIndex);
+    return start >= 0 && end > start ? html.slice(start, end + "</article>".length) : "";
+  }
+
+  const [date] = decodeHtml(heading).split(" ");
+  const archiveStart = html.indexOf('class="setlist-list"');
+  const dateIndex = html.indexOf(`>${date}</time>`, Math.max(0, archiveStart));
+  if (dateIndex < 0) return "";
+  const rowStart = html.lastIndexOf('<details class="setlist-row"', dateIndex);
+  const rowEnd = html.indexOf("</details>", dateIndex);
+  return rowStart >= 0 && rowEnd > rowStart ? html.slice(rowStart, rowEnd + "</details>".length) : "";
 }
 
 function sectionByClass(html, className) {

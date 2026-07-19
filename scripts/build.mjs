@@ -2146,13 +2146,47 @@ function renderFitScriptBody() {
       document.querySelectorAll(".tour-table").forEach((table) => {
         const body = table.tBodies[0];
         const buttons = [...table.querySelectorAll("button[data-sort]")];
+        const section = table.closest(".tour-stats");
+        const showFilter = section?.querySelector("[data-show-filter]");
+        const typeButtons = [...(section?.querySelectorAll("[data-type-filter]") || [])];
+        const status = section?.querySelector(".show-filter-status");
+        let selectedShow = "";
+        let selectedType = "all";
+
+        const applyFilters = () => {
+          const rows = [...body.rows];
+          let selectedCount = 0;
+          rows.forEach((row) => {
+            const matchesType = selectedType === "all" || row.dataset.type === selectedType;
+            const matchesShow = !selectedShow || (row.dataset.shows || "").split(",").includes(selectedShow);
+            row.hidden = !matchesType;
+            row.classList.toggle("is-selected-show", Boolean(selectedShow && matchesShow && matchesType));
+            if (selectedShow && matchesShow && matchesType) selectedCount += 1;
+          });
+          rows.sort((left, right) => {
+            const leftSelected = left.classList.contains("is-selected-show") ? 1 : 0;
+            const rightSelected = right.classList.contains("is-selected-show") ? 1 : 0;
+            return rightSelected - leftSelected || Number(right.dataset.count) - Number(left.dataset.count) || left.dataset.title.localeCompare(right.dataset.title);
+          }).forEach((row) => body.appendChild(row));
+          if (status) status.textContent = selectedShow ? selectedCount + " songs played at selected show" : selectedType === "all" ? "All tour songs" : selectedType === "original" ? "Originals only" : "Covers only";
+        };
+
+        showFilter?.addEventListener("change", () => {
+          selectedShow = showFilter.value;
+          applyFilters();
+        });
+        typeButtons.forEach((typeButton) => typeButton.addEventListener("click", () => {
+          selectedType = typeButton.dataset.typeFilter;
+          typeButtons.forEach((item) => item.classList.toggle("is-active", item === typeButton));
+          applyFilters();
+        }));
         buttons.forEach((button) => button.addEventListener("click", () => {
           const key = button.dataset.sort;
           const header = button.closest("th");
           const current = header.getAttribute("aria-sort");
           const direction = current === "ascending" ? "descending" : "ascending";
           const multiplier = direction === "ascending" ? 1 : -1;
-          const numeric = key === "count" || key === "frequency";
+          const numeric = key === "count" || key === "frequency" || key === "l100";
           const rows = [...body.rows].sort((left, right) => {
             const a = left.dataset[key] || "";
             const b = right.dataset[key] || "";
@@ -2249,33 +2283,56 @@ function renderTourStats(data) {
   const songs = [...(data.catalog || [])]
     .filter((song) => song.playedThisTour && song.tourCount > 0)
     .sort((left, right) => right.tourCount - left.tourCount || left.title.localeCompare(right.title));
+  const showDatesBySong = new Map();
+  for (const show of data.setlists || []) {
+    const showSongs = new Set((show.sets || []).flatMap((set) => set.songTitles || splitDisplaySetSongs(set.songs)).map(normalizeTitle));
+    for (const key of showSongs) {
+      if (!showDatesBySong.has(key)) showDatesBySong.set(key, []);
+      showDatesBySong.get(key).push(show.isoDate);
+    }
+  }
 
   return `<section class="tour-stats" id="tour-stats">
-  <div class="section-heading">
+  <div class="section-heading data-heading">
     <h2>TOUR STATS</h2>
     <span>${escapeHtml(String(data.site.year))} through ${escapeHtml(data.site.latestShow?.date || "the latest posted show")}</span>
   </div>
-  <div class="tour-summary" aria-label="Current tour summary">
+  <div class="data-metrics" aria-label="Current tour summary">
     ${renderNickStat(shows, "shows played")}
     ${renderNickStat(unique, "unique songs")}
     ${renderNickStat(plays, "song plays")}
     ${renderNickStat(average, "songs per show")}
+  </div>
+  <div class="data-toolbar" aria-label="Tour Stats filters">
+    <label class="show-filter"><span>Highlight a show</span><select data-show-filter>
+      <option value="">All ${formatNumber(shows)} shows</option>
+      ${(data.setlists || []).map((show) => `<option value="${escapeAttr(show.isoDate)}">${escapeHtml(`${show.date} · ${show.location}`)}</option>`).join("")}
+    </select></label>
+    <div class="type-filter" role="group" aria-label="Filter songs by type">
+      <button type="button" class="is-active" data-type-filter="all">All</button>
+      <button type="button" data-type-filter="original">Originals</button>
+      <button type="button" data-type-filter="cover">Covers</button>
+    </div>
+    <span class="show-filter-status" aria-live="polite">All tour songs</span>
   </div>
   <div class="tour-table-wrap">
     <table class="tour-table">
       <thead><tr>
         <th scope="col"><button type="button" data-sort="title">Song <span aria-hidden="true">↕</span></button></th>
         <th scope="col" aria-sort="descending"><button type="button" data-sort="count">Plays <span aria-hidden="true">↓</span></button></th>
-        <th scope="col"><button type="button" data-sort="frequency">Shows <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="frequency">Tour shows <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="l100">Last 100 <span aria-hidden="true">↕</span></button></th>
         <th scope="col"><button type="button" data-sort="last">Last played <span aria-hidden="true">↕</span></button></th>
         <th scope="col"><button type="button" data-sort="type">Type <span aria-hidden="true">↕</span></button></th>
       </tr></thead>
       <tbody>${songs.map((song) => {
         const frequency = shows ? Math.round((song.tourCount / shows) * 100) : 0;
-        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}">
+        const showDates = showDatesBySong.get(song.key) || [];
+        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
           <th scope="row">${escapeHtml(song.title)}</th>
           <td>${formatNumber(song.tourCount)}</td>
           <td>${frequency}%</td>
+          <td>${formatNumber(song.l100 || 0)}</td>
           <td>${escapeHtml(song.lastDisplay)}</td>
           <td>${escapeHtml(song.type)}</td>
         </tr>`;
@@ -2304,18 +2361,21 @@ function renderShelfWatch(data) {
 
   const cutoff = data.rules.rotationSlpLimit;
   return `<section class="shelf-watch" id="shelf-watch">
-  <div class="section-heading">
+  <div class="section-heading data-heading">
     <h2>SHELF WATCH</h2>
     <span>songs nearing the ${escapeHtml(String(cutoff))}-show cutoff</span>
   </div>
-  <ol class="shelf-watch-list">${songs.map((song) => {
+  <div class="data-table-wrap shelf-watch-table-wrap"><table class="data-table shelf-watch-table">
+    <thead><tr><th>Song</th><th>Last played</th><th>SLP</th><th>To Shelf</th></tr></thead>
+    <tbody>${songs.map((song) => {
     const remaining = Math.max(0, cutoff - song.effectiveSlp);
-    return `<li data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}">
-      <div class="shelf-watch-song"><strong>${escapeHtml(song.title.toUpperCase())}</strong><span>last played ${escapeHtml(song.lastDisplay)}</span></div>
-      <div class="shelf-watch-slp"><strong>${formatNumber(song.effectiveSlp)}</strong><span>shows since last played</span></div>
-      <div class="shelf-watch-remaining"><strong>${formatNumber(remaining)}</strong><span>to Shelf</span></div>
-    </li>`;
-  }).join("")}</ol>
+    const progress = Math.min(100, Math.round((song.effectiveSlp / cutoff) * 100));
+    return `<tr data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}">
+      <th scope="row">${escapeHtml(song.title)}</th><td>${escapeHtml(song.lastDisplay)}</td>
+      <td><strong>${formatNumber(song.effectiveSlp)}</strong><span class="slp-progress" aria-hidden="true"><i style="width:${progress}%"></i></span></td>
+      <td><strong>${formatNumber(remaining)}</strong></td>
+    </tr>`;
+  }).join("")}</tbody></table></div>
 </section>`;
 }
 
@@ -2339,23 +2399,30 @@ function renderNickJohnsonFeature(data) {
   const plays = sum(played.map((row) => row.nickCount));
   const woodshed = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
   const completion = rotation.length ? Math.round((played.length / rotation.length) * 100) : 0;
+  const originals = rotation.filter((row) => row.type === "Original");
+  const covers = rotation.filter((row) => row.type === "Cover");
+  const playedOriginals = originals.filter((row) => row.nickCount > 0).length;
+  const playedCovers = covers.filter((row) => row.nickCount > 0).length;
+  const originalWidth = rotation.length ? (playedOriginals / rotation.length) * 100 : 0;
+  const coverWidth = rotation.length ? (playedCovers / rotation.length) * 100 : 0;
 
   return `<section class="nick-feature" id="nick-johnson">
   <details class="nick-disclosure" open>
-  <summary class="section-heading">
+  <summary class="section-heading data-heading">
     <h2>NICK STATS</h2>
     <span>${escapeHtml(String(data.site.year))} tour</span>
   </summary>
   <div class="nick-feature-body">
-  <div class="nick-summary" aria-label="Nick Johnson tour stats">
+  <div class="data-metrics nick-summary" aria-label="Nick Johnson tour stats">
     ${renderNickStat(shows, "shows on guitar")}
     ${renderNickStat(played.length, "unique songs")}
     ${renderNickStat(plays, "song plays")}
     ${renderNickStat(woodshed, "still in The Woodshed")}
   </div>
   <div class="nick-progress" aria-label="${completion}% of current song possibilities played with Nick Johnson">
-    <div><strong>${completion}%</strong><span>${formatNumber(played.length)} of ${formatNumber(rotation.length)} current possibilities played</span></div>
-    <span class="nick-progress-track"><i style="width:${completion}%"></i></span>
+    <div><strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span></div>
+    <span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i><i class="is-cover" style="width:${coverWidth}%"></i></span>
+    <div class="progress-key"><span><i class="key-original"></i>Originals ${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span><span><i class="key-cover"></i>Covers ${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span><span><i class="key-unplayed"></i>${formatNumber(played.length)}/${formatNumber(rotation.length)} overall</span></div>
   </div>
   <div class="nick-ranking-heading"><h3>MOST PLAYED WITH NICK</h3><span>plays per show</span></div>
   ${renderNickRanking(featuredSongs)}
@@ -2513,8 +2580,8 @@ function renderSetlists(data, options = {}) {
   </div>
   <details class="setlist-archive-panel" open>
     <summary><span>VIEW OLDER SETLISTS</span><strong>${formatNumber(setlists.length)}</strong></summary>
-    <div class="setlist-grid">
-      ${setlists.map((show) => renderSetlistCard(show, { lazy: true })).join("")}
+    <div class="setlist-list">
+      ${setlists.map((show) => renderSetlistRow(show, { lazy: true })).join("")}
     </div>
   </details>
 </section>`;
@@ -2538,6 +2605,26 @@ function renderSetlistCard(show, options = {}) {
   </article>`;
 }
 
+function renderSetlistRow(show, options = {}) {
+  const hasPostedSetlist = (show.sets || []).some((set) => (set.songTitles || []).length || clean(set.songs));
+  const actionLinks = [
+    show.sourceUrl ? `<a class="show-action details-action" href="${escapeAttr(show.sourceUrl)}" aria-label="${hasPostedSetlist ? "Official setlist and photos" : "Show details"} for ${escapeAttr(formatSetlistHeading(show))}">${hasPostedSetlist ? "Photos" : "Details"}</a>` : "",
+    show.streamUrl ? `<a class="show-action play-action" href="${escapeAttr(show.streamUrl)}" aria-label="Listen to ${escapeAttr(formatSetlistHeading(show))} at Nugs.net"><span aria-hidden="true">▶</span></a>` : ""
+  ].filter(Boolean).join("");
+  return `<details class="setlist-row">
+    <summary>
+      <time datetime="${escapeAttr(show.isoDate)}">${escapeHtml(show.date)}</time>
+      <span class="show-place"><strong>${escapeHtml(show.venue)}</strong><small>${escapeHtml(show.location)}</small></span>
+      <span class="show-actions">${actionLinks}</span>
+      <span class="row-toggle" aria-hidden="true"></span>
+    </summary>
+    <div class="setlist-row-body">
+      ${renderSetlistImage(show, options)}
+      <div class="setlist-copy">${renderSetlistText(show, { hideHeading: true, hideLinks: true })}</div>
+    </div>
+  </details>`;
+}
+
 function renderSetlistImage(show, options = {}) {
   if (!show.image) return "";
   const loading = options.lazy ? ' loading="lazy"' : "";
@@ -2545,7 +2632,7 @@ function renderSetlistImage(show, options = {}) {
   return `<figure class="setlist-image"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async"${loading}${priority}></figure>`;
 }
 
-function renderSetlistText(show) {
+function renderSetlistText(show, options = {}) {
   const annotations = buildSetlistAnnotations(show);
   const hasPostedSetlist = (show.sets || []).some((set) => (set.songTitles || []).length || clean(set.songs));
   const links = [
@@ -2553,11 +2640,11 @@ function renderSetlistText(show) {
     show.streamUrl ? `<a href="${escapeAttr(show.streamUrl)}">Listen at Nugs.net</a>` : ""
   ].filter(Boolean).join("");
   return `<div class="setlist-text">
-    <h3>${escapeHtml(formatSetlistHeading(show))}</h3>
+    ${options.hideHeading ? "" : `<h3>${escapeHtml(formatSetlistHeading(show))}</h3>`}
     ${(show.sets || []).map((set) => `<p><strong>${escapeHtml(set.label)}:</strong> ${renderSetSongs(set, annotations)}</p>`).join("")}
     ${renderSetlistGuestNotes(annotations)}
     ${renderSetlistNotes(annotations)}
-    ${links ? `<p class="setlist-links">${links}</p>` : ""}
+    ${links && !options.hideLinks ? `<p class="setlist-links">${links}</p>` : ""}
   </div>`;
 }
 
@@ -3454,6 +3541,78 @@ sup {
   border-bottom: 1px solid var(--line);
 }
 
+.data-heading {
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 12px;
+}
+
+.data-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+}
+
+.data-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px 0 4px;
+}
+
+.show-filter {
+  display: grid;
+  gap: 6px;
+  min-width: min(360px, 50%);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.show-filter select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+  padding: 0 34px 0 11px;
+  color: var(--ink);
+  font: 600 13px/1 var(--ui-font);
+}
+
+.type-filter {
+  display: inline-flex;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 3px;
+  background: #f5f5f3;
+}
+
+.type-filter button {
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  padding: 0 12px;
+  color: var(--muted);
+  font: 650 12px/1 var(--ui-font);
+  cursor: pointer;
+}
+
+.type-filter button.is-active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 8%);
+}
+
+.show-filter-status {
+  margin-left: auto;
+  padding-bottom: 11px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .tour-table-wrap {
   max-height: 560px;
   overflow: auto;
@@ -3480,6 +3639,15 @@ sup {
 .tour-table tbody th {
   width: 48%;
   font-weight: 600;
+}
+
+.tour-table tbody tr.is-selected-show {
+  background: #f7eeee;
+  box-shadow: inset 3px 0 0 var(--red);
+}
+
+.tour-table tbody tr[hidden] {
+  display: none;
 }
 
 .tour-table thead th {
@@ -3519,6 +3687,60 @@ sup {
   margin: 0;
   padding: 0;
   border-top: 1px solid var(--line);
+}
+
+.data-table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--ui-font);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.data-table th,
+.data-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 12px 10px;
+  text-align: left;
+}
+
+.data-table thead th {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.data-table tbody th {
+  width: 48%;
+  padding-left: 0;
+  font-weight: 650;
+}
+
+.data-table td:last-child,
+.data-table th:last-child {
+  padding-right: 0;
+  text-align: right;
+}
+
+.slp-progress {
+  display: inline-block;
+  width: 72px;
+  height: 4px;
+  margin-left: 9px;
+  overflow: hidden;
+  vertical-align: middle;
+  background: #e8e8e6;
+}
+
+.slp-progress i {
+  display: block;
+  height: 100%;
+  background: var(--ink);
 }
 
 .shelf-watch-list li {
@@ -3613,7 +3835,7 @@ sup {
 }
 
 .nick-progress-track {
-  display: block;
+  display: flex;
   width: 100%;
   height: 8px;
   overflow: hidden;
@@ -3623,8 +3845,31 @@ sup {
 .nick-progress-track i {
   display: block;
   height: 100%;
-  background: var(--red);
 }
+
+.nick-progress-track .is-original { background: var(--ink); }
+.nick-progress-track .is-cover { background: var(--red); }
+
+.progress-key {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px 20px !important;
+}
+
+.progress-key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progress-key i {
+  width: 8px;
+  height: 8px;
+}
+
+.progress-key .key-original { background: var(--ink); }
+.progress-key .key-cover { background: var(--red); }
+.progress-key .key-unplayed { background: #e8e8e6; }
 
 .nick-stat {
   min-width: 0;
@@ -3862,6 +4107,100 @@ sup {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
+
+.setlist-list {
+  border-top: 1px solid var(--line);
+}
+
+.setlist-row {
+  border-bottom: 1px solid var(--line);
+}
+
+.setlist-row > summary {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr) auto 20px;
+  gap: 18px;
+  align-items: center;
+  min-height: 68px;
+  cursor: pointer;
+}
+
+.setlist-row > summary::-webkit-details-marker { display: none; }
+
+.setlist-row time {
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.show-place {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.show-place strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.show-place small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.show-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.show-action {
+  position: relative;
+  z-index: 2;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.details-action {
+  border-bottom: 1px solid currentColor;
+}
+
+.play-action {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.play-action span { margin-left: 2px; }
+
+.row-toggle::before {
+  content: "+";
+  color: var(--muted);
+  font-size: 20px;
+}
+
+.setlist-row[open] .row-toggle::before { content: "\\2212"; }
+
+.setlist-row-body {
+  display: grid;
+  grid-template-columns: minmax(220px, .72fr) minmax(0, 1.28fr);
+  gap: 22px;
+  padding: 8px 0 24px 130px;
+}
+
+.setlist-row-body .setlist-image { margin: 0; }
 
 .setlist-card {
   border: 0;
@@ -4682,8 +5021,32 @@ sup {
     grid-template-columns: 1fr;
   }
 
-  .nick-summary {
+  .nick-summary,
+  .data-metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .data-toolbar {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .show-filter {
+    min-width: 0;
+  }
+
+  .type-filter {
+    width: 100%;
+  }
+
+  .type-filter button {
+    flex: 1;
+  }
+
+  .show-filter-status {
+    margin-left: 0;
+    padding-bottom: 0;
   }
 
   .nick-disclosure > summary {
@@ -4767,8 +5130,28 @@ sup {
     font-weight: 600;
   }
 
-  .setlist-archive-panel > .setlist-grid {
+  .setlist-archive-panel > .setlist-list {
     margin-top: 18px;
+  }
+
+  .setlist-row > summary {
+    grid-template-columns: 84px minmax(0, 1fr) auto 16px;
+    gap: 10px;
+    min-height: 64px;
+  }
+
+  .setlist-row time {
+    font-size: 11px;
+  }
+
+  .details-action {
+    display: none;
+  }
+
+  .setlist-row-body {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 4px 0 22px;
   }
 
   .songs.grid4,
@@ -4948,8 +5331,8 @@ sup {
     padding: 11px 8px;
   }
 
-  .tour-table th:nth-child(5),
-  .tour-table td:nth-child(5) {
+  .tour-table th:nth-child(6),
+  .tour-table td:nth-child(6) {
     display: none;
   }
 
