@@ -1,7 +1,7 @@
 {
   "source": "Everyday Companion played pages",
   "sourceUrl": "https://everydaycompanion.com/playstats/playstats.asp",
-  "importedAt": "2026-07-18T15:11:53.735Z",
+  "importedAt": "2026-07-19T12:56:29.779Z",
   "tourYear": 2026,
   "allowEcLag": true,
   "ecLatestShowIso": "2026-07-11",
@@ -2216,6 +2216,24 @@
       "firstCurrentDate": "01/22/26",
       "lastCurrentDate": "06/28/26",
       "totalAtImport": 274
+    },
+    {
+      "title": "You Should Be Glad",
+      "code": "YSBG",
+      "sourceUrl": "https://everydaycompanion.com/played/YSBG.asp",
+      "asOfShow": "2026-07-18",
+      "asOfShowCode": "",
+      "ltpDate": "11/23/25",
+      "ltp": 31,
+      "totalBefore": 174,
+      "currentTourPlaysFromHistory": 0,
+      "currentTourPlaysFromLocalSetlists": 1,
+      "firstCurrentDate": "07/18/26",
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 174,
+      "ecLatestShowIso": "2026-07-11",
+      "localBridgeShows": 2,
+      "sourceStatus": "ec-lag-verified-local-bridge"
     },
     {
       "title": "You Wreck Me",

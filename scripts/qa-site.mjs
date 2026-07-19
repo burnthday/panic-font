@@ -335,7 +335,10 @@ async function checkLatestSetlist(html, siteData) {
     const featuredImages = [...featured.matchAll(/<img src="([^"]+)"/g)].map((match) => match[1]);
     record("Tonight and the latest completed show use different photos", featuredImages.length >= 2 && featuredImages[0] !== featuredImages[1], featuredImages.join(" vs "));
   } else {
-    assertIncludes(featured, "<h2>LATEST SETLIST</h2>", "Completed featured show is labeled Latest Setlist");
+    record(
+      "Completed featured setlist has no redundant section label or black rule",
+      !featured.includes("LATEST SETLIST") && !featured.includes("CURRENT TOUR STOP") && !featured.includes('class="section-heading"')
+    );
     const sourceSegueCount = sum((latestShow?.sets || []).map((set) => (set.songs.match(/\s>\s/g) || []).length));
     const renderedSegueCount = (featured.match(/&gt;/g) || []).length;
     record("Latest setlist preserves every source segue", sourceSegueCount > 0 && renderedSegueCount >= sourceSegueCount, `source=${sourceSegueCount} rendered=${renderedSegueCount}`);

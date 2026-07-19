@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-18T15:09:37.991Z",
+  "importedAt": "2026-07-19T00:00:00.000Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1583,6 +1583,67 @@
       "imageHeight": 0,
       "transitionSourceUrl": "https://archive.org/details/wsp2026-07-17.4ch",
       "transitionSourceTitle": "Widespread Panic - Live at Fox Theater - Oakland, CA on 2026-07-17 (4ch)"
+    },
+    {
+      "date": "07/18/2026",
+      "isoDate": "2026-07-18",
+      "venue": "Fox Theater",
+      "city": "Oakland",
+      "state": "CA",
+      "location": "Oakland, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-18-oakland-ca-fox-theater/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-fox-theater-oakland-ca-07-18-2026-mp3-flac-or-online-music-streaming/47022.html?cgid=ARTIST-58",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Ride Me High, Driving Song > I'm Not Alone > Driving Song, Junior, Can't Get High, Goodpeople > Dark Bar > Goodpeople, You Should Be Glad, Mr. Soul",
+          "songTitles": [
+            "Ride Me High",
+            "Driving Song",
+            "I'm Not Alone",
+            "Driving Song",
+            "Junior",
+            "Can't Get High",
+            "Goodpeople",
+            "Dark Bar",
+            "Goodpeople",
+            "You Should Be Glad",
+            "Mr. Soul"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Holden Oversoul, Proving Ground, The Last Straw, Dyin' Man, Aunt Avis, Impossible, Drums, Honky Red, Ain't Life Grand, Love Tractor",
+          "songTitles": [
+            "Holden Oversoul",
+            "Proving Ground",
+            "The Last Straw",
+            "Dyin' Man",
+            "Aunt Avis",
+            "Impossible",
+            "Drums",
+            "Honky Red",
+            "Ain't Life Grand",
+            "Love Tractor"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "And It Stoned Me, Bowlegged Woman",
+          "songTitles": [
+            "And It Stoned Me",
+            "Bowlegged Woman"
+          ]
+        }
+      ],
+      "notes": [
+        "Entire show with Nick Johnson on guitar"
+      ],
+      "image": "",
+      "imageWidth": 0,
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://www.setlist.fm/setlist/widespread-panic/2026/fox-theater-oakland-ca-5349d779.html",
+      "transitionSourceTitle": "Widespread Panic Setlist at Fox Theater, Oakland, CA on July 18, 2026"
     }
   ],
   "tourDates": [
