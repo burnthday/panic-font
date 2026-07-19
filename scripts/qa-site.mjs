@@ -95,7 +95,8 @@ function checkCorePageState(html, siteData) {
   record("Shelf Watch appears between Tour Stats and Shelf", indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="shelf-watch"') && indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"'));
   record("Shelf and Purgatory appear below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"'));
   record("The Woodshed appears below Purgatory", indexOf(html, 'id="purgatory"') < indexOf(html, 'id="woodshed"'));
-  record("Older setlists appear below The Woodshed", indexOf(html, 'id="woodshed"') < indexOf(html, 'id="setlists"'));
+  record("Nick Stats appears below The Woodshed", indexOf(html, 'id="woodshed"') < indexOf(html, 'id="nick-johnson"'));
+  record("Older setlists appear below Nick Stats", indexOf(html, 'id="nick-johnson"') < indexOf(html, 'id="setlists"'));
 
   record("Unique-song total matches the current-tour ledger", siteData.totals?.currentTourSongs === siteData.currentTour?.length);
   record("Tour-play total matches per-song counts", siteData.totals?.currentTourPlays === sum(siteData.currentTour?.map((song) => song.tourCount)));
@@ -108,6 +109,7 @@ function checkCorePageState(html, siteData) {
   assertIncludes(html, "Times played this tour", "Sheet key says tiny numbers are times played this tour");
   assertIncludes(html, "The Woodshed", "Sheet key includes The Woodshed");
   assertIncludes(html, "not yet played with Nick Johnson", "The Woodshed explains Nick Johnson logic");
+  record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed").includes("songs not yet played with Nick Johnson"));
   checkMarkerLegend(html, siteData);
 
   assertCurrentTourSong(html, siteData, "Just Kissed My Baby", "Song List add-on keeps its tour count and play date");
@@ -210,7 +212,8 @@ function checkNickJohnsonFeature(html, siteData) {
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
 
-  assertIncludes(feature, "<h2>NICK JOHNSON</h2>", "Homepage has the restrained Nick Johnson feature");
+  assertIncludes(feature, "<h2>NICK STATS</h2>", "Homepage has the restrained Nick Stats feature");
+  assertIncludes(feature, '<details class="nick-disclosure" open>', "Nick Stats uses one desktop-open disclosure");
   for (const [value, label] of [
     [nickShows, "shows on guitar"],
     [played.length, "unique songs"],
@@ -354,7 +357,8 @@ async function checkLatestSetlist(html, siteData) {
   const archive = sectionHtml(html, "setlists");
   assertIncludes(archive, '<details class="setlist-archive-panel" open>', "Older setlists remain visible on desktop");
   assertIncludes(archive, "VIEW OLDER SETLISTS", "Older setlists have one clear mobile disclosure");
-  record("Mobile initialization collapses only the older setlist archive", html.includes('.setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
+  record("Mobile initialization collapses Nick Stats and the older setlist archive", html.includes('.nick-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
+  record("Mobile initialization leaves every laminated sheet expanded", !html.includes('.song-panel:not(:first-of-type)') && !html.includes('.shelf-board .song-panel') && !html.includes('.purgatory-board .song-panel') && !html.includes('.woodshed-board .song-panel'));
 
   const bendHeading = "07/11/2026 Hayden Homes Amphitheater, Bend, OR";
   const bend = featured.includes(bendHeading) ? featured : cardHtml(html, bendHeading);

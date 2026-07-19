@@ -2125,7 +2125,7 @@ function renderFitScriptBody() {
       });
 
       if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".primary-board:not(.tour-review-sheet) .song-panel:not(:first-of-type), .shelf-board .song-panel, .purgatory-board .song-panel, .woodshed-board .song-panel, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
+        document.querySelectorAll(".nick-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
       }
 
       document.querySelectorAll(".tour-table").forEach((table) => {
@@ -2305,13 +2305,12 @@ function renderShelfWatch(data) {
 }
 
 function renderWoodshedBoard(data) {
-  const count = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
-  return `${renderNickJohnsonFeature(data)}
-<section class="laminate woodshed-board" id="woodshed">
-  ${renderBoardHeader("THE WOODSHED", `${count} songs not yet played with Nick Johnson on guitar`)}
+  return `<section class="laminate woodshed-board" id="woodshed">
+  ${renderBoardHeader("THE WOODSHED")}
   ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
-</section>`;
+</section>
+${renderNickJohnsonFeature(data)}`;
 }
 
 function renderNickJohnsonFeature(data) {
@@ -2327,10 +2326,12 @@ function renderNickJohnsonFeature(data) {
   const completion = rotation.length ? Math.round((played.length / rotation.length) * 100) : 0;
 
   return `<section class="nick-feature" id="nick-johnson">
-  <div class="section-heading">
-    <h2>NICK JOHNSON</h2>
+  <details class="nick-disclosure" open>
+  <summary class="section-heading">
+    <h2>NICK STATS</h2>
     <span>${escapeHtml(String(data.site.year))} tour</span>
-  </div>
+  </summary>
+  <div class="nick-feature-body">
   <div class="nick-summary" aria-label="Nick Johnson tour stats">
     ${renderNickStat(shows, "shows on guitar")}
     ${renderNickStat(played.length, "unique songs")}
@@ -2347,6 +2348,8 @@ function renderNickJohnsonFeature(data) {
     <summary><span>VIEW ALL SONGS, INCLUDING ZERO PLAYS</span><strong>${formatNumber(remainingSongs.length)}</strong></summary>
     ${renderNickRanking(remainingSongs, { start: featuredSongs.length + 1, compact: true })}
   </details>` : ""}
+  </div>
+  </details>
 </section>`;
 }
 
@@ -3559,6 +3562,15 @@ sup {
   justify-self: end;
 }
 
+.nick-disclosure > summary {
+  list-style: none;
+  cursor: default;
+}
+
+.nick-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
 .nick-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4661,6 +4673,27 @@ sup {
 
   .nick-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nick-disclosure > summary {
+    cursor: pointer;
+    grid-template-columns: minmax(0, 1fr) auto 24px;
+  }
+
+  .nick-disclosure > summary::after {
+    content: "+";
+    justify-self: end;
+    font-size: 22px;
+    line-height: 1;
+    font-weight: 400;
+  }
+
+  .nick-disclosure[open] > summary::after {
+    content: "\\2212";
+  }
+
+  .nick-disclosure > .nick-feature-body {
+    padding-top: 18px;
   }
 
   .tour-summary {
