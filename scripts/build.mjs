@@ -120,12 +120,22 @@ function warnForClassificationGaps(siteData) {
 
 async function loadSourceData() {
   const setlists = await loadSetlists();
-  const [spreadsheet, playstats, priorSongStats] = await Promise.all([
+  const [spreadsheet, playstats, priorSongStats, venuePreviews] = await Promise.all([
     loadSpreadsheetData(inferSetlistYear(setlists)),
     loadPlaystats(),
-    loadPriorSongStats()
+    loadPriorSongStats(),
+    loadVenuePreviews()
   ]);
-  return { ...spreadsheet, setlists, playstats, priorSongStats };
+  return { ...spreadsheet, setlists, playstats, priorSongStats, venuePreviews };
+}
+
+async function loadVenuePreviews() {
+  try {
+    return JSON.parse(await readFile(path.join(root, "data", "source", "venue-previews.json"), "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") return {};
+    throw error;
+  }
 }
 
 async function loadSpreadsheetData(tourYear = 0) {
@@ -569,15 +579,19 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const boardShow = pickBoardShow(tourDates, setlists);
   let latestShow = setlists[0] || null;
   const todayIso = currentDateIso("America/Los_Angeles");
+  const previewStartIso = boardShow?.isoDate ? shiftIsoDate(boardShow.isoDate, -1) : "";
   const isShowDayPreview = Boolean(
     boardShow?.isoDate &&
-    boardShow.isoDate <= todayIso &&
+    previewStartIso <= todayIso &&
     (!latestShow?.isoDate || boardShow.isoDate > latestShow.isoDate)
   );
-  const currentRunImage = setlists.find((show) => show.location === boardShow?.location && show.image)?.image || "";
-  const previewFallbackImage = setlists.find((show) => show.location !== boardShow?.location && show.image)?.image || currentRunImage;
+  const latestRunDates = latestShow ? tourStopDates(tourDates, latestShow) : [];
+  const previewMetadata = source.venuePreviews?.[venuePreviewKey(boardShow)] || {};
+  const tourImages = setlists.map((show) => show.image).filter(Boolean);
+  const previewFallbackImage = deterministicItem(tourImages, boardShow?.isoDate) || "";
+  const previewImage = previewMetadata.firstVisit ? previewMetadata.image || previewFallbackImage : previewFallbackImage;
   let featuredShow = isShowDayPreview
-    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [] }
+    ? { ...boardShow, image: boardShow.image || previewImage, sets: blankSetlist(), notes: [] }
     : latestShow;
 
   const songs = catalog.map((row) => {
@@ -628,7 +642,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   setlists = setlists.map((show) => addGeneratedBustoutNotes(show, songsByKey));
   latestShow = setlists[0] || null;
   featuredShow = isShowDayPreview
-    ? { ...boardShow, image: boardShow.image || previewFallbackImage, sets: [], notes: [] }
+    ? { ...boardShow, image: boardShow.image || previewImage, sets: blankSetlist(), notes: [] }
     : latestShow;
 
   const originals = songs.filter((row) => row.type === "Original");
@@ -661,6 +675,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       markerLegend: buildMarkerLegend(lastFourDates, setlists, tourDates),
       latestShow,
       featuredShow,
+      featuredRunDates: isShowDayPreview ? [featuredShow?.isoDate].filter(Boolean) : latestRunDates,
       isShowDayPreview
     },
     rules: {
@@ -2475,9 +2490,10 @@ function renderLatestSetlist(data) {
   const featured = data.site.featuredShow || data.setlists[0];
   if (!featured) return "";
 
+  const featuredRunDates = new Set(data.site.featuredRunDates || [featured.isoDate]);
   const completedRunShows = data.site.isShowDayPreview
-    ? data.setlists.filter((show) => show.location === featured.location && show.isoDate < featured.isoDate)
-    : [];
+    ? []
+    : data.setlists.filter((show) => featuredRunDates.has(show.isoDate) && show.isoDate !== featured.isoDate);
   return `<section class="latest-setlist" id="latest-setlist">
   ${renderFeaturedSetlist(featured, { priority: true })}
   ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map((show) => renderFeaturedSetlist(show, { lazy: true })).join("")}</div>` : ""}
@@ -2485,13 +2501,8 @@ function renderLatestSetlist(data) {
 }
 
 function renderSetlists(data, options = {}) {
-  const featured = data.site.featuredShow || data.setlists[0];
   const featuredRunDates = options.skipFeaturedRun
-    ? new Set(
-        data.site.isShowDayPreview
-          ? data.setlists.filter((show) => show.location === featured?.location && show.isoDate < featured?.isoDate).map((show) => show.isoDate)
-          : featured?.isoDate ? [featured.isoDate] : []
-      )
+    ? new Set(data.site.featuredRunDates || [])
     : new Set();
   const setlists = data.setlists.filter((show) => !featuredRunDates.has(show.isoDate));
   const postedLabel = featuredRunDates.size ? `${setlists.length} older posted` : `${data.totals.postedSetlists} posted`;
@@ -5275,6 +5286,35 @@ function tourRunInfo(tourDates, selected) {
   };
 }
 
+function tourStopDates(tourDates, selected) {
+  if (!selected?.isoDate) return [];
+  const sortedDates = [...tourDates].filter((show) => show.isoDate).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
+  let index = sortedDates.findIndex((show) => sameShowDate(show, selected));
+  if (index === -1) index = sortedDates.findIndex((show) => show.isoDate === selected.isoDate);
+  if (index === -1) return [selected.isoDate];
+
+  let first = index;
+  let last = index;
+  while (first > 0 && sameRunStop(sortedDates[first - 1], selected)) first -= 1;
+  while (last < sortedDates.length - 1 && sameRunStop(sortedDates[last + 1], selected)) last += 1;
+  return sortedDates.slice(first, last + 1).map((show) => show.isoDate);
+}
+
+function venuePreviewKey(show) {
+  if (!show) return "";
+  return `${normalizeRunValue(show.venue)}|${normalizeRunValue(show.location)}`;
+}
+
+function blankSetlist() {
+  return ["1", "2", "E"].map((label) => ({ label, songs: "", songTitles: [] }));
+}
+
+function deterministicItem(items, seed = "") {
+  if (!items.length) return "";
+  const hash = [...String(seed)].reduce((total, character) => total + character.charCodeAt(0), 0);
+  return items[hash % items.length];
+}
+
 function sameShowDate(a, b) {
   return a.isoDate === b.isoDate && normalizeRunValue(a.location) === normalizeRunValue(b.location) && normalizeRunValue(a.venue) === normalizeRunValue(b.venue);
 }
@@ -5434,12 +5474,21 @@ function clean(value) {
 }
 
 function currentDateIso(timeZone = "UTC", date = new Date()) {
+  if (process.env.BURNTHDAY_TODAY && /^\d{4}-\d{2}-\d{2}$/.test(process.env.BURNTHDAY_TODAY)) {
+    return process.env.BURNTHDAY_TODAY;
+  }
   return new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
   }).format(date);
+}
+
+function shiftIsoDate(isoDate, days) {
+  const date = new Date(`${isoDate}T12:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 function isPublicSongTitle(title) {

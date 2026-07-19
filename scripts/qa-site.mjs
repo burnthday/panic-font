@@ -324,19 +324,17 @@ async function checkLatestSetlist(html, siteData) {
   if (siteData.site?.isShowDayPreview) {
     record("Show-day setlists have no redundant section label or black rule", !featured.includes("CURRENT TOUR STOP") && !featured.includes('class="section-heading"'));
     assertIncludes(featured, escapeHtml(heading), "Tonight's blank setlist is featured first");
-    record("Tonight's setlist remains blank until songs are posted", renderedLabels.length === 0, renderedLabels.join(", "));
+    record("Preview setlist provides blank 1, 2, and E lines", arraysEqual(renderedLabels, ["1", "2", "E"]), renderedLabels.join(", "));
+    record("Preview setlist contains no song copy", [...featuredCard.matchAll(/<p><strong>[^<]+:<\/strong>([\s\S]*?)<\/p>/g)].every((match) => !decodeHtml(match[1]).trim()));
     assertIncludes(featuredCard, ">Show Details</a>", "Tonight links to show details");
     record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));
     record("Tonight does not advertise a post-show Nugs archive", !featuredCard.includes("Listen at Nugs.net"));
 
     const completedHeading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
-    const completedRunShow = cardHtml(featured, escapeHtml(completedHeading));
-    record("Latest completed show from the tour stop stays above the Song List", Boolean(completedRunShow), completedHeading);
-    record("Top tour-stop show is not duplicated in the lower archive", !cardHtml(sectionHtml(html, "setlists"), escapeHtml(completedHeading)), completedHeading);
-    assertIncludes(completedRunShow, ">Official Setlist &amp; Photos</a>", "Completed show identifies the official setlist and photos");
-    assertIncludes(completedRunShow, ">Listen at Nugs.net</a>", "Completed show labels the Nugs audio clearly");
-    const featuredImages = [...featured.matchAll(/<img src="([^"]+)"/g)].map((match) => match[1]);
-    record("Tonight and the latest completed show use different photos", featuredImages.length >= 2 && featuredImages[0] !== featuredImages[1], featuredImages.join(" vs "));
+    const archive = sectionHtml(html, "setlists");
+    record("Previous tour stop moves below the Song List on preview day", Boolean(cardHtml(archive, escapeHtml(completedHeading))), completedHeading);
+    record("Previous tour stop is absent from the preview feature", !cardHtml(featured, escapeHtml(completedHeading)), completedHeading);
+    record("First-visit preview uses its configured venue image", !featuredShow?.image || featuredCard.includes(`src="${escapeHtml(featuredShow.image)}"`), featuredShow?.image || "");
   } else {
     record(
       "Completed featured setlist has no redundant section label or black rule",
@@ -348,6 +346,13 @@ async function checkLatestSetlist(html, siteData) {
 
     const sourceLabels = (latestShow?.sets || []).map((set) => set.label);
     record("Latest setlist renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
+    const archive = sectionHtml(html, "setlists");
+    for (const isoDate of siteData.site?.featuredRunDates || []) {
+      const runShow = siteData.setlists.find((show) => show.isoDate === isoDate);
+      const runHeading = `${runShow?.date || ""} ${runShow?.venue || ""}, ${runShow?.location || ""}`;
+      record(`Featured run includes ${isoDate}`, Boolean(cardHtml(featured, escapeHtml(runHeading))), runHeading);
+      record(`Featured run does not duplicate ${isoDate}`, !cardHtml(archive, escapeHtml(runHeading)), runHeading);
+    }
   }
 
   const styles = await readText("dist/styles.css");
