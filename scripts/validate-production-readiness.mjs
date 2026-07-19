@@ -68,7 +68,6 @@ async function checkCoreRoutes() {
     "dist/p/rumors.html",
     "dist/p/theshelf.html",
     "dist/p/burnthdays-widespread-panic-tours-in.html",
-    "dist/p/widespread-panic-song-origins-and.html",
     "dist/p/widespread-panic-dirty-side-down-lyrics.html",
     "dist/p/about.html",
     "dist/p/privacy.html",
@@ -97,6 +96,8 @@ function checkRedirects(redirects) {
     "/search/* /archive/ 301",
     "/feeds/posts/default /archive/ 301",
     "/feeds/posts/default/* /archive/ 301",
+    "/p/widespread-panic-song-origins-and /song-origins/ 301",
+    "/p/widespread-panic-song-origins-and.html /song-origins/ 301",
     "/p/:slug.html /p/:slug 301",
     "/:year/:month/:slug.html /:year/:month/:slug 301"
   ];

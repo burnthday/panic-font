@@ -51,7 +51,7 @@ const primaryNavItems = [
   ["Home", "/"],
   ["Rumors", "/p/rumors"],
   ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
-  ["Song Origins", "/p/widespread-panic-song-origins-and"],
+  ["Song Origins", "/song-origins/"],
   ["Tour In Review", "/p/burnthdays-widespread-panic-tours-in"],
   ["The Shelf", "/p/theshelf"],
   ["About", "/p/about"]
@@ -61,7 +61,7 @@ const footerNavItems = [
   ["Song List", "/"],
   ["The Shelf", "/p/theshelf"],
   ["Tour In Review", "/p/burnthdays-widespread-panic-tours-in"],
-  ["Song Origins", "/p/widespread-panic-song-origins-and"],
+  ["Song Origins", "/song-origins/"],
   ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
   ["Rumors", "/p/rumors"],
   ["About", "/p/about"],
@@ -206,7 +206,8 @@ async function loadBloggerArchive() {
         title: entry.title || titleFromFilename(pagePath) || `Burnthday Archive ${index + 1}`,
         isReview: isReviewEntry(entry, pagePath)
       };
-    });
+    })
+    .filter((entry) => entry.path !== "/p/widespread-panic-song-origins-and.html");
   const titleCounts = new Map();
   for (const entry of prepared) {
     const key = clean(entry.title).toLowerCase();
@@ -1170,11 +1171,8 @@ async function writeBloggerArchive(entries, data) {
 async function writeSongOrigins(origins) {
   if (!origins.length) return;
 
-  await writeStaticPage("/p/widespread-panic-song-origins-and.html", renderSongOriginsIndex(origins, {
-    canonicalPath: "/p/widespread-panic-song-origins-and"
-  }));
   await writeStaticPage("/song-origins/index.html", renderSongOriginsIndex(origins, {
-    canonicalPath: "/p/widespread-panic-song-origins-and"
+    canonicalPath: "/song-origins/"
   }));
   await Promise.all(origins.map((origin) => writeStaticPage(`/song-origins/${origin.slug}/index.html`, renderSongOriginPage(origin, origins))));
 }
@@ -1701,7 +1699,7 @@ function renderGeneratedTourReviewPage(review, data) {
 }
 
 function renderSongOriginsIndex(origins, options = {}) {
-  const canonicalPath = options.canonicalPath || "/p/widespread-panic-song-origins-and";
+  const canonicalPath = options.canonicalPath || "/song-origins/";
   const description = "Widespread Panic song origins, histories, notes, and Burnthday picks.";
   return `<!doctype html>
 <html lang="en">
@@ -1770,7 +1768,7 @@ function renderSongOriginPage(origin, origins) {
     ${renderSiteHeader()}
     <main class="archive-main origins-main">
       <article class="archive-page origin-page">
-        <nav class="origin-back"><a href="/p/widespread-panic-song-origins-and">Song Origins</a></nav>
+        <nav class="origin-back"><a href="/song-origins/">Song Origins</a></nav>
         <header class="archive-title origin-title">
           <p>Song Origins</p>
           <h1>${escapeHtml(origin.title)}</h1>
@@ -5028,6 +5026,8 @@ function renderRedirects(archiveEntries = [], generatedReviews = []) {
   }).filter(Boolean));
   const review2025Path = reviewByYear.get("2025") || "/";
   const lines = [
+    "/p/widespread-panic-song-origins-and /song-origins/ 301",
+    "/p/widespread-panic-song-origins-and.html /song-origins/ 301",
     "/tour-in-review /p/burnthdays-widespread-panic-tours-in 301",
     "/tour-in-review/ /p/burnthdays-widespread-panic-tours-in 301",
     `/2025/02/widespread-panic-2025-tour.html ${review2025Path} 301`,
