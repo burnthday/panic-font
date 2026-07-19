@@ -429,10 +429,10 @@ function checkNavigation(html, siteData) {
 
 async function checkLegacyPages(siteData) {
   const [rumors, tourReview, shelf, privacy] = await Promise.all([
-    readText("dist/p/rumors.html"),
-    readText("dist/p/burnthdays-widespread-panic-tours-in.html"),
-    readText("dist/p/theshelf.html"),
-    readText("dist/p/privacy.html")
+    readText("dist/rumors/index.html"),
+    readText("dist/tour-in-review/index.html"),
+    readText("dist/shelf/index.html"),
+    readText("dist/privacy/index.html")
   ]);
   const rumorsText = normalizeText(stripTags(rumors));
   const tourText = normalizeText(stripTags(tourReview));

@@ -65,12 +65,12 @@ function sameTotals(left, right) {
 async function checkCoreRoutes() {
   const required = [
     "dist/index.html",
-    "dist/p/rumors.html",
-    "dist/p/theshelf.html",
-    "dist/p/burnthdays-widespread-panic-tours-in.html",
-    "dist/p/widespread-panic-dirty-side-down-lyrics.html",
-    "dist/p/about.html",
-    "dist/p/privacy.html",
+    "dist/rumors/index.html",
+    "dist/shelf/index.html",
+    "dist/tour-in-review/index.html",
+    "dist/lyrics-chords/index.html",
+    "dist/about/index.html",
+    "dist/privacy/index.html",
     "dist/song-origins/index.html",
     "dist/tour-in-review/index.html",
     "dist/archive/index.html"
@@ -88,16 +88,27 @@ async function checkCoreRoutes() {
 
 function checkRedirects(redirects) {
   const required = [
-    "/tour-in-review /p/burnthdays-widespread-panic-tours-in 301",
-    "/tour-in-review/ /p/burnthdays-widespread-panic-tours-in 301",
+    "/tour-in-review /tour-in-review/ 301",
     "/2025/02/widespread-panic-2025-tour.html /2025/12/widespread-panic-2025-tour-in-review 301",
     "/2025/02/widespread-panic-2025-tour /2025/12/widespread-panic-2025-tour-in-review 301",
     "/search /archive/ 301",
     "/search/* /archive/ 301",
     "/feeds/posts/default /archive/ 301",
     "/feeds/posts/default/* /archive/ 301",
+    "/p/rumors /rumors/ 301",
+    "/p/rumors.html /rumors/ 301",
+    "/p/widespread-panic-dirty-side-down-lyrics /lyrics-chords/ 301",
+    "/p/widespread-panic-dirty-side-down-lyrics.html /lyrics-chords/ 301",
     "/p/widespread-panic-song-origins-and /song-origins/ 301",
     "/p/widespread-panic-song-origins-and.html /song-origins/ 301",
+    "/p/burnthdays-widespread-panic-tours-in /tour-in-review/ 301",
+    "/p/burnthdays-widespread-panic-tours-in.html /tour-in-review/ 301",
+    "/p/theshelf /shelf/ 301",
+    "/p/theshelf.html /shelf/ 301",
+    "/p/about /about/ 301",
+    "/p/about.html /about/ 301",
+    "/p/privacy /privacy/ 301",
+    "/p/privacy.html /privacy/ 301",
     "/p/:slug.html /p/:slug 301",
     "/:year/:month/:slug.html /:year/:month/:slug 301"
   ];
@@ -116,12 +127,18 @@ function checkSitemap(sitemap) {
     "https://burnthday.com/",
     "https://burnthday.com/archive/",
     "https://burnthday.com/song-origins/",
-    "https://burnthday.com/p/privacy",
+    "https://burnthday.com/rumors/",
+    "https://burnthday.com/lyrics-chords/",
+    "https://burnthday.com/tour-in-review/",
+    "https://burnthday.com/shelf/",
+    "https://burnthday.com/about/",
+    "https://burnthday.com/privacy/",
     "https://burnthday.com/2025/12/widespread-panic-2025-tour-in-review"
   ];
   const missing = required.filter((loc) => !sitemap.includes(`<loc>${loc}</loc>`));
   const urlCount = (sitemap.match(/<url>/g) || []).length;
   record("Sitemap includes core public URLs", missing.length === 0, missing.join("\n"));
+  record("Sitemap excludes redirected Blogger core URLs", !/<loc>https:\/\/burnthday\.com\/p\/(?:rumors|widespread-panic-dirty-side-down-lyrics|widespread-panic-song-origins-and|burnthdays-widespread-panic-tours-in|theshelf|about|privacy)(?:\.html)?<\/loc>/.test(sitemap), "Redirected /p/ URL found in sitemap");
   record("Sitemap has substantial archive coverage", urlCount >= 250, `urlCount=${urlCount}`);
 }
 
@@ -140,9 +157,13 @@ async function checkGeneratedMetadata() {
   const files = (await readdir(path.join(root, "dist"), { recursive: true }))
     .filter((file) => file.endsWith(".html"));
   const pages = [];
+  const legacyInternalLinks = [];
   for (const file of files) {
     const html = await readText(path.join("dist", file));
     if (/name="robots" content="noindex"/i.test(html)) continue;
+    if (/href="(?:https?:\/\/(?:www\.)?burnthday\.com)?\/p\/(?:rumors|widespread-panic-dirty-side-down-lyrics|widespread-panic-song-origins-and|burnthdays-widespread-panic-tours-in|theshelf|about|privacy)(?:\.html)?[\"#?]/.test(html)) {
+      legacyInternalLinks.push(file);
+    }
     pages.push({
       file,
       title: decodeEntities(html.match(/<title>([\s\S]*?)<\/title>/i)?.[1] || ""),
@@ -168,6 +189,9 @@ async function checkGeneratedMetadata() {
   record("Every indexable page has complete SEO metadata", missing.length === 0, missing.map((page) => page.file).join("\n"));
   record("Generated titles and descriptions fit search result limits", oversized.length === 0, oversized.map((page) => `${page.file}: ${page.title.length}/${page.description.length}`).join("\n"));
   record("Duplicate titles resolve to one canonical URL", conflictingDuplicates.length === 0, conflictingDuplicates.flat().map((page) => `${page.title}: ${page.file}`).join("\n"));
+  const bloggerCoreLinks = pages.filter((page) => /\/p\/(?:rumors|widespread-panic-dirty-side-down-lyrics|widespread-panic-song-origins-and|burnthdays-widespread-panic-tours-in|theshelf|about|privacy)(?:\.html)?(?:[\"#?]|$)/.test(page.canonical));
+  record("No indexable page uses a Blogger core canonical", bloggerCoreLinks.length === 0, bloggerCoreLinks.map((page) => `${page.file}: ${page.canonical}`).join("\n"));
+  record("Generated internal links use clean core routes", legacyInternalLinks.length === 0, legacyInternalLinks.join("\n"));
 }
 
 function decodeEntities(value) {

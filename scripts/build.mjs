@@ -49,24 +49,34 @@ const config = {
 
 const primaryNavItems = [
   ["Home", "/"],
-  ["Rumors", "/p/rumors"],
-  ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
+  ["Rumors", "/rumors/"],
+  ["Lyrics & Chords", "/lyrics-chords/"],
   ["Song Origins", "/song-origins/"],
-  ["Tour In Review", "/p/burnthdays-widespread-panic-tours-in"],
-  ["The Shelf", "/p/theshelf"],
-  ["About", "/p/about"]
+  ["Tour In Review", "/tour-in-review/"],
+  ["The Shelf", "/shelf/"],
+  ["About", "/about/"]
 ];
 
 const footerNavItems = [
   ["Song List", "/"],
-  ["The Shelf", "/p/theshelf"],
-  ["Tour In Review", "/p/burnthdays-widespread-panic-tours-in"],
+  ["The Shelf", "/shelf/"],
+  ["Tour In Review", "/tour-in-review/"],
   ["Song Origins", "/song-origins/"],
-  ["Lyrics & Chords", "/p/widespread-panic-dirty-side-down-lyrics"],
-  ["Rumors", "/p/rumors"],
-  ["About", "/p/about"],
-  ["Privacy", "/p/privacy"]
+  ["Lyrics & Chords", "/lyrics-chords/"],
+  ["Rumors", "/rumors/"],
+  ["About", "/about/"],
+  ["Privacy", "/privacy/"]
 ];
+
+const legacyCoreRoutes = new Map([
+  ["/p/rumors", "/rumors/"],
+  ["/p/widespread-panic-dirty-side-down-lyrics", "/lyrics-chords/"],
+  ["/p/widespread-panic-song-origins-and", "/song-origins/"],
+  ["/p/burnthdays-widespread-panic-tours-in", "/tour-in-review/"],
+  ["/p/theshelf", "/shelf/"],
+  ["/p/about", "/about/"],
+  ["/p/privacy", "/privacy/"]
+]);
 
 async function main() {
   const [source, archiveEntries, songOrigins] = await Promise.all([loadSourceData(), loadBloggerArchive(), loadSongOrigins()]);
@@ -79,6 +89,7 @@ async function main() {
 
   await copyAssets();
   await writeBloggerArchive(archiveEntries, siteData);
+  await writeModernArchivePages(archiveEntries, siteData);
   await writeSongOrigins(songOrigins);
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
@@ -1161,11 +1172,26 @@ async function writeBloggerArchive(entries, data) {
   await Promise.all(entries.map((entry) => writeStaticPage(entry.path, renderArchivePage(entry, data))));
   await writeStaticPage("/archive/index.html", renderArchiveIndex(entries, data));
   await writeStaticPage("/pages/index.html", renderPagesIndex(entries.filter((entry) => entry.path.startsWith("/p/")), data));
-  await writeStaticPage("/tour-in-review/index.html", renderRedirectPage({
-    title: "Tour In Review",
-    targetPath: "/p/burnthdays-widespread-panic-tours-in",
-    data
-  }));
+}
+
+async function writeModernArchivePages(entries, data) {
+  const pages = [
+    {
+      legacyPath: "/p/about.html",
+      path: "/about/index.html",
+      seoTitle: "About Burnthday | Widespread Panic Fan Site"
+    },
+    {
+      legacyPath: "/p/widespread-panic-dirty-side-down-lyrics.html",
+      path: "/lyrics-chords/index.html",
+      seoTitle: "Widespread Panic Lyrics & Chords | Burnthday"
+    }
+  ];
+  for (const page of pages) {
+    const entry = entries.find((candidate) => candidate.path === page.legacyPath);
+    if (!entry) continue;
+    await writeStaticPage(page.path, renderArchivePage({ ...entry, path: page.path, seoTitle: page.seoTitle }, data));
+  }
 }
 
 async function writeSongOrigins(origins) {
@@ -1186,9 +1212,29 @@ async function writeStaticPage(pagePath, html) {
 }
 
 function finalizeHtml(html) {
-  const value = normalizeMetaDescriptionHtml(String(html || ""));
+  const value = normalizeMetaDescriptionHtml(rewriteLegacyCoreLinks(String(html || "")));
   if (!/<\/head>/i.test(value) || /name="robots" content="noindex"/i.test(value)) return value;
   return value.replace(/<\/head>/i, `${renderSocialMeta(value)}${renderAnalyticsHead()}\n  </head>`);
+}
+
+function rewriteLegacyCoreLinks(html) {
+  let value = html;
+  for (const [source, target] of legacyCoreRoutes) {
+    const variants = [
+      `https://www.burnthday.com${source}.html`,
+      `http://www.burnthday.com${source}.html`,
+      `https://burnthday.com${source}.html`,
+      `http://burnthday.com${source}.html`,
+      `${source}.html`,
+      `https://www.burnthday.com${source}`,
+      `http://www.burnthday.com${source}`,
+      `https://burnthday.com${source}`,
+      `http://burnthday.com${source}`,
+      source
+    ];
+    for (const variant of variants) value = value.split(variant).join(target);
+  }
+  return value;
 }
 
 function normalizeMetaDescriptionHtml(html) {
@@ -1211,9 +1257,14 @@ function renderSocialMeta(html) {
     <meta property="og:title" content="${title}">
     <meta property="og:description" content="${description}">
     <meta property="og:url" content="${canonical}">
-    <meta name="twitter:card" content="summary">
+    <meta property="og:image" content="https://burnthday.com/assets/social-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:site_name" content="Burnthday">
+    <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${title}">
     <meta name="twitter:description" content="${description}">
+    <meta name="twitter:image" content="https://burnthday.com/assets/social-card.png">
     `;
 }
 
@@ -1255,16 +1306,16 @@ function renderNotFoundPage(data) {
 
 async function writeShelfInfoPage(data, entries) {
   const oldShelfEntry = entries.find((entry) => entry.path === "/p/theshelf.html");
-  await writeStaticPage("/p/theshelf.html", renderShelfInfoPage(data, oldShelfEntry));
+  await writeStaticPage("/shelf/index.html", renderShelfInfoPage(data, oldShelfEntry));
 }
 
 async function writeRumorsPage(data, entries) {
   const oldRumorsEntry = entries.find((entry) => entry.path === "/p/rumors.html");
-  await writeStaticPage("/p/rumors.html", renderRumorsPage(data, oldRumorsEntry));
+  await writeStaticPage("/rumors/index.html", renderRumorsPage(data, oldRumorsEntry));
 }
 
 async function writePrivacyPage(data) {
-  await writeStaticPage("/p/privacy.html", renderPrivacyPage(data));
+  await writeStaticPage("/privacy/index.html", renderPrivacyPage(data));
 }
 
 function renderPrivacyPage(data) {
@@ -1275,7 +1326,7 @@ function renderPrivacyPage(data) {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Privacy | Burnthday</title>
     <meta name="description" content="How Burnthday uses analytics and handles visitor information.">
-    <link rel="canonical" href="https://burnthday.com/p/privacy">
+    <link rel="canonical" href="https://burnthday.com/privacy/">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/styles.css">
@@ -1322,7 +1373,7 @@ async function writeGeneratedTourReviewPages(data) {
 
 async function writeTourReviewHub(data, entries, generatedReviews = []) {
   const oldEntry = entries.find((entry) => entry.path === "/p/burnthdays-widespread-panic-tours-in.html");
-  await writeStaticPage("/p/burnthdays-widespread-panic-tours-in.html", renderTourReviewHubPage(data, oldEntry, generatedReviews));
+  await writeStaticPage("/tour-in-review/index.html", renderTourReviewHubPage(data, oldEntry, generatedReviews));
 }
 
 async function buildGeneratedTourReview(year, data) {
@@ -1420,7 +1471,7 @@ function analyzeTourSongs(setlists, catalog) {
 
 function renderArchivePage(entry, data) {
   const datedTitle = entry.hasDuplicateTitle ? `${entry.title} - ${formatArchiveDate(entry.published)}` : entry.title;
-  const title = fitMetaText(`${datedTitle} | Burnthday`, 68);
+  const title = fitMetaText(entry.seoTitle || `${datedTitle} | Burnthday`, 68);
   const description = archiveMetaDescription(entry);
   return `<!doctype html>
 <html lang="en">
@@ -1488,9 +1539,9 @@ function renderShelfInfoPage(data, oldShelfEntry) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>The Shelf | Burnthday</title>
+    <title>Widespread Panic Shelf &amp; Purgatory | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
-    <link rel="canonical" href="https://burnthday.com/p/theshelf">
+    <link rel="canonical" href="https://burnthday.com/shelf/">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
@@ -1544,9 +1595,9 @@ function renderRumorsPage(data, oldRumorsEntry) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Rumors | Burnthday</title>
+    <title>Widespread Panic Tour Rumors | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
-    <link rel="canonical" href="https://burnthday.com/p/rumors">
+    <link rel="canonical" href="https://burnthday.com/rumors/">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
@@ -1591,9 +1642,9 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tour In Review | Burnthday</title>
+    <title>Widespread Panic Tour In Review | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
-    <link rel="canonical" href="https://burnthday.com/p/burnthdays-widespread-panic-tours-in">
+    <link rel="canonical" href="https://burnthday.com/tour-in-review/">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
@@ -1706,7 +1757,7 @@ function renderSongOriginsIndex(origins, options = {}) {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Song Origins | Burnthday</title>
+    <title>Widespread Panic Song Origins | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com${escapeAttr(canonicalPath)}">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
@@ -1763,6 +1814,11 @@ function renderSongOriginPage(origin, origins) {
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/styles.css">
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Song Origins", "https://burnthday.com/song-origins/"],
+      [origin.title, `https://burnthday.com/song-origins/${origin.slug}/`]
+    ])}</script>
   </head>
   <body>
     ${renderSiteHeader()}
@@ -1830,6 +1886,19 @@ function renderLinkedText(text) {
   return pieces.join("");
 }
 
+function renderBreadcrumbJsonLd(items) {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map(([name, item], index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name,
+      item
+    }))
+  }).replace(/</g, "\\u003c");
+}
+
 function renderArchiveIndex(entries, data) {
   return renderArchiveListPage({
     title: "Burnthday Archive",
@@ -1844,7 +1913,8 @@ function renderPagesIndex(entries, data) {
   return renderArchiveListPage({
     title: "Burnthday Pages",
     deck: `${entries.length} preserved Blogger pages from the Takeout export, including About, Song Origins, lyrics, downloads, and old live stream pages.`,
-    canonicalPath: "/pages/",
+    canonicalPath: "/archive/",
+    noindex: true,
     entries: entries.sort((a, b) => a.title.localeCompare(b.title)),
     data
   });
@@ -1854,18 +1924,19 @@ function renderTourReviewIndex(entries, data) {
   return renderArchiveListPage({
     title: "Tour In Review",
     deck: `${entries.length} preserved Tour In Review pages and related review posts.`,
-    canonicalPath: "/p/burnthdays-widespread-panic-tours-in",
+    canonicalPath: "/tour-in-review/",
     entries,
     data
   });
 }
 
-function renderArchiveListPage({ title, deck, canonicalPath, entries, data }) {
+function renderArchiveListPage({ title, deck, canonicalPath, noindex = false, entries, data }) {
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    ${noindex ? '<meta name="robots" content="noindex, follow">' : ""}
     <title>${escapeHtml(title)} | Burnthday</title>
     <meta name="description" content="${escapeAttr(deck)}">
     <link rel="canonical" href="https://burnthday.com${escapeAttr(canonicalPath)}">
@@ -1884,7 +1955,7 @@ function renderArchiveListPage({ title, deck, canonicalPath, entries, data }) {
         </header>
         <ol class="archive-list">
           ${entries.map((entry) => `<li>
-            <a href="${escapeAttr(publicPath(entry.path))}">${escapeHtml(entry.title)}</a>
+            <a href="${escapeAttr(canonicalPathFor(entry.path))}">${escapeHtml(entry.title)}</a>
             <span>${escapeHtml(formatArchiveDate(entry.published))}</span>
             ${entry.categories.length ? `<em>${escapeHtml(entry.categories.join(" / "))}</em>` : ""}
           </li>`).join("")}
@@ -5026,10 +5097,11 @@ function renderRedirects(archiveEntries = [], generatedReviews = []) {
   }).filter(Boolean));
   const review2025Path = reviewByYear.get("2025") || "/";
   const lines = [
-    "/p/widespread-panic-song-origins-and /song-origins/ 301",
-    "/p/widespread-panic-song-origins-and.html /song-origins/ 301",
-    "/tour-in-review /p/burnthdays-widespread-panic-tours-in 301",
-    "/tour-in-review/ /p/burnthdays-widespread-panic-tours-in 301",
+    ...[...legacyCoreRoutes].flatMap(([source, target]) => [
+      `${source} ${target} 301`,
+      `${source}.html ${target} 301`
+    ]),
+    "/tour-in-review /tour-in-review/ 301",
     `/2025/02/widespread-panic-2025-tour.html ${review2025Path} 301`,
     `/2025/02/widespread-panic-2025-tour ${review2025Path} 301`,
     "/search /archive/ 301",
@@ -5065,12 +5137,16 @@ function renderRedirects(archiveEntries = [], generatedReviews = []) {
 }
 
 function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedReviews = []) {
-  const updated = data.generatedAt.slice(0, 10);
+  const updated = data.site.latestShow?.isoDate || data.generatedAt.slice(0, 10);
   const redirectedArchivePaths = new Set([
     "/2025/02/widespread-panic-2025-tour",
     "/2025/02/widespread-panic-2025-tour.html"
   ]);
-  const sitemapArchiveEntries = archiveEntries.filter((entry) => !redirectedArchivePaths.has(publicPath(entry.path)) && !redirectedArchivePaths.has(entry.path));
+  const redirectedCorePaths = new Set([...legacyCoreRoutes.keys()]);
+  const sitemapArchiveEntries = archiveEntries.filter((entry) => {
+    const route = publicPath(entry.path);
+    return !redirectedArchivePaths.has(route) && !redirectedArchivePaths.has(entry.path) && !redirectedCorePaths.has(route);
+  });
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -5082,20 +5158,28 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
     <lastmod>${updated}</lastmod>
   </url>
   <url>
-    <loc>https://burnthday.com/pages/</loc>
-    <lastmod>${updated}</lastmod>
+    <loc>https://burnthday.com/rumors/</loc>
+  </url>
+  <url>
+    <loc>https://burnthday.com/lyrics-chords/</loc>
   </url>
   <url>
     <loc>https://burnthday.com/song-origins/</loc>
-    <lastmod>${updated}</lastmod>
   </url>
   <url>
-    <loc>https://burnthday.com/p/privacy</loc>
-    <lastmod>${updated}</lastmod>
+    <loc>https://burnthday.com/tour-in-review/</loc>
+  </url>
+  <url>
+    <loc>https://burnthday.com/shelf/</loc>
+  </url>
+  <url>
+    <loc>https://burnthday.com/about/</loc>
+  </url>
+  <url>
+    <loc>https://burnthday.com/privacy/</loc>
   </url>
   ${songOrigins.map((origin) => `<url>
     <loc>https://burnthday.com/song-origins/${escapeHtml(origin.slug)}/</loc>
-    <lastmod>${updated}</lastmod>
   </url>`).join("\n  ")}
   ${generatedReviews.map((review) => `<url>
     <loc>https://burnthday.com${escapeHtml(publicPath(review.path))}</loc>
@@ -5111,6 +5195,10 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
 
 function publicPath(pagePath) {
   return String(pagePath || "/").replace(/\/index\.html$/i, "/").replace(/\.html?$/i, "");
+}
+
+function canonicalPathFor(pagePath) {
+  return legacyCoreRoutes.get(publicPath(pagePath)) || publicPath(pagePath);
 }
 
 function splitStrict(items, count) {
