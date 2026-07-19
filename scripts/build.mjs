@@ -2814,7 +2814,7 @@ function renderCss() {
 
 :root {
   color-scheme: light;
-  --paper: #f7f7f6;
+  --paper: #ffffff;
   --ink: #111111;
   --muted: #5f5a55;
   --line: rgba(0, 0, 0, 0.12);
@@ -4413,7 +4413,7 @@ sup {
   width: 100%;
   margin: 0;
   border-top: 1px solid var(--line);
-  background: #efefed;
+  background: #f7f7f6;
   padding: 48px 28px 24px;
   color: var(--ink);
   font-size: 14px;
