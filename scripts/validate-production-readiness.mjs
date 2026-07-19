@@ -47,6 +47,7 @@ async function main() {
 function checkTransitionSourceResilience(source) {
   record("Archive transition requests retry transient failures", /429, 500, 502, 503, 504/.test(source) && /maxFetchAttempts = 4/.test(source));
   record("Archive transition retries use bounded backoff", /2 \*\* \(attempt - 1\) \* 1_000/.test(source));
+  record("Archive outages hold the last verified dataset", /sourceUnavailable: true/.test(source) && /heldError\.exitCode = 75/.test(source));
 }
 
 async function checkHostnameRedirect() {

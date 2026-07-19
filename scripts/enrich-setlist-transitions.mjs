@@ -20,7 +20,17 @@ const maxFetchAttempts = 4;
 
 async function main() {
   const payload = JSON.parse(await readFile(input, "utf8"));
-  const archiveDocs = await searchArchiveDocs(year);
+  let archiveDocs;
+  try {
+    archiveDocs = await searchArchiveDocs(year);
+  } catch (error) {
+    if (!requireAll) throw error;
+    const misses = [`Internet Archive transition source unavailable: ${error.message}`];
+    await writeTransitionStatus({ year, ready: false, enriched: 0, unchanged: payload.setlists?.length || 0, misses, sourceUnavailable: true });
+    const heldError = new Error("Holding the last verified dataset because the Internet Archive transition source is temporarily unavailable.");
+    heldError.exitCode = 75;
+    throw heldError;
+  }
   const docsByDate = groupArchiveDocsByDate(archiveDocs);
 
   let enriched = 0;
@@ -58,8 +68,7 @@ async function main() {
     console.log(`Unchanged shows:\n${misses.slice(0, 20).join("\n")}${misses.length > 20 ? `\n+${misses.length - 20} more` : ""}`);
   }
   if (statusFile) {
-    await mkdir(path.dirname(statusFile), { recursive: true });
-    await writeFile(statusFile, `${JSON.stringify({ year, ready: misses.length === 0, enriched, unchanged, misses }, null, 2)}\n`, "utf8");
+    await writeTransitionStatus({ year, ready: misses.length === 0, enriched, unchanged, misses });
   }
   if (requireAll && misses.length) {
     const error = new Error(`Refusing to write ${year} setlists because ${misses.length} show(s) are missing Archive transition markers.`);
@@ -68,6 +77,12 @@ async function main() {
   }
 
   await writeFile(output, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+}
+
+async function writeTransitionStatus(status) {
+  if (!statusFile) return;
+  await mkdir(path.dirname(statusFile), { recursive: true });
+  await writeFile(statusFile, `${JSON.stringify(status, null, 2)}\n`, "utf8");
 }
 
 async function searchArchiveDocs(targetYear) {
