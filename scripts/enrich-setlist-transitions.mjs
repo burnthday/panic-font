@@ -15,6 +15,8 @@ const statusFile = args.statusFile || "";
 const archiveSearchBase = "https://archive.org/advancedsearch.php";
 const archiveDetailsBase = "https://archive.org/details/";
 const archiveMetadataBase = "https://archive.org/metadata/";
+const retryableStatuses = new Set([429, 500, 502, 503, 504]);
+const maxFetchAttempts = 4;
 
 async function main() {
   const payload = JSON.parse(await readFile(input, "utf8"));
@@ -131,11 +133,31 @@ async function fetchArchiveMetadata(identifier) {
 }
 
 async function fetchJson(url) {
-  const response = await fetch(url, {
-    headers: { "user-agent": "Burnthday static-site transition importer" }
-  });
-  if (!response.ok) throw new Error(`${url} returned ${response.status} ${response.statusText}`);
-  return response.json();
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxFetchAttempts; attempt += 1) {
+    let response;
+    try {
+      response = await fetch(url, {
+        headers: { "user-agent": "Burnthday static-site transition importer" }
+      });
+    } catch (error) {
+      lastError = error;
+      if (attempt === maxFetchAttempts) throw error;
+    }
+
+    if (response?.ok) return response.json();
+    if (response) {
+      lastError = new Error(`${url} returned ${response.status} ${response.statusText}`);
+      if (!retryableStatuses.has(response.status) || attempt === maxFetchAttempts) throw lastError;
+    }
+
+    const delayMs = 2 ** (attempt - 1) * 1_000;
+    console.warn(`Archive request failed (attempt ${attempt}/${maxFetchAttempts}); retrying in ${delayMs}ms.`);
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  throw lastError;
 }
 
 function parseArchiveSetlist(metadata) {

@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, "..");
 const checks = [];
 
 async function main() {
-  const [freshness, siteData, redirects, headers, sitemap, workflow, packageJson, homeHtml, robots, notFoundHtml] = await Promise.all([
+  const [freshness, siteData, redirects, headers, sitemap, workflow, packageJson, homeHtml, robots, notFoundHtml, transitionImporter] = await Promise.all([
     readJson("dist/data/freshness.json"),
     readJson("dist/data/site-data.json"),
     readText("dist/_redirects"),
@@ -18,7 +18,8 @@ async function main() {
     readJson("package.json"),
     readText("dist/index.html"),
     readText("dist/robots.txt"),
-    readText("dist/404.html")
+    readText("dist/404.html"),
+    readText("scripts/enrich-setlist-transitions.mjs")
   ]);
 
   checkFreshness(freshness, siteData);
@@ -29,6 +30,7 @@ async function main() {
   checkAnalyticsAndSeo(homeHtml, robots, notFoundHtml);
   await checkGeneratedMetadata();
   checkAutomation(workflow, packageJson);
+  checkTransitionSourceResilience(transitionImporter);
   await checkHostnameRedirect();
   await checkNoLocalSecretFiles();
 
@@ -40,6 +42,11 @@ async function main() {
   }
   console.log(`\nProduction readiness: ${checks.length - failed.length}/${checks.length} checks passed`);
   if (failed.length) process.exitCode = 1;
+}
+
+function checkTransitionSourceResilience(source) {
+  record("Archive transition requests retry transient failures", /429, 500, 502, 503, 504/.test(source) && /maxFetchAttempts = 4/.test(source));
+  record("Archive transition retries use bounded backoff", /2 \*\* \(attempt - 1\) \* 1_000/.test(source));
 }
 
 async function checkHostnameRedirect() {
