@@ -43,7 +43,8 @@ async function main() {
 
 function checkFreshness(freshness, siteData) {
   record("Freshness report has generatedAt", isIsoDate(freshness.generatedAt), freshness.generatedAt);
-  record("Freshness report names 2026 tour", freshness.site?.year === 2026 && /Widespread Panic 2026 Tour/.test(freshness.site?.title || ""), JSON.stringify(freshness.site));
+  const year = Number(freshness.site?.year);
+  record("Freshness report names its active tour year", Number.isInteger(year) && new RegExp(`Widespread Panic ${year} Tour`).test(freshness.site?.title || ""), JSON.stringify(freshness.site));
   record("Freshness board show matches generated site data", sameShow(freshness.site?.boardShow, siteData.site?.boardShow), JSON.stringify(freshness.site?.boardShow));
   record("Freshness featured show matches generated site data", sameShow(freshness.site?.featuredShow, siteData.site?.featuredShow), JSON.stringify(freshness.site?.featuredShow));
   record("Freshness show-day state matches generated site data", freshness.site?.isShowDayPreview === Boolean(siteData.site?.isShowDayPreview), JSON.stringify(freshness.site));
@@ -127,6 +128,7 @@ function checkAnalyticsAndSeo(homeHtml, robots, notFoundHtml) {
   record("Homepage installs the Burnthday GA4 stream", /googletagmanager\.com\/gtag\/js\?id=G-R74CMVLLK1/.test(homeHtml) && /gtag\('config', 'G-R74CMVLLK1'\)/.test(homeHtml), "G-R74CMVLLK1");
   record("Homepage has its HTTPS canonical URL", /<link rel="canonical" href="https:\/\/burnthday\.com\/">/.test(homeHtml));
   record("Homepage has social sharing metadata", /property="og:image"/.test(homeHtml) && /name="twitter:card" content="summary_large_image"/.test(homeHtml));
+  record("Homepage uses a full-size local social card", /og:image" content="https:\/\/burnthday\.com\/assets\/social-card\.png"/.test(homeHtml) && /og:image:width" content="1200"/.test(homeHtml) && /og:image:height" content="630"/.test(homeHtml));
   record("Homepage identifies Burnthday as a WebSite", /"@type":"WebSite"/.test(homeHtml) && /"url":"https:\/\/burnthday\.com\/"/.test(homeHtml));
   record("Robots file advertises the HTTPS sitemap", robots.includes("Sitemap: https://burnthday.com/sitemap.xml"), robots);
   record("Branded 404 exists and is not indexable", /Page Not Found/.test(notFoundHtml) && /name="robots" content="noindex"/.test(notFoundHtml));
@@ -181,10 +183,11 @@ function checkAutomation(workflow, packageJson) {
   record("Deploy workflow runs the EC-independent automatic refresh", /npm run refresh:automatic/.test(workflow), workflow);
   record("Scheduled deploy does not require Everyday Companion", !/refresh:strict|import:playstats|import:ec-prior-stats/.test(workflow), workflow);
   record("Automatic refresh stages data before replacing the ledger", /refresh-automatic\.mjs/.test(packageJson.scripts?.["refresh:automatic"] || ""), packageJson.scripts?.["refresh:automatic"] || "");
-  record("QA and deploy wait for a complete refresh", (workflow.match(/if: steps\.refresh\.outputs\.ready == 'true'/g) || []).length === 2, workflow);
+  record("Publish, verification, and reporting wait for a complete refresh", (workflow.match(/if: steps\.refresh\.outputs\.ready == 'true'/g) || []).length === 4, workflow);
   record("Deploy workflow runs full QA before publishing", /npm run qa/.test(workflow), workflow);
   record("Deploy workflow does not allow critical data imports to fail open", !/continue-on-error:\s*true/.test(workflow), workflow);
   record("Deploy workflow still targets Cloudflare Pages", /pages deploy dist --project-name burnthday/.test(workflow), workflow);
+  record("Deploy workflow verifies the live site after publishing", /node scripts\/check-live-site\.mjs/.test(workflow), workflow);
   record("Deploy workflow reads the Cloudflare token from GitHub Secrets", /apiToken:\s*\$\{\{ secrets\.CLOUDFLARE_API_TOKEN \}\}/.test(workflow), workflow);
   record("Deploy workflow pins current Wrangler and the Pages account", /accountId:\s*bb75082c91976ca06b7f958041f91239/.test(workflow) && /wranglerVersion:\s*4\.111\.0/.test(workflow), workflow);
 }

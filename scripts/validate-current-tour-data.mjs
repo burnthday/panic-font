@@ -7,16 +7,14 @@ const root = path.resolve(__dirname, "..");
 
 const args = parseArgs(process.argv.slice(2));
 const siteDataPath = path.resolve(root, args.siteData || "dist/data/site-data.json");
-const setlistsPath = path.resolve(root, args.setlists || "data/source/setlists-2026.json");
 const priorStatsPath = path.resolve(root, args.priorStats || "data/source/everyday-companion-prior-song-stats.json");
 const maxListed = Number(args.maxListed || 25);
 
 async function main() {
-  const [siteData, setlists, priorStats] = await Promise.all([
-    readJson(siteDataPath),
-    readJson(setlistsPath),
-    readJson(priorStatsPath)
-  ]);
+  const siteData = await readJson(siteDataPath);
+  const activeYear = process.env.TOUR_YEAR || siteData.site?.year || new Date().getFullYear();
+  const setlistsPath = path.resolve(root, args.setlists || `data/source/setlists-${activeYear}.json`);
+  const [setlists, priorStats] = await Promise.all([readJson(setlistsPath), readJson(priorStatsPath)]);
 
   const setlistCounts = countSetlistSongs(setlists);
   const siteRows = Array.isArray(siteData.catalog) ? siteData.catalog.filter((row) => isPublicSongTitle(row.title)) : [];

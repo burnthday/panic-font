@@ -42,10 +42,10 @@ The deployed build tries this import first, then falls back to the checked-in JS
 
 ## Current Tour Setlists
 
-The 2026 official Widespread Panic setlists live in `data/source/setlists-2026.json`. Refresh the current tour from the official WSP show pages, then enrich the display text with segue markers from same-date Internet Archive recordings:
+The active year's official Widespread Panic setlists live in `data/source/setlists-YYYY.json`. The refresh scripts default to the current calendar year, while the build selects the newest checked-in setlist snapshot unless `TOUR_YEAR` is explicitly set. Refresh the current tour from the official WSP show pages, then enrich the display text with segue markers from same-date Internet Archive recordings:
 
 ```bash
-TOUR_YEAR=2026 npm run refresh:setlists
+npm run refresh:setlists
 ```
 
 The checked-in setlist JSON keeps two versions of each set: `songTitles` are canonical official titles used for counting, and `songs` is the display string with `>` transitions. This keeps sandwich songs visible in the setlist while counting each song only once per show.
@@ -53,7 +53,7 @@ The checked-in setlist JSON keeps two versions of each set: `songTitles` are can
 For the daily, CI-safe refresh used by GitHub Actions:
 
 ```bash
-TOUR_YEAR=2026 npm run refresh:automatic
+npm run refresh:automatic
 ```
 
 That imports official Widespread Panic setlists into a temporary file, defers same-day shows, requires Internet Archive transition metadata for every eligible show, and only then replaces the local tour ledger. If a setlist or its `>` transitions are not ready, the automation holds the last complete build. It never guesses transitions and it does not require Everyday Companion to be reachable.
@@ -61,7 +61,7 @@ That imports official Widespread Panic setlists into a temporary file, defers sa
 Everyday Companion remains the reconciliation source for lifetime totals and prior-play data. When EC is reachable and you intentionally want to refresh those committed baseline snapshots, run:
 
 ```bash
-TOUR_YEAR=2026 npm run refresh:strict
+npm run refresh:strict
 ```
 
 That manual strict path imports EC playstats and prior-song stats, refreshes official setlists and transitions, then rebuilds and validates the result. EC is deliberately not a blocking dependency of the scheduled deployment because EC can lag after shows and currently blocks GitHub-hosted runners.
@@ -69,7 +69,7 @@ That manual strict path imports EC playstats and prior-song stats, refreshes off
 For the morning after a show, use the fast local path:
 
 ```bash
-TOUR_YEAR=2026 npm run postshow
+npm run postshow
 ```
 
 That updates official WSP setlists, enriches `>` markers when Archive data exists, rebuilds, and validates current-tour counts. It also allows a temporary EC-lag baseline for new bustouts: if EC has not posted the latest current-year play yet, the importer can still use EC's existing played-page/playstats row plus the local official setlist to keep lifetime count and last-played date visible locally. Use `refresh:automatic` for unattended publishing and `refresh:strict` only when reconciling the EC baseline.
@@ -108,7 +108,7 @@ It verifies the generated freshness report, important Blogger redirects, core le
 
 ## Prior Tour Song Stats
 
-The 2026 Shelf/Purgatory return logic uses generated rows in `data/source/everyday-companion-prior-song-stats.json`. Regenerate them with:
+The active tour's Shelf/Purgatory return logic uses generated rows in `data/source/everyday-companion-prior-song-stats.json`. Regenerate them with the applicable year:
 
 ```bash
 npm run import:ec-prior-stats -- --year 2026 --require-all
@@ -160,9 +160,42 @@ GOOGLE_SERVICE_ACCOUNT_JSON
 
 The Cloudflare API token needs Pages edit access for the account that owns the `burnthday` Pages project.
 
-The workflow refreshes official setlists, EC lifetime playstats, EC prior song stats, and transition markers before building. If required EC prior stats are missing, the workflow fails before deploy so the current live site stays untouched.
+The unattended workflow refreshes complete official setlists and transition markers before building. It deliberately does not require Everyday Companion because EC may lag after a show and may block GitHub-hosted runners. EC lifetime and prior-song snapshots are reconciled through the manual strict command. If the automatic refresh is incomplete, the workflow reports that publishing was held and leaves the current live site untouched.
 
-Review branches run `.github/workflows/ci.yml`, which executes `npm run qa` without deploying. The deploy workflow only publishes after strict refresh and full QA pass.
+After each successful deploy, `scripts/check-live-site.mjs` verifies the production title, canonical URL, freshness timestamp, sitemap, robots file, and social card. Run the same check manually with:
+
+```bash
+npm run validate:live
+```
+
+GitHub sends workflow failure notifications according to the repository owner's notification settings. Held refreshes also appear as an explicit warning and job summary instead of silently skipping deployment.
+
+## Tour Rollover
+
+At the start of a new calendar year:
+
+1. Add `data/source/setlists-YYYY.json` and, when needed, `data/source/setlist-overrides-YYYY.json`.
+2. Refresh the EC playstats and prior-song baseline with `TOUR_YEAR=YYYY npm run refresh:strict`.
+3. Confirm the Shelf/Purgatory reset and Woodshed personnel rule for that tour.
+4. Run `npm run qa`; the build and validation scripts infer the active year from the newest setlist snapshot.
+5. Update any year-specific editorial copy, including the Privacy page's displayed revision date when its substance changes.
+
+Routine daily and post-show commands do not need a hard-coded year.
+
+## Search And Sharing
+
+The build produces canonical metadata, Open Graph and X metadata, a 1200x630 social card, `robots.txt`, and `sitemap.xml`. Google Analytics uses measurement ID `G-R74CMVLLK1`.
+
+For Google Search Console:
+
+1. Verify the `burnthday.com` Domain property using the DNS TXT record Google provides.
+2. Submit `https://burnthday.com/sitemap.xml`.
+3. Inspect the homepage, the current Tour In Review URL, and the preserved 2025 Blogger URL after major releases.
+4. Keep `burnthday.com` as the canonical hostname and configure a Cloudflare Bulk Redirect from `www.burnthday.com` to the apex domain while preserving path and query string.
+
+Facebook and other social networks may cache old Blogger metadata. Use their sharing debugger to request a fresh scrape after changing the social card or homepage metadata.
+
+Review branches run `.github/workflows/ci.yml`, which executes `npm run qa` without deploying. The deploy workflow only publishes after a complete automatic refresh and full QA pass.
 
 ## Cloudflare Pages
 

@@ -15,6 +15,7 @@
     "validate:playstats": "node scripts/validate-playstats-match.mjs",
     "validate:tour-data": "node scripts/validate-current-tour-data.mjs",
     "validate:production": "node scripts/validate-production-readiness.mjs",
+    "validate:live": "node scripts/check-live-site.mjs",
     "refresh:setlists": "npm run import:official-setlists && npm run enrich:setlist-transitions",
     "refresh:data": "npm run refresh:automatic",
     "refresh:automatic": "node scripts/refresh-automatic.mjs",

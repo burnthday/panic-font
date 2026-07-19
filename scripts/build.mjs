@@ -746,9 +746,9 @@ function buildFreshnessReport(data, archiveEntries = [], songOrigins = [], gener
     },
     commands: {
       localQa: "npm run qa",
-      postShowLocal: "TOUR_YEAR=2026 npm run postshow",
-      automaticPublishRefresh: "TOUR_YEAR=2026 npm run refresh:automatic",
-      strictReconcile: "TOUR_YEAR=2026 npm run refresh:strict"
+      postShowLocal: "npm run postshow",
+      automaticPublishRefresh: "npm run refresh:automatic",
+      strictReconcile: "npm run refresh:strict"
     }
   };
 }
@@ -1687,7 +1687,7 @@ function renderGeneratedTourReviewPage(review, data) {
           <span>${escapeHtml(String(review.totals.setlists))} posted</span>
         </div>
         <div class="setlist-grid">
-          ${review.setlists.map(renderSetlistCard).join("")}
+          ${review.setlists.map((show) => renderSetlistCard(show, { lazy: true })).join("")}
         </div>
       </section>
     </main>
@@ -1741,7 +1741,7 @@ function renderSongOriginsIndex(origins, options = {}) {
 
 function renderSongOriginCard(origin) {
   return `<a class="origin-card" href="/song-origins/${escapeAttr(origin.slug)}/">
-    ${origin.image ? `<img src="${escapeAttr(origin.image)}" alt="">` : ""}
+    ${origin.image ? `<img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" loading="lazy" decoding="async">` : ""}
     <span>Song Origins</span>
     <strong>${escapeHtml(origin.title)}</strong>
   </a>`;
@@ -1776,7 +1776,7 @@ function renderSongOriginPage(origin, origins) {
           <h1>${escapeHtml(origin.title)}</h1>
         </header>
         <div class="origin-layout">
-          ${origin.image ? `<figure class="origin-image"><img src="${escapeAttr(origin.image)}" alt=""></figure>` : ""}
+          ${origin.image ? `<figure class="origin-image"><img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" decoding="async"></figure>` : ""}
           <div class="origin-body">
             ${renderOriginText(origin.text)}
             <p class="origin-source"><a href="${escapeAttr(origin.sourceUrl)}">Original Facebook post</a></p>
@@ -1935,12 +1935,16 @@ function renderHtml(data) {
     <meta property="og:description" content="${escapeHtml(description)}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://burnthday.com/">
-    <meta property="og:image" content="https://burnthday.com/assets/archive-media/burnthday-logo.png">
+    <meta property="og:image" content="https://burnthday.com/assets/social-card.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Burnthday fish and crossbones logo">
     <meta property="og:site_name" content="Burnthday">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(data.site.title)} by Burnthday">
     <meta name="twitter:description" content="${escapeHtml(description)}">
-    <meta name="twitter:image" content="https://burnthday.com/assets/archive-media/burnthday-logo.png">
+    <meta name="twitter:image" content="https://burnthday.com/assets/social-card.png">
+    <meta name="twitter:image:alt" content="Burnthday fish and crossbones logo">
     <link rel="canonical" href="https://burnthday.com/">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
@@ -2403,8 +2407,8 @@ function renderLatestSetlist(data) {
     ? data.setlists.filter((show) => show.location === featured.location && show.isoDate < featured.isoDate)
     : [];
   return `<section class="latest-setlist" id="latest-setlist">
-  ${renderFeaturedSetlist(featured)}
-  ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map(renderFeaturedSetlist).join("")}</div>` : ""}
+  ${renderFeaturedSetlist(featured, { priority: true })}
+  ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map((show) => renderFeaturedSetlist(show, { lazy: true })).join("")}</div>` : ""}
 </section>`;
 }
 
@@ -2427,33 +2431,35 @@ function renderSetlists(data, options = {}) {
   <details class="setlist-archive-panel" open>
     <summary><span>VIEW OLDER SETLISTS</span><strong>${formatNumber(setlists.length)}</strong></summary>
     <div class="setlist-grid">
-      ${setlists.map(renderSetlistCard).join("")}
+      ${setlists.map((show) => renderSetlistCard(show, { lazy: true })).join("")}
     </div>
   </details>
 </section>`;
 }
 
-function renderFeaturedSetlist(show) {
+function renderFeaturedSetlist(show, options = {}) {
   const imageClass = show.image ? "" : " no-image";
   return `<article class="setlist-feature${imageClass}">
-    ${renderSetlistImage(show)}
+    ${renderSetlistImage(show, options)}
     <div class="setlist-copy">
       ${renderSetlistText(show)}
     </div>
   </article>`;
 }
 
-function renderSetlistCard(show) {
+function renderSetlistCard(show, options = {}) {
   const imageClass = show.image ? "" : " no-image";
   return `<article class="setlist-card${imageClass}">
-    ${renderSetlistImage(show)}
+    ${renderSetlistImage(show, options)}
     ${renderSetlistText(show)}
   </article>`;
 }
 
-function renderSetlistImage(show) {
+function renderSetlistImage(show, options = {}) {
   if (!show.image) return "";
-  return `<figure class="setlist-image"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}"></figure>`;
+  const loading = options.lazy ? ' loading="lazy"' : "";
+  const priority = options.priority ? ' fetchpriority="high"' : "";
+  return `<figure class="setlist-image"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async"${loading}${priority}></figure>`;
 }
 
 function renderSetlistText(show) {
