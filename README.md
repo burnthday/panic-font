@@ -191,7 +191,7 @@ For Google Search Console:
 1. Verify the `burnthday.com` Domain property using the DNS TXT record Google provides.
 2. Submit `https://burnthday.com/sitemap.xml`.
 3. Inspect the homepage, the current Tour In Review URL, and the preserved 2025 Blogger URL after major releases.
-4. Keep `burnthday.com` as the canonical hostname and configure a Cloudflare Bulk Redirect from `www.burnthday.com` to the apex domain while preserving path and query string.
+4. Keep `burnthday.com` as the canonical hostname. The Pages Function in `functions/[[path]].js` permanently redirects `www.burnthday.com` to the apex domain while preserving the path and query string.
 
 Facebook and other social networks may cache old Blogger metadata. Use their sharing debugger to request a fresh scrape after changing the social card or homepage metadata.
 

@@ -29,6 +29,7 @@ async function main() {
   checkAnalyticsAndSeo(homeHtml, robots, notFoundHtml);
   await checkGeneratedMetadata();
   checkAutomation(workflow, packageJson);
+  await checkHostnameRedirect();
   await checkNoLocalSecretFiles();
 
   const failed = checks.filter((check) => !check.passed);
@@ -39,6 +40,14 @@ async function main() {
   }
   console.log(`\nProduction readiness: ${checks.length - failed.length}/${checks.length} checks passed`);
   if (failed.length) process.exitCode = 1;
+}
+
+async function checkHostnameRedirect() {
+  const source = await readText("functions/[[path]].js");
+  record("Hostname redirect targets www.burnthday.com", source.includes('url.hostname === "www.burnthday.com"'));
+  record("Hostname redirect uses the canonical apex domain", source.includes('url.hostname = "burnthday.com"'));
+  record("Hostname redirect is permanent and preserves the request URL", source.includes("Response.redirect(url.toString(), 301)"));
+  record("Apex requests pass through to Pages", source.includes("return context.next()"));
 }
 
 function checkFreshness(freshness, siteData) {
