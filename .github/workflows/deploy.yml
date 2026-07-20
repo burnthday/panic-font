@@ -31,18 +31,25 @@ jobs:
         run: npm run refresh:automatic
 
       - name: Report held refresh
-        if: steps.refresh.outputs.ready != 'true'
+        if: steps.refresh.outputs.ready != 'true' && github.event_name == 'schedule'
         run: |
           echo "::warning title=Burnthday publish held::The live site was left unchanged because ${{ steps.refresh.outputs.reason }}."
           echo "## Burnthday publish held" >> "$GITHUB_STEP_SUMMARY"
           echo "Reason: \`${{ steps.refresh.outputs.reason }}\`. The existing live build remains in place." >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Report verified snapshot fallback
+        if: steps.refresh.outputs.ready != 'true' && github.event_name != 'schedule'
+        run: |
+          echo "::warning title=Burnthday refresh unavailable::Publishing the repository's last verified dataset because ${{ steps.refresh.outputs.reason }}."
+          echo "## Publishing verified repository snapshot" >> "$GITHUB_STEP_SUMMARY"
+          echo "The external refresh was unavailable because \`${{ steps.refresh.outputs.reason }}\`, so this code release uses the repository's last verified dataset." >> "$GITHUB_STEP_SUMMARY"
+
       - name: Run production QA
-        if: steps.refresh.outputs.ready == 'true'
+        if: steps.refresh.outputs.ready == 'true' || github.event_name != 'schedule'
         run: npm run qa
 
       - name: Deploy to Cloudflare Pages
-        if: steps.refresh.outputs.ready == 'true'
+        if: steps.refresh.outputs.ready == 'true' || github.event_name != 'schedule'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -51,11 +58,11 @@ jobs:
           command: pages deploy dist --project-name burnthday --branch main --commit-dirty=true
 
       - name: Verify live site
-        if: steps.refresh.outputs.ready == 'true'
+        if: steps.refresh.outputs.ready == 'true' || github.event_name != 'schedule'
         run: node scripts/check-live-site.mjs
 
       - name: Record successful publish
-        if: steps.refresh.outputs.ready == 'true'
+        if: steps.refresh.outputs.ready == 'true' || github.event_name != 'schedule'
         run: |
           echo "## Burnthday publish complete" >> "$GITHUB_STEP_SUMMARY"
           echo "Refresh changed data: \`${{ steps.refresh.outputs.updated }}\`. Production health checks passed." >> "$GITHUB_STEP_SUMMARY"

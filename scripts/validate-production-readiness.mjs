@@ -225,7 +225,8 @@ function checkAutomation(workflow, packageJson) {
   record("Deploy workflow runs the EC-independent automatic refresh", /npm run refresh:automatic/.test(workflow), workflow);
   record("Scheduled deploy does not require Everyday Companion", !/refresh:strict|import:playstats|import:ec-prior-stats/.test(workflow), workflow);
   record("Automatic refresh stages data before replacing the ledger", /refresh-automatic\.mjs/.test(packageJson.scripts?.["refresh:automatic"] || ""), packageJson.scripts?.["refresh:automatic"] || "");
-  record("Publish, verification, and reporting wait for a complete refresh", (workflow.match(/if: steps\.refresh\.outputs\.ready == 'true'/g) || []).length === 4, workflow);
+  record("Scheduled publishing still waits for a complete refresh", /steps\.refresh\.outputs\.ready != 'true' && github\.event_name == 'schedule'/.test(workflow), workflow);
+  record("Code pushes can publish the last verified repository snapshot", (workflow.match(/steps\.refresh\.outputs\.ready == 'true' \|\| github\.event_name != 'schedule'/g) || []).length === 4, workflow);
   record("Deploy workflow runs full QA before publishing", /npm run qa/.test(workflow), workflow);
   record("Deploy workflow does not allow critical data imports to fail open", !/continue-on-error:\s*true/.test(workflow), workflow);
   record("Deploy workflow still targets Cloudflare Pages", /pages deploy dist --project-name burnthday/.test(workflow), workflow);
