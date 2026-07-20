@@ -1194,18 +1194,20 @@ async function writeModernArchivePages(entries, data) {
     {
       legacyPath: "/p/about.html",
       path: "/about/index.html",
-      seoTitle: "About Burnthday | Widespread Panic Fan Site"
+      seoTitle: "About Burnthday | Widespread Panic Fan Site",
+      pageGraphic: "Alex-1_zps04c65eda.png"
     },
     {
       legacyPath: "/p/widespread-panic-dirty-side-down-lyrics.html",
       path: "/lyrics-chords/index.html",
-      seoTitle: "Widespread Panic Lyrics & Chords | Burnthday"
+      seoTitle: "Widespread Panic Lyrics & Chords | Burnthday",
+      pageGraphic: "houserguitar.png"
     }
   ];
   for (const page of pages) {
     const entry = entries.find((candidate) => candidate.path === page.legacyPath);
     if (!entry) continue;
-    await writeStaticPage(page.path, renderArchivePage({ ...entry, path: page.path, seoTitle: page.seoTitle }, data));
+    await writeStaticPage(page.path, renderArchivePage({ ...entry, ...page }, data));
   }
 }
 
@@ -1377,6 +1379,7 @@ async function writeGeneratedTourReviewPages(data) {
   if (review2025) {
     await writeStaticPage(review2025.path, renderGeneratedTourReviewPage(review2025, data));
     reviews.push({
+      year: review2025.year,
       title: review2025.title,
       path: review2025.path,
       published: `${review2025.year}-12-31`,
@@ -1488,6 +1491,7 @@ function renderArchivePage(entry, data) {
   const datedTitle = entry.hasDuplicateTitle ? `${entry.title} - ${formatArchiveDate(entry.published)}` : entry.title;
   const title = fitMetaText(entry.seoTitle || `${datedTitle} | Burnthday`, 68);
   const description = archiveMetaDescription(entry);
+  const content = repairArchiveAlbumArtwork(removeFirstArchiveGraphic(entry.content, entry.pageGraphic), entry.path);
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -1505,13 +1509,15 @@ function renderArchivePage(entry, data) {
     ${renderSiteHeader()}
     <main class="archive-main">
       <article class="archive-page">
-        <header class="archive-title">
-          <p>${escapeHtml(formatArchiveDate(entry.published))}</p>
-          <h1>${escapeHtml(entry.title)}</h1>
-          ${entry.categories.length ? `<div class="archive-tags">${entry.categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("")}</div>` : ""}
-        </header>
+        ${entry.pageGraphic
+          ? renderPageGraphicTitle(entry.title, entry.pageGraphic)
+          : `<header class="archive-title">
+            <p>${escapeHtml(formatArchiveDate(entry.published))}</p>
+            <h1>${escapeHtml(entry.title)}</h1>
+            ${entry.categories.length ? `<div class="archive-tags">${entry.categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("")}</div>` : ""}
+          </header>`}
         <div class="archive-content">
-          ${entry.content}
+          ${content}
         </div>
       </article>
     </main>
@@ -1519,6 +1525,35 @@ function renderArchivePage(entry, data) {
   </body>
 </html>
 `;
+}
+
+function renderPageGraphicTitle(title, filename) {
+  return `<header class="page-graphic-title">
+    <img src="/assets/archive-media/${encodeURIComponent(filename)}" alt="" decoding="async">
+    <h1>${escapeHtml(title)}</h1>
+  </header>`;
+}
+
+function removeFirstArchiveGraphic(content, filename) {
+  if (!filename) return content;
+  const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return String(content || "")
+    .replace(new RegExp(`<img\\b[^>]*(?:${escaped}|${encodeURIComponent(filename)})[^>]*>`, "i"), "")
+    .replace(/<div\b[^>]*>\s*<\/div>/gi, "");
+}
+
+function repairArchiveAlbumArtwork(content, pagePath) {
+  const value = String(content || "");
+  if (/dirty-side-down-album-lyrics\.html$/i.test(pagePath)) {
+    return value.replace(/src=(['"])[^'"]*Widespread-Panic-Dirty-Side-Down\.jpg[^'"]*\1/i, 'src="/assets/archive-media/dirty-side-down-cover.jpg"');
+  }
+  if (/earth-to-america-album-lyrics\.html$/i.test(pagePath)) {
+    return value.replace(/src=(['"])[^'"]*album-earth-to-america\.jpg[^'"]*\1/i, 'src="/assets/archive-media/earth-to-america-cover.jpg"');
+  }
+  if (/free-somehow-album-lyrics\.html$/i.test(pagePath)) {
+    return value.replace(/src=(['"])data:image\/png;base64,[^'"]*\1/i, 'src="/assets/archive-media/free-somehow-cover.jpg"');
+  }
+  return value;
 }
 
 function archiveMetaDescription(entry) {
@@ -1541,13 +1576,13 @@ function fitMetaText(value, maxLength) {
 
 function renderShelfInfoPage(data, oldShelfEntry) {
   const year = data.site.year;
-  const movedFromShelf = data.catalog.filter((row) => row.playedFromShelf).sort(byTitle);
-  const movedFromPurgatory = data.catalog.filter((row) => row.playedFromPurgatory).sort(byTitle);
-  const shelf = [...data.boards.shelfOriginals, ...data.boards.shelfCovers];
-  const purgatory = [...data.boards.purgatoryOriginals, ...data.boards.purgatoryCovers];
-  const watch = data.boards.shelfWatch || [];
-  const latestDate = data.site.latestShow?.date || "the latest posted show";
+  const newShelfRows = data.catalog
+    .filter((row) => row.total > 1 && !row.playedThisTour && row.seedSlp < data.rules.rotationSlpLimit && row.effectiveSlp >= data.rules.rotationSlpLimit)
+    .sort(byTitle);
+  const newShelfOriginals = newShelfRows.filter((row) => row.type === "Original");
+  const newShelfCovers = newShelfRows.filter((row) => row.type === "Cover");
   const description = `Burnthday's Widespread Panic Shelf and Purgatory notes for the ${year} tour.`;
+  const historicalContent = removeFirstArchiveGraphic(oldShelfEntry?.content || "", "shelf.png");
 
   return `<!doctype html>
 <html lang="en">
@@ -1566,40 +1601,26 @@ function renderShelfInfoPage(data, oldShelfEntry) {
     ${renderSiteHeader()}
     <main class="archive-main">
       <article class="archive-page shelf-info-page">
-        <header class="archive-title">
-          <p>The Widespread Panic Spread Sheet</p>
-          <h1>The Shelf</h1>
-        </header>
+        ${renderPageGraphicTitle("The Shelf", "shelf.png")}
         <section class="shelf-current-update">
-          <h2>${escapeHtml(String(year))} Shelf Update</h2>
-          <div class="shelf-explainer">
-            <p>The Shelf used to be something I could clean up between tours. One tour can last a full year now, so that does not really work anymore. For the current sheet, a song moves to The Shelf after 200 shows without a play. Purgatory is still for songs they played once and never came back to.</p>
-            <p>This is no longer a list I move around by feel. It updates from the setlist ledger after every posted show. Through ${escapeHtml(latestDate)}, there are ${formatNumber(shelf.length)} songs on The Shelf and ${formatNumber(purgatory.length)} in Purgatory.</p>
-          </div>
-          <div class="shelf-current-counts" aria-label="Current Shelf totals">
-            <div><strong>${formatNumber(shelf.length)}</strong><span>on The Shelf</span></div>
-            <div><strong>${formatNumber(purgatory.length)}</strong><span>in Purgatory</span></div>
-            <div><strong>${formatNumber(data.rules.rotationSlpLimit)}</strong><span>show cutoff</span></div>
-          </div>
-          <div class="movement-block shelf-watch-block">
-            <h3>Shelf Watch</h3>
-            <p>These are the closest songs still on the possibilities sheet. Nothing in the current rotation has crossed 200.</p>
-            <ul class="movement-list shelf-page-watch">${watch.map((row) => `<li><strong>${escapeHtml(row.title)}</strong><span>${formatNumber(row.effectiveSlp)} shows since ${escapeHtml(row.lastDisplay)}; ${formatNumber(Math.max(0, data.rules.rotationSlpLimit - row.effectiveSlp))} to The Shelf.</span></li>`).join("")}</ul>
-          </div>
+          <h2>Spring ${escapeHtml(String(year))} New Additions To The Shelf</h2>
+          ${renderShelfAdditionList("Originals", newShelfOriginals)}
+          ${renderShelfAdditionList("Covers", newShelfCovers)}
         </section>
-        <section class="shelf-movement">
-          <h2>${escapeHtml(String(year))} Movement</h2>
-          ${renderMovementList("Off The Shelf", movedFromShelf, "None.")}
-          ${renderMovementList("Out Of Purgatory", movedFromPurgatory, "None.")}
-          <p class="shelf-page-links"><a href="/#shelf">Current Shelf</a> <span>|</span> <a href="/#purgatory">Current Purgatory</a> <span>|</span> <a href="/">Current Song List</a></p>
-        </section>
-        ${oldShelfEntry?.content ? `<section class="legacy-shelf-notes"><h2>Previous Shelf Updates</h2><p class="legacy-note">The original Shelf notes and updates are preserved below.</p><div class="archive-content">${oldShelfEntry.content}</div></section>` : ""}
+        ${historicalContent ? `<section class="legacy-shelf-notes"><h2>Previous Shelf Updates</h2><div class="archive-content">${historicalContent}</div></section>` : ""}
       </article>
     </main>
     ${renderSiteFooter(data)}
   </body>
 </html>
 `;
+}
+
+function renderShelfAdditionList(title, rows) {
+  return `<div class="shelf-addition-group">
+    <h3>${escapeHtml(title)}</h3>
+    ${rows.length ? `<ul>${rows.map((row) => `<li>${escapeHtml(row.title)}</li>`).join("")}</ul>` : "<p>None.</p>"}
+  </div>`;
 }
 
 function renderRumorsPage(data, oldRumorsEntry) {
@@ -1622,11 +1643,8 @@ function renderRumorsPage(data, oldRumorsEntry) {
     ${renderSiteHeader()}
     <main class="archive-main">
       <article class="archive-page rumors-page">
-        <header class="archive-title">
-          <p>The Widespread Panic Spread Sheet</p>
-          <h1>Rumors</h1>
-        </header>
-        <div class="archive-content">${oldRumorsEntry?.content || ""}</div>
+        ${renderPageGraphicTitle("Rumors", "crystalball.png")}
+        <div class="archive-content">${removeFirstArchiveGraphic(oldRumorsEntry?.content || "", "crystalball.png")}</div>
       </article>
     </main>
     ${renderSiteFooter(data)}
@@ -1669,20 +1687,11 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
     ${renderSiteHeader()}
     <main class="archive-main">
       <article class="archive-page tour-review-hub">
-        <header class="archive-title">
-          <p>The Widespread Panic Spread Sheet</p>
-          <h1>Tour In Review</h1>
-        </header>
-        ${oldEntry?.content ? `<div class="archive-content">${oldEntry.content}</div>` : ""}
-        ${generatedReviews.length ? `<section class="shelf-movement">
-          <h2>2025</h2>
-          <ul class="movement-list generated-review-list">
-            ${generatedReviews.map((review) => `<li>
-              <strong><a href="${escapeAttr(publicPath(review.path))}">${escapeHtml(review.title)}</a></strong>
-              <span>${escapeHtml(review.summary)}</span>
-            </li>`).join("")}
-          </ul>
+        ${renderPageGraphicTitle("Tour In Review", "BTD-1_zps89a85566.png")}
+        ${generatedReviews.length ? `<section class="archive-content current-review-link">
+          ${generatedReviews.map((review) => `<div><b>${escapeHtml(String(review.year || 2025))}:</b><br><br><a href="${escapeAttr(publicPath(review.path))}">${escapeHtml(String(review.year || 2025))} Tour</a></div>`).join("")}
         </section>` : ""}
+        ${oldEntry?.content ? `<div class="archive-content">${removeFirstArchiveGraphic(oldEntry.content, "BTD-1_zps89a85566.png")}</div>` : ""}
       </article>
     </main>
     ${renderSiteFooter(data)}
@@ -1692,8 +1701,6 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
 }
 
 function renderGeneratedTourReviewPage(review, data) {
-  const latest = review.setlists[0];
-  const earliest = review.setlists.at(-1);
   const description = `${review.title}: ${review.totals.setlists} setlists, ${review.totals.uniqueSongs} songs, and ${review.totals.tourPlays} song plays.`;
 
   return `<!doctype html>
@@ -1712,37 +1719,11 @@ function renderGeneratedTourReviewPage(review, data) {
   <body>
     ${renderSiteHeader()}
     <main class="tour-review-main">
-      <article class="archive-page generated-tour-review">
-        <header class="archive-title">
-          <p>Tour In Review</p>
-          <h1>${escapeHtml(review.title)}</h1>
-        </header>
-        <p class="review-date-range">${escapeHtml(earliest?.date || "")} ${escapeHtml(earliest?.location || "")} through ${escapeHtml(latest?.date || "")} ${escapeHtml(latest?.location || "")}.</p>
-        <div class="board-ledger review-ledger" aria-label="${escapeAttr(String(review.year))} tour stats">
-          ${renderStat(review.totals.uniqueSongs, "unique songs")}
-          ${renderStat(review.totals.tourPlays, "song plays")}
-          ${renderStat(review.totals.setlists, "setlists")}
-          ${renderStat(review.totals.tourDates, "tour dates")}
-        </div>
-        <section class="shelf-movement">
-          <h2>Most Played</h2>
-          <ol class="review-top-songs">
-            ${review.topSongs.map((row) => `<li><strong>${escapeHtml(row.title)}</strong><span>${escapeHtml(String(row.count))}</span></li>`).join("")}
-          </ol>
-        </section>
-      </article>
-
       <section class="laminate primary-board tour-review-sheet" id="song-list">
         ${renderBoardHeader(`${review.year} TOUR`)}
         ${renderSongPanel(`review-${review.year}-originals`, "ORIGINALS", review.boards.originals)}
         ${renderSongPanel(`review-${review.year}-covers`, "COVERS", review.boards.covers)}
         ${review.boards.other.length ? renderSongPanel(`review-${review.year}-other`, "NEEDS SORTING", review.boards.other) : ""}
-        <div class="board-ledger" aria-label="${escapeAttr(String(review.year))} final sheet stats">
-          ${renderStat(review.totals.originals, "originals")}
-          ${renderStat(review.totals.covers, "covers")}
-          ${renderStat(review.totals.oneTimers, "one-timers")}
-          ${renderStat(review.totals.setlists, "setlists")}
-        </div>
       </section>
 
       <section class="setlist-section" id="setlists">
@@ -1787,9 +1768,8 @@ function renderSongOriginsIndex(origins, options = {}) {
         <header class="origin-hero">
           <img class="origin-fish" src="/assets/archive-media/SongOriginsOriginalWSPfish.png" alt="">
           <div>
-            <p>Song Origins</p>
             <h1>Widespread Panic Song Origins</h1>
-            <span>${origins.length} notes recovered from Burnthday's original Facebook photo posts.</span>
+            <span>${origins.length} researched stories about how Widespread Panic songs were written, where they came from, and the people behind them, with play history and Burnthday's picks.</span>
           </div>
         </header>
         <div class="origin-grid">
@@ -1841,7 +1821,6 @@ function renderSongOriginPage(origin, origins) {
       <article class="archive-page origin-page">
         <nav class="origin-back"><a href="/song-origins/">Song Origins</a></nav>
         <header class="archive-title origin-title">
-          <p>Song Origins</p>
           <h1>${escapeHtml(origin.title)}</h1>
         </header>
         <div class="origin-layout">
@@ -2327,7 +2306,7 @@ function renderTourStats(data) {
       <button type="button" data-type-filter="original">Originals</button>
       <button type="button" data-type-filter="cover">Covers</button>
     </div>
-    <label class="mobile-sort"><span>Sort by</span><select data-mobile-sort><option value="count">Most played</option><option value="rarity">Rarest</option><option value="heat">Hottest rotation</option><option value="title">Song name</option></select></label>
+    <label class="mobile-sort"><span>Sort by</span><select data-mobile-sort><option value="count">Most played</option><option value="rarity">Rarest</option><option value="heat">Furthest past usual gap</option><option value="title">Song name</option></select></label>
     <span class="show-filter-status" aria-live="polite">All tour songs</span>
   </div>
   <div class="tour-table-wrap">
@@ -2335,8 +2314,8 @@ function renderTourStats(data) {
       <thead><tr>
         <th scope="col"><button type="button" data-sort="title">Song <span aria-hidden="true">↕</span></button></th>
         <th scope="col" aria-sort="descending"><button type="button" data-sort="count">Plays <span aria-hidden="true">↓</span></button></th>
-        <th scope="col"><button type="button" data-sort="rarity">Rarity <span aria-hidden="true">↕</span></button></th>
-        <th scope="col"><button type="button" data-sort="heat">Rotation heat <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="rarity">How rare? <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="heat">Rotation timing <span aria-hidden="true">↕</span></button></th>
         <th scope="col"><button type="button" data-sort="last">Last played <span aria-hidden="true">↕</span></button></th>
       </tr></thead>
       <tbody>${songs.map((song) => {
@@ -2347,16 +2326,16 @@ function renderTourStats(data) {
         return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
           <th scope="row">${escapeHtml(song.title)}</th>
           <td class="plays-cell">${formatNumber(song.tourCount)}</td>
-          <td class="signal-cell rarity-cell"><strong>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "first played this tour" : `${rarity.score} · ${formatNumber(song.l100 || 0)} in last 100`}</small></td>
-          <td class="signal-cell heat-cell"><strong>${escapeHtml(heat.label)}</strong><small>${heat.score} · ${formatNumber(song.effectiveSlp)} since / ${heat.expectedGap.toFixed(1)} expected</small></td>
+          <td class="signal-cell rarity-cell"><strong>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "first played this tour" : `${formatNumber(song.l100 || 0)} ${song.l100 === 1 ? "play" : "plays"} in the last 100 shows`}</small></td>
+          <td class="signal-cell heat-cell"><strong>${escapeHtml(heat.label)}</strong><small>${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} since last play; usually ${heat.expectedGap.toFixed(1)}</small></td>
           <td>${escapeHtml(song.lastDisplay)}</td>
         </tr>`;
       }).join("")}</tbody>
     </table>
   </div>
   <details class="index-method">
-    <summary>HOW THE BURNTHDAY INDEXES WORK</summary>
-    <div><p><strong>Rarity</strong> measures era-aware scarcity. Plays in the last 100 shows carry 90% of the score; lifetime scarcity carries 10%. A tour debut is marked New until it has history.</p><p><strong>Rotation heat</strong> compares shows since last played with an expected gap blended from this tour and the last 100 shows. It describes rotation pressure, not the odds of the next setlist.</p></div>
+    <summary>WHAT THESE MEAN</summary>
+    <div><p><strong>How rare?</strong> is based mainly on how often the song appeared in the last 100 shows. Lifetime history is a small tie-breaker, so an old song that disappeared from rotation can still read as rare today. A debut is marked New.</p><p><strong>Rotation timing</strong> compares the number of shows since the song was last played with its usual recent gap. “Past its usual gap” means it has waited longer than normal; it is context, not a prediction.</p></div>
   </details>
 </section>`;
 }
@@ -2374,7 +2353,7 @@ function calculateRarity(song) {
         ? "Rare"
         : score >= 35
           ? "Uncommon"
-          : "In rotation";
+          : "Common";
   return { score, sortValue: score, label };
 }
 
@@ -2388,8 +2367,14 @@ function calculateRotationHeat(song, shows) {
       : Math.max(tourRate, recentRate);
   const expectedGap = rate > 0 ? 1 / rate : Math.max(shows, 1);
   const ratio = expectedGap > 0 ? song.effectiveSlp / expectedGap : 0;
-  const score = Math.min(100, Math.round(ratio * 80));
-  const label = score >= 85 ? "Hot" : score >= 55 ? "Building" : "Fresh";
+  const score = Math.round(ratio * 100);
+  const label = ratio > 1.15
+    ? "Past its usual gap"
+    : ratio >= 0.85
+      ? "Around its usual gap"
+      : ratio >= 0.45
+        ? "Earlier than usual"
+        : "Recently played";
   return { expectedGap, score, label };
 }
 
@@ -4600,6 +4585,32 @@ sup {
   color: var(--muted);
 }
 
+.page-graphic-title {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+  padding: 4px 0 22px;
+  text-align: center;
+}
+
+.page-graphic-title img {
+  display: block;
+  width: auto;
+  max-width: min(300px, 78vw);
+  max-height: 180px;
+  object-fit: contain;
+}
+
+.page-graphic-title h1 {
+  margin: 0;
+  font-family: "MilkRun", system-ui, sans-serif;
+  font-size: var(--type-archive-title);
+  line-height: 1;
+  font-weight: 400;
+}
+
 .archive-tags {
   display: flex;
   flex-wrap: wrap;
@@ -4650,6 +4661,49 @@ sup {
   font-size: var(--type-section);
   line-height: 1;
   font-weight: 700;
+}
+
+.shelf-current-update {
+  max-width: 880px;
+  margin: 0 auto 34px;
+}
+
+.shelf-addition-group {
+  margin-top: 22px;
+}
+
+.shelf-addition-group h3 {
+  margin: 0 0 8px;
+  font-family: var(--ui-font);
+  font-size: 18px;
+}
+
+.shelf-addition-group ul {
+  columns: 2;
+  column-gap: 44px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.shelf-addition-group li {
+  break-inside: avoid;
+  margin: 0 0 7px;
+}
+
+.legacy-shelf-notes {
+  border-top: 1px solid var(--line);
+  padding-top: 28px;
+}
+
+.legacy-shelf-notes > h2 {
+  margin: 0 0 20px;
+  font-family: var(--ui-font);
+  font-size: var(--type-section);
+}
+
+.current-review-link {
+  margin: 0 0 28px;
+  text-align: center;
 }
 
 .shelf-current-counts {
@@ -5573,7 +5627,8 @@ sup {
 
   .tour-table tbody tr {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    position: relative;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px 18px;
     border-top: 1px solid var(--line);
     padding: 14px 8px;
@@ -5591,14 +5646,19 @@ sup {
   }
 
   .tour-table tbody th {
-    grid-column: 1;
+    grid-column: 1 / -1;
     align-self: center;
+    justify-self: stretch;
+    box-sizing: border-box;
+    width: 100%;
+    padding-right: 56px;
     font-size: 15px;
   }
 
   .tour-table .plays-cell {
-    grid-column: 2;
-    align-self: center;
+    position: absolute;
+    top: 14px;
+    right: 8px;
     text-align: right;
     font-size: 18px;
     font-weight: 700;
@@ -5728,6 +5788,10 @@ sup {
 
   .archive-list li {
     grid-template-columns: 1fr;
+  }
+
+  .shelf-addition-group ul {
+    columns: 1;
   }
 
   .origin-hero {

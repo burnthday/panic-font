@@ -32,8 +32,8 @@ That report records the build time, active sheet title, latest posted setlist, m
 
 Tour Stats adds two deterministic, sortable signals while retaining the underlying counts in the interface.
 
-- **Rarity** is era-aware scarcity, not simply a low lifetime total. The score is `100 × (90% recent scarcity + 10% lifetime scarcity)`, where recent scarcity is derived from plays in the last 100 shows and lifetime scarcity uses a logarithmic lifetime-play scale. A song with no pre-tour history is labeled `New` instead of rare. This lets an older song that was common decades ago but is scarce now read correctly in the current era.
-- **Rotation Heat** compares shows since last played with an expected gap. Expected cadence blends this-tour rate at 60% and last-100 rate at 40%; new songs use this-tour cadence until history develops. The score is capped at 100. `Fresh`, `Building`, and `Hot` describe rotation pressure only. They are not probabilities or setlist predictions.
+- **How rare?** is era-aware scarcity, not simply a low lifetime total. The internal sort value is `100 × (90% recent scarcity + 10% lifetime scarcity)`, where recent scarcity is derived from plays in the last 100 shows and lifetime scarcity uses a logarithmic lifetime-play scale. The interface shows a plain-language label and the actual last-100 count, never the abstract score. A song with no pre-tour history is labeled `New`.
+- **Rotation timing** compares shows since last played with an expected gap. Expected cadence blends this-tour rate at 60% and last-100 rate at 40%; new songs use this-tour cadence until history develops. The interface shows `Recently played`, `Earlier than usual`, `Around its usual gap`, or `Past its usual gap`, plus the actual and usual gaps. It is context, not a probability or setlist prediction.
 
 The last-100 input naturally crosses tour boundaries, so the prior tour contributes without creating a hand-maintained special case. Both indexes can be recalculated from the ledger and the verified Everyday Companion baseline.
 

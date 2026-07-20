@@ -48,9 +48,9 @@ Letter spacing is always `0`. Never use negative letter spacing to force a fit. 
 - Laminated sheets use white paper, a subtle 9px laminate edge, and a maximum 6px radius.
 - Setlist photography must use genuinely landscape source files, remain unframed, and render at its natural aspect ratio. Never use `object-fit: cover` to disguise portrait photography or force a crop.
 - The latest completed setlist appears above the Song List. Older setlists move into the setlist section below the sheets.
-- Tour Stats is a website data view below the Sheet Key, never part of the laminated Song List. It defaults to most-played songs and supports show highlighting, type filtering, and sorting by song, plays, Rarity, Rotation Heat, and last play.
-- Rarity is an era-aware Burnthday index: last-100 scarcity contributes 90% and lifetime scarcity contributes 10%. New tour debuts remain labeled `New` until they have prior history.
-- Rotation Heat compares the current gap with an expected gap blended from current-tour and last-100 cadence. It is a rotation-pressure indicator, not a probability or setlist prediction.
+- Tour Stats is a website data view below the Sheet Key, never part of the laminated Song List. It defaults to most-played songs and supports show highlighting, type filtering, and sorting by song, plays, How rare?, Rotation timing, and last play.
+- How rare? uses plain-language labels backed mainly by plays in the last 100 shows, with lifetime scarcity as a small tie-breaker. The visible supporting text gives the actual last-100 play count; no abstract score is shown. New tour debuts remain labeled `New` until they have prior history.
+- Rotation timing compares the current gap with an expected gap blended from current-tour and last-100 cadence. Labels describe whether a song was recently played or is past its usual gap. The visible supporting text gives both numbers, and the feature is never presented as a probability or prediction.
 - Homepage sections share one content rail and left edge. Tour Dates is a single chronological schedule with neutral posted/upcoming states; green is reserved for the original marker system.
 - The site canvas is a barely visible neutral gray; laminated sheets remain white. The footer uses a slightly deeper neutral surface, a factual Burnthday tagline, destination-based navigation, and labeled social marks.
 

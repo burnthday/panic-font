@@ -141,8 +141,11 @@ function checkTourStats(html, siteData) {
   for (const key of ["title", "count", "rarity", "heat", "last"]) {
     assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
   }
-  assertIncludes(feature, "HOW THE BURNTHDAY INDEXES WORK", "Tour Stats explains the Burnthday indexes");
-  assertIncludes(feature, "rotation pressure, not the odds", "Rotation heat is not presented as predictive odds");
+  assertIncludes(feature, "WHAT THESE MEAN", "Tour Stats explains its plain-language signals");
+  assertIncludes(feature, "How rare?", "Tour Stats labels rarity in plain language");
+  assertIncludes(feature, "Rotation timing", "Tour Stats labels rotation timing in plain language");
+  assertNotIncludes(feature, "In rotation", "Tour Stats avoids the ambiguous In rotation rarity label");
+  assertIncludes(feature, "it is context, not a prediction", "Rotation timing is not presented as predictive odds");
   assertIncludes(feature, "data-show-filter", "Tour Stats can highlight songs from one selected show");
   assertIncludes(feature, "data-mobile-sort", "Tour Stats has a dedicated mobile sort control");
   for (const type of ["all", "original", "cover"]) assertIncludes(feature, `data-type-filter="${type}"`, `Tour Stats includes the ${type} type filter`);
@@ -474,14 +477,10 @@ async function checkLegacyPages(siteData) {
   record("Shelf page uses imported shelf copy", /The Shelf/i.test(shelfText) && /Purgatory/i.test(shelfText));
   record("Privacy page accurately identifies GA4", /Google Analytics 4/.test(privacyText) && /does not sell personal information/.test(privacyText));
   record("Privacy page links to Google privacy and opt-out controls", /https:\/\/policies\.google\.com\/privacy/.test(privacy) && /https:\/\/tools\.google\.com\/dlpage\/gaoptout/.test(privacy));
-  assertIncludes(shelf, `<h2>${siteData.site.year} Shelf Update</h2>`, "Shelf page leads with the current generated update");
-  assertIncludes(shelf, `${siteData.rules.rotationSlpLimit}</strong><span>show cutoff</span>`, "Shelf page states the active cutoff");
-  assertIncludes(shelf, `${siteData.boards.shelfOriginals.length + siteData.boards.shelfCovers.length}</strong><span>on The Shelf</span>`, "Shelf page count matches the generated Shelf");
-  assertIncludes(shelf, `${siteData.boards.purgatoryOriginals.length + siteData.boards.purgatoryCovers.length}</strong><span>in Purgatory</span>`, "Shelf page count matches generated Purgatory");
-  for (const song of siteData.boards.shelfWatch || []) {
-    assertIncludes(shelf, `${song.effectiveSlp} shows since ${song.lastDisplay}`, `Shelf page Watch matches ${song.title}`);
-  }
-  record("Shelf page preserves the historical updates after the current update", indexOf(shelf, `${siteData.site.year} Shelf Update`) < indexOf(shelf, "Previous Shelf Updates") && /The Shelf Updated: April 1st, 2019/.test(shelfText));
+  assertIncludes(shelf, `<h2>Spring ${siteData.site.year} New Additions To The Shelf</h2>`, "Shelf page leads with the current seasonal additions");
+  record("Shelf page omits duplicate live counters", !/on The Shelf<\/span>|in Purgatory<\/span>|show cutoff<\/span>/.test(shelf));
+  record("Shelf page preserves historical updates after the current additions", indexOf(shelf, `Spring ${siteData.site.year} New Additions To The Shelf`) < indexOf(shelf, "Previous Shelf Updates") && /The Shelf Updated: April 1st, 2019/.test(shelfText));
+  record("Primary archive pages omit migration eyebrows", !rumors.includes("<p>The Widespread Panic Spread Sheet</p>") && !tourReview.includes("<p>The Widespread Panic Spread Sheet</p>"));
   for (const [label, html] of [["Rumors", rumors], ["Tour In Review", tourReview], ["The Shelf", shelf]]) {
     assertIncludes(html, 'document.querySelectorAll(".jump-links a, .mobile-nav-links a")', `${label} page initializes its active navigation state`);
     assertIncludes(html, 'path === "/index" ? "/" : path', `${label} page normalizes the legacy homepage URL`);
@@ -634,6 +633,10 @@ function linkTexts(html) {
 
 function assertIncludes(value, expected, label) {
   record(label, String(value).includes(expected), `Missing: ${expected}`);
+}
+
+function assertNotIncludes(value, unexpected, label) {
+  record(label, !String(value).includes(unexpected), `Unexpected: ${unexpected}`);
 }
 
 function record(label, passed, detail = "") {
