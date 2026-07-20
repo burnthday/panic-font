@@ -2148,6 +2148,7 @@ function renderFitScriptBody() {
         const buttons = [...table.querySelectorAll("button[data-sort]")];
         const section = table.closest(".tour-stats");
         const showFilter = section?.querySelector("[data-show-filter]");
+        const mobileSort = section?.querySelector("[data-mobile-sort]");
         const typeButtons = [...(section?.querySelectorAll("[data-type-filter]") || [])];
         const status = section?.querySelector(".show-filter-status");
         let selectedShow = "";
@@ -2180,13 +2181,26 @@ function renderFitScriptBody() {
           typeButtons.forEach((item) => item.classList.toggle("is-active", item === typeButton));
           applyFilters();
         }));
+        mobileSort?.addEventListener("change", () => {
+          const key = mobileSort.value;
+          const numeric = ["count", "rarity", "heat"].includes(key);
+          const rows = [...body.rows].sort((left, right) => {
+            const leftSelected = left.classList.contains("is-selected-show") ? 1 : 0;
+            const rightSelected = right.classList.contains("is-selected-show") ? 1 : 0;
+            const a = left.dataset[key] || "";
+            const b = right.dataset[key] || "";
+            const comparison = numeric ? Number(b) - Number(a) : a.localeCompare(b);
+            return rightSelected - leftSelected || comparison || left.dataset.title.localeCompare(right.dataset.title);
+          });
+          rows.forEach((row) => body.appendChild(row));
+        });
         buttons.forEach((button) => button.addEventListener("click", () => {
           const key = button.dataset.sort;
           const header = button.closest("th");
           const current = header.getAttribute("aria-sort");
           const direction = current === "ascending" ? "descending" : "ascending";
           const multiplier = direction === "ascending" ? 1 : -1;
-          const numeric = key === "count" || key === "frequency" || key === "l100";
+          const numeric = ["count", "frequency", "l100", "rarity", "heat"].includes(key);
           const rows = [...body.rows].sort((left, right) => {
             const a = left.dataset[key] || "";
             const b = right.dataset[key] || "";
@@ -2313,6 +2327,7 @@ function renderTourStats(data) {
       <button type="button" data-type-filter="original">Originals</button>
       <button type="button" data-type-filter="cover">Covers</button>
     </div>
+    <label class="mobile-sort"><span>Sort by</span><select data-mobile-sort><option value="count">Most played</option><option value="rarity">Rarest</option><option value="heat">Hottest rotation</option><option value="title">Song name</option></select></label>
     <span class="show-filter-status" aria-live="polite">All tour songs</span>
   </div>
   <div class="tour-table-wrap">
@@ -2320,26 +2335,62 @@ function renderTourStats(data) {
       <thead><tr>
         <th scope="col"><button type="button" data-sort="title">Song <span aria-hidden="true">↕</span></button></th>
         <th scope="col" aria-sort="descending"><button type="button" data-sort="count">Plays <span aria-hidden="true">↓</span></button></th>
-        <th scope="col"><button type="button" data-sort="frequency">Tour shows <span aria-hidden="true">↕</span></button></th>
-        <th scope="col"><button type="button" data-sort="l100">Last 100 <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="rarity">Rarity <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="heat">Rotation heat <span aria-hidden="true">↕</span></button></th>
         <th scope="col"><button type="button" data-sort="last">Last played <span aria-hidden="true">↕</span></button></th>
-        <th scope="col"><button type="button" data-sort="type">Type <span aria-hidden="true">↕</span></button></th>
       </tr></thead>
       <tbody>${songs.map((song) => {
         const frequency = shows ? Math.round((song.tourCount / shows) * 100) : 0;
         const showDates = showDatesBySong.get(song.key) || [];
-        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
+        const rarity = calculateRarity(song);
+        const heat = calculateRotationHeat(song, shows);
+        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
           <th scope="row">${escapeHtml(song.title)}</th>
-          <td>${formatNumber(song.tourCount)}</td>
-          <td>${frequency}%</td>
-          <td>${formatNumber(song.l100 || 0)}</td>
+          <td class="plays-cell">${formatNumber(song.tourCount)}</td>
+          <td class="signal-cell rarity-cell"><strong>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "first played this tour" : `${rarity.score} · ${formatNumber(song.l100 || 0)} in last 100`}</small></td>
+          <td class="signal-cell heat-cell"><strong>${escapeHtml(heat.label)}</strong><small>${heat.score} · ${formatNumber(song.effectiveSlp)} since / ${heat.expectedGap.toFixed(1)} expected</small></td>
           <td>${escapeHtml(song.lastDisplay)}</td>
-          <td>${escapeHtml(song.type)}</td>
         </tr>`;
       }).join("")}</tbody>
     </table>
   </div>
+  <details class="index-method">
+    <summary>HOW THE BURNTHDAY INDEXES WORK</summary>
+    <div><p><strong>Rarity</strong> measures era-aware scarcity. Plays in the last 100 shows carry 90% of the score; lifetime scarcity carries 10%. A tour debut is marked New until it has history.</p><p><strong>Rotation heat</strong> compares shows since last played with an expected gap blended from this tour and the last 100 shows. It describes rotation pressure, not the odds of the next setlist.</p></div>
+  </details>
 </section>`;
+}
+
+function calculateRarity(song) {
+  if (song.seedTotal === 0) return { score: null, sortValue: 101, label: "New" };
+  const recentScarcity = 1 - Math.min((song.l100 || 0) / 25, 1);
+  const lifetimeScarcity = 1 - Math.min(Math.log10((song.total || 0) + 1) / 3, 1);
+  const score = Math.round((recentScarcity * 0.9 + lifetimeScarcity * 0.1) * 100);
+  const label = score >= 95
+    ? "Extremely rare"
+    : score >= 80
+      ? "Very rare"
+      : score >= 60
+        ? "Rare"
+        : score >= 35
+          ? "Uncommon"
+          : "In rotation";
+  return { score, sortValue: score, label };
+}
+
+function calculateRotationHeat(song, shows) {
+  const tourRate = shows ? song.tourCount / shows : 0;
+  const recentRate = (song.l100 || 0) / 100;
+  const rate = song.seedTotal === 0
+    ? tourRate
+    : tourRate > 0 && recentRate > 0
+      ? tourRate * 0.6 + recentRate * 0.4
+      : Math.max(tourRate, recentRate);
+  const expectedGap = rate > 0 ? 1 / rate : Math.max(shows, 1);
+  const ratio = expectedGap > 0 ? song.effectiveSlp / expectedGap : 0;
+  const score = Math.min(100, Math.round(ratio * 80));
+  const label = score >= 85 ? "Hot" : score >= 55 ? "Building" : "Fresh";
+  return { expectedGap, score, label };
 }
 
 function renderShelfBoard(data) {
@@ -2640,12 +2691,27 @@ function renderSetlistText(show, options = {}) {
     show.streamUrl ? `<a href="${escapeAttr(show.streamUrl)}">Listen at Nugs.net</a>` : ""
   ].filter(Boolean).join("");
   return `<div class="setlist-text">
-    ${options.hideHeading ? "" : `<h3>${escapeHtml(formatSetlistHeading(show))}</h3>`}
-    ${(show.sets || []).map((set) => `<p><strong>${escapeHtml(set.label)}:</strong> ${renderSetSongs(set, annotations)}</p>`).join("")}
-    ${renderSetlistGuestNotes(annotations)}
-    ${renderSetlistNotes(annotations)}
+    ${options.hideHeading ? "" : renderFeaturedShowHeading(show)}
+    <div class="setlist-sets">${(show.sets || []).map((set) => `<p><strong>${escapeHtml(formatSetLabel(set.label))}:</strong> ${renderSetSongs(set, annotations)}</p>`).join("")}</div>
+    ${(annotations.guestNotes.length || annotations.bracketNotes.length) ? `<div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}${renderSetlistNotes(annotations)}</div>` : ""}
     ${links && !options.hideLinks ? `<p class="setlist-links">${links}</p>` : ""}
   </div>`;
+}
+
+function renderFeaturedShowHeading(show) {
+  return `<header class="show-heading">
+    <time datetime="${escapeAttr(show.isoDate)}">${escapeHtml(formatLongDate(show.isoDate || show.date))}</time>
+    <h3>${escapeHtml(show.location || [show.city, show.state].filter(Boolean).join(", "))}</h3>
+    <p>${escapeHtml(show.venue)}</p>
+  </header>`;
+}
+
+function formatSetLabel(label) {
+  const value = clean(label).replace(/:$/, "");
+  if (value === "1") return "Set 1";
+  if (value === "2") return "Set 2";
+  if (/^E$/i.test(value)) return "Encore";
+  return value;
 }
 
 function formatSetlistHeading(show) {
@@ -3530,8 +3596,8 @@ sup {
 
 .current-stop-setlists {
   display: grid;
-  gap: 28px;
-  margin-top: 28px;
+  gap: 56px;
+  margin-top: 56px;
 }
 
 .tour-summary {
@@ -3579,6 +3645,10 @@ sup {
   padding: 0 34px 0 11px;
   color: var(--ink);
   font: 600 13px/1 var(--ui-font);
+}
+
+.mobile-sort {
+  display: none;
 }
 
 .type-filter {
@@ -3637,9 +3707,72 @@ sup {
 }
 
 .tour-table tbody th {
-  width: 48%;
+  width: 34%;
   font-weight: 600;
 }
+
+.signal-cell {
+  min-width: 154px;
+}
+
+.signal-cell strong,
+.signal-cell small {
+  display: block;
+}
+
+.signal-cell strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.signal-cell small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.index-method {
+  border-bottom: 1px solid var(--line);
+}
+
+.index-method > summary {
+  list-style: none;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.index-method > summary::-webkit-details-marker { display: none; }
+
+.index-method > summary::after {
+  content: "+";
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.index-method[open] > summary::after { content: "\\2212"; }
+
+.index-method > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  padding: 0 0 20px;
+}
+
+.index-method p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.index-method strong { color: var(--ink); }
 
 .tour-table tbody tr.is-selected-show {
   background: #f7eeee;
@@ -4088,10 +4221,10 @@ sup {
 
 .setlist-feature {
   display: grid;
-  grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.1fr);
-  gap: 18px;
+  grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+  gap: clamp(36px, 5vw, 72px);
   align-items: start;
-  margin-bottom: 18px;
+  margin-bottom: 36px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -4225,6 +4358,10 @@ sup {
   min-width: 0;
 }
 
+.setlist-feature .setlist-copy {
+  padding: clamp(8px, 1.5vw, 22px) 0 0;
+}
+
 .setlist-image img {
   display: block;
   width: 100%;
@@ -4257,6 +4394,61 @@ sup {
   font-weight: 700;
   color: var(--ink);
   letter-spacing: 0;
+}
+
+.show-heading {
+  margin: 0 0 26px;
+}
+
+.show-heading time {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.setlist-text .show-heading h3 {
+  margin: 0;
+  font-size: clamp(26px, 2.3vw, 34px);
+  line-height: 1.04;
+  font-weight: 700;
+}
+
+.setlist-text .show-heading p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.setlist-feature .setlist-sets {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 22px 0;
+}
+
+.setlist-feature .setlist-sets p {
+  margin: 0;
+}
+
+.setlist-feature .setlist-sets p + p {
+  margin-top: 18px;
+}
+
+.setlist-annotations {
+  padding: 17px 0 4px;
+}
+
+.setlist-feature .setlist-annotations .guest-notes,
+.setlist-feature .setlist-annotations .notes {
+  margin-top: 0;
+}
+
+.setlist-feature .setlist-annotations .guest-notes + .notes {
+  margin-top: 8px;
 }
 
 .setlist-text p {
@@ -5032,6 +5224,11 @@ sup {
     align-items: stretch;
   }
 
+  .index-method > div {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
   .show-filter {
     min-width: 0;
   }
@@ -5334,6 +5531,124 @@ sup {
   .tour-table th:nth-child(6),
   .tour-table td:nth-child(6) {
     display: none;
+  }
+
+  .mobile-sort {
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 650;
+    text-transform: uppercase;
+  }
+
+  .mobile-sort select {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: #fff;
+    padding: 0 34px 0 11px;
+    color: var(--ink);
+    font: 600 13px/1 var(--ui-font);
+  }
+
+  .tour-table-wrap {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .tour-table,
+  .tour-table tbody,
+  .tour-table tr,
+  .tour-table th,
+  .tour-table td {
+    display: block;
+    width: auto;
+  }
+
+  .tour-table thead {
+    display: none;
+  }
+
+  .tour-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px 18px;
+    border-top: 1px solid var(--line);
+    padding: 14px 8px;
+  }
+
+  .tour-table tbody tr[hidden] {
+    display: none;
+  }
+
+  .tour-table tbody th,
+  .tour-table tbody td {
+    border: 0;
+    padding: 0;
+    white-space: normal;
+  }
+
+  .tour-table tbody th {
+    grid-column: 1;
+    align-self: center;
+    font-size: 15px;
+  }
+
+  .tour-table .plays-cell {
+    grid-column: 2;
+    align-self: center;
+    text-align: right;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .tour-table .plays-cell::before {
+    content: "PLAYS";
+    display: block;
+    margin-bottom: 3px;
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 650;
+  }
+
+  .tour-table .rarity-cell {
+    grid-column: 1;
+  }
+
+  .tour-table .heat-cell {
+    grid-column: 2;
+    text-align: right;
+  }
+
+  .tour-table tbody td:nth-child(5) {
+    display: none;
+  }
+
+  .signal-cell {
+    min-width: 0;
+  }
+
+  .setlist-feature {
+    gap: 22px;
+    margin-bottom: 46px;
+  }
+
+  .setlist-feature .setlist-copy {
+    padding-top: 0;
+  }
+
+  .show-heading {
+    margin-bottom: 20px;
+  }
+
+  .setlist-text .show-heading h3 {
+    font-size: 27px;
+  }
+
+  .setlist-feature .setlist-sets {
+    padding: 18px 0;
   }
 
   .board-ledger {
@@ -5759,6 +6074,18 @@ function isoToShortDate(value) {
   if (!value) return "";
   const [year, month, day] = value.split("-");
   return `${month}/${day}/${year.slice(2)}`;
+}
+
+function formatLongDate(value) {
+  const isoDate = parseDateKey(value);
+  if (!isoDate) return clean(value);
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  }).format(new Date(Date.UTC(year, month - 1, day)));
 }
 
 function displayDate(value) {

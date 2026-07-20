@@ -30,7 +30,7 @@ Burnthday pairs a quiet, modern website with Gary Vereen's laminated Widespread 
 - **MilkRun** is the worksheet font: Song List rows, sheet labels, tiny tour counts, preserved archive titles, and sheet-adjacent headings.
 - **PanicHand** is handwritten marker ink only: the board location and songs or dates visibly written onto a sheet. It is not a general heading font.
 
-Letter spacing is always `0`. Never use negative letter spacing to force a fit. Do not mix font sizes within a setlist; only bold the date and the `1:`, `2:`, and `E:` labels.
+Letter spacing is always `0`. Never use negative letter spacing to force a fit. Do not mix font sizes within setlist copy. Featured shows use a small date eyebrow, a city heading, a venue line, and bold `Set 1:`, `Set 2:`, and `Encore:` labels.
 
 ## Song List Rules
 
@@ -48,7 +48,9 @@ Letter spacing is always `0`. Never use negative letter spacing to force a fit. 
 - Laminated sheets use white paper, a subtle 9px laminate edge, and a maximum 6px radius.
 - Setlist photography must use genuinely landscape source files, remain unframed, and render at its natural aspect ratio. Never use `object-fit: cover` to disguise portrait photography or force a crop.
 - The latest completed setlist appears above the Song List. Older setlists move into the setlist section below the sheets.
-- Tour Stats is a website data view below the Sheet Key, never part of the laminated Song List. It defaults to most-played songs and supports sorting by song, plays, show percentage, last play, and type.
+- Tour Stats is a website data view below the Sheet Key, never part of the laminated Song List. It defaults to most-played songs and supports show highlighting, type filtering, and sorting by song, plays, Rarity, Rotation Heat, and last play.
+- Rarity is an era-aware Burnthday index: last-100 scarcity contributes 90% and lifetime scarcity contributes 10%. New tour debuts remain labeled `New` until they have prior history.
+- Rotation Heat compares the current gap with an expected gap blended from current-tour and last-100 cadence. It is a rotation-pressure indicator, not a probability or setlist prediction.
 - Homepage sections share one content rail and left edge. Tour Dates is a single chronological schedule with neutral posted/upcoming states; green is reserved for the original marker system.
 - The site canvas is a barely visible neutral gray; laminated sheets remain white. The footer uses a slightly deeper neutral surface, a factual Burnthday tagline, destination-based navigation, and labeled social marks.
 

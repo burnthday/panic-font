@@ -28,6 +28,15 @@ dist/data/freshness.json
 
 That report records the build time, active sheet title, latest posted setlist, marker legend, source URLs, totals, and whether prior-song stats came directly from EC or include a verified local bridge over newer official shows.
 
+### Burnthday indexes (v1)
+
+Tour Stats adds two deterministic, sortable signals while retaining the underlying counts in the interface.
+
+- **Rarity** is era-aware scarcity, not simply a low lifetime total. The score is `100 × (90% recent scarcity + 10% lifetime scarcity)`, where recent scarcity is derived from plays in the last 100 shows and lifetime scarcity uses a logarithmic lifetime-play scale. A song with no pre-tour history is labeled `New` instead of rare. This lets an older song that was common decades ago but is scarce now read correctly in the current era.
+- **Rotation Heat** compares shows since last played with an expected gap. Expected cadence blends this-tour rate at 60% and last-100 rate at 40%; new songs use this-tour cadence until history develops. The score is capped at 100. `Fresh`, `Building`, and `Hot` describe rotation pressure only. They are not probabilities or setlist predictions.
+
+The last-100 input naturally crosses tour boundaries, so the prior tour contributes without creating a hand-maintained special case. Both indexes can be recalculated from the ledger and the verified Everyday Companion baseline.
+
 ## 2025 Setlists
 
 The imported 2025 tour setlists live in `data/source/setlists-2025.json`.

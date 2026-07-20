@@ -138,12 +138,15 @@ function checkTourStats(html, siteData) {
     [average, "songs per show"]
   ]) assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Tour Stats reports ${label}`);
 
-  for (const key of ["title", "count", "frequency", "l100", "last", "type"]) {
+  for (const key of ["title", "count", "rarity", "heat", "last"]) {
     assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
   }
+  assertIncludes(feature, "HOW THE BURNTHDAY INDEXES WORK", "Tour Stats explains the Burnthday indexes");
+  assertIncludes(feature, "rotation pressure, not the odds", "Rotation heat is not presented as predictive odds");
   assertIncludes(feature, "data-show-filter", "Tour Stats can highlight songs from one selected show");
+  assertIncludes(feature, "data-mobile-sort", "Tour Stats has a dedicated mobile sort control");
   for (const type of ["all", "original", "cover"]) assertIncludes(feature, `data-type-filter="${type}"`, `Tour Stats includes the ${type} type filter`);
-  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-l100="(\d+)" data-last="([^"]*)" data-type="([^"]+)" data-shows="([^"]*)">/g)]
+  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-l100="(\d+)" data-rarity="(\d+)" data-heat="(\d+)" data-last="([^"]*)" data-type="([^"]+)" data-shows="([^"]*)">/g)]
     .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
   record("Tour Stats includes every played song exactly once", rendered.length === songs.length, `${rendered.length} rendered vs ${songs.length} expected`);
   record("Tour Stats defaults to most played with alphabetical tie-breaking", arraysEqual(rendered.map((song) => song.title), songs.map((song) => song.title.toLowerCase())));
@@ -322,14 +325,18 @@ async function checkLatestSetlist(html, siteData) {
   const featuredShow = siteData.site?.featuredShow || siteData.setlists?.[0];
   const latestShow = siteData.setlists?.[0];
   const heading = `${featuredShow?.date || ""} ${featuredShow?.venue || ""}, ${featuredShow?.location || ""}`;
-  if (!siteData.site?.isShowDayPreview) assertIncludes(featured, escapeHtml(heading), "Featured-show heading matches generated site data");
+  if (!siteData.site?.isShowDayPreview) {
+    assertIncludes(featured, `datetime="${featuredShow?.isoDate || ""}"`, "Featured-show date matches generated site data");
+    assertIncludes(featured, `<h3>${escapeHtml(featuredShow?.location || "")}</h3>`, "Featured-show location matches generated site data");
+    assertIncludes(featured, `<p>${escapeHtml(featuredShow?.venue || "")}</p>`, "Featured-show venue matches generated site data");
+  }
 
   const featuredCard = featured.split('<div class="current-stop-setlists">')[0];
   const renderedLabels = [...featuredCard.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
   if (siteData.site?.isShowDayPreview) {
     record("Show-day setlists have no redundant section label or black rule", !featured.includes("CURRENT TOUR STOP") && !featured.includes('class="section-heading"'));
-    assertIncludes(featured, escapeHtml(heading), "Tonight's blank setlist is featured first");
-    record("Preview setlist provides blank 1, 2, and E lines", arraysEqual(renderedLabels, ["1", "2", "E"]), renderedLabels.join(", "));
+    assertIncludes(featured, `datetime="${featuredShow?.isoDate || ""}"`, "Tonight's blank setlist is featured first");
+    record("Preview setlist provides blank Set 1, Set 2, and Encore lines", arraysEqual(renderedLabels, ["Set 1", "Set 2", "Encore"]), renderedLabels.join(", "));
     record("Preview setlist contains no song copy", [...featuredCard.matchAll(/<p><strong>[^<]+:<\/strong>([\s\S]*?)<\/p>/g)].every((match) => !decodeHtml(match[1]).trim()));
     assertIncludes(featuredCard, ">Show Details</a>", "Tonight links to show details");
     record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));
@@ -349,7 +356,7 @@ async function checkLatestSetlist(html, siteData) {
     const renderedSegueCount = (featured.match(/&gt;/g) || []).length;
     record("Latest setlist preserves every source segue", sourceSegueCount > 0 && renderedSegueCount >= sourceSegueCount, `source=${sourceSegueCount} rendered=${renderedSegueCount}`);
 
-    const sourceLabels = (latestShow?.sets || []).map((set) => set.label);
+    const sourceLabels = (latestShow?.sets || []).map((set) => set.label === "1" ? "Set 1" : set.label === "2" ? "Set 2" : /^E$/i.test(set.label) ? "Encore" : set.label);
     record("Latest setlist renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
     const archive = sectionHtml(html, "setlists");
     for (const isoDate of siteData.site?.featuredRunDates || []) {
@@ -593,6 +600,17 @@ function cardHtml(html, heading) {
   }
 
   const [date] = decodeHtml(heading).split(" ");
+  const dateMatch = date.match(/^(\d{2})\/(\d{2})\/(\d{2}|\d{4})$/);
+  const year = dateMatch ? (dateMatch[3].length === 2 ? `20${dateMatch[3]}` : dateMatch[3]) : "";
+  const isoDate = dateMatch ? `${year}-${dateMatch[1]}-${dateMatch[2]}` : "";
+  const semanticDateIndex = isoDate ? html.indexOf(`datetime="${isoDate}"`) : -1;
+  if (semanticDateIndex >= 0) {
+    const featureStart = html.lastIndexOf('<article class="setlist-feature', semanticDateIndex);
+    const cardStart = html.lastIndexOf('<article class="setlist-card', semanticDateIndex);
+    const start = Math.max(featureStart, cardStart);
+    const end = html.indexOf("</article>", semanticDateIndex);
+    if (start >= 0 && end > start) return html.slice(start, end + "</article>".length);
+  }
   const archiveStart = html.indexOf('class="setlist-list"');
   const dateIndex = html.indexOf(`>${date}</time>`, Math.max(0, archiveStart));
   if (dateIndex < 0) return "";
