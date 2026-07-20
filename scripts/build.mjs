@@ -2326,7 +2326,7 @@ function renderTourStats(data) {
         return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
           <th scope="row">${escapeHtml(song.title)}</th>
           <td class="plays-cell">${formatNumber(song.tourCount)}</td>
-          <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${escapeHtml(rarity.symbol)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "new this tour" : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
+          <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "new this tour" : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
           <td class="signal-cell heat-cell"><strong>${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} ago</strong><small>usual gap ${heat.expectedGap.toFixed(1)} shows</small></td>
           <td>${escapeHtml(song.lastDisplay)}</td>
         </tr>`;
@@ -2335,28 +2335,44 @@ function renderTourStats(data) {
   </div>
   <details class="index-method">
     <summary>WHAT THESE MEAN</summary>
-    <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Double Rare, Ultra Rare, or Hyper Rare. It is driven mostly by plays in the last 100 shows, with lifetime play count as a small tie-breaker. The numbers below the badge show the actual last-100 and lifetime counts.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
+    <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Double Rare, Ultra Rare, or Hyper Rare. It is driven mostly by plays in the last 100 shows, with lifetime play count as a small tie-breaker. The numbers below the badge show the actual last-100 and lifetime counts. The symbols follow trading-card language: a black circle, diamond, or star; two black stars; two silver stars; three gold stars. A song new this tour gets an open star until it has history.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
   </details>
 </section>`;
 }
 
 function calculateRarity(song) {
-  if (song.seedTotal === 0) return { score: null, sortValue: 101, label: "New", symbol: "✦" };
+  if (song.seedTotal === 0) return { score: null, sortValue: 101, label: "New", tier: "new" };
   const recentScarcity = 1 - Math.min((song.l100 || 0) / 25, 1);
   const lifetimeScarcity = 1 - Math.min(Math.log10((song.total || 0) + 1) / 3, 1);
   const score = Math.round((recentScarcity * 0.9 + lifetimeScarcity * 0.1) * 100);
   const tier = score >= 95
-    ? ["Hyper Rare", "✦✦✦"]
+    ? ["Hyper Rare", "hyper"]
     : score >= 85
-      ? ["Ultra Rare", "✦✦"]
+      ? ["Ultra Rare", "ultra"]
       : score >= 70
-        ? ["Double Rare", "★★"]
+        ? ["Double Rare", "double"]
         : score >= 50
-          ? ["Rare", "★"]
+          ? ["Rare", "rare"]
           : score >= 25
-            ? ["Uncommon", "◆"]
-            : ["Common", "●"];
-  return { score, sortValue: score, label: tier[0], symbol: tier[1] };
+            ? ["Uncommon", "uncommon"]
+            : ["Common", "common"];
+  return { score, sortValue: score, label: tier[0], tier: tier[1] };
+}
+
+const RARITY_INK = "#111111";
+const RARITY_SILVER = "#a6a5a1";
+const RARITY_GOLD = "#d4a017";
+const RARITY_STAR_POINTS = "10,0.5 12.23,6.93 19.03,7.06 13.61,11.17 15.58,17.69 10,13.8 4.42,17.69 6.39,11.17 0.97,7.06 7.77,6.93";
+
+function renderRaritySymbol(tier) {
+  const star = (x, y, fill) => `<polygon points="${RARITY_STAR_POINTS}" fill="${fill}" transform="translate(${x} ${y})"/>`;
+  if (tier === "common") return `<svg class="rarity-common" viewBox="0 0 20 19"><circle cx="10" cy="9.5" r="8" fill="${RARITY_INK}"/></svg>`;
+  if (tier === "uncommon") return `<svg class="rarity-uncommon" viewBox="0 0 20 19"><polygon points="10,1 18.5,9.5 10,18 1.5,9.5" fill="${RARITY_INK}"/></svg>`;
+  if (tier === "rare") return `<svg class="rarity-rare" viewBox="0 0 20 19">${star(0, 0, RARITY_INK)}</svg>`;
+  if (tier === "double") return `<svg class="rarity-double" viewBox="0 0 42 19">${star(0, 0, RARITY_INK)}${star(22, 0, RARITY_INK)}</svg>`;
+  if (tier === "ultra") return `<svg class="rarity-ultra" viewBox="0 0 42 19">${star(0, 0, RARITY_SILVER)}${star(22, 0, RARITY_SILVER)}</svg>`;
+  if (tier === "hyper") return `<svg class="rarity-hyper" viewBox="0 0 42 30.5">${star(11, 0, RARITY_GOLD)}${star(0, 11.5, RARITY_GOLD)}${star(22, 11.5, RARITY_GOLD)}</svg>`;
+  return `<svg class="rarity-new" viewBox="-1.5 -1.5 23 22"><polygon points="${RARITY_STAR_POINTS}" fill="none" stroke="${RARITY_INK}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 }
 
 function calculateRotationHeat(song, shows) {
@@ -3717,9 +3733,18 @@ sup {
 
 .rarity-symbol {
   min-width: 28px;
-  color: var(--ink);
-  font-size: 11px;
-  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+}
+
+.rarity-symbol svg {
+  display: block;
+  height: 10px;
+  width: auto;
+}
+
+.rarity-symbol svg.rarity-hyper {
+  height: 15px;
 }
 
 .signal-cell small {
