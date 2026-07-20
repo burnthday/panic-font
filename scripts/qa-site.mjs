@@ -142,10 +142,12 @@ function checkTourStats(html, siteData) {
     assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
   }
   assertIncludes(feature, "WHAT THESE MEAN", "Tour Stats explains its plain-language signals");
-  assertIncludes(feature, "How rare?", "Tour Stats labels rarity in plain language");
-  assertIncludes(feature, "Rotation timing", "Tour Stats labels rotation timing in plain language");
+  assertIncludes(feature, "Rarity", "Tour Stats labels rarity directly");
+  assertIncludes(feature, "Hyper Rare", "Tour Stats explains the game-like rarity ladder");
+  assertIncludes(feature, "Last / usual gap", "Tour Stats labels timing with plain numbers");
   assertNotIncludes(feature, "In rotation", "Tour Stats avoids the ambiguous In rotation rarity label");
-  assertIncludes(feature, "it is context, not a prediction", "Rotation timing is not presented as predictive odds");
+  assertNotIncludes(feature, "Rotation timing", "Tour Stats avoids the ambiguous Rotation timing label");
+  assertIncludes(feature, "It is context, not a prediction", "Timing is not presented as predictive odds");
   assertIncludes(feature, "data-show-filter", "Tour Stats can highlight songs from one selected show");
   assertIncludes(feature, "data-mobile-sort", "Tour Stats has a dedicated mobile sort control");
   for (const type of ["all", "original", "cover"]) assertIncludes(feature, `data-type-filter="${type}"`, `Tour Stats includes the ${type} type filter`);

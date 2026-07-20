@@ -2306,7 +2306,7 @@ function renderTourStats(data) {
       <button type="button" data-type-filter="original">Originals</button>
       <button type="button" data-type-filter="cover">Covers</button>
     </div>
-    <label class="mobile-sort"><span>Sort by</span><select data-mobile-sort><option value="count">Most played</option><option value="rarity">Rarest</option><option value="heat">Furthest past usual gap</option><option value="title">Song name</option></select></label>
+    <label class="mobile-sort"><span>Sort by</span><select data-mobile-sort><option value="count">Most played</option><option value="rarity">Rarest</option><option value="heat">Longest wait</option><option value="title">Song name</option></select></label>
     <span class="show-filter-status" aria-live="polite">All tour songs</span>
   </div>
   <div class="tour-table-wrap">
@@ -2314,8 +2314,8 @@ function renderTourStats(data) {
       <thead><tr>
         <th scope="col"><button type="button" data-sort="title">Song <span aria-hidden="true">↕</span></button></th>
         <th scope="col" aria-sort="descending"><button type="button" data-sort="count">Plays <span aria-hidden="true">↓</span></button></th>
-        <th scope="col"><button type="button" data-sort="rarity">How rare? <span aria-hidden="true">↕</span></button></th>
-        <th scope="col"><button type="button" data-sort="heat">Rotation timing <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="rarity">Rarity <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="heat">Last / usual gap <span aria-hidden="true">↕</span></button></th>
         <th scope="col"><button type="button" data-sort="last">Last played <span aria-hidden="true">↕</span></button></th>
       </tr></thead>
       <tbody>${songs.map((song) => {
@@ -2326,8 +2326,8 @@ function renderTourStats(data) {
         return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
           <th scope="row">${escapeHtml(song.title)}</th>
           <td class="plays-cell">${formatNumber(song.tourCount)}</td>
-          <td class="signal-cell rarity-cell"><strong>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "first played this tour" : `${formatNumber(song.l100 || 0)} ${song.l100 === 1 ? "play" : "plays"} in the last 100 shows`}</small></td>
-          <td class="signal-cell heat-cell"><strong>${escapeHtml(heat.label)}</strong><small>${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} since last play; usually ${heat.expectedGap.toFixed(1)}</small></td>
+          <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${escapeHtml(rarity.symbol)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "new this tour" : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
+          <td class="signal-cell heat-cell"><strong>${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} ago</strong><small>usual gap ${heat.expectedGap.toFixed(1)} shows</small></td>
           <td>${escapeHtml(song.lastDisplay)}</td>
         </tr>`;
       }).join("")}</tbody>
@@ -2335,26 +2335,28 @@ function renderTourStats(data) {
   </div>
   <details class="index-method">
     <summary>WHAT THESE MEAN</summary>
-    <div><p><strong>How rare?</strong> is based mainly on how often the song appeared in the last 100 shows. Lifetime history is a small tie-breaker, so an old song that disappeared from rotation can still read as rare today. A debut is marked New.</p><p><strong>Rotation timing</strong> compares the number of shows since the song was last played with its usual recent gap. “Past its usual gap” means it has waited longer than normal; it is context, not a prediction.</p></div>
+    <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Double Rare, Ultra Rare, or Hyper Rare. It is driven mostly by plays in the last 100 shows, with lifetime play count as a small tie-breaker. The numbers below the badge show the actual last-100 and lifetime counts.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
   </details>
 </section>`;
 }
 
 function calculateRarity(song) {
-  if (song.seedTotal === 0) return { score: null, sortValue: 101, label: "New" };
+  if (song.seedTotal === 0) return { score: null, sortValue: 101, label: "New", symbol: "✦" };
   const recentScarcity = 1 - Math.min((song.l100 || 0) / 25, 1);
   const lifetimeScarcity = 1 - Math.min(Math.log10((song.total || 0) + 1) / 3, 1);
   const score = Math.round((recentScarcity * 0.9 + lifetimeScarcity * 0.1) * 100);
-  const label = score >= 95
-    ? "Extremely rare"
-    : score >= 80
-      ? "Very rare"
-      : score >= 60
-        ? "Rare"
-        : score >= 35
-          ? "Uncommon"
-          : "Common";
-  return { score, sortValue: score, label };
+  const tier = score >= 95
+    ? ["Hyper Rare", "✦✦✦"]
+    : score >= 85
+      ? ["Ultra Rare", "✦✦"]
+      : score >= 70
+        ? ["Double Rare", "★★"]
+        : score >= 50
+          ? ["Rare", "★"]
+          : score >= 25
+            ? ["Uncommon", "◆"]
+            : ["Common", "●"];
+  return { score, sortValue: score, label: tier[0], symbol: tier[1] };
 }
 
 function calculateRotationHeat(song, shows) {
@@ -3706,8 +3708,18 @@ sup {
 }
 
 .signal-cell strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
   font-size: 13px;
   font-weight: 700;
+}
+
+.rarity-symbol {
+  min-width: 28px;
+  color: var(--ink);
+  font-size: 11px;
+  letter-spacing: 1px;
 }
 
 .signal-cell small {
