@@ -34,6 +34,7 @@ async function main() {
   await checkSongLearnBlock(siteData);
   await checkBestGuessSection(siteData);
   await checkLegacyPages(siteData);
+  await checkProsePlate(allHtmlFiles, allHtml);
   await checkTourInReviewPages();
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkLocalAssets(allHtml);
@@ -590,6 +591,29 @@ async function checkLegacyPages(siteData) {
     assertIncludes(html, 'id="mega-menu"', `${label} page carries the shared mega menu`);
     assertIncludes(html, 'href="/stagelight.css"', `${label} page loads the Stagelight stylesheet`);
   }
+}
+
+// The "prose plate" is the unified reading-typography system applied to all
+// archive-derived body content. It is keyed off a shared `.prose-plate` class on
+// the prose container. These checks are structural and non-brittle: they confirm
+// the plate class actually reaches a real archive post, a lyrics/chords page and
+// a song-origin page, and that the stylesheet defines the plate rules.
+async function checkProsePlate(files, htmlByFile) {
+  let archivePost = null;
+  let lyricsPage = null;
+  let originPage = null;
+  for (let index = 0; index < files.length; index += 1) {
+    const html = htmlByFile[index];
+    const rel = path.relative(root, files[index]);
+    if (!archivePost && /[\\/](19|20)\d\d[\\/]\d\d[\\/]/.test(files[index]) && html.includes('class="archive-content prose-plate"')) archivePost = rel;
+    if (!lyricsPage && html.includes('href="/lyrics-chords/"') && html.includes('class="archive-content prose-plate"')) lyricsPage = rel;
+    if (!originPage && files[index].includes(`${path.sep}song-origins${path.sep}`) && html.includes('class="origin-body prose-plate"')) originPage = rel;
+  }
+  record("An archive post carries the shared prose plate class", Boolean(archivePost), archivePost || "no archive-content prose-plate container found");
+  record("A lyrics/chords page carries the shared prose plate class", Boolean(lyricsPage), lyricsPage || "no lyrics page with prose-plate found");
+  record("A song-origin page carries the shared prose plate class", Boolean(originPage), originPage || "no origin-body prose-plate container found");
+  const css = await readText("dist/stagelight.css");
+  record("Stagelight stylesheet defines the prose plate reading system", /body\.stagelight \.prose-plate\b/.test(css) && /--prose-measure/.test(css), "prose plate rules present in stagelight.css");
 }
 
 function checkMarkerLegend(html, siteData) {

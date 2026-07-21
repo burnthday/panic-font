@@ -1408,7 +1408,7 @@ function renderPrivacyPage(data) {
           <p>Last updated July 18, 2026</p>
           <h1>Privacy</h1>
         </header>
-        <div class="archive-content">
+        <div class="archive-content prose-plate">
           <p>Burnthday is an independent Widespread Panic fan site. You do not need an account, and the site does not ask for your name, email address, or payment information.</p>
           <h2>Analytics</h2>
           <p>Burnthday uses Google Analytics 4 to understand which pages people visit, how they found the site, and how the site performs on different devices. Google Analytics may use cookies and collect information such as browser and device details, approximate location, referring pages, and interactions with the site. Burnthday uses this information in aggregate to maintain and improve the site.</p>
@@ -1563,7 +1563,7 @@ function renderArchivePage(entry, data) {
     <main class="archive-main">
       <article class="archive-page">
         ${renderArchiveHeader(entry)}
-        <div class="archive-content">
+        <div class="archive-content prose-plate">
           ${content}
         </div>
         ${renderArchiveOriginLink(entry, data)}
@@ -1726,12 +1726,12 @@ function renderShelfInfoPage(data, oldShelfEntry) {
     <main class="archive-main">
       <article class="archive-page shelf-info-page">
         ${renderPageGraphicTitle("The Shelf", "shelf.png")}
-        <section class="shelf-current-update">
+        <section class="shelf-current-update prose-plate">
           <h2>Spring ${escapeHtml(String(year))} New Additions To The Shelf</h2>
           ${renderShelfAdditionList("Originals", newShelfOriginals)}
           ${renderShelfAdditionList("Covers", newShelfCovers)}
         </section>
-        ${historicalContent ? `<section class="legacy-shelf-notes"><h2>Previous Shelf Updates</h2><div class="archive-content">${historicalContent}</div></section>` : ""}
+        ${historicalContent ? `<section class="legacy-shelf-notes"><h2>Previous Shelf Updates</h2><div class="archive-content prose-plate">${historicalContent}</div></section>` : ""}
       </article>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
@@ -1770,7 +1770,7 @@ function renderRumorsPage(data, oldRumorsEntry) {
       <article class="archive-page rumors-page">
         ${renderPageGraphicTitle("Rumors", "crystalball.png")}
         ${renderCurrentRumors(data)}
-        <div class="archive-content">${removeFirstArchiveGraphic(oldRumorsEntry?.content || "", "crystalball.png")}</div>
+        <div class="archive-content prose-plate">${removeFirstArchiveGraphic(oldRumorsEntry?.content || "", "crystalball.png")}</div>
       </article>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
@@ -2392,7 +2392,7 @@ function renderSongOriginPage(origin, origins, data) {
         </header>
         <div class="origin-layout">
           ${origin.image ? `<figure class="origin-image"><img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" decoding="async"></figure>` : ""}
-          <div class="origin-body">
+          <div class="origin-body prose-plate">
             ${originBody}
             <p class="origin-source"><a href="${escapeAttr(origin.sourceUrl)}">Original Facebook post</a></p>
           </div>
@@ -8764,7 +8764,7 @@ body.stagelight .purgatory-board::before {
 body.stagelight .archive-page, body.stagelight .archive-index {
   background: transparent; border: 0; border-radius: 0; padding: 0;
 }
-body.stagelight .archive-main { width: min(760px, calc(100% - 48px)); margin: 56px auto 0; color: var(--sl-ink); }
+body.stagelight .archive-main { width: min(680px, calc(100% - 48px)); margin: 56px auto 0; color: var(--sl-ink); }
 body.stagelight .origins-main, body.stagelight .tour-review-main { width: min(1180px, calc(100% - 48px)); }
 body.stagelight .archive-page { color: var(--sl-ink); }
 body.stagelight .origin-hero { border-bottom: 1px solid var(--sl-line); padding-bottom: 26px; }
@@ -8808,6 +8808,160 @@ body.stagelight .archive-content hr { border: 0; border-top: 1px solid var(--sl-
 body.stagelight .archive-content table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 15px; }
 body.stagelight .archive-content th, body.stagelight .archive-content td { border-bottom: 1px solid var(--sl-line); padding: 10px 12px; text-align: left; }
 body.stagelight .archive-content strong, body.stagelight .archive-content b { color: var(--sl-ink); }
+
+/* ============================================================
+   PROSE PLATE
+   ------------------------------------------------------------
+   ONE reading-typography system for every archive-derived body:
+   individual archive posts, lyrics/chords pages, song-origin
+   detail pages, and the shelf/rumors/privacy legacy prose. Each
+   of those containers carries the shared .prose-plate class
+   (alongside its own .archive-content / .origin-body hook), so
+   the rules below apply everywhere long-form reading happens and
+   nowhere else. Scope is typography + rhythm only: measure,
+   vertical rhythm, hierarchy, lists, quotes, links, media. It
+   layers on top of the legacy .archive-content baseline above and
+   wins where the two overlap. The homepage sheet, albums, songs
+   and the (already-designed) tour-review pages are untouched.
+
+   Note on imported markup: the Blogger export wraps each line in a
+   bare <div> and separates paragraphs with empty <div><br></div>
+   spacers / literal <br><br> walls. We DON'T rewrite that (it would
+   risk setlist/lyric line integrity) — the measure + line-height
+   below turn those blank lines into clean editorial rhythm.
+   ============================================================ */
+body.stagelight .prose-plate {
+  /* ~68 characters of running prose. Expressed in px because Geist's ch
+     unit (the '0' width) overstates a comfortable measure by a wide margin. */
+  --prose-measure: 640px;
+  color: var(--sl-muted);
+  font-size: 17px;
+  line-height: 1.72;
+  text-align: left;
+  overflow-wrap: break-word;
+}
+/* keep every child inside the reading measure, kill Word-doc centering */
+body.stagelight .prose-plate [style*="text-align"],
+body.stagelight .prose-plate [align] { text-align: left !important; }
+body.stagelight .prose-plate div { text-align: left; }
+
+/* paragraph rhythm — real <p> get editorial spacing; Blogger's
+   line-per-<div> blocks stay on the line grid (blank divs = gaps) */
+body.stagelight .prose-plate p { margin: 0 0 1.15em; color: var(--sl-muted); }
+body.stagelight .prose-plate p:last-child { margin-bottom: 0; }
+body.stagelight .prose-plate > *:first-child { margin-top: 0; }
+
+/* headings — display face, snapped to the type scale, clear hierarchy */
+body.stagelight .prose-plate h2,
+body.stagelight .prose-plate h3,
+body.stagelight .prose-plate h4 {
+  font-family: var(--sl-display); color: var(--sl-ink);
+  letter-spacing: -0.015em; line-height: 1.16; text-wrap: balance;
+}
+body.stagelight .prose-plate h2 { font-size: 27px; margin: 1.85em 0 0.5em; }
+body.stagelight .prose-plate h3 { font-size: 21px; margin: 1.6em 0 0.45em; }
+body.stagelight .prose-plate h4 { font-size: 17.5px; letter-spacing: -0.005em; margin: 1.4em 0 0.4em; }
+body.stagelight .prose-plate h2:first-child,
+body.stagelight .prose-plate h3:first-child,
+body.stagelight .prose-plate h4:first-child { margin-top: 0; }
+
+/* emphasis — tasteful, not the Blogger heavy-bold wall */
+body.stagelight .prose-plate b,
+body.stagelight .prose-plate strong { font-weight: 600; color: var(--sl-ink); }
+body.stagelight .prose-plate i,
+body.stagelight .prose-plate em { font-style: italic; color: inherit; }
+
+/* inline links — the site's underline-offset treatment, everywhere */
+body.stagelight .prose-plate a {
+  color: var(--sl-ink); text-decoration: underline;
+  text-decoration-color: var(--sl-line-strong);
+  text-decoration-thickness: 1px; text-underline-offset: 3px;
+  overflow-wrap: break-word;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+body.stagelight .prose-plate a:hover { color: #fff; text-decoration-color: var(--sl-ink); }
+
+/* lists — intentional indentation, colored markers, item rhythm
+   (also de-lazies the Shelf's plain <ul>s via the shared system) */
+body.stagelight .prose-plate ul,
+body.stagelight .prose-plate ol { margin: 0 0 1.15em; padding-left: 0; }
+body.stagelight .prose-plate li { margin: 0 0 0.5em; line-height: 1.6; }
+body.stagelight .prose-plate li:last-child { margin-bottom: 0; }
+body.stagelight .prose-plate ul { list-style: none; }
+body.stagelight .prose-plate ul > li { position: relative; padding-left: 1.4em; }
+body.stagelight .prose-plate ul > li::before {
+  content: ""; position: absolute; left: 0.15em; top: 0.66em;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--sl-faint);
+}
+body.stagelight .prose-plate ol { list-style: none; counter-reset: prose-ol; padding-left: 0.2em; }
+body.stagelight .prose-plate ol > li { position: relative; padding-left: 1.9em; counter-increment: prose-ol; }
+body.stagelight .prose-plate ol > li::before {
+  content: counter(prose-ol) "."; position: absolute; left: 0; top: 0;
+  font-family: var(--sl-mono); font-size: 0.86em; color: var(--sl-faint);
+  font-variant-numeric: tabular-nums;
+}
+body.stagelight .prose-plate li > ul,
+body.stagelight .prose-plate li > ol { margin: 0.5em 0 0; }
+
+/* blockquote — pull-quote treatment with a left rule; mono attribution */
+body.stagelight .prose-plate blockquote {
+  margin: 1.6em 0; padding: 2px 0 2px 22px;
+  border-left: 2px solid var(--sl-line-strong);
+  color: var(--sl-ink); font-size: 19px; line-height: 1.5; font-style: italic;
+}
+body.stagelight .prose-plate blockquote p { color: var(--sl-ink); }
+body.stagelight .prose-plate blockquote cite,
+body.stagelight .prose-plate blockquote footer {
+  display: block; margin-top: 12px; font-style: normal;
+  font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--sl-faint);
+}
+
+/* images / figures — rounded per tokens, subtle border+shadow, centered,
+   never wider than the measure */
+body.stagelight .prose-plate img {
+  display: block; max-width: 100%; height: auto; margin: 1.7em auto;
+  border-radius: var(--sl-r-md); border: 1px solid var(--sl-line);
+  box-shadow: var(--sl-shadow-1);
+}
+body.stagelight .prose-plate figure { margin: 1.7em 0; }
+body.stagelight .prose-plate figure img { margin: 0 auto; }
+body.stagelight .prose-plate figcaption {
+  margin-top: 10px; text-align: center; font-family: var(--sl-mono);
+  font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint);
+}
+
+/* horizontal rule / section break — a tasteful fade, not a hard line */
+body.stagelight .prose-plate hr {
+  border: 0; height: 1px; width: 100%; margin: 2.4em auto;
+  background: linear-gradient(90deg, transparent, var(--sl-line-strong) 50%, transparent);
+}
+
+/* code + monospace */
+body.stagelight .prose-plate code,
+body.stagelight .prose-plate kbd,
+body.stagelight .prose-plate samp {
+  font-family: var(--sl-mono); font-size: 0.9em;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--sl-line);
+  border-radius: var(--sl-r-sm); padding: 1px 6px;
+}
+body.stagelight .prose-plate pre {
+  font-family: var(--sl-mono); font-size: 13.5px; line-height: 1.6;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line);
+  border-radius: var(--sl-r-md); padding: 16px 18px; margin: 1.4em 0; overflow-x: auto;
+}
+body.stagelight .prose-plate pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+
+/* tables — hairline rows, tabular figures for numeric columns */
+body.stagelight .prose-plate table { width: 100%; border-collapse: collapse; margin: 0 0 1.3em; font-size: 15px; }
+body.stagelight .prose-plate th,
+body.stagelight .prose-plate td { border-bottom: 1px solid var(--sl-line); padding: 10px 12px; text-align: left; }
+body.stagelight .prose-plate th { color: var(--sl-ink); font-weight: 600; }
+body.stagelight .prose-plate td { color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+
+/* song-origin prose sits in a wide 2-col grid cell — cap it to the
+   same reading measure so the line length stays comfortable */
+body.stagelight .origin-body.prose-plate { max-width: var(--prose-measure); }
 
 /* song-origin cross-link at the foot of a lyrics/archive page */
 body.stagelight .archive-crosslink { margin-top: 40px; }
