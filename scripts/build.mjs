@@ -2135,25 +2135,44 @@ function renderFitScriptBody() {
         const mobileSort = section?.querySelector("[data-mobile-sort]");
         const typeButtons = [...(section?.querySelectorAll("[data-type-filter]") || [])];
         const status = section?.querySelector(".show-filter-status");
+        const rarityFilter = section?.querySelector("[data-rarity-filter]");
+        const rarityOptions = [...(section?.querySelectorAll("[data-rarity-option]") || [])];
+        const rarityClear = section?.querySelector("[data-rarity-clear]");
+        const rarityActive = section?.querySelector("[data-rarity-active]");
         let selectedShow = "";
         let selectedType = "all";
 
         const applyFilters = () => {
           const rows = [...body.rows];
+          const selectedRarities = rarityOptions.filter((box) => box.checked).map((box) => box.value);
           let selectedCount = 0;
+          let visibleCount = 0;
           rows.forEach((row) => {
             const matchesType = selectedType === "all" || row.dataset.type === selectedType;
+            const matchesRarity = !selectedRarities.length || selectedRarities.includes(row.dataset.rarityTier);
             const matchesShow = !selectedShow || (row.dataset.shows || "").split(",").includes(selectedShow);
-            row.hidden = !matchesType;
-            row.classList.toggle("is-selected-show", Boolean(selectedShow && matchesShow && matchesType));
-            if (selectedShow && matchesShow && matchesType) selectedCount += 1;
+            const visible = matchesType && matchesRarity;
+            row.hidden = !visible;
+            if (visible) visibleCount += 1;
+            row.classList.toggle("is-selected-show", Boolean(selectedShow && matchesShow && visible));
+            if (selectedShow && matchesShow && visible) selectedCount += 1;
           });
           rows.sort((left, right) => {
             const leftSelected = left.classList.contains("is-selected-show") ? 1 : 0;
             const rightSelected = right.classList.contains("is-selected-show") ? 1 : 0;
             return rightSelected - leftSelected || Number(right.dataset.count) - Number(left.dataset.count) || left.dataset.title.localeCompare(right.dataset.title);
           }).forEach((row) => body.appendChild(row));
-          if (status) status.textContent = selectedShow ? selectedCount + " songs played at selected show" : selectedType === "all" ? "" : selectedType === "original" ? "Originals only" : "Covers only";
+          if (rarityActive) {
+            rarityActive.hidden = !selectedRarities.length;
+            rarityActive.textContent = selectedRarities.length ? String(selectedRarities.length) : "";
+          }
+          if (status) {
+            const parts = [];
+            if (selectedShow) parts.push(selectedCount + " songs played at selected show");
+            if (selectedType !== "all") parts.push(selectedType === "original" ? "Originals only" : "Covers only");
+            if (selectedRarities.length) parts.push(visibleCount + " songs at selected rarity");
+            status.textContent = parts.join(" · ");
+          }
         };
 
         showFilter?.addEventListener("change", () => {
@@ -2165,6 +2184,14 @@ function renderFitScriptBody() {
           typeButtons.forEach((item) => item.classList.toggle("is-active", item === typeButton));
           applyFilters();
         }));
+        rarityOptions.forEach((box) => box.addEventListener("change", applyFilters));
+        rarityClear?.addEventListener("click", () => {
+          rarityOptions.forEach((box) => { box.checked = false; });
+          applyFilters();
+        });
+        if (rarityFilter) document.addEventListener("click", (event) => {
+          if (rarityFilter.open && !rarityFilter.contains(event.target)) rarityFilter.removeAttribute("open");
+        });
         mobileSort?.addEventListener("change", () => {
           const key = mobileSort.value;
           const numeric = ["count", "rarity", "heat"].includes(key);
@@ -2447,6 +2474,7 @@ function renderTourStats(data) {
       <button type="button" data-type-filter="original">Originals</button>
       <button type="button" data-type-filter="cover">Covers</button>
     </div>
+    ${renderRarityFilter(songs)}
     <label class="mobile-sort"><span>Sort by</span><select data-mobile-sort><option value="count">Most played</option><option value="rarity">Rarest</option><option value="heat">Longest wait</option><option value="title">Song name</option></select></label>
     <span class="show-filter-status" aria-live="polite"></span>
   </div>
@@ -2464,7 +2492,7 @@ function renderTourStats(data) {
         const showDates = showDatesBySong.get(song.key) || [];
         const rarity = calculateRarity(song);
         const heat = calculateRotationHeat(song, shows);
-        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
+        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-rarity-tier="${escapeAttr(rarity.tier)}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
           <th scope="row">${escapeHtml(song.title)}</th>
           <td class="plays-cell">${formatNumber(song.tourCount)}</td>
           <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "new this tour" : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
@@ -2498,6 +2526,37 @@ function calculateRarity(song) {
             ? ["Uncommon", "uncommon"]
             : ["Common", "common"];
   return { score, sortValue: score, label: tier[0], tier: tier[1] };
+}
+
+const RARITY_TIER_ORDER = [
+  ["hyper", "Hyper Rare"],
+  ["ultra", "Ultra Rare"],
+  ["double", "Double Rare"],
+  ["rare", "Rare"],
+  ["uncommon", "Uncommon"],
+  ["common", "Common"],
+  ["new", "New"]
+];
+
+function renderRarityFilter(songs) {
+  const counts = new Map();
+  for (const song of songs) {
+    const tier = calculateRarity(song).tier;
+    counts.set(tier, (counts.get(tier) || 0) + 1);
+  }
+  const options = RARITY_TIER_ORDER.filter(([tier]) => counts.get(tier)).map(([tier, label]) => `<label class="rf-option">
+      <input type="checkbox" value="${tier}" data-rarity-option>
+      <span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(tier)}</span>
+      <span class="rf-label">${escapeHtml(label)}</span>
+      <span class="rf-count">${formatNumber(counts.get(tier))}</span>
+    </label>`).join("");
+  return `<details class="rarity-filter" data-rarity-filter>
+    <summary><span>Rarity</span><b class="rf-active" data-rarity-active hidden></b><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+    <div class="rarity-pop">
+      ${options}
+      <button type="button" class="rf-clear" data-rarity-clear>Clear rarity filter</button>
+    </div>
+  </details>`;
 }
 
 const RARITY_INK = "#111111";
@@ -3407,8 +3466,13 @@ main > section { margin-top: 96px; }
 .nick-summary .nick-stat { padding: 20px 22px; border-radius: 16px; }
 .nick-summary .nick-stat strong { display: block; font-size: 30px; font-weight: 620; line-height: 1; }
 .nick-summary .nick-stat span { display: block; font-size: 11px; letter-spacing: 0.14em; margin-top: 9px; }
-.nick-progress { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; margin: 14px 0; }
-.nick-progress i { display: block; height: 100%; }
+.nick-progress { margin: 28px 0 32px; }
+.nick-progress > div:first-child { display: flex; align-items: baseline; gap: 12px; }
+.nick-progress-track { display: flex; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; margin: 14px 0 12px; }
+.nick-progress-track i { display: block; height: 100%; }
+.progress-key { display: flex; gap: 10px 26px; flex-wrap: wrap; }
+.progress-key span { display: inline-flex; align-items: center; gap: 8px; }
+.progress-key i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 .nick-ranking { display: grid; gap: 4px; }
 .nick-ranking li { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
@@ -3714,7 +3778,7 @@ main {
 .board-title h1 {
   margin: 0;
   color: var(--red);
-  font-family: "PanicHand", sans-serif;
+  font-family: "PanicHand", "MilkRun", sans-serif;
   font-size: 96px;
   line-height: 0.95;
   font-weight: 400;
@@ -4063,7 +4127,7 @@ sup {
 }
 
 .hand-addon {
-  font-family: "PanicHand", sans-serif;
+  font-family: "PanicHand", "MilkRun", sans-serif;
   font-size: 0.78em;
   letter-spacing: 0;
   line-height: 1;
@@ -6725,10 +6789,35 @@ body.stagelight .nick-feature {
   border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow); color: var(--sl-ink);
 }
 body.stagelight .nick-feature h2, body.stagelight .nick-feature h3 { color: var(--sl-ink); font-family: var(--sl-display); }
-body.stagelight .nick-feature p, body.stagelight .nick-ranking span { color: var(--sl-muted); }
+body.stagelight .nick-feature p { color: var(--sl-muted); }
 body.stagelight .nick-summary .nick-stat { background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); border-radius: 16px; }
 body.stagelight .nick-summary .nick-stat strong { font-family: var(--sl-mono); color: var(--sl-ink); }
-body.stagelight .nick-progress i { background: var(--green); }
+body.stagelight .nick-progress > div:first-child strong { font-family: var(--sl-mono); font-size: 26px; font-weight: 640; color: var(--sl-ink); }
+body.stagelight .nick-progress > div:first-child span { font-size: 13.5px; color: var(--sl-muted); }
+body.stagelight .nick-progress-track i.is-original { background: var(--green); }
+body.stagelight .nick-progress-track i.is-cover { background: rgba(96, 165, 210, 0.85); }
+body.stagelight .progress-key span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .progress-key .key-original { background: var(--green); }
+body.stagelight .progress-key .key-cover { background: rgba(96, 165, 210, 0.85); }
+body.stagelight .progress-key .key-unplayed { background: rgba(255,255,255,0.18); }
+body.stagelight .nick-ranking-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 6px 0 10px; }
+body.stagelight .nick-ranking-heading h3 { font-size: 17px; font-weight: 640; letter-spacing: 0; }
+body.stagelight .nick-ranking-heading span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .nick-ranking li { padding: 12px 10px; }
+body.stagelight .nick-ranking li:hover { background: rgba(255,255,255,0.025); }
+body.stagelight .nick-rank { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-song { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+body.stagelight .nick-song strong { font-size: 15.5px; font-weight: 600; color: var(--sl-ink); letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.stagelight .nick-song small { font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--sl-faint); text-transform: uppercase; flex: none; }
+body.stagelight .nick-plays { display: flex; align-items: baseline; gap: 6px; justify-self: end; }
+body.stagelight .nick-plays strong { font-family: var(--sl-mono); font-size: 16px; font-weight: 620; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-plays small { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .nick-ranking li.is-zero { opacity: 0.45; }
+body.stagelight .nick-played-panel { margin-top: 18px; border-top: 1px solid var(--sl-line); }
+body.stagelight .nick-played-panel > summary { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 16px 10px 6px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; color: var(--sl-faint); }
+body.stagelight .nick-played-panel > summary:hover { color: var(--sl-ink); }
+body.stagelight .nick-played-panel > summary strong { font-size: 12px; color: var(--sl-muted); }
+body.stagelight .nick-disclosure > summary { width: 100%; }
 
 /* ---- COMMUNITY LINKS ---- */
 body.stagelight .ticket-link {
@@ -6873,6 +6962,51 @@ body.stagelight .show-filter { gap: 12px; }
   body.stagelight .data-toolbar .mobile-sort { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--sl-line-strong); }
   body.stagelight .data-toolbar .mobile-sort span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
 }
+
+/* ---- RARITY FILTER ---- */
+body.stagelight .rarity-filter { position: relative; }
+body.stagelight .rarity-filter > summary {
+  display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px;
+  border-radius: 999px; border: 1px solid var(--sl-line-strong); font-size: 13px; font-weight: 560; color: var(--sl-muted);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+body.stagelight .rarity-filter > summary:hover { color: var(--sl-ink); background: rgba(255,255,255,0.05); }
+body.stagelight .rarity-filter[open] > summary { color: var(--sl-ink); border-color: rgba(255,255,255,0.3); }
+body.stagelight .rarity-filter > summary .sc-chev { position: static; transition: transform 0.2s ease; }
+body.stagelight .rarity-filter[open] > summary .sc-chev { transform: rotate(180deg); }
+body.stagelight .rf-active {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 19px; height: 19px; padding: 0 5px;
+  border-radius: 999px; background: var(--sl-ink); color: #111; font-family: var(--sl-mono); font-size: 11px; font-weight: 640;
+}
+body.stagelight .rf-active[hidden] { display: none; }
+body.stagelight .rarity-pop {
+  position: absolute; top: 48px; left: 0; z-index: 40; min-width: 280px; padding: 10px;
+  border-radius: 16px; background: rgba(19,19,22,0.97); border: 1px solid var(--sl-line-strong);
+  box-shadow: 0 24px 60px -18px rgba(0,0,0,0.85);
+}
+body.stagelight .rf-option {
+  display: grid; grid-template-columns: auto 46px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: 10px; cursor: pointer; font-size: 13.5px; color: var(--sl-ink);
+}
+body.stagelight .rf-option:hover { background: rgba(255,255,255,0.05); }
+body.stagelight .rf-option input {
+  appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0;
+  border: 1.5px solid var(--sl-line-strong); border-radius: 5px; cursor: pointer; position: relative;
+}
+body.stagelight .rf-option input:checked { background: var(--sl-ink); border-color: var(--sl-ink); }
+body.stagelight .rf-option input:checked::after {
+  content: ""; position: absolute; left: 4.5px; top: 1.5px; width: 4px; height: 8px;
+  border: solid #111; border-width: 0 1.8px 1.8px 0; transform: rotate(45deg);
+}
+body.stagelight .rf-option .rarity-symbol { margin: 0; justify-self: start; }
+body.stagelight .rf-count { font-family: var(--sl-mono); font-size: 11.5px; color: var(--sl-faint); font-variant-numeric: tabular-nums; }
+body.stagelight .rf-clear {
+  display: block; width: 100%; margin-top: 6px; padding: 9px 10px; border-top: 1px solid var(--sl-line);
+  font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--sl-faint); text-align: left; border-radius: 0 0 10px 10px;
+}
+body.stagelight .rf-clear:hover { color: var(--sl-ink); }
+@media (max-width: 760px) { body.stagelight .rarity-pop { left: auto; right: 0; } }
 
 body.stagelight .tour-stats { padding: 26px 28px 20px; }
 body.stagelight .tour-table th, body.stagelight .tour-table td,

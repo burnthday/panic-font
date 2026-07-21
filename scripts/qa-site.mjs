@@ -150,7 +150,9 @@ function checkTourStats(html, siteData) {
   assertIncludes(feature, "data-show-filter", "Tour Stats can highlight songs from one selected show");
   assertIncludes(feature, "data-mobile-sort", "Tour Stats has a dedicated mobile sort control");
   for (const type of ["all", "original", "cover"]) assertIncludes(feature, `data-type-filter="${type}"`, `Tour Stats includes the ${type} type filter`);
-  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-l100="(\d+)" data-rarity="(\d+)" data-heat="(\d+)" data-last="([^"]*)" data-type="([^"]+)" data-shows="([^"]*)">/g)]
+  assertIncludes(feature, "data-rarity-filter", "Tour Stats offers a multi-select rarity filter");
+  record("Rarity filter lists every tier present in the table", [...new Set([...feature.matchAll(/data-rarity-tier="([^"]+)"/g)].map((match) => match[1]))].every((tier) => feature.includes(`<input type="checkbox" value="${tier}" data-rarity-option>`)));
+  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-l100="(\d+)" data-rarity="(\d+)" data-rarity-tier="([^"]+)" data-heat="(\d+)" data-last="([^"]*)" data-type="([^"]+)" data-shows="([^"]*)">/g)]
     .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
   record("Tour Stats includes every played song exactly once", rendered.length === songs.length, `${rendered.length} rendered vs ${songs.length} expected`);
   record("Tour Stats defaults to most played with alphabetical tie-breaking", arraysEqual(rendered.map((song) => song.title), songs.map((song) => song.title.toLowerCase())));
