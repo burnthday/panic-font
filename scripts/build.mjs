@@ -2544,12 +2544,188 @@ function renderSongOriginCard(origin, data, albums = []) {
   </a>`;
 }
 
+// ---- "By the Numbers" footer parser (Song Origins) ------------------------
+// Alex's Facebook posts end with a semi-structured, template-driven "by the
+// numbers" footer transcribed as one running blob: a set of "Label: value"
+// stats, resource links, and a "Burnthday's Picks" list. Left alone it renders
+// as an ugly code-dump inside the prose. This parses that footer OUT of the
+// verbatim story so the body no longer shows the dump, and returns the pieces
+// so they can be re-laid-out as a designed data panel. It is conservative:
+//   * The footer is anchored on "# of times played" — the fixed first label of
+//     every post. Absent it, we return null and the story renders unchanged.
+//   * strippedText is everything BEFORE that anchor (the footer is always the
+//     tail), so non-footer prose is never touched.
+//   * The stale duplicates "# of times played" / "First time played" are parsed
+//     but never surfaced — the computed live strip already shows those, and his
+//     transcribed numbers are stale.
+//   * panicstream.* URLs are never emitted (they are stripped sitewide).
+// Values, labels, notes and pick venues are kept verbatim — this re-lays-out
+// his typed data, it does not rewrite it.
+const ORIGIN_FOOTER_STOP = String.raw`(?=\s*(?:# of times played|First time played|Frequency|Longest drought|Most common lead\s?in|Most common lead\s?out|Most common set position|Co-written by|Author|Notes|Editor'?s Footnote|Larry'?s Code|Original Lyrics|Alternate version|Song Credits|Annotated|Lyrics|Chords|Learn the Guitar Solo|Guitar [Tt]ab|Burnthday.?s [Pp]icks|https?://)\b|$)`;
+
+const ORIGIN_ANALYTIC_FIELDS = [
+  ["Frequency", "Frequency"],
+  ["Longest drought", "Longest drought"],
+  ["Most common lead in", "Most common lead\\s?in"],
+  ["Most common lead out", "Most common lead\\s?out"],
+  ["Most common set position", "Most common set position"]
+];
+
+// keyword: url — the resource links Alex embeds (Lyrics / Chords / guitar solo /
+// tab / song credits). The label is just the keyword so it can never swallow the
+// preceding Notes value; the display label is normalised from it.
+const ORIGIN_LINK_KEYWORD = /(Learn the Guitar Solo|Guitar [Tt]ab|Song Credits|Lyrics|Chords)\s*:\s*(https?:\/\/\S+)/gi;
+
+function stripPanicStreamText(value) {
+  return String(value || "")
+    .replace(/(?:https?:\/\/)?(?:www\.)?panicstream\.(?:com|net)\/[^\s"'<>)]*/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function normaliseOriginLinkLabel(keyword) {
+  if (/Solo/i.test(keyword)) return "Learn the guitar solo";
+  if (/Tab/i.test(keyword)) return "Guitar tab";
+  if (/Credits/i.test(keyword)) return "Song credits";
+  if (/Chords/i.test(keyword)) return "Chords";
+  return "Lyrics";
+}
+
+function originPickIso(mmddyy) {
+  const m = /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/.exec(String(mmddyy).trim());
+  if (!m) return "";
+  const [, mo, da, yr] = m;
+  const year = yr.length === 4 ? Number(yr) : (Number(yr) >= 80 ? 1900 + Number(yr) : 2000 + Number(yr));
+  return `${year}-${String(Number(mo)).padStart(2, "0")}-${String(Number(da)).padStart(2, "0")}`;
+}
+
+function parseOriginStatsFooter(text) {
+  const src = String(text || "");
+  const footerStart = src.indexOf("# of times played");
+  if (footerStart < 0) return null;
+  const strippedText = src.slice(0, footerStart).replace(/\s+$/, "");
+  const footer = src.slice(footerStart);
+
+  // 1. Kept analytics (verbatim). Track the end of the whole stats block so the
+  //    notes/picks scan starts safely after the drought/lead-in/out dates.
+  const analytics = [];
+  let statsEnd = 0;
+  for (const [label, pattern] of ORIGIN_ANALYTIC_FIELDS) {
+    const re = new RegExp(pattern + "\\s*:\\s*([\\s\\S]*?)" + ORIGIN_FOOTER_STOP);
+    const m = re.exec(footer);
+    if (!m) continue;
+    const value = String(m[1]).replace(/\s+/g, " ").replace(/[;\s]+$/, "").trim();
+    if (value) {
+      analytics.push({ label, value });
+      statsEnd = Math.max(statsEnd, m.index + m[0].length);
+    }
+  }
+  if (!analytics.length) return null;
+
+  // 2. Resource link chips — panicstream never emitted.
+  const links = [];
+  ORIGIN_LINK_KEYWORD.lastIndex = 0;
+  let lm;
+  while ((lm = ORIGIN_LINK_KEYWORD.exec(footer))) {
+    const url = lm[2].replace(/[),.;]+$/, "");
+    if (/panicstream/i.test(url)) continue;
+    links.push({ label: normaliseOriginLinkLabel(lm[1]), url });
+  }
+
+  // 3. Picks — date + venue + trailing URL. Scanned only after the stats block
+  //    so First-time-played / drought dates are never mistaken for a pick. The
+  //    (scheme-less) URL is only a terminator; it is never emitted.
+  const picks = [];
+  const pickRe = /(\d{1,2}\/\d{1,2}\/\d{2})\s+([\s\S]*?)\s*(?:Link\s*:\s*)?((?:https?:\/\/|www\.)\S+)/g;
+  pickRe.lastIndex = statsEnd;
+  let firstPickIdx = -1;
+  let pm;
+  while ((pm = pickRe.exec(footer))) {
+    if (firstPickIdx < 0) firstPickIdx = pm.index;
+    const venue = stripPanicStreamText(String(pm[2]).replace(/\s+/g, " ").replace(/[;\s]+$/, "").trim());
+    if (!venue) continue;
+    picks.push({ date: pm[1], iso: originPickIso(pm[1]), venue });
+  }
+
+  // 4. Notes — the free text between the stats block and the picks block, with
+  //    the extracted link (keyword: url) segments removed. Preserves Notes /
+  //    Author / Song Credits / JBism etc. verbatim; nothing is dropped.
+  const bHeader = footer.search(/Burnthday.?s [Pp]icks/i);
+  let notesEnd = footer.length;
+  if (firstPickIdx >= 0) notesEnd = Math.min(notesEnd, firstPickIdx);
+  if (bHeader >= 0) notesEnd = Math.min(notesEnd, bHeader);
+  let notes = footer.slice(statsEnd, notesEnd)
+    .replace(ORIGIN_LINK_KEYWORD, "")
+    .replace(/Burnthday.?s [Pp]icks\s*:?\s*$/i, "");
+  notes = stripPanicStreamText(notes).replace(/^Notes\s*:?\s*/i, "").replace(/[;:\s]+$/, "").trim();
+  if (!notes || /^(author|song credits)\s*:?$/i.test(notes)) notes = "";
+
+  return { analytics, links, picks, notes, strippedText };
+}
+
+// Render the parsed footer as the designed "By the Numbers" data panel: a mono
+// eyebrow, the kept analytics as a definition grid (tabular-nums), his notes
+// verbatim, resource chips (Learn-It styling), and the Picks list. panicstream
+// URLs are never emitted; a pick becomes a live "Listen" link only when its ISO
+// date is in the (dormant-by-default) Relisten cache.
+function renderOriginNumbers(footer, data) {
+  if (!footer || (!footer.analytics.length && !footer.links.length && !footer.picks.length && !footer.notes)) return "";
+  const relistenDates = data.relistenDates || new Set();
+
+  const rows = footer.analytics
+    .map((a) => `<div class="on-row"><dt>${escapeHtml(a.label)}</dt><dd>${escapeHtml(a.value)}</dd></div>`)
+    .join("");
+  const grid = rows ? `<dl class="origin-stat-grid">${rows}</dl>` : "";
+
+  const note = footer.notes ? `<p class="origin-numbers-note">${renderLinkedText(footer.notes)}</p>` : "";
+
+  const chips = footer.links
+    .map((l) => {
+      let host = "";
+      try { host = new URL(l.url).hostname.replace(/^www\./i, ""); } catch { host = ""; }
+      return `<a class="learn-chip learn-ext" href="${escapeAttr(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label)} <span class="learn-go" aria-hidden="true">↗</span>${host ? `<small>${escapeHtml(host)}</small>` : ""}</a>`;
+    })
+    .join("");
+  const chipRow = chips ? `<div class="origin-resource-chips song-learn-chips">${chips}</div>` : "";
+
+  let picksBlock = "";
+  if (footer.picks.length) {
+    const items = footer.picks
+      .map((p) => {
+        const dateLong = p.iso ? (formatLongDate(p.iso) || p.date) : p.date;
+        const relistenUrl = p.iso && relistenDates.has(p.iso) ? relistenUrlFor(p.iso) : "";
+        const listen = relistenUrl
+          ? `<a class="origin-pick-listen" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer">Listen ↗</a>`
+          : "";
+        return `<li class="origin-pick${relistenUrl ? " has-relisten" : ""}"><span class="origin-pick-venue">${escapeHtml(p.venue)}</span><span class="origin-pick-meta"><span class="origin-pick-date">${escapeHtml(dateLong)}</span>${listen}</span></li>`;
+      })
+      .join("");
+    picksBlock = `<div class="origin-picks-block">
+            <h3 class="origin-picks-head">Burnthday's Picks</h3>
+            <ul class="origin-picks">${items}</ul>
+          </div>`;
+  }
+
+  return `<section class="origin-numbers" aria-labelledby="origin-numbers-h">
+          <div class="origin-numbers-head">
+            <h2 class="on-eyebrow" id="origin-numbers-h">BY THE NUMBERS</h2>
+            <p class="on-sub">From Burnthday's original post</p>
+          </div>
+          ${grid}
+          ${note}
+          ${chipRow}
+          ${picksBlock}
+        </section>`;
+}
+
 function renderSongOriginPage(origin, origins, data, albums = []) {
   const description = clean(origin.text).slice(0, 180) || `Burnthday Song Origins: ${origin.title}`;
   const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
   const previous = origins[currentIndex - 1] || null;
   const next = origins[currentIndex + 1] || null;
-  const originBody = renderOriginText(origin.text);
+  const statsFooter = parseOriginStatsFooter(origin.text);
+  const originBody = renderOriginText(statsFooter ? statsFooter.strippedText : origin.text);
+  const numbersPanel = statsFooter ? renderOriginNumbers(statsFooter, data) : "";
   const hasLiteEmbed = originBody.includes('class="yt-lite"');
 
   // ---- Computed data join (nothing here is authored in Alex's voice) ----
@@ -2616,6 +2792,7 @@ function renderSongOriginPage(origin, origins, data, albums = []) {
           ${originBody}
           <p class="origin-source"><a href="${escapeAttr(origin.sourceUrl)}">Original Facebook post</a></p>
         </div>
+        ${numbersPanel}
         ${crosslinks}
         <nav class="origin-nav" aria-label="Song origin navigation">
           ${previous ? `<a class="origin-nav-prev" href="/song-origins/${escapeAttr(previous.slug)}/"><span class="onav-dir">← Previous origin</span><span class="onav-title">${escapeHtml(previous.title)}</span></a>` : "<span></span>"}
@@ -9534,6 +9711,34 @@ body.stagelight .origin-source { margin-top: 26px; }
 body.stagelight .origin-source a { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .origin-source a:hover { color: var(--sl-ink); }
 body.stagelight .origin-stats { font-family: var(--sl-mono); font-size: 13.5px; line-height: 1.9; color: var(--sl-ink); background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); padding: 16px 18px; }
+/* "By the Numbers" — the parsed FB footer, re-laid-out as a designed data panel.
+   Sits after the verbatim story, before the crosslink row. */
+body.stagelight .origin-numbers { margin: 40px 0 0; padding-top: 34px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-numbers-head { margin: 0 0 20px; }
+body.stagelight .origin-numbers .on-eyebrow { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 6px; }
+body.stagelight .origin-numbers .on-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-muted); margin: 0; }
+body.stagelight .origin-stat-grid { margin: 0 0 20px; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); background: rgba(255,255,255,0.03); overflow: hidden; }
+body.stagelight .origin-stat-grid .on-row { display: grid; grid-template-columns: minmax(150px, 34%) 1fr; gap: 12px 20px; padding: 12px 18px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-stat-grid .on-row:first-child { border-top: 0; }
+body.stagelight .origin-stat-grid dt { font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); align-self: baseline; }
+body.stagelight .origin-stat-grid dd { margin: 0; font-family: var(--sl-display); font-size: 16px; font-weight: 560; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .origin-numbers-note { font-size: 13.5px; line-height: 1.65; color: var(--sl-muted); margin: 0 0 20px; max-width: 66ch; }
+body.stagelight .origin-numbers-note a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--sl-line-strong); }
+body.stagelight .origin-numbers-note a:hover { color: #fff; }
+body.stagelight .origin-resource-chips { margin: 0 0 24px; }
+body.stagelight .origin-picks-block { margin: 4px 0 0; }
+body.stagelight .origin-picks-head { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 12px; }
+body.stagelight .origin-picks { list-style: none; margin: 0; padding: 0; }
+body.stagelight .origin-pick { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; padding: 11px 0; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-pick:first-child { border-top: 0; }
+body.stagelight .origin-pick-venue { font-family: var(--sl-display); font-size: 15.5px; font-weight: 540; color: var(--sl-ink); flex: 1 1 60%; min-width: 0; }
+body.stagelight .origin-pick-meta { display: inline-flex; align-items: baseline; gap: 14px; flex: 0 0 auto; }
+body.stagelight .origin-pick-date { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.02em; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.stagelight .origin-pick-listen { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-ink); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+body.stagelight .origin-pick-listen:hover { color: #fff; }
+@media (max-width: 620px) {
+  body.stagelight .origin-stat-grid .on-row { grid-template-columns: 1fr; gap: 3px; }
+}
 body.stagelight .origin-crosslinks { display: flex; flex-wrap: wrap; gap: 12px; margin: 40px 0 0; padding-top: 30px; border-top: 1px solid var(--sl-line); }
 body.stagelight .origin-xlink {
   display: inline-flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: var(--sl-r-pill);

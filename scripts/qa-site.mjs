@@ -664,6 +664,32 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
   const expected = siteData.songOrigins?.totalEntries || 0;
   const cardCount = (indexHtml.match(/class="origin-card"/g) || []).length;
   record("Song Origins index lists every origin", expected > 0 && cardCount === expected, `index has ${cardCount} cards, expected ${expected}`);
+
+  // "By the Numbers" panel: Alex's transcribed FB "by the numbers" footer is
+  // parsed OUT of the verbatim prose and re-laid-out as a designed data panel.
+  // The raw "Label: value" code-dump must be gone from the story body, and the
+  // panel must carry his unique analytics verbatim. The stale duplicates
+  // (# of times played / First time played) are intentionally NOT surfaced.
+  const withPanel = originPages.filter((p) => p.html.includes("BY THE NUMBERS"));
+  record("Song Origins render a By the Numbers panel from the FB footer", withPanel.length > 0, `${withPanel.length}/${originPages.length} origins got a panel`);
+
+  const alg = originPages.find((p) => p.file.includes(`song-origins${path.sep}ain-t-life-grand${path.sep}`));
+  record("Ain't Life Grand origin page exists for the By the Numbers check", Boolean(alg), alg ? path.relative(root, alg.file) : "not found");
+  if (alg) {
+    // The raw stat code-dump is gone from the verbatim story body.
+    const bodyStart = alg.html.indexOf('class="origin-body');
+    const bodyEnd = alg.html.indexOf('class="origin-numbers"');
+    const storyBody = bodyStart >= 0 && bodyEnd > bodyStart ? alg.html.slice(bodyStart, bodyEnd) : alg.html;
+    record("Ain't Life Grand story body no longer shows the raw stat code-dump", !/# of times played/.test(storyBody) && !/523/.test(storyBody), "raw '# of times played: 523' dump still present in prose");
+    // The panel carries his unique analytics verbatim.
+    record("Ain't Life Grand By the Numbers panel is present", alg.html.includes("BY THE NUMBERS"));
+    record("Ain't Life Grand panel shows Frequency and Most common lead in", /<dt>Frequency<\/dt>/.test(alg.html) && /Most common lead in/.test(alg.html), "analytic rows missing");
+    record("Ain't Life Grand panel keeps his lead-in value verbatim", alg.html.includes("West Virginia (44 times)"), "verbatim lead-in value missing");
+    // The stale duplicates are dropped (never surfaced in the panel).
+    record("Ain't Life Grand panel drops the stale # of times played / First time played", !/# of times played/.test(alg.html) && !alg.html.includes(">First time played<"), "stale duplicate rows leaked into the panel");
+    // The computed live strip still shows the accurate plays count.
+    record("Ain't Life Grand live strip still shows the computed plays", /<strong>[\d,]+<\/strong><span>lifetime plays/.test(alg.html), "computed lifetime plays tile missing");
+  }
 }
 
 // Lyrics & Chords: the hub is a searchable, designed index (not a raw link list)
