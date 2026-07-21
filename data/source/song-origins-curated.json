@@ -375,7 +375,7 @@
       "writtenBy": "Vic Chesnutt",
       "firstPlayed": "9/9/95",
       "album": "Bombs & Butterflies (1997)",
-      "text": "The other Vic Chesnutt song — and the one that stuck. Panic debuted their reading of the Athens songwriter's tune on 9/9/95 and it settled in as a fixture; the studio version landed on Bombs & Butterflies (1997). The 1997 video is a genuine curio: it was directed by Billy Bob Thornton.",
+      "text": "The other Vic Chesnutt song — and the one that stuck. Panic debuted their reading of the Athens songwriter's tune on 9/9/95 and it settled in as a fixture; the studio version landed on Bombs & Butterflies (1997). The 1997 video is a genuine curio: it was directed by Billy Bob Thornton. Thornton was no stranger to the band — he'd also directed a 1991 Widespread Panic documentary — and the clip, shot in Arkansas, roped in Laura Dern and Vic Chesnutt himself.",
       "sources": [
         {
           "label": "Everyday Companion — Song Histories",
@@ -386,6 +386,10 @@
           "label": "Debut date & Billy Bob Thornton-directed video",
           "publisher": "JamBase",
           "url": "https://www.jambase.com/article/widespread-panic-performs-aunt-avis-late-night-conan-obrien-date-1997"
+        },
+        {
+          "label": "Billy Bob Thornton video details (Laura Dern; Arkansas; 1991 WSP documentary)",
+          "publisher": "Centerstage (2001) & South Bend Tribune (1997), via Spreadnet"
         }
       ],
       "order": 18,
@@ -419,12 +423,15 @@
       "writtenBy": "Daniel Hutchens & Eric Carter (Bloodkin)",
       "firstPlayed": "1/27/89",
       "album": "Everyday (1993)",
-      "text": "It landed on Panic's Everyday (1993), but the song belongs to Bloodkin — the Athens songwriting outfit of Daniel Hutchens and Eric Carter, longtime friends of the band whose catalog Panic raided more than once. A cover on paper; a family affair in practice.",
+      "text": "It landed on Panic's Everyday (1993), but the song belongs to Bloodkin — the Athens songwriting outfit of Daniel Hutchens and Eric Carter, longtime friends of the band whose catalog Panic raided more than once. A cover on paper; a family affair in practice. Dave Schools puts the subject matter plainly: it's a song about a very, very bad man.",
       "sources": [
         {
           "label": "Everyday Companion — Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp"
+        },
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
         }
       ],
       "order": 20,
@@ -602,6 +609,203 @@
       "order": 28,
       "sourceUrl": "https://www.jambase.com/article/widespread-panic-debut-single-reissue",
       "image": ""
+    },
+    {
+      "title": "Wondering",
+      "slug": "wondering",
+      "type": "Original",
+      "writtenBy": "Michael Houser",
+      "firstPlayed": "2/7/92",
+      "album": "Everyday (1993)",
+      "text": "A Michael Houser song the band sat on for a while — nobody quite knew what to do with it until the Everyday sessions, when they finally wrestled it into shape in the studio. Dave Schools has said the take that made the record came somewhere around the forty-eighth pass; they just kept hammering at the arrangement until it clicked. First played 2/7/92.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 29,
+      "image": "",
+      "sourceUrl": ""
+    },
+    {
+      "title": "Pilgrims",
+      "slug": "pilgrims",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "9/14/92",
+      "text": "A quiet, hypnotic one. Dave Schools holds a single low pedal tone underneath while the chords shift overhead — which is exactly the spell it casts. He's described it as a song about riding town to town: one radio station fading out as the next fades in, until the radio itself becomes the song. Road music in the truest sense. First played 9/14/92.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 30,
+      "image": "",
+      "sourceUrl": ""
+    },
+    {
+      "title": "Makes Sense To Me",
+      "slug": "makes-sense-to-me",
+      "type": "Cover",
+      "writtenBy": "Daniel Hutchens (Bloodkin)",
+      "firstPlayed": "4/1/91",
+      "text": "Another one out of the Bloodkin songbook. Danny Hutchens wrote it for his own band, then decided it sounded more like Widespread than Bloodkin — so he handed it over, and it's been in Panic's hands ever since. First played 4/1/91.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "Everyday Companion — Covers index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+        }
+      ],
+      "mode": "new",
+      "order": 31,
+      "image": "",
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+    },
+    {
+      "title": "Can't Get High",
+      "slug": "cant-get-high",
+      "type": "Cover",
+      "writtenBy": "Daniel Hutchens (Bloodkin)",
+      "firstPlayed": "7/9/93",
+      "text": "One more Danny Hutchens / Bloodkin tune — and, briefly, a real calling card. It was the band's radio single, the song they took to Late Night with Conan O'Brien in 1995, horn section and all. Schools boils the lyric down to the ache of not being able to feel any elation because whatever you'd need for it — a person, a pet, some sleep — just isn't there. First played 7/9/93.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "JoJo Hermann interview, 4/15/95 (Conan single)",
+          "publisher": "via Spreadnet"
+        },
+        {
+          "label": "Everyday Companion — Covers index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+        }
+      ],
+      "mode": "new",
+      "order": 32,
+      "image": "",
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+    },
+    {
+      "title": "Junior",
+      "slug": "junior",
+      "type": "Cover",
+      "writtenBy": "Junior Kimbrough",
+      "firstPlayed": "4/9/93",
+      "text": "Not one song but a medley — Panic's stitch-up of two or three tunes by the north Mississippi hill-country blues great Junior Kimbrough. Schools has called it a pure rocket-blues song. A deep-South nod dropped square into the middle of a set. First played 4/9/93.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "Everyday Companion — Covers index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+        }
+      ],
+      "mode": "new",
+      "order": 33,
+      "image": "",
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+    },
+    {
+      "title": "Love Tractor",
+      "slug": "love-tractor",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "6/16/89",
+      "text": "Named, affectionately, after another band. Panic had a lick they liked to jam on that kept coming out sounding like the great '80s Athens group Love Tractor — so much so that they just called it “That Love Tractor Thing” until JB built it into an actual song about, fittingly, a guy who loves riding his tractor. One of the most-played things in the entire catalog. First played 6/16/89.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 34,
+      "image": "",
+      "sourceUrl": ""
+    },
+    {
+      "title": "Dream Song",
+      "slug": "dream-song",
+      "type": "Original",
+      "writtenBy": "Michael Houser",
+      "firstPlayed": "3/13/92",
+      "text": "A lullaby, and a tender one: Michael Houser wrote it for his son, Waker, when Waker was a baby. Dave Schools plays fretless on it — a soft touch for a soft song. First played 3/13/92.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 35,
+      "image": "",
+      "sourceUrl": ""
+    },
+    {
+      "title": "Little Kin",
+      "slug": "little-kin",
+      "type": "Original",
+      "writtenBy": "John Bell",
+      "firstPlayed": "4/24/93",
+      "text": "One of JB's, and — by his bandmate's own account — a deeply personal one, the kind Dave Schools says he won't try to explain too far. Schools has admitted it lands hard for him as an adopted child: the wrenching cry near the end, the image of a child who's inherited a parent's eyes and a parent's hands. A slab of raw funk carrying a whole lot of feeling. First played 4/24/93.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 36,
+      "image": "",
+      "sourceUrl": ""
+    },
+    {
+      "title": "Vacation",
+      "slug": "vacation",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "9/15/86",
+      "text": "One of the great lost-in-plain-sight Panic songs. By 1997 they'd been playing “Vacation” live, on and off, for the better part of eight years — and had still never recorded it. It nearly made Bombs & Butterflies: the band cut one take, John Keane came back over the monitor to report it had run nine and a half minutes, and that was that. Too big to fit on a record. First played all the way back on 9/15/86.",
+      "sources": [
+        {
+          "label": "Dave Schools, The Music Monitor #94 (Pat Lall), May 1997, via Spreadnet"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 37,
+      "image": "",
+      "sourceUrl": ""
     }
   ]
 }
