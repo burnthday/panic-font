@@ -483,9 +483,10 @@ async function checkLegacyPages(siteData) {
   record("Shelf page omits duplicate live counters", !/on The Shelf<\/span>|in Purgatory<\/span>|show cutoff<\/span>/.test(shelf));
   record("Shelf page preserves historical updates after the current additions", indexOf(shelf, `Spring ${siteData.site.year} New Additions To The Shelf`) < indexOf(shelf, "Previous Shelf Updates") && /The Shelf Updated: April 1st, 2019/.test(shelfText));
   record("Primary archive pages omit migration eyebrows", !rumors.includes("<p>The Widespread Panic Spread Sheet</p>") && !tourReview.includes("<p>The Widespread Panic Spread Sheet</p>"));
-  for (const [label, html] of [["Rumors", rumors], ["Tour In Review", tourReview], ["The Shelf", shelf]]) {
-    assertIncludes(html, 'document.querySelectorAll(".jump-links a, .mobile-nav-links a")', `${label} page initializes its active navigation state`);
-    assertIncludes(html, 'path === "/index" ? "/" : path', `${label} page normalizes the legacy homepage URL`);
+  for (const [label, html] of [["Rumors", rumors], ["Tour In Review", tourReview], ["The Shelf", shelf], ["Privacy", privacy]]) {
+    assertIncludes(html, 'class="stagelight"', `${label} page uses the Stagelight dark shell`);
+    assertIncludes(html, 'id="mega-menu"', `${label} page carries the shared mega menu`);
+    assertIncludes(html, 'href="/stagelight.css"', `${label} page loads the Stagelight stylesheet`);
   }
 }
 

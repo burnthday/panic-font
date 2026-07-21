@@ -90,7 +90,7 @@ async function main() {
   await copyAssets();
   await writeBloggerArchive(archiveEntries, siteData);
   await writeModernArchivePages(archiveEntries, siteData);
-  await writeSongOrigins(songOrigins);
+  await writeSongOrigins(songOrigins, siteData);
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
   await writePrivacyPage(siteData);
@@ -1217,13 +1217,14 @@ async function writeModernArchivePages(entries, data) {
   }
 }
 
-async function writeSongOrigins(origins) {
+async function writeSongOrigins(origins, data) {
   if (!origins.length) return;
 
   await writeStaticPage("/song-origins/index.html", renderSongOriginsIndex(origins, {
-    canonicalPath: "/song-origins/"
+    canonicalPath: "/song-origins/",
+    data
   }));
-  await Promise.all(origins.map((origin) => writeStaticPage(`/song-origins/${origin.slug}/index.html`, renderSongOriginPage(origin, origins))));
+  await Promise.all(origins.map((origin) => writeStaticPage(`/song-origins/${origin.slug}/index.html`, renderSongOriginPage(origin, origins, data))));
 }
 
 async function writeStaticPage(pagePath, html) {
@@ -1311,10 +1312,10 @@ function renderNotFoundPage(data) {
     <title>Page Not Found | Burnthday</title>
     <meta name="description" content="That Burnthday page could not be found.">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page">
         <header class="archive-title"><p>404</p><h1>Page Not Found</h1></header>
@@ -1322,7 +1323,7 @@ function renderNotFoundPage(data) {
         <p><a href="/">Current Song List</a> <span>|</span> <a href="/archive/">Burnthday Archive</a></p>
       </article>
     </main>
-    ${renderSiteFooter(data)}
+    ${renderSiteFooter(data, { stagelight: true })}
   </body>
 </html>`;
 }
@@ -1352,10 +1353,10 @@ function renderPrivacyPage(data) {
     <link rel="canonical" href="https://burnthday.com/privacy/">
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page privacy-page">
         <header class="archive-title">
@@ -1374,7 +1375,7 @@ function renderPrivacyPage(data) {
         </div>
       </article>
     </main>
-    ${renderSiteFooter(data)}
+    ${renderSiteFooter(data, { stagelight: true })}
   </body>
 </html>`;
 }
@@ -1509,10 +1510,10 @@ function renderArchivePage(entry, data) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page">
         ${entry.pageGraphic
@@ -1527,7 +1528,7 @@ function renderArchivePage(entry, data) {
         </div>
       </article>
     </main>
-    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
+    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } }, { stagelight: true })}
   </body>
 </html>
 `;
@@ -1601,10 +1602,10 @@ function renderShelfInfoPage(data, oldShelfEntry) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page shelf-info-page">
         ${renderPageGraphicTitle("The Shelf", "shelf.png")}
@@ -1616,7 +1617,7 @@ function renderShelfInfoPage(data, oldShelfEntry) {
         ${historicalContent ? `<section class="legacy-shelf-notes"><h2>Previous Shelf Updates</h2><div class="archive-content">${historicalContent}</div></section>` : ""}
       </article>
     </main>
-    ${renderSiteFooter(data)}
+    ${renderSiteFooter(data, { stagelight: true })}
   </body>
 </html>
 `;
@@ -1643,17 +1644,17 @@ function renderRumorsPage(data, oldRumorsEntry) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page rumors-page">
         ${renderPageGraphicTitle("Rumors", "crystalball.png")}
         <div class="archive-content">${removeFirstArchiveGraphic(oldRumorsEntry?.content || "", "crystalball.png")}</div>
       </article>
     </main>
-    ${renderSiteFooter(data)}
+    ${renderSiteFooter(data, { stagelight: true })}
   </body>
 </html>
 `;
@@ -1687,10 +1688,10 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page tour-review-hub">
         ${renderPageGraphicTitle("Tour In Review", "BTD-1_zps89a85566.png")}
@@ -1700,7 +1701,7 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
         ${oldEntry?.content ? `<div class="archive-content">${removeFirstArchiveGraphic(oldEntry.content, "BTD-1_zps89a85566.png")}</div>` : ""}
       </article>
     </main>
-    ${renderSiteFooter(data)}
+    ${renderSiteFooter(data, { stagelight: true })}
   </body>
 </html>
 `;
@@ -1720,10 +1721,10 @@ function renderGeneratedTourReviewPage(review, data) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="tour-review-main">
       <section class="laminate primary-board tour-review-sheet" id="song-list">
         ${renderBoardHeader(`${review.year} TOUR`)}
@@ -1753,6 +1754,7 @@ function renderGeneratedTourReviewPage(review, data) {
 
 function renderSongOriginsIndex(origins, options = {}) {
   const canonicalPath = options.canonicalPath || "/song-origins/";
+  const data = options.data;
   const description = "Widespread Panic song origins, histories, notes, and Burnthday picks.";
   return `<!doctype html>
 <html lang="en">
@@ -1765,10 +1767,10 @@ function renderSongOriginsIndex(origins, options = {}) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main origins-main">
       <section class="archive-index origin-index">
         <header class="origin-hero">
@@ -1783,7 +1785,7 @@ function renderSongOriginsIndex(origins, options = {}) {
         </div>
       </section>
     </main>
-    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } })}
+    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } }, { stagelight: true })}
   </body>
 </html>
 `;
@@ -1797,7 +1799,7 @@ function renderSongOriginCard(origin) {
   </a>`;
 }
 
-function renderSongOriginPage(origin, origins) {
+function renderSongOriginPage(origin, origins, data) {
   const description = clean(origin.text).slice(0, 180) || `Burnthday Song Origins: ${origin.title}`;
   const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
   const previous = origins[currentIndex - 1] || null;
@@ -1814,15 +1816,15 @@ function renderSongOriginPage(origin, origins) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
       ["Home", "https://burnthday.com/"],
       ["Song Origins", "https://burnthday.com/song-origins/"],
       [origin.title, `https://burnthday.com/song-origins/${origin.slug}/`]
     ])}</script>
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main origins-main">
       <article class="archive-page origin-page">
         <nav class="origin-back"><a href="/song-origins/">Song Origins</a></nav>
@@ -1842,7 +1844,7 @@ function renderSongOriginPage(origin, origins) {
         </nav>
       </article>
     </main>
-    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } })}
+    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } }, { stagelight: true })}
   </body>
 </html>
 `;
@@ -1943,10 +1945,10 @@ function renderArchiveListPage({ title, deck, canonicalPath, noindex = false, en
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <section class="archive-index">
         <header class="archive-title">
@@ -1962,7 +1964,7 @@ function renderArchiveListPage({ title, deck, canonicalPath, noindex = false, en
         </ol>
       </section>
     </main>
-    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
+    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } }, { stagelight: true })}
   </body>
 </html>
 `;
@@ -1978,14 +1980,14 @@ function renderRedirectPage({ title, targetPath, data }) {
     <title>${escapeHtml(title)} | Burnthday</title>
     <link rel="canonical" href="https://burnthday.com${escapeAttr(targetPath)}">
   </head>
-  <body>
-    ${renderSiteHeader()}
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page">
         <p><a href="${escapeAttr(targetPath)}">${escapeHtml(title)}</a></p>
       </article>
     </main>
-    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } })}
+    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } }, { stagelight: true })}
   </body>
 </html>
 `;
@@ -3382,6 +3384,14 @@ function extractCssBlocks(css, keys) {
 
 const SHEET_CSS_KEYS = ["laminate", "primary-board", "primary-header", "board-title", "marker-num", "marker-wrap", "marker-text", "song-panel", ".songs", ".col", ".nums", "rotation-song", "shelf-board", "purgatory-board", "woodshed-board", "header-row", "shelf-addition", "handwritten"];
 
+// Structural classes used only by the secondary content pages. Hoisted out of
+// the .laminate scope in renderStagelightCss so those pages keep their layout.
+const CONTENT_PAGE_CSS_KEYS = [
+  ".archive-main", ".archive-page", ".archive-content", ".archive-index", ".archive-title", ".archive-list", ".archive-tags",
+  ".page-graphic-title", ".origin", ".shelf-info-page", ".shelf-current-update", ".legacy-shelf-notes", ".shelf-addition-group",
+  ".rumors-page", ".tour-review", ".current-review-link", ".privacy-page", ".movement-", ".setlist-grid", ".setlist-card", ".setlist-image", ".setlist-text", ".setlist-copy", ".setlist-feature"
+];
+
 function renderStagelightCss() {
   const base = renderCss();
   const marker = "/* ============================================================\n   STAGELIGHT";
@@ -3391,8 +3401,12 @@ function renderStagelightCss() {
   const fonts = (legacy.match(/@font-face[^}]*}/g) || []).join("\n");
   const rootBlock = legacy.slice(legacy.indexOf(":root {"), legacy.indexOf("}", legacy.indexOf(":root {")) + 1);
   const sheetSelf = extractCssBlocks(legacy, [".laminate"]);
+  // Content pages (archive, origins, shelf, rumors, tour-in-review, privacy)
+  // keep their legacy structure but at top level, so it isn't trapped in the
+  // .laminate scope. body.stagelight overrides below recolor them for dark.
+  const contentSelf = extractCssBlocks(legacy, CONTENT_PAGE_CSS_KEYS);
   const legacyScoped = `.laminate {\n${legacy.replace(/@font-face[^}]*}/g, "").replace(/:root\s*\{[^}]*\}/g, "")}\n}`;
-  return `${fonts}\n${rootBlock}\n${STAGELIGHT_STRUCTURE}\n${sheetSelf}\n${legacyScoped}\n${overrides}`;
+  return `${fonts}\n${rootBlock}\n${STAGELIGHT_STRUCTURE}\n${sheetSelf}\n${contentSelf}\n${legacyScoped}\n${overrides}`;
 }
 
 const STAGELIGHT_STRUCTURE = `
@@ -7140,6 +7154,121 @@ body.stagelight .woodshed-board::before,
 body.stagelight .purgatory-board::before {
   content: ""; position: absolute; inset: -60px -30px; z-index: -1; pointer-events: none;
   background: radial-gradient(58% 50% at 50% 44%, rgba(255,243,224,0.14), rgba(255,243,224,0.045) 55%, transparent 78%);
+}
+
+/* ============================================================
+   STAGELIGHT — SECONDARY CONTENT PAGES (archive, origins,
+   shelf, rumors, tour-in-review, privacy). Legacy structure is
+   hoisted out of .laminate above; here we recolor for dark.
+   ============================================================ */
+/* strip the legacy white "paper card" wrapper so dark text/glass read right */
+body.stagelight .archive-page, body.stagelight .archive-index {
+  background: transparent; border: 0; border-radius: 0; padding: 0;
+}
+body.stagelight .archive-main { width: min(760px, calc(100% - 48px)); margin: 56px auto 0; color: var(--sl-ink); }
+body.stagelight .origins-main, body.stagelight .tour-review-main { width: min(1180px, calc(100% - 48px)); }
+body.stagelight .archive-page { color: var(--sl-ink); }
+body.stagelight .origin-hero { border-bottom: 1px solid var(--sl-line); padding-bottom: 26px; }
+
+/* page titles: hide the light-on-transparent graphic PNGs, promote the h1 */
+body.stagelight .page-graphic-title { display: block; margin: 8px 0 40px; }
+body.stagelight .page-graphic-title img { display: none; }
+body.stagelight .page-graphic-title h1,
+body.stagelight .archive-title h1 {
+  position: static; width: auto; height: auto; clip: auto; margin: 0;
+  font-family: var(--sl-display); font-weight: 660; font-size: clamp(34px, 5vw, 52px);
+  letter-spacing: -0.02em; line-height: 1.04; color: var(--sl-ink);
+}
+body.stagelight .archive-title { margin-bottom: 34px; border-bottom: 1px solid var(--sl-line); padding-bottom: 24px; }
+body.stagelight .archive-title p { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 12px; }
+body.stagelight .archive-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+body.stagelight .archive-tags span { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); border: 1px solid var(--sl-line-strong); border-radius: 999px; padding: 5px 12px; }
+
+/* imported Blogger prose */
+body.stagelight .archive-content { color: var(--sl-muted); font-size: 16.5px; line-height: 1.7; }
+body.stagelight .archive-content p { margin: 0 0 18px; color: var(--sl-muted); }
+body.stagelight .archive-content h2, body.stagelight .archive-content h3, body.stagelight .archive-content h4 { font-family: var(--sl-display); color: var(--sl-ink); letter-spacing: -0.01em; margin: 34px 0 14px; line-height: 1.15; }
+body.stagelight .archive-content h2 { font-size: 24px; }
+body.stagelight .archive-content h3 { font-size: 20px; }
+body.stagelight .archive-content a { color: var(--sl-ink); text-decoration: underline; text-decoration-color: var(--sl-line-strong); text-underline-offset: 3px; }
+body.stagelight .archive-content a:hover { text-decoration-color: var(--sl-ink); }
+body.stagelight .archive-content ul, body.stagelight .archive-content ol { margin: 0 0 18px; padding-left: 22px; list-style: revert; }
+body.stagelight .archive-content li { margin: 0 0 7px; }
+body.stagelight .archive-content img { border-radius: 12px; border: 1px solid var(--sl-line); margin: 8px 0; height: auto; }
+body.stagelight .archive-content blockquote { border-left: 2px solid var(--sl-line-strong); margin: 0 0 18px; padding: 4px 0 4px 20px; color: var(--sl-faint); font-style: italic; }
+body.stagelight .archive-content hr { border: 0; border-top: 1px solid var(--sl-line); margin: 30px 0; }
+body.stagelight .archive-content table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 14.5px; }
+body.stagelight .archive-content th, body.stagelight .archive-content td { border-bottom: 1px solid var(--sl-line); padding: 10px 12px; text-align: left; }
+body.stagelight .archive-content strong, body.stagelight .archive-content b { color: var(--sl-ink); }
+
+/* archive + tour-review index lists */
+body.stagelight .archive-index .archive-title p { text-transform: none; font-family: var(--ui-font); font-size: 15px; letter-spacing: 0; color: var(--sl-muted); }
+body.stagelight .archive-list { display: grid; gap: 2px; }
+body.stagelight .archive-list li { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: baseline; gap: 6px 18px; padding: 16px 6px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .archive-list a { font-size: 17px; font-weight: 540; color: var(--sl-ink); }
+body.stagelight .archive-list a:hover { color: #fff; }
+body.stagelight .archive-list span { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
+body.stagelight .archive-list em { grid-column: 1 / -1; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); font-style: normal; }
+body.stagelight .current-review-link { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
+body.stagelight .current-review-link div { padding: 18px 22px; border-radius: 16px; background: var(--sl-glass); border: 1px solid var(--sl-line); }
+body.stagelight .current-review-link a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* shelf info page */
+body.stagelight .shelf-current-update h2, body.stagelight .legacy-shelf-notes h2 { font-family: var(--sl-display); color: var(--sl-ink); font-size: 24px; margin: 30px 0 16px; }
+body.stagelight .shelf-addition-group { margin-bottom: 20px; }
+body.stagelight .shelf-addition-group h3 { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 10px; }
+body.stagelight .shelf-addition-group ul { padding-left: 20px; list-style: disc; color: var(--sl-muted); }
+body.stagelight .shelf-addition-group li { margin-bottom: 5px; }
+body.stagelight .legacy-shelf-notes { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--sl-line); }
+
+/* origins index hero + grid */
+body.stagelight .origin-hero { display: flex; align-items: center; gap: 26px; margin: 40px 0 44px; }
+body.stagelight .origin-fish { width: 110px; height: auto; flex: none; opacity: 0.92; }
+body.stagelight .origin-hero h1 { font-family: var(--sl-display); font-weight: 660; font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.02em; color: var(--sl-ink); margin: 0; }
+body.stagelight .origin-hero span { display: block; margin-top: 12px; font-size: 15px; line-height: 1.6; color: var(--sl-muted); max-width: 640px; }
+body.stagelight .origin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+body.stagelight .origin-card {
+  display: block; padding: 0; overflow: hidden; border-radius: var(--sl-r); color: var(--sl-ink);
+  background: var(--sl-glass); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+body.stagelight .origin-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.22); }
+body.stagelight .origin-card img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border: 0; border-radius: 0; margin: 0; }
+body.stagelight .origin-card span { display: block; font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); padding: 16px 18px 0; }
+body.stagelight .origin-card strong { display: block; font-family: var(--sl-display); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; padding: 4px 18px 18px; }
+
+/* single origin page */
+body.stagelight .origin-back { margin-bottom: 20px; }
+body.stagelight .origin-back a, body.stagelight .origin-source a { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .origin-back a:hover, body.stagelight .origin-source a:hover { color: var(--sl-ink); }
+body.stagelight .origin-title { border: 0; padding: 0; margin-bottom: 26px; }
+body.stagelight .origin-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 36px; align-items: start; }
+body.stagelight .origin-image img { width: 100%; border-radius: var(--sl-r); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow); }
+body.stagelight .origin-body { color: var(--sl-muted); font-size: 16.5px; line-height: 1.7; }
+body.stagelight .origin-body p { margin: 0 0 16px; }
+body.stagelight .origin-body a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; word-break: break-word; }
+body.stagelight .origin-stats { font-family: var(--sl-mono); font-size: 13px; line-height: 1.9; color: var(--sl-ink); background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); border-radius: 14px; padding: 16px 18px; }
+body.stagelight .origin-source { margin-top: 24px; }
+body.stagelight .origin-nav { display: flex; justify-content: space-between; gap: 16px; margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-nav a { font-size: 15px; color: var(--sl-muted); }
+body.stagelight .origin-nav a:hover { color: var(--sl-ink); }
+
+/* tour-in-review generated page: setlist card grid */
+body.stagelight .setlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+body.stagelight .setlist-card {
+  overflow: hidden; border-radius: var(--sl-r); color: var(--sl-ink);
+  background: var(--sl-glass); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+}
+body.stagelight .setlist-card .setlist-image img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border: 0; }
+body.stagelight .setlist-card .setlist-text, body.stagelight .setlist-card .setlist-copy { padding: 18px 20px; color: var(--sl-ink); }
+body.stagelight .setlist-card h3, body.stagelight .setlist-feature h3 { font-family: var(--sl-display); color: var(--sl-ink); }
+body.stagelight .setlist-card p { color: var(--sl-muted); font-size: 14px; }
+body.stagelight .setlist-card a { color: var(--sl-ink); }
+
+@media (max-width: 760px) {
+  body.stagelight .origin-layout { grid-template-columns: 1fr; gap: 22px; }
+  body.stagelight .origin-hero { flex-direction: column; align-items: flex-start; gap: 18px; }
+  body.stagelight .archive-main { margin-top: 40px; }
 }
 
 `;
