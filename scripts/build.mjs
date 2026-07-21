@@ -1267,6 +1267,14 @@ async function writeModernArchivePages(entries, data) {
       await writeStaticPage(page.path, renderLyricsChordsIndex(entries, data, { ...entry, ...page }));
       continue;
     }
+    // The About page is the site's E-E-A-T anchor: Alex's authority bio, the
+    // noob FAQ, and Person/Dataset/FAQPage structured data. Rendered from a
+    // dedicated template instead of the legacy Blogger prose.
+    if (page.path === "/about/index.html") {
+      const setlistFmCache = await loadSetlistFmCache();
+      await writeStaticPage(page.path, renderAboutPage({ ...entry, ...page }, data, setlistFmCache));
+      continue;
+    }
     await writeStaticPage(page.path, renderArchivePage({ ...entry, ...page }, data));
   }
 }
@@ -1294,6 +1302,224 @@ function collectLyricRows(data) {
     };
   }).sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
 }
+
+// ---- ABOUT PAGE (E-E-A-T authority anchor) ----
+// The About page carries the site's author identity: who runs Burnthday, the
+// documented music-industry work behind it, a plain-English FAQ for people new
+// to the rotation, and Person + Dataset + FAQPage structured data so crawlers
+// and AI models can bind the site, the dataset, and Alex into one entity.
+// Narrative facts come from Alex directly; corroborated credits (TRI Studios,
+// HWA 2013-2018, the People.com Band of Heathens credit) are documented in his
+// business records. Stats are computed from live site data, never hardcoded.
+
+const ABOUT_FAQ = [
+  {
+    q: "What is Burnthday?",
+    a: "Burnthday is an independent Widespread Panic fan site, running since June 2007. It tracks the working song list, setlists, tour stats, albums, lyrics, and song origins. It is not affiliated with the band."
+  },
+  {
+    q: "How does the Widespread Panic song rotation work?",
+    a: "Widespread Panic rarely repeats a song within a run of shows. After each show, Burnthday crosses off every song played in the last four shows. What is left uncrossed is the pool the band is most likely drawing from tonight. That cross-off sheet is the heart of the site."
+  },
+  {
+    q: "What is a bustout?",
+    a: "A bustout is a song the band brings back after a long absence. On Burnthday, a song that returns after 200 or more shows counts as a Bustout, and after 1,000 or more shows it is a Mega Bustout. Songs that have gone 200 shows without being played live on The Shelf."
+  },
+  {
+    q: "Where does the data come from?",
+    a: "Three places. The master spreadsheet holds the song classifications and the working list. Everyday Companion is the reference for song histories. Setlist.fm supplies the complete performance log, every show back to 1985. All of it is cross-checked before it ships."
+  },
+  {
+    q: "Is Burnthday affiliated with Widespread Panic?",
+    a: "No. Burnthday is a fan project, built and paid for by one fan since 2007. Band members have been kind about it over the years, but the site is independent."
+  },
+  {
+    q: "How often is the site updated?",
+    a: "After every show. Setlists land, the cross-off sheet gets reworked, and the tour stats recompute. Between tours the data layers refresh on a schedule."
+  }
+];
+
+function aboutStats(data, cache) {
+  const catalog = Array.isArray(data.catalog) ? data.catalog.length : 0;
+  // songOrigins isn't attached to siteData until later in main(); the
+  // originsByTitle map (built before modern pages render) carries the count.
+  const origins = Array.isArray(data.songOrigins)
+    ? data.songOrigins.length
+    : (data.originsByTitle instanceof Map ? data.originsByTitle.size : 0);
+  const albums = Array.isArray(data.albums) ? data.albums.length : 0;
+  const buildYear = new Date(data.generatedAt || Date.now()).getFullYear();
+  const years = buildYear - 2007;
+  const shows = cache && Number.isFinite(cache.showCount) ? cache.showCount : 0;
+  const performances = cache && Number.isFinite(cache.songPerformances) ? cache.songPerformances : 0;
+  let firstShow = "";
+  let lastShow = "";
+  if (cache && Array.isArray(cache.shows)) {
+    for (const show of cache.shows) {
+      if (!show?.date) continue;
+      if (!firstShow || show.date < firstShow) firstShow = show.date;
+      if (!lastShow || show.date > lastShow) lastShow = show.date;
+    }
+  }
+  return { catalog, origins, albums, years, shows, performances, firstShow, lastShow };
+}
+
+function renderAboutJsonLd(stats) {
+  const person = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "@id": "https://burnthday.com/about/#alex-moura",
+    name: "Alex Moura",
+    url: "https://burnthday.com/about/",
+    image: "https://burnthday.com/assets/archive-media/Alex-1_zps04c65eda.png",
+    jobTitle: "Creator of Burnthday",
+    description: "Alex Moura, creator of Burnthday, the Widespread Panic tour song list and data spreadsheet. Music-industry digital strategist: Hard Working Americans at TRI Studios, JoJo Hermann, Jerry Joseph, Todd Snider, Trondossa Music Festival.",
+    worksFor: {
+      "@type": "Organization",
+      name: "Digital Star Marketing",
+      url: "https://www.digitalstarmarketing.com/"
+    },
+    alumniOf: "University of North Carolina Wilmington",
+    knowsAbout: [
+      "Widespread Panic",
+      "concert setlists",
+      "live music data",
+      "song rotation analysis",
+      "music marketing"
+    ],
+    sameAs: [
+      "https://www.facebook.com/alexmoura",
+      "https://www.facebook.com/burnthday",
+      "https://twitter.com/burnthday",
+      "https://www.instagram.com/burnthday/"
+    ]
+  };
+  const dataset = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Burnthday Widespread Panic Setlist Dataset",
+    url: "https://burnthday.com/",
+    description: `The working Widespread Panic song list and performance dataset: ${formatNumber(stats.catalog)} catalog songs, ${formatNumber(stats.shows)} shows, and ${formatNumber(stats.performances)} logged song performances, maintained since 2007 and cross-checked against Everyday Companion and setlist.fm.`,
+    creator: { "@id": "https://burnthday.com/about/#alex-moura" },
+    ...(stats.firstShow && stats.lastShow ? { temporalCoverage: `${stats.firstShow}/${stats.lastShow}` } : {})
+  };
+  const faq = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: ABOUT_FAQ.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: { "@type": "Answer", text: item.a }
+    }))
+  };
+  const encode = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
+  return `<script type="application/ld+json">${encode(person)}</script>
+    <script type="application/ld+json">${encode(dataset)}</script>
+    <script type="application/ld+json">${encode(faq)}</script>`;
+}
+
+function renderAboutPage(entry, data, cache) {
+  const stats = aboutStats(data, cache);
+  const title = "About Alex Moura, Creator of Burnthday | Widespread Panic";
+  const description = "Alex Moura, creator of Burnthday, the Widespread Panic tour song list and data spreadsheet. Running since June 2007. TRI Studios, Hard Working Americans, JoJo Hermann, Jerry Joseph, Trondossa.";
+  const credits = [
+    ["Hard Working Americans", "Head of Digital Strategy and Creative Direction, 2013–2018, out of Bob Weir's TRI Studios. Dave Schools' other band."],
+    ["Dave Schools", "Runs Dave's Facebook page and worked the digital side of the KIMOCK record."],
+    ["JoJo Hermann", "Producer and creative director of the Shut Up and Play livestream. It charted on Billboard and helped launch JoJo's solo run."],
+    ["Jerry Joseph", "Strategic digital marketing across multiple records."],
+    ["Todd Snider", "Digital strategy, releases, and the Return of the Storyteller music video, premiered by People."],
+    ["Daniel Hutchens", "Worked the premiere solo record."],
+    ["Trondossa Music Festival", "Digital marketing for the band's own festival in Charleston, SC, produced with Live Nation."],
+    ["Band of Heathens", "Concepted and produced a music video People premiered. The band's public credit: “A special shoutout goes to Alex Moura for conceptualizing and putting it together so beautifully.”"],
+    ["Jimmy Herring Has a Posse", "Yes, those shirts. Alex made them."]
+  ];
+  const creditCards = credits.map(([who, what]) => `<div class="about-credit">
+        <h3>${escapeHtml(who)}</h3>
+        <p>${escapeHtml(what)}</p>
+      </div>`).join("\n      ");
+  const statCards = [
+    [formatNumber(stats.years), "years running"],
+    [formatNumber(stats.catalog), "songs tracked"],
+    [formatNumber(stats.shows), "shows logged"],
+    [formatNumber(stats.performances), "song performances"],
+    [formatNumber(stats.albums), "studio albums"],
+    [formatNumber(stats.origins), "song origin stories"]
+  ].filter(([value]) => value && value !== "0").map(([value, label]) => `<div class="about-stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
+  const faqItems = ABOUT_FAQ.map((item) => `<details class="about-faq-item">
+        <summary>${escapeHtml(item.q)}</summary>
+        <p>${escapeHtml(item.a)}</p>
+      </details>`).join("\n      ");
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(fitMetaText(title, 68))}</title>
+    <meta name="description" content="${escapeAttr(fitMetaText(description, 155))}">
+    <link rel="canonical" href="https://burnthday.com/about/">
+    <meta name="author" content="Alex Moura">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <style>
+      .about-lede{font-size:1.06rem;line-height:1.75;max-width:64ch}
+      .about-portrait{float:right;width:min(200px,38vw);margin:0 0 1rem 1.5rem;border-radius:10px}
+      .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:2.2rem 0}
+      .about-stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:1rem .9rem;text-align:center}
+      @media (max-width:560px){.about-stats{grid-template-columns:repeat(2,1fr)}}
+      .about-stat strong{display:block;font-size:1.45rem;letter-spacing:.02em}
+      .about-stat span{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;opacity:.65}
+      .about-credits{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.9rem;margin:1.4rem 0 2.4rem}
+      .about-credit{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:1rem 1.1rem;background:rgba(255,255,255,.02)}
+      .about-credit h3{margin:0 0 .4rem;font-size:.95rem;letter-spacing:.02em}
+      .about-credit p{margin:0;font-size:.86rem;line-height:1.55;opacity:.8}
+      .about-faq-item{border-bottom:1px solid rgba(255,255,255,.09);padding:.35rem 0}
+      .about-faq-item summary{cursor:pointer;padding:.65rem 0;font-weight:600;letter-spacing:.01em}
+      .about-faq-item p{margin:.2rem 0 .9rem;line-height:1.7;opacity:.85;max-width:68ch}
+      .about-h2{margin-top:2.6rem;letter-spacing:.02em}
+      @media (max-width:560px){.about-portrait{float:none;display:block;margin:0 auto 1.2rem}}
+    </style>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main">
+      <article class="archive-page">
+        <header class="archive-title">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">About</span></nav>
+          <p class="archive-eyebrow">ABOUT</p>
+          <h1>About Burnthday</h1>
+          <p class="songs-deck">Alex Moura, creator of Burnthday — the Widespread Panic tour song list and data spreadsheet.</p>
+        </header>
+        <div class="archive-content prose-plate">
+          <img class="about-portrait" src="/assets/archive-media/Alex-1_zps04c65eda.png" alt="Alex Moura">
+          <p class="about-lede">Hi! Alex Moura here. Thanks for stopping in. I launched Burnthday's (“burn-the-day”) Widespread Panic Spread Sheet in June of 2007, as a place for us die-hard fans to stay informed. After each show, songs from the last four setlists are crossed off the master list in Photoshop, from either the comfort of my home in Charlotte, or a hotel room on the road.</p>
+          <p>A little about me: born in Chapel Hill, NC, lived at the beach in Wilmington, NC for ten years, and moved to the Bay Area in 2012. That is where this site changed my life. The spreadsheet put me in Dave Schools' orbit, and Dave's orbit landed me a job with his other band, Hard Working Americans, out of Bob Weir's TRI Studios. I ran digital strategy and creative direction for that band from 2013 to 2018.</p>
+          <p>The email that means the most came while I was in Europe, just after the Panic family lost Garrie. Dave wrote to tell me he was using Burnthday to pick songs. That is the whole point of this site in one sentence: the working song list, kept honestly enough that the band itself can lean on it.</p>
+          <p>In 2014 my wife Katherine and I founded <a href="https://www.digitalstarmarketing.com/" rel="me">Digital Star Marketing</a>. The music work never stopped: JoJo Hermann, Steve Kimock, Jerry Joseph, Todd Snider, Daniel Hutchens, Band of Heathens, and the band's own Trondossa Music Festival in Charleston. Some of that work has been featured in Rolling Stone, People, Variety, and Grammy.com. Everyday Companion, the longtime keeper of Panic history, links here too.</p>
+          <h2 class="about-h2">By the numbers</h2>
+          <div class="about-stats">${statCards}</div>
+          <h2 class="about-h2">Selected work</h2>
+          <div class="about-credits">
+      ${creditCards}
+          </div>
+          <h2 class="about-h2">New to the rotation? Start here</h2>
+          ${faqItems}
+          <p>Say hi on <a href="https://www.facebook.com/burnthday">Facebook</a>, <a href="https://twitter.com/burnthday">X</a>, or <a href="https://www.instagram.com/burnthday/">Instagram</a>. I hope to see you on the road.</p>
+        </div>
+      </article>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["About", "https://burnthday.com/about/"]
+    ])}</script>
+    ${renderAboutJsonLd(stats)}
+  </body>
+</html>
+`;
+}
+
 
 function renderLyricsChordsIndex(entries, data, hubEntry) {
   const rowsData = collectLyricRows(data);
