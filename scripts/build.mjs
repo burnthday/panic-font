@@ -2031,7 +2031,7 @@ function renderHtml(data) {
     ${renderSiteHeader({ stagelight: true, data })}
 
     <main>
-      ${renderHomeIntro(data)}
+      <h1 class="sr-only">WIDESPREAD PANIC ${escapeHtml(String(data.site.year))} TOUR</h1>
       ${renderLatestSetlist(data)}
       ${renderBoardIntro(data)}
       ${renderRotationBoard(data)}
@@ -2051,21 +2051,6 @@ function renderHtml(data) {
   </body>
 </html>
 `;
-}
-
-function renderHomeIntro(data) {
-  const links = [
-    ["Song Possibilities", "#song-list"],
-    ["Tour Stats", "#tour-stats"],
-    ["The Shelf", "#shelf"],
-    ["Purgatory", "#purgatory"],
-    ["Nick Stats", "#nick-johnson"],
-    ["Setlists", "#setlists"]
-  ];
-  return `<header class="home-intro">
-    <h1>WIDESPREAD PANIC ${escapeHtml(String(data.site.year))} TOUR</h1>
-    <nav class="home-trail" aria-label="Homepage sections">${links.map(([label, href]) => `<a href="${href}">${escapeHtml(label)}</a>`).join('<span aria-hidden="true">&gt;</span>')}</nav>
-  </header>`;
 }
 
 function renderFitScriptBody() {
@@ -2124,14 +2109,16 @@ function renderFitScriptBody() {
       });
 
       if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".nick-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
+        document.querySelectorAll(".nick-disclosure, .stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
       }
 
       document.querySelectorAll(".tour-table").forEach((table) => {
         const body = table.tBodies[0];
         const buttons = [...table.querySelectorAll("button[data-sort]")];
         const section = table.closest(".tour-stats");
-        const showFilter = section?.querySelector("[data-show-filter]");
+        const showDd = section?.querySelector("[data-show-filter-dd]");
+        const showValue = section?.querySelector("[data-show-filter-value]");
+        const showOptions = [...(section?.querySelectorAll("[data-show-value]") || [])];
         const mobileSort = section?.querySelector("[data-mobile-sort]");
         const typeButtons = [...(section?.querySelectorAll("[data-type-filter]") || [])];
         const status = section?.querySelector(".show-filter-status");
@@ -2141,8 +2128,18 @@ function renderFitScriptBody() {
         const rarityActive = section?.querySelector("[data-rarity-active]");
         let selectedShow = "";
         let selectedType = "all";
+        let sortKey = "count";
+        let sortDirection = "descending";
 
-        const applyFilters = () => {
+        const compareRows = (left, right) => {
+          const numeric = ["count", "frequency", "l100", "rarity", "heat"].includes(sortKey);
+          const a = left.dataset[sortKey] || "";
+          const b = right.dataset[sortKey] || "";
+          const comparison = numeric ? Number(a) - Number(b) : a.localeCompare(b);
+          return comparison * (sortDirection === "ascending" ? 1 : -1) || left.dataset.title.localeCompare(right.dataset.title);
+        };
+
+        const applyState = () => {
           const rows = [...body.rows];
           const selectedRarities = rarityOptions.filter((box) => box.checked).map((box) => box.value);
           let selectedCount = 0;
@@ -2160,7 +2157,7 @@ function renderFitScriptBody() {
           rows.sort((left, right) => {
             const leftSelected = left.classList.contains("is-selected-show") ? 1 : 0;
             const rightSelected = right.classList.contains("is-selected-show") ? 1 : 0;
-            return rightSelected - leftSelected || Number(right.dataset.count) - Number(left.dataset.count) || left.dataset.title.localeCompare(right.dataset.title);
+            return rightSelected - leftSelected || compareRows(left, right);
           }).forEach((row) => body.appendChild(row));
           if (rarityActive) {
             rarityActive.hidden = !selectedRarities.length;
@@ -2175,56 +2172,45 @@ function renderFitScriptBody() {
           }
         };
 
-        showFilter?.addEventListener("change", () => {
-          selectedShow = showFilter.value;
-          applyFilters();
-        });
+        showOptions.forEach((option) => option.addEventListener("click", () => {
+          selectedShow = option.dataset.showValue;
+          showOptions.forEach((item) => item.classList.toggle("is-active", item === option));
+          if (showValue) showValue.textContent = option.textContent;
+          showDd?.removeAttribute("open");
+          applyState();
+        }));
         typeButtons.forEach((typeButton) => typeButton.addEventListener("click", () => {
           selectedType = typeButton.dataset.typeFilter;
           typeButtons.forEach((item) => item.classList.toggle("is-active", item === typeButton));
-          applyFilters();
+          applyState();
         }));
-        rarityOptions.forEach((box) => box.addEventListener("change", applyFilters));
+        rarityOptions.forEach((box) => box.addEventListener("change", applyState));
         rarityClear?.addEventListener("click", () => {
           rarityOptions.forEach((box) => { box.checked = false; });
-          applyFilters();
+          applyState();
         });
-        if (rarityFilter) document.addEventListener("click", (event) => {
-          if (rarityFilter.open && !rarityFilter.contains(event.target)) rarityFilter.removeAttribute("open");
+        document.addEventListener("click", (event) => {
+          [rarityFilter, showDd].forEach((dropdown) => {
+            if (dropdown && dropdown.open && !dropdown.contains(event.target)) dropdown.removeAttribute("open");
+          });
         });
         mobileSort?.addEventListener("change", () => {
-          const key = mobileSort.value;
-          const numeric = ["count", "rarity", "heat"].includes(key);
-          const rows = [...body.rows].sort((left, right) => {
-            const leftSelected = left.classList.contains("is-selected-show") ? 1 : 0;
-            const rightSelected = right.classList.contains("is-selected-show") ? 1 : 0;
-            const a = left.dataset[key] || "";
-            const b = right.dataset[key] || "";
-            const comparison = numeric ? Number(b) - Number(a) : a.localeCompare(b);
-            return rightSelected - leftSelected || comparison || left.dataset.title.localeCompare(right.dataset.title);
-          });
-          rows.forEach((row) => body.appendChild(row));
+          sortKey = mobileSort.value;
+          sortDirection = sortKey === "title" ? "ascending" : "descending";
+          applyState();
         });
         buttons.forEach((button) => button.addEventListener("click", () => {
-          const key = button.dataset.sort;
           const header = button.closest("th");
           const current = header.getAttribute("aria-sort");
-          const direction = current === "ascending" ? "descending" : "ascending";
-          const multiplier = direction === "ascending" ? 1 : -1;
-          const numeric = ["count", "frequency", "l100", "rarity", "heat"].includes(key);
-          const rows = [...body.rows].sort((left, right) => {
-            const a = left.dataset[key] || "";
-            const b = right.dataset[key] || "";
-            const comparison = numeric ? Number(a) - Number(b) : a.localeCompare(b);
-            return comparison * multiplier || left.dataset.title.localeCompare(right.dataset.title);
-          });
+          sortKey = button.dataset.sort;
+          sortDirection = current === "ascending" ? "descending" : "ascending";
           buttons.forEach((item) => {
             item.closest("th").removeAttribute("aria-sort");
             item.querySelector("span").textContent = "↕";
           });
-          header.setAttribute("aria-sort", direction);
-          button.querySelector("span").textContent = direction === "ascending" ? "↑" : "↓";
-          rows.forEach((row) => body.appendChild(row));
+          header.setAttribute("aria-sort", sortDirection);
+          button.querySelector("span").textContent = sortDirection === "ascending" ? "↑" : "↓";
+          applyState();
         }));
       });`;
 }
@@ -2386,7 +2372,10 @@ function renderSiteFooter(data, options = {}) {
     </nav>
     <div class="footer-bottom">
       <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
-      <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+      <div class="footer-bottom-links">
+        <a class="site-credit" href="https://gnarlywhal.com">Site by Gnarlywhal</a>
+        <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+      </div>
     </div>
   </div>
 </footer>`;
@@ -2454,10 +2443,13 @@ function renderTourStats(data) {
   }
 
   return `<section class="tour-stats" id="tour-stats">
-  <div class="section-heading data-heading">
+  <details class="stats-disclosure" open>
+  <summary class="section-heading data-heading">
     <h2>TOUR STATS</h2>
     <span>${escapeHtml(String(data.site.year))} through ${escapeHtml(data.site.latestShow?.date || "the latest posted show")}</span>
-  </div>
+    <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </summary>
+  <div class="stats-body">
   <div class="data-metrics" aria-label="Current tour summary">
     ${renderNickStat(shows, "shows played")}
     ${renderNickStat(unique, "unique songs")}
@@ -2465,10 +2457,13 @@ function renderTourStats(data) {
     ${renderNickStat(average, "songs per show")}
   </div>
   <div class="data-toolbar" aria-label="Tour Stats filters">
-    <label class="show-filter"><span>Highlight a show</span><select data-show-filter>
-      <option value="">All ${formatNumber(shows)} shows</option>
-      ${(data.setlists || []).map((show) => `<option value="${escapeAttr(show.isoDate)}">${escapeHtml(`${show.date} · ${show.location}`)}</option>`).join("")}
-    </select></label>
+    <details class="show-filter" data-show-filter-dd>
+      <summary><span>Highlight a show</span><b class="sf-value" data-show-filter-value>All ${formatNumber(shows)} shows</b><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+      <div class="sf-pop">
+        <button type="button" class="sf-option is-active" data-show-value="">All ${formatNumber(shows)} shows</button>
+        ${(data.setlists || []).map((show) => `<button type="button" class="sf-option" data-show-value="${escapeAttr(show.isoDate)}">${escapeHtml(`${show.date} · ${show.location}`)}</button>`).join("")}
+      </div>
+    </details>
     <div class="type-filter" role="group" aria-label="Filter songs by type">
       <button type="button" class="is-active" data-type-filter="all">All</button>
       <button type="button" data-type-filter="original">Originals</button>
@@ -2505,6 +2500,8 @@ function renderTourStats(data) {
   <details class="index-method">
     <summary>WHAT THESE MEAN</summary>
     <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Double Rare, Ultra Rare, or Hyper Rare. It is driven mostly by plays in the last 100 shows, with lifetime play count as a small tie-breaker. The numbers below the badge show the actual last-100 and lifetime counts. The symbols follow trading-card language: a black circle, diamond, or star; two black stars; two silver stars; three gold stars. A song new this tour gets an open star until it has history.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
+  </details>
+  </div>
   </details>
 </section>`;
 }
@@ -2642,7 +2639,7 @@ function renderSheetBentos(data) {
   ${renderSongPanel("purgatory-covers", "COVERS", data.boards.purgatoryCovers, { shelfMode: true, columns: 3 })}
 </section>`;
   const woodshed = `<section class="laminate woodshed-board" id="woodshed-sheet">
-  ${renderBoardHeader("THE WOODSHED")}
+  ${renderBoardHeader("WOODSHED")}
   ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
 </section>`;
@@ -2901,18 +2898,12 @@ function renderNextShowStrip(data, featured) {
   if (!upcoming) return "";
   const iso = upcoming.isoDate || "";
   const dow = weekdayName(iso).slice(0, 3).toUpperCase();
-  return `<details class="next-strip">
+  return `<details class="next-strip show-entry no-image">
     <summary>
-      <span class="ns-row">
-        <span class="ns-lead">
-          <span class="ns-tag">${preview ? "Tonight" : "Next Show"}</span>
-          <span class="ns-city">${escapeHtml(upcoming.location)}</span>
-          <span class="ns-venue">${escapeHtml(upcoming.venue)}</span>
-        </span>
-        <span class="ns-meta">
-          <time class="ns-date" datetime="${escapeAttr(iso)}">${escapeHtml(dow)} · ${escapeHtml(upcoming.date)}</time>
-          <span class="sc-chip sc-chip-glass"><span class="live-dot" aria-hidden="true"></span> nugs.net livestream</span>
-        </span>
+      <span class="sc-closed">
+        <time class="sc-date" datetime="${escapeAttr(iso)}">${escapeHtml(upcoming.date)}</time>
+        <span class="sc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
+        <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next Show · ${escapeHtml(dow)}`}</span>
       </span>
       <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </summary>
@@ -3405,6 +3396,7 @@ summary::-webkit-details-marker { display: none; }
 sup { line-height: 0; }
 main { width: min(1400px, calc(100% - 56px)); margin: 0 auto; }
 main > section { margin-top: 96px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
 .section-heading h2 { font-size: 34px; font-weight: 640; letter-spacing: -0.01em; line-height: 1.12; }
 .section-heading span { font-size: 12px; letter-spacing: 0.08em; }
@@ -3420,7 +3412,6 @@ main > section { margin-top: 96px; }
 .mobile-nav-links a { display: block; padding: 11px 16px; border-radius: 10px; font-size: 15px; }
 .menu-icon { display: inline-flex; flex-direction: column; gap: 3px; }
 .menu-icon i { width: 14px; height: 1.5px; display: block; }
-.home-trail { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
 
 /* stat tiles + toolbar */
 .data-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
@@ -6648,8 +6639,9 @@ body.stagelight .show-entry {
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
   border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
-  margin: 0 0 16px;
+  margin: 0;
 }
+body.stagelight .latest-setlist { display: grid; gap: 16px; }
 body.stagelight .show-entry summary { position: relative; display: block; cursor: pointer; list-style: none; }
 body.stagelight .show-entry summary::-webkit-details-marker { display: none; }
 body.stagelight .sc-chev { position: absolute; top: 26px; right: 26px; z-index: 3; color: var(--sl-faint); transition: transform 0.22s ease; }
@@ -6658,6 +6650,12 @@ body.stagelight .sc-bg { position: absolute; inset: 0; z-index: 0; display: bloc
 body.stagelight .sc-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
 body.stagelight .sc-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,9,11,0.95) 24%, rgba(9,9,11,0.68) 58%, rgba(9,9,11,0.4)); }
 body.stagelight .show-entry[open] .sc-bg { display: none; }
+body.stagelight .show-entry.is-latest[open] .sc-bg { display: block; }
+body.stagelight .show-entry.is-latest[open] .sc-bg img { opacity: 0.38; object-position: center 30%; }
+body.stagelight .show-entry.is-latest[open] .sc-bg::after { background: linear-gradient(180deg, rgba(9,9,11,0.34) 0%, rgba(10,10,12,0.78) 46%, rgba(11,11,12,0.96) 74%, rgba(11,11,12,1) 100%); }
+body.stagelight .show-entry[open] .sc-lockup, body.stagelight .sc-body { position: relative; z-index: 1; }
+body.stagelight .show-entry.is-latest[open] .sc-lockup { padding-top: 64px; }
+body.stagelight .show-entry.is-latest .sc-city { text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
 body.stagelight .sc-closed { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; min-height: 84px; padding: 18px 70px 18px 28px; }
 body.stagelight .show-entry[open] .sc-closed { display: none; }
 body.stagelight .sc-date { font-family: var(--sl-mono); font-size: 13px; letter-spacing: 0.08em; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -6700,7 +6698,7 @@ body.stagelight .sc-tier { font-family: var(--sl-mono); font-size: 11px; letter-
 body.stagelight .sc-pull b { font-weight: 600; white-space: nowrap; color: var(--sl-ink); }
 body.stagelight .sc-pull [fill="#111111"] { fill: #f2f2f0; }
 body.stagelight .sc-pull [stroke="#111111"] { stroke: #f2f2f0; }
-body.stagelight .current-stop-setlists { display: grid; gap: 16px; margin-top: 16px; }
+body.stagelight .current-stop-setlists { display: grid; gap: 16px; margin: 0; }
 body.stagelight .setlist-list { display: grid; gap: 16px; }
 body.stagelight .setlist-archive-panel > summary { display: none; }
 @media (max-width: 560px) {
@@ -6762,7 +6760,7 @@ body.stagelight .slp-progress i { background: var(--red); }
 
 /* ---- UPCOMING DATES (inside Setlists) ---- */
 body.stagelight .upcoming-dates {
-  margin-top: 20px; border-radius: var(--sl-r); overflow: hidden;
+  margin-top: 16px; border-radius: var(--sl-r); overflow: hidden;
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
   border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
@@ -6932,18 +6930,10 @@ body.stagelight .sc-mini-pulls [stroke="#111111"] { stroke: #f2f2f0; }
 body.stagelight .sc-more { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); }
 
 /* ---- NEXT SHOW STRIP ---- */
-
-body.stagelight .ns-tag { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--sl-faint); text-transform: uppercase; margin: 0; }
-body.stagelight .ns-city { font-family: var(--sl-display); font-weight: 640; font-size: 22px; letter-spacing: -0.005em; line-height: 1.15; margin: 2px 0 0; }
-body.stagelight .ns-venue { font-size: 14px; color: var(--sl-muted); margin: 2px 0 0; }
-body.stagelight .ns-meta { display: flex; align-items: center; gap: 22px; margin-left: auto; flex-wrap: wrap; }
-body.stagelight .ns-date { font-family: var(--sl-mono); font-size: 14px; letter-spacing: 0.06em; }
 body.stagelight .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px rgba(212,81,79,0.9); animation: sl-pulse 2.4s ease-in-out infinite; }
 @keyframes sl-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .live-dot { animation: none; } }
 @media (max-width: 760px) {
-  body.stagelight .next-strip { padding: 20px; gap: 14px; }
-  body.stagelight .ns-meta { margin-left: 0; width: 100%; justify-content: space-between; }
   body.stagelight .sc-mini-pulls { margin-left: 0; width: 100%; }
 }
 
@@ -7008,6 +6998,43 @@ body.stagelight .rf-clear {
 body.stagelight .rf-clear:hover { color: var(--sl-ink); }
 @media (max-width: 760px) { body.stagelight .rarity-pop { left: auto; right: 0; } }
 
+/* ---- SHOW-HIGHLIGHT DROPDOWN (custom, matches rarity filter) ---- */
+body.stagelight .show-filter { position: relative; display: block; height: auto; padding: 0; border: 0; }
+body.stagelight .show-filter > summary {
+  display: inline-flex; align-items: center; gap: 12px; height: 40px; padding: 0 16px;
+  border-radius: 999px; border: 1px solid var(--sl-line-strong);
+  transition: background 0.15s ease;
+}
+body.stagelight .show-filter > summary:hover { background: rgba(255,255,255,0.05); }
+body.stagelight .show-filter[open] > summary { border-color: rgba(255,255,255,0.3); }
+body.stagelight .show-filter > summary .sc-chev { position: static; color: var(--sl-faint); transition: transform 0.2s ease; }
+body.stagelight .show-filter[open] > summary .sc-chev { transform: rotate(180deg); }
+body.stagelight .sf-value { font-size: 13.5px; font-weight: 580; color: var(--sl-ink); }
+body.stagelight .sf-pop {
+  position: absolute; top: 48px; left: 0; z-index: 40; min-width: 300px; max-height: 344px; overflow-y: auto; padding: 8px;
+  border-radius: 16px; background: rgba(19,19,22,0.97); border: 1px solid var(--sl-line-strong);
+  box-shadow: 0 24px 60px -18px rgba(0,0,0,0.85);
+}
+body.stagelight .sf-option {
+  display: block; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px;
+  font-size: 13.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums;
+}
+body.stagelight .sf-option:hover { background: rgba(255,255,255,0.05); color: var(--sl-ink); }
+body.stagelight .sf-option.is-active { color: var(--sl-ink); font-weight: 600; }
+body.stagelight .sf-option.is-active::after { content: "\\2713"; float: right; color: var(--sl-faint); }
+
+/* ---- STATS DISCLOSURE (accordion) ---- */
+body.stagelight .stats-disclosure > summary { cursor: pointer; }
+body.stagelight .stats-disclosure > summary:hover h2 { color: #fff; }
+body.stagelight .stats-disclosure > summary .sc-chev { position: static; margin-left: 4px; align-self: center; color: var(--sl-faint); transition: transform 0.22s ease; }
+body.stagelight .stats-disclosure[open] > summary .sc-chev { transform: rotate(180deg); }
+body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin-bottom: 0; }
+
+/* ---- FOOTER CREDIT ---- */
+body.stagelight .footer-bottom-links { display: flex; align-items: baseline; gap: 28px; }
+body.stagelight .site-credit { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .site-credit:hover { color: var(--sl-ink); }
+
 body.stagelight .tour-stats { padding: 26px 28px 20px; }
 body.stagelight .tour-table th, body.stagelight .tour-table td,
 body.stagelight .data-table th, body.stagelight .data-table td { padding: 16px 18px; }
@@ -7050,24 +7077,17 @@ body.stagelight .key-other-sheets dd { margin: 2px 0 0; }
   body.stagelight .key-head { max-width: none; }
 }
 
-/* ---- NEXT-SHOW STRIP (closed accordion) ---- */
-body.stagelight .next-strip {
-  margin-top: 16px; border-radius: var(--sl-r); overflow: hidden;
-  background: var(--sl-glass);
-  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+/* ---- NEXT-SHOW STRIP (matches the show rows) ---- */
+body.stagelight .next-strip[open] .sc-closed { display: flex; }
+body.stagelight .ns-flag {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--sl-muted); border: 1px solid var(--sl-line-strong); border-radius: 999px; padding: 8px 16px; white-space: nowrap;
 }
-body.stagelight .next-strip summary { position: relative; display: block; padding: 22px 64px 22px 30px; }
-body.stagelight .next-strip .sc-chev { position: absolute; top: 30px; right: 26px; }
-body.stagelight .next-strip[open] .sc-chev { transform: rotate(180deg); }
-body.stagelight .ns-row { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-body.stagelight .ns-tag { display: block; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--sl-faint); text-transform: uppercase; }
-body.stagelight .ns-city { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 22px; letter-spacing: -0.005em; line-height: 1.15; margin-top: 2px; }
-body.stagelight .ns-venue { display: block; font-size: 14px; color: var(--sl-muted); margin-top: 2px; }
-body.stagelight .ns-meta { display: flex; align-items: center; gap: 22px; margin-left: auto; flex-wrap: wrap; }
-body.stagelight .ns-date { font-family: var(--sl-mono); font-size: 14px; letter-spacing: 0.06em; }
-body.stagelight .ns-body { padding: 0 30px 26px; display: grid; gap: 16px; justify-items: start; }
+body.stagelight .ns-flag.is-tonight { color: var(--sl-ink); border-color: rgba(212,81,79,0.5); }
+body.stagelight .ns-body { padding: 4px 28px 26px; display: grid; gap: 16px; justify-items: start; }
 body.stagelight .ns-photo img { border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); max-width: 520px; width: 100%; }
+@media (max-width: 760px) { body.stagelight .ns-flag { margin-left: 0; } }
 
 /* ---- HERO PHOTO SHEEN ---- */
 body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; border-radius: 14px; background: linear-gradient(200deg, rgba(255,255,255,0.10), transparent 38%); pointer-events: none; }
@@ -7094,14 +7114,6 @@ body.stagelight .heat-warm .n { color: #e5b3b1; }
 body.stagelight .shelf-note { font-size: 13px; color: var(--sl-faint); margin-top: 18px; }
 @media (max-width: 900px) { body.stagelight .shelf-grid { grid-template-columns: 1fr; } }
 
-/* ---- PAGE TITLE + TRAIL: quiet overline, not a masthead ---- */
-body.stagelight main > h1 {
-  font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.22em;
-  color: var(--sl-faint); text-transform: uppercase; font-weight: 500;
-  margin: 34px 0 0;
-}
-body.stagelight .home-trail { margin-top: 6px; }
-body.stagelight .home-trail a { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; }
 body.stagelight .ticket-link { text-decoration: none; }
 
 /* ---- THE PAPER SHEETS: keep white, add the spotlight case ---- */
