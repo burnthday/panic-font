@@ -96,6 +96,8 @@ async function main() {
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
   await writePrivacyPage(siteData);
+  const albums = await loadAlbums();
+  await writeAlbumPages(siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews);
   await writeFile(path.join(dist, "index.html"), finalizeHtml(renderHtml(siteData)), "utf8");
@@ -2008,6 +2010,174 @@ function renderBreadcrumbJsonLd(items) {
       item
     }))
   }).replace(/</g, "\\u003c");
+}
+
+async function loadAlbums() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "albums.json"), "utf8");
+    const parsed = JSON.parse(raw);
+    return (parsed.albums || []).filter((album) => album.slug && album.title);
+  } catch {
+    return [];
+  }
+}
+
+async function writeAlbumPages(data, albums) {
+  if (!albums.length) return;
+  const ordered = [...albums].sort((a, b) => String(b.releaseDate || "").localeCompare(String(a.releaseDate || "")));
+  await writeStaticPage("/albums/index.html", renderAlbumsIndex(ordered, data));
+  for (const album of ordered) {
+    await writeStaticPage(`/albums/${album.slug}/index.html`, renderAlbumPage(album, ordered, data));
+  }
+}
+
+function albumYear(album) {
+  const match = String(album.releaseDate || "").match(/^(\d{4})/);
+  return match ? match[1] : "";
+}
+
+function albumTrackStats(album, data) {
+  const byKey = new Map((data.catalog || []).map((row) => [row.key, row]));
+  const cutoff = data.rules?.rotationSlpLimit || 200;
+  const tracks = (album.tracks || []).map((track) => {
+    const row = byKey.get(normalizeTitle(track.title));
+    const onSheet = row ? row.playedThisTour || (row.effectiveSlp ?? Infinity) < cutoff : false;
+    return { ...track, row, onSheet, total: row?.total || 0 };
+  });
+  const matched = tracks.filter((track) => track.row);
+  return {
+    tracks,
+    onSheetCount: tracks.filter((track) => track.onSheet).length,
+    totalPlays: sum(matched.map((track) => track.total)),
+    matchedCount: matched.length
+  };
+}
+
+function renderAlbumsIndex(albums, data) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Widespread Panic Albums | Burnthday</title>
+    <meta name="description" content="The modern Widespread Panic studio albums — tracklists, credits, and how each record lives on stage.">
+    <link rel="canonical" href="https://burnthday.com/albums/">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main albums-main">
+      <header class="archive-title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Albums</span></nav>
+        <h1>Albums</h1>
+        <p class="albums-deck">The modern studio records, and how each one still lives on stage.</p>
+      </header>
+      <div class="album-grid">
+        ${albums.map((album) => `<a class="album-tile" href="/albums/${escapeAttr(album.slug)}/">
+          <span class="album-cover${album.cover ? "" : " is-empty"}">${album.cover ? `<img src="${escapeAttr(album.cover)}" alt="${escapeAttr(`${album.title} cover`)}" loading="lazy" decoding="async">` : `<span class="album-cover-fallback">${escapeHtml(album.title)}</span>`}</span>
+          <span class="album-tile-title">${escapeHtml(album.title)}</span>
+          <span class="album-tile-year">${escapeHtml(albumYear(album))}</span>
+        </a>`).join("")}
+      </div>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+  </body>
+</html>
+`;
+}
+
+function renderAlbumPage(album, albums, data) {
+  const year = albumYear(album);
+  const longDate = album.releaseDate ? formatLongDate(album.releaseDate) : "";
+  const stats = albumTrackStats(album, data);
+  const index = albums.findIndex((entry) => entry.slug === album.slug);
+  const previous = albums[index + 1] || null;
+  const next = albums[index - 1] || null;
+  const description = clean(album.blurb) || `${album.title} (${year}) by Widespread Panic — tracklist, credits, and live history from Burnthday.`;
+
+  const credits = [
+    ["Produced by", album.producedBy],
+    ["Engineered by", album.engineeredBy],
+    ["Mixed by", album.mixedBy],
+    ["Recorded at", album.recordedAt]
+  ].filter(([, value]) => (value || []).length);
+  const streamLinks = Object.entries(album.links || {}).filter(([, url]) => clean(url));
+  const streamLabels = { spotify: "Spotify", appleMusic: "Apple Music", bandcamp: "Bandcamp", amazon: "Amazon", purchase: "Store" };
+
+  const trackRows = stats.tracks.map((track, i) => {
+    const stat = track.row
+      ? `<span class="track-stat">${track.onSheet ? `<span class="track-live">On the current sheet</span>` : ""}<span class="track-plays">${formatNumber(track.total)} live</span></span>`
+      : "";
+    return `<li class="album-track${track.row ? "" : " no-data"}">
+      <span class="track-n">${String(i + 1).padStart(2, "0")}</span>
+      <span class="track-title">${escapeHtml(track.title)}${track.writtenBy ? `<small>${escapeHtml(track.writtenBy)}</small>` : ""}</span>
+      ${stat}
+    </li>`;
+  }).join("");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(album.title)} | Widespread Panic Album | Burnthday</title>
+    <meta name="description" content="${escapeAttr(fitMetaText(description, 155))}">
+    <link rel="canonical" href="https://burnthday.com/albums/${escapeAttr(album.slug)}/">
+    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Albums", "https://burnthday.com/albums/"],
+      [album.title, `https://burnthday.com/albums/${album.slug}/`]
+    ])}</script>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main album-main">
+      <header class="archive-title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/albums/">Albums</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(album.title)}</span></nav>
+        <p class="album-eyebrow">Studio Album${year ? ` · ${escapeHtml(year)}` : ""}</p>
+        <h1>${escapeHtml(album.title)}</h1>
+      </header>
+
+      <div class="album-layout">
+        <div class="album-aside">
+          <figure class="album-cover-lg${album.cover ? "" : " is-empty"}">${album.cover ? `<img src="${escapeAttr(album.cover)}" alt="${escapeAttr(`${album.title} cover`)}" decoding="async">` : `<span class="album-cover-fallback">${escapeHtml(album.title)}</span>`}</figure>
+          ${longDate ? `<div class="album-meta"><p class="album-meta-label">Released</p><p class="album-meta-value">${escapeHtml(longDate)}</p></div>` : ""}
+          ${album.label ? `<div class="album-meta"><p class="album-meta-label">Label</p><p class="album-meta-value">${escapeHtml(album.label)}</p></div>` : ""}
+          ${streamLinks.length ? `<div class="album-listen"><p class="album-meta-label">Listen</p><div class="album-listen-links">${streamLinks.map(([key, url]) => `<a class="sc-chip sc-chip-glass" href="${escapeAttr(url)}">${escapeHtml(streamLabels[key] || key)}</a>`).join("")}</div></div>` : ""}
+        </div>
+
+        <div class="album-body">
+          ${album.blurb ? `<p class="album-blurb">${escapeHtml(album.blurb)}</p>` : ""}
+          ${stats.matchedCount ? `<div class="album-footprint">
+            <div><strong>${formatNumber(stats.onSheetCount)}</strong><span>on the current sheet</span></div>
+            <div><strong>${formatNumber(stats.totalPlays)}</strong><span>live plays, these songs</span></div>
+            <div><strong>${formatNumber(stats.tracks.length)}</strong><span>tracks</span></div>
+          </div>` : ""}
+          ${trackRows ? `<div class="album-tracks-head"><h2>Tracks</h2><span>plays are lifetime, live</span></div>
+          <ol class="album-tracks">${trackRows}</ol>` : `<p class="album-pending">Tracklist coming soon.</p>`}
+          ${credits.length ? `<div class="album-credits">
+            ${credits.map(([label, value]) => `<div class="credit-block"><h3>${escapeHtml(label)}</h3><p>${value.map((entry) => escapeHtml(entry)).join("<br>")}</p></div>`).join("")}
+            ${album.personnel && album.personnel.length ? `<div class="credit-block credit-personnel"><h3>The Band</h3><p>${album.personnel.map((person) => `${escapeHtml(person.name)}${person.role ? ` — ${escapeHtml(person.role)}` : ""}`).join("<br>")}</p></div>` : ""}
+          </div>` : ""}
+        </div>
+      </div>
+
+      <nav class="album-nav" aria-label="More albums">
+        ${previous ? `<a href="/albums/${escapeAttr(previous.slug)}/"><span>Earlier</span><strong>${escapeHtml(previous.title)}</strong></a>` : "<span></span>"}
+        ${next ? `<a class="is-next" href="/albums/${escapeAttr(next.slug)}/"><span>Later</span><strong>${escapeHtml(next.title)}</strong></a>` : "<span></span>"}
+      </nav>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+  </body>
+</html>
+`;
 }
 
 function renderArchiveIndex(entries, data) {
@@ -7344,6 +7514,65 @@ body.stagelight .archive-list em { grid-column: 1 / -1; font-family: var(--sl-mo
 body.stagelight .current-review-link { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
 body.stagelight .current-review-link div { padding: 18px 22px; border-radius: 16px; background: var(--sl-glass); border: 1px solid var(--sl-line); }
 body.stagelight .current-review-link a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- ALBUMS: index grid ---- */
+body.stagelight .albums-main, body.stagelight .album-main { width: min(1120px, calc(100% - 48px)); }
+body.stagelight .albums-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
+body.stagelight .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
+body.stagelight .album-tile { display: block; color: var(--sl-ink); }
+body.stagelight .album-cover, body.stagelight .album-cover-lg {
+  display: block; position: relative; aspect-ratio: 1 / 1; border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow); background: rgba(255,255,255,0.03);
+}
+body.stagelight .album-cover img, body.stagelight .album-cover-lg img { width: 100%; height: 100%; object-fit: cover; }
+body.stagelight .album-tile:hover .album-cover { transform: translateY(-3px); border-color: rgba(255,255,255,0.22); transition: transform 0.18s ease, border-color 0.18s ease; }
+body.stagelight .album-cover.is-empty, body.stagelight .album-cover-lg.is-empty { display: flex; align-items: center; justify-content: center; background: var(--sl-glass); }
+body.stagelight .album-cover-fallback { font-family: var(--sl-display); font-weight: 640; font-size: 18px; color: var(--sl-faint); text-align: center; padding: 18px; letter-spacing: -0.01em; }
+body.stagelight .album-tile-title { display: block; font-family: var(--sl-display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin-top: 14px; }
+body.stagelight .album-tile-year { display: block; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); margin-top: 3px; }
+
+/* ---- ALBUMS: single album page ---- */
+body.stagelight .album-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 10px; }
+body.stagelight .album-layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 48px; align-items: start; margin-top: 8px; }
+body.stagelight .album-aside { position: sticky; top: 92px; display: grid; gap: 20px; }
+body.stagelight .album-cover-lg { aspect-ratio: 1 / 1; border-radius: var(--sl-r); }
+body.stagelight .album-meta-label { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .album-meta-value { font-size: 15px; color: var(--sl-ink); margin-top: 5px; }
+body.stagelight .album-listen-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+body.stagelight .album-blurb { font-size: 18px; line-height: 1.65; color: var(--sl-ink); margin: 0 0 30px; }
+body.stagelight .album-footprint { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 34px; }
+body.stagelight .album-footprint div { padding: 18px 20px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); }
+body.stagelight .album-footprint strong { display: block; font-family: var(--sl-mono); font-size: 26px; font-weight: 640; color: var(--sl-ink); line-height: 1; }
+body.stagelight .album-footprint span { display: block; font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); margin-top: 8px; }
+body.stagelight .album-tracks-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .album-tracks-head h2 { font-family: var(--sl-display); font-size: 22px; font-weight: 640; letter-spacing: -0.01em; }
+body.stagelight .album-tracks-head span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .album-tracks { display: grid; gap: 2px; }
+body.stagelight .album-track { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+body.stagelight .album-track:hover { background: rgba(255,255,255,0.025); }
+body.stagelight .track-n { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; }
+body.stagelight .track-title { font-size: 16.5px; font-weight: 520; color: var(--sl-ink); display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+body.stagelight .track-title small { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .track-stat { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; }
+body.stagelight .track-live { font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-ink); border: 1px solid rgba(45,124,82,0.55); border-radius: 999px; padding: 4px 10px; }
+body.stagelight .track-plays { font-family: var(--sl-mono); font-size: 12.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+body.stagelight .album-track.no-data .track-title { color: var(--sl-muted); }
+body.stagelight .album-pending { color: var(--sl-faint); font-size: 15px; }
+body.stagelight .album-credits { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 22px 28px; margin-top: 40px; padding-top: 26px; border-top: 1px solid var(--sl-line); }
+body.stagelight .credit-block h3 { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 8px; }
+body.stagelight .credit-block p { font-size: 14.5px; line-height: 1.6; color: var(--sl-muted); }
+body.stagelight .album-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 52px; padding-top: 24px; border-top: 1px solid var(--sl-line); }
+body.stagelight .album-nav a { display: grid; gap: 4px; color: var(--sl-muted); }
+body.stagelight .album-nav a.is-next { text-align: right; }
+body.stagelight .album-nav a span { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .album-nav a strong { font-family: var(--sl-display); font-size: 18px; font-weight: 600; color: var(--sl-ink); }
+body.stagelight .album-nav a:hover strong { color: #fff; }
+@media (max-width: 820px) {
+  body.stagelight .album-layout { grid-template-columns: 1fr; gap: 30px; }
+  body.stagelight .album-aside { position: static; grid-template-columns: 160px 1fr; align-items: center; gap: 16px 22px; }
+  body.stagelight .album-cover-lg { grid-row: 1 / span 3; }
+  body.stagelight .album-footprint { grid-template-columns: 1fr; }
+}
 
 /* current rumors cards */
 body.stagelight .current-rumors { margin: 4px 0 44px; }
