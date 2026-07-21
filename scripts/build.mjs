@@ -113,6 +113,7 @@ async function main() {
   await writePrivacyPage(siteData);
   const albums = await loadAlbums();
   await writeAlbumPages(siteData, albums);
+  await attachSetlistFmPerformances(siteData);
   await writeSongPages(siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews);
@@ -2038,6 +2039,50 @@ function renderBreadcrumbJsonLd(items) {
 }
 
 // ---- SONG INDEX + per-song history pages ----
+// Load the setlist.fm ingestion cache (see data/source/SETLISTFM-SYNC.md) and
+// index every performance by canonical song key. Dormant until a real cache
+// exists — the live pull runs in the nightly Action, not here.
+async function loadSetlistFmCache() {
+  const cachePath = process.env.SETLISTFM_CACHE || path.join(root, "data", "source", "setlistfm-cache.json");
+  try {
+    const parsed = JSON.parse(await readFile(cachePath, "utf8"));
+    return Array.isArray(parsed.shows) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function attachSetlistFmPerformances(data) {
+  const cache = await loadSetlistFmCache();
+  data.setlistFm = cache ? { fetchedAt: cache.fetchedAt, showCount: cache.showCount } : null;
+  const byTitle = new Map();
+  if (!cache) {
+    data.performancesByTitle = byTitle;
+    return;
+  }
+  for (const show of cache.shows || []) {
+    if (!show?.date) continue;
+    for (const song of show.songs || []) {
+      const key = normalizeTitle(song.name);
+      if (!key) continue;
+      if (!byTitle.has(key)) byTitle.set(key, []);
+      byTitle.get(key).push({
+        date: show.date,
+        venue: show.venue,
+        city: show.city,
+        state: show.state,
+        url: show.url,
+        tour: show.tour,
+        guest: song.guest || "",
+        encore: Boolean(song.encore),
+        tape: Boolean(song.tape)
+      });
+    }
+  }
+  for (const list of byTitle.values()) list.sort((a, b) => b.date.localeCompare(a.date));
+  data.performancesByTitle = byTitle;
+}
+
 function buildSongSlugMap(catalog) {
   const map = new Map();
   const used = new Set();
@@ -2216,6 +2261,7 @@ function renderSongPage(song, data, albums, slugMap) {
       ${origin ? `<nav class="archive-crosslink" aria-label="Related">
         <a href="/song-origins/${escapeAttr(origin.slug)}/"><span class="xl-eyebrow">Song Origin</span><span class="xl-title">The story behind “${escapeHtml(origin.title)}”</span><span class="xl-go" aria-hidden="true">→</span></a>
       </nav>` : ""}
+      ${renderSongPerformanceLog(song, data)}
       <p class="song-resources"><a href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer">Chords &amp; tabs on Songsterr <span aria-hidden="true">↗</span></a></p>
       <p class="song-back"><a href="/songs/">← All songs</a></p>
     </main>
@@ -2223,6 +2269,42 @@ function renderSongPage(song, data, albums, slugMap) {
   </body>
 </html>
 `;
+}
+
+// "Every performance" log from the setlist.fm cache. Empty (section omitted)
+// until a real cache exists. Capped to the most-recent SHOWN to keep 698 pages
+// light; the full archive lives on setlist.fm.
+function renderSongPerformanceLog(song, data) {
+  const performances = data.performancesByTitle?.get(song.key) || [];
+  if (!performances.length) return "";
+  const SHOWN = 40;
+  const recent = performances.slice(0, SHOWN);
+  const searchUrl = `https://www.setlist.fm/search?query=${encodeURIComponent(`Widespread Panic ${song.title}`)}`;
+  const rows = recent.map((perf) => {
+    const loc = [perf.city, perf.state].filter(Boolean).join(", ");
+    const tags = [
+      perf.encore ? '<span class="perf-tag">Encore</span>' : "",
+      perf.guest ? `<span class="perf-tag">with ${escapeHtml(perf.guest)}</span>` : "",
+      perf.tape ? '<span class="perf-tag">Tape</span>' : ""
+    ].join("");
+    const inner = `<span class="perf-date">${escapeHtml(formatLongDate(perf.date) || perf.date)}</span>
+        <span class="perf-venue">${escapeHtml(perf.venue || "Unknown venue")}</span>
+        <span class="perf-loc">${escapeHtml(loc)}</span>
+        ${tags ? `<span class="perf-tags">${tags}</span>` : ""}`;
+    return `<li class="perf">${perf.url
+      ? `<a href="${escapeAttr(perf.url)}" target="_blank" rel="noopener noreferrer">${inner}<span class="perf-go" aria-hidden="true">↗</span></a>`
+      : `<span class="perf-static">${inner}</span>`}</li>`;
+  }).join("");
+  return `<section class="song-history">
+        <div class="song-history-head">
+          <h2>Every performance</h2>
+          <span>${formatNumber(performances.length)} on setlist.fm</span>
+        </div>
+        <ol class="perf-list">${rows}</ol>
+        ${performances.length > SHOWN
+          ? `<p class="perf-more">Showing the ${SHOWN} most recent of ${formatNumber(performances.length)}. <a href="${escapeAttr(searchUrl)}" target="_blank" rel="noopener noreferrer">Full history on setlist.fm <span aria-hidden="true">↗</span></a></p>`
+          : ""}
+      </section>`;
 }
 
 async function loadAlbums() {
@@ -7886,6 +7968,33 @@ body.stagelight .song-album-chips a {
 }
 body.stagelight .song-album-chips a:hover { border-color: rgba(255,255,255,0.24); transform: translateY(-2px); }
 body.stagelight .song-album-chips a small { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
+body.stagelight .song-history { margin: 40px 0 8px; }
+body.stagelight .song-history-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .song-history-head h2 { font-family: var(--sl-display); font-size: 20px; font-weight: 640; letter-spacing: -0.01em; }
+body.stagelight .song-history-head span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); white-space: nowrap; }
+body.stagelight .perf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+body.stagelight .perf > a, body.stagelight .perf > .perf-static {
+  display: grid; grid-template-columns: 150px minmax(0, 1fr) auto 14px; align-items: baseline; gap: 6px 16px;
+  padding: 12px 8px; color: var(--sl-ink); border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+body.stagelight .perf > a:hover { background: rgba(255,255,255,0.03); }
+body.stagelight .perf-date { grid-column: 1; grid-row: 1; font-family: var(--sl-mono); font-size: 13px; color: var(--sl-muted); }
+body.stagelight .perf-venue { grid-column: 2; grid-row: 1; font-size: 15px; font-weight: 520; }
+body.stagelight .perf-loc { grid-column: 3; grid-row: 1; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); text-align: right; }
+body.stagelight .perf-tags { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+body.stagelight .perf-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-muted); border: 1px solid var(--sl-line); border-radius: 999px; padding: 2px 8px; }
+body.stagelight .perf-go { grid-column: 4; grid-row: 1; align-self: center; text-align: right; color: var(--sl-faint); }
+body.stagelight .perf > a:hover .perf-go { color: var(--sl-ink); }
+body.stagelight .perf-more { margin-top: 16px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.03em; color: var(--sl-faint); }
+body.stagelight .perf-more a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
+body.stagelight .perf-more a:hover { color: var(--sl-ink); }
+@media (max-width: 640px) {
+  body.stagelight .perf > a, body.stagelight .perf > .perf-static { grid-template-columns: 1fr auto 14px; }
+  body.stagelight .perf-date { grid-column: 1 / -1; grid-row: 1; }
+  body.stagelight .perf-venue { grid-column: 1; grid-row: 2; }
+  body.stagelight .perf-loc { grid-column: 2; grid-row: 2; text-align: right; }
+  body.stagelight .perf-go { grid-column: 3; grid-row: 2; }
+}
 body.stagelight .song-resources { margin-top: 22px; }
 body.stagelight .song-resources a { display: inline-flex; align-items: center; gap: 7px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--sl-muted); border-bottom: 1px solid var(--sl-line); padding-bottom: 3px; }
 body.stagelight .song-resources a:hover { color: var(--sl-ink); border-color: rgba(255,255,255,0.28); }

@@ -459,6 +459,18 @@ async function checkSongPages(siteData) {
     .catch(() => 0);
   record("Every catalog song has its own history page", songDirs === catalog.length, `${songDirs} pages vs ${catalog.length} songs`);
 
+  // setlist.fm "every performance" log: verifies the render when a cache exists,
+  // and that the feature is cleanly dormant (no stale/fake rows) when it doesn't.
+  const cacheExists = await stat(path.join(root, "data", "source", "setlistfm-cache.json")).then(() => true).catch(() => false);
+  const songFiles = await listFiles(path.join(distDir, "song"), (filePath) => filePath.endsWith("index.html"));
+  const perfPages = (await Promise.all(songFiles.map((filePath) => readFile(filePath, "utf8"))))
+    .filter((html) => html.includes('class="perf-list"')).length;
+  if (cacheExists) {
+    record("setlist.fm performance log renders on song pages when a cache is present", perfPages > 0, `${perfPages} pages with a performance log`);
+  } else {
+    record("setlist.fm performance log stays dormant with no cache (no stale rows)", perfPages === 0, `${perfPages} pages carried performance markup`);
+  }
+
   // spot-check a real page carries the live-history numbers straight from the catalog
   const sample = catalog.find((song) => (song.total || 0) > 1 && (song.total || 0) < 1000) || catalog[0];
   if (sample) {
