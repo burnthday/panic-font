@@ -2216,6 +2216,7 @@ function renderSongPage(song, data, albums, slugMap) {
       ${origin ? `<nav class="archive-crosslink" aria-label="Related">
         <a href="/song-origins/${escapeAttr(origin.slug)}/"><span class="xl-eyebrow">Song Origin</span><span class="xl-title">The story behind “${escapeHtml(origin.title)}”</span><span class="xl-go" aria-hidden="true">→</span></a>
       </nav>` : ""}
+      <p class="song-resources"><a href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer">Chords &amp; tabs on Songsterr <span aria-hidden="true">↗</span></a></p>
       <p class="song-back"><a href="/songs/">← All songs</a></p>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
@@ -2881,6 +2882,7 @@ function renderSiteFooter(data, options = {}) {
     </nav>
     <div class="footer-bottom">
       <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
+      <p class="footer-sources">Setlist data via <a href="https://www.setlist.fm/" rel="noopener">setlist.fm</a> and <a href="https://widespreadpanic.com/" rel="noopener">widespreadpanic.com</a>. Song history from <a href="http://everydaycompanion.com/" rel="noopener">Everyday Companion</a>.</p>
       <div class="footer-bottom-links">
         <a class="site-credit" href="https://gnarlywhal.com">Site by Gnarlywhal</a>
         <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
@@ -7402,8 +7404,12 @@ body.stagelight .footer-bottom {
   grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
   margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--sl-line);
 }
-body.stagelight .footer-legal { font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 0; }
+body.stagelight .footer-legal { order: 1; font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 0; }
 body.stagelight .footer-legal span { margin: 0 8px; }
+body.stagelight .footer-bottom-links { order: 2; }
+body.stagelight .footer-sources { order: 3; flex-basis: 100%; margin: 4px 0 0; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.03em; color: var(--sl-faint); }
+body.stagelight .footer-sources a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
+body.stagelight .footer-sources a:hover { color: var(--sl-ink); }
 body.stagelight .back-top { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .back-top:hover { color: var(--sl-ink); }
 @media (max-width: 760px) {
@@ -7880,7 +7886,10 @@ body.stagelight .song-album-chips a {
 }
 body.stagelight .song-album-chips a:hover { border-color: rgba(255,255,255,0.24); transform: translateY(-2px); }
 body.stagelight .song-album-chips a small { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
-body.stagelight .song-back { margin-top: 40px; }
+body.stagelight .song-resources { margin-top: 22px; }
+body.stagelight .song-resources a { display: inline-flex; align-items: center; gap: 7px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--sl-muted); border-bottom: 1px solid var(--sl-line); padding-bottom: 3px; }
+body.stagelight .song-resources a:hover { color: var(--sl-ink); border-color: rgba(255,255,255,0.28); }
+body.stagelight .song-back { margin-top: 34px; }
 body.stagelight .song-back a { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .song-back a:hover { color: var(--sl-ink); }
 
