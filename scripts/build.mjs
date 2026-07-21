@@ -2700,8 +2700,8 @@ function renderFitScriptBody() {
           if (!text) return;
 
           song.style.removeProperty("--song-font-size");
-          const baseSize = Number.parseFloat(window.getComputedStyle(song).fontSize) || 22;
-          const minimumSize = song.classList.contains("is-hand-addon") ? 15 : 16;
+          const baseSize = Number.parseFloat(window.getComputedStyle(song).fontSize) || 17;
+          const minimumSize = song.classList.contains("is-hand-addon") ? 13 : 14;
           const fits = () => text.scrollWidth <= text.clientWidth + 1 && song.scrollWidth <= song.clientWidth + 1;
           let fittedSize = baseSize;
 
@@ -3436,7 +3436,7 @@ function renderMarkerLegend(items = []) {
   return `<ol class="marker-legend">${items.map((item) => {
     const color = STRIKE_COLORS[item.asset];
     const swatch = color
-      ? `<svg class="marker-swipe legend-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${STRIKE_PATHS[0]}" stroke="${color}"/></svg>`
+      ? `<span class="legend-swipe" style="--mc:${color}"></span>`
       : `<img src="/assets/${escapeAttr(item.asset)}" alt="">`;
     return `<li>${swatch}<span><strong>${escapeHtml(item.color)}</strong><em>${escapeHtml(item.label)}</em></span></li>`;
   }).join("")}</ol>`;
@@ -3502,28 +3502,22 @@ const STRIKE_COLORS = {
   "marker-red.png": "#d4514f"
 };
 
-// One thick, confident swipe per song (viewBox 0 0 400 12) — a straight
-// dry-erase cross-out with only a hair of tilt/bow so rows don't look stamped.
-const STRIKE_PATHS = [
-  "M5,6.4 C130,5.9 270,6.3 395,5.7",
-  "M5,5.7 C140,6.3 260,5.8 395,6.4",
-  "M5,6.1 C120,6.5 280,5.6 395,6.0",
-  "M5,6.0 C150,5.6 250,6.5 395,6.1"
-];
-
 function strikeHash(value) {
   let h = 0;
   for (let i = 0; i < value.length; i += 1) h = (h * 31 + value.charCodeAt(i)) >>> 0;
   return h;
 }
 
+// Translucent dry-erase swipe covering the whole title, with a chisel/diagonal
+// right end — like the real marker. CSS clip-path (see .marker-ink) keeps the
+// diagonal crisp at any width; the tint comes from the per-show legend color.
 function renderStrikeMark(asset, seed) {
   const color = STRIKE_COLORS[asset];
   if (!color) return `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(asset)}" alt=""></span>`;
   const h = strikeHash(String(seed || ""));
-  const main = STRIKE_PATHS[h % STRIKE_PATHS.length];
+  const variant = (h % 4) + 1;
   const delay = (h >> 4) % 7;
-  return `<span class="marker-mask" style="--sd:${delay * 0.045}s"><svg class="marker-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${main}" pathLength="1" stroke="${color}"/></svg></span>`;
+  return `<span class="marker-mask sv${variant}" style="--mc:${color};--sd:${delay * 0.04}s"><span class="marker-ink"></span></span>`;
 }
 
 function renderSong(row, options = {}) {
@@ -4126,7 +4120,7 @@ main > section { margin-top: 96px; }
 .marker-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
 .marker-legend li { display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 8px 16px 8px 12px; }
 .marker-legend img { width: 22px; height: auto; }
-.marker-legend .legend-swipe { width: 26px; height: 8px; flex: none; mix-blend-mode: normal; opacity: 1; }
+.marker-legend .legend-swipe { width: 30px; height: 13px; flex: none; background: var(--mc); opacity: 0.62; mix-blend-mode: multiply; border-radius: 1px; clip-path: polygon(1% 12%, 99% 3%, 100% 82%, 93% 100%, 1% 92%); }
 .marker-legend strong { font-size: 13px; }
 .marker-legend em { font-size: 12px; font-style: normal; }
 
@@ -4644,7 +4638,12 @@ main {
 
 .marker-legend .legend-swipe {
   width: 38px;
-  height: 12px;
+  height: 14px;
+  background: var(--mc);
+  opacity: 0.62;
+  mix-blend-mode: multiply;
+  border-radius: 1px;
+  clip-path: polygon(1% 12%, 99% 3%, 100% 82%, 93% 100%, 1% 92%);
 }
 
 .marker-legend span {
@@ -4699,7 +4698,7 @@ main {
 }
 
 .rotation-song {
-  --song-font-size: 21px;
+  --song-font-size: 17px;
   display: flex;
   align-items: baseline;
   max-width: 100%;
@@ -4709,7 +4708,7 @@ main {
   font-size: var(--song-font-size);
   text-transform: uppercase;
   line-height: 1.02;
-  letter-spacing: 0;
+  letter-spacing: -0.012em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4761,11 +4760,11 @@ main {
 
 .marker-mask {
   position: absolute;
-  left: -0.14em;
-  right: -0.1em;
-  top: 0.1em;
-  bottom: 0.08em;
-  overflow: hidden;
+  left: -0.16em;
+  right: -0.12em;
+  top: -0.02em;
+  bottom: -0.02em;
+  overflow: visible;
   pointer-events: none;
   z-index: 0;
 }
@@ -6500,7 +6499,7 @@ sup {
   }
 
   .rotation-song {
-    --song-font-size: 20px;
+    --song-font-size: 16.5px;
   }
 
   .board-ledger,
@@ -6614,7 +6613,7 @@ sup {
   }
 
   .rotation-song {
-    --song-font-size: 19px;
+    --song-font-size: 16px;
   }
 
   .setlist-archive-panel > summary {
@@ -7031,7 +7030,7 @@ sup {
   }
 
   .rotation-song {
-    --song-font-size: 18px;
+    --song-font-size: 15px;
   }
 
   .tour-dates li {
@@ -7859,16 +7858,29 @@ body.stagelight .laminate::after {
 }
 
 /* ---- DRY-ERASE STRIKES: SVG marker swipes over played songs ---- */
-.marker-swipe { display: block; width: 100%; height: 100%; overflow: visible; opacity: 0.8; mix-blend-mode: multiply; }
-/* stroke-width in viewBox units so the swipe scales to the FULL text height —
-   the marker covers the whole song, like the real sheet */
-.marker-swipe path { fill: none; stroke-width: 10.5; stroke-linecap: round; }
-/* draw-in when the board scrolls into view */
-.can-strike .marker-swipe path { stroke-dasharray: 1; stroke-dashoffset: 1; }
-.can-strike .marker-mask.draw .marker-swipe path { animation: strike-swipe 0.3s ease-out forwards; animation-delay: var(--sd, 0s); }
-@keyframes strike-swipe { to { stroke-dashoffset: 0; } }
+/* the ink block: translucent marker fill covering the whole word, with a
+   chisel/diagonal right end via clip-path (crisp at any width) */
+.marker-ink {
+  display: block; width: 100%; height: 100%;
+  background: var(--mc);
+  opacity: 0.62;
+  mix-blend-mode: multiply;
+  border-radius: 1px;
+  clip-path: polygon(0.6% 12%, 99% 3%, 100% 82%, 93% 100%, 1% 92%);
+  transform-origin: left center;
+}
+.marker-mask.sv1 { transform: rotate(-1deg); }
+.marker-mask.sv2 { transform: rotate(0.7deg); }
+.marker-mask.sv3 { transform: rotate(-0.5deg); }
+.marker-mask.sv4 { transform: rotate(1deg); }
+.marker-mask.sv2 .marker-ink { clip-path: polygon(0.6% 6%, 99% 12%, 100% 96%, 92% 88%, 1% 98%); }
+.marker-mask.sv4 .marker-ink { clip-path: polygon(0.6% 9%, 99% 4%, 100% 90%, 94% 98%, 1% 95%); }
+/* draw-in: the marker wipes across left-to-right as the board scrolls in */
+.can-strike .marker-ink { transform: scaleX(0); }
+.can-strike .marker-mask.draw .marker-ink { animation: strike-wipe 0.28s cubic-bezier(0.5, 0, 0.4, 1) forwards; animation-delay: var(--sd, 0s); }
+@keyframes strike-wipe { to { transform: scaleX(1); } }
 @media (prefers-reduced-motion: reduce) {
-  .can-strike .marker-swipe path { stroke-dasharray: none; stroke-dashoffset: 0; animation: none !important; }
+  .can-strike .marker-ink { transform: scaleX(1); animation: none !important; }
 }
 body.stagelight .primary-board::before,
 body.stagelight .shelf-board::before,
