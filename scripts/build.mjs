@@ -2039,8 +2039,12 @@ function albumYear(album) {
 function albumTrackStats(album, data) {
   const byKey = new Map((data.catalog || []).map((row) => [row.key, row]));
   const cutoff = data.rules?.rotationSlpLimit || 200;
+  const lookup = (title) => {
+    // exact, then with any "(parenthetical)" subtitle stripped to match the live name
+    return byKey.get(normalizeTitle(title)) || byKey.get(normalizeTitle(String(title).replace(/\s*\([^)]*\)\s*$/, "")));
+  };
   const tracks = (album.tracks || []).map((track) => {
-    const row = byKey.get(normalizeTitle(track.title));
+    const row = lookup(track.title);
     const onSheet = row ? row.playedThisTour || (row.effectiveSlp ?? Infinity) < cutoff : false;
     return { ...track, row, onSheet, total: row?.total || 0 };
   });
