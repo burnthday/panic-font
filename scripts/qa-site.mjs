@@ -31,6 +31,7 @@ async function main() {
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml, siteData);
   await checkSongPages(siteData);
+  await checkSongLearnBlock(siteData);
   await checkLegacyPages(siteData);
   await checkTourInReviewPages();
   await checkLocalAssets(allHtml);
@@ -481,6 +482,49 @@ async function checkSongPages(siteData) {
       .find((page) => new RegExp(`<h1>${sample.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}</h1>`).test(page.html));
     record("A song history page reflects catalog play totals", Boolean(match) && match.html.includes("lifetime plays") && match.html.includes(sample.total.toLocaleString("en-US")), `${sample.title}: ${sample.total} plays${slug ? ` (/song/${slug}/)` : ""}`);
   }
+}
+
+// "Learn It" resource block on song pages: correctly placed, carries the
+// external guitarist resources, and never links a dead internal lyrics target.
+async function checkSongLearnBlock(siteData) {
+  const songFiles = await listFiles(path.join(distDir, "song"), (filePath) => filePath.endsWith("index.html"));
+  const pages = await Promise.all(songFiles.map(async (filePath) => ({ filePath, html: await readFile(filePath, "utf8") })));
+  record("Song pages generated for the Learn It check", pages.length > 0, `${pages.length} pages`);
+
+  // Placement: the LEARN IT heading sits above the performance log and the
+  // "All songs" back-link on a representative page.
+  const sample = pages.find((page) => page.filePath.endsWith(path.join("song", "climb-to-safety", "index.html"))) || pages[0];
+  if (sample) {
+    const learnIdx = indexOf(sample.html, ">LEARN IT<");
+    const backIdx = indexOf(sample.html, 'class="song-back"');
+    const perfIdx = indexOf(sample.html, "Every performance");
+    record("Song page carries the LEARN IT heading", learnIdx >= 0, sample.filePath);
+    record("LEARN IT heading sits above the performance log and back link",
+      learnIdx >= 0 && learnIdx < backIdx && (perfIdx < 0 || learnIdx < perfIdx),
+      `learn=${learnIdx} perf=${perfIdx} back=${backIdx}`);
+  }
+
+  // Every song page must offer the Everyday Companion and Songsterr chips.
+  const missingEc = pages.filter((page) => !/class="learn-chip[^"]*"[^>]*>Everyday Companion/.test(page.html));
+  const missingSongsterr = pages.filter((page) => !page.html.includes("Songsterr tab"));
+  record("Every song page carries the Everyday Companion chip", missingEc.length === 0, missingEc.slice(0, 5).map((p) => p.filePath).join("\n"));
+  record("Every song page carries the Songsterr tab chip", missingSongsterr.length === 0, missingSongsterr.slice(0, 5).map((p) => p.filePath).join("\n"));
+
+  // Internal "Lyrics on Burnthday" chips must resolve to a real file in dist —
+  // never a fabricated or dead internal target.
+  const internalHrefs = new Set();
+  for (const page of pages) {
+    for (const match of page.html.matchAll(/<a class="learn-chip" href="([^"]+)"/g)) internalHrefs.add(match[1]);
+  }
+  const dead = [];
+  for (const href of internalHrefs) {
+    if (/^https?:\/\//i.test(href)) { dead.push(`${href} (external — internal chip must be a local path)`); continue; }
+    const rel = href.replace(/^\/+/, "");
+    const target = href.endsWith("/") ? path.join(distDir, rel, "index.html") : path.join(distDir, rel);
+    const ok = await stat(target).then((s) => s.isFile()).catch(() => false);
+    if (!ok) dead.push(`${href} -> ${target}`);
+  }
+  record("Internal Lyrics chips all resolve to real dist files", dead.length === 0, `${internalHrefs.size} distinct internal targets; dead: ${dead.join("; ")}`);
 }
 
 function checkNavigation(html, siteData) {

@@ -114,6 +114,8 @@ async function main() {
   const albums = await loadAlbums();
   await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
+  siteData.ecLinksByKey = await loadEcLinks();
+  siteData.lyricsResourceByKey = buildLyricsResourceIndex(archiveEntries);
   await writeSongPages(siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   const tourInReviews = await writeTourInReviewPages(siteData, archiveEntries);
@@ -2597,6 +2599,71 @@ function renderSongSearchScript() {
   })();`;
 }
 
+// Optional verified Everyday Companion deep links, keyed by the same
+// normalizeTitle() key the catalog uses. Produced by scripts/verify-ec-links.mjs
+// (which runs where outbound web is available) and committed as
+// data/source/ec-links.json. Absent by default — deep links light up the day the
+// file lands, no code change required. Accepts either a flat { key: url } object
+// or a wrapped { links: { key: url } } shape.
+async function loadEcLinks() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "ec-links.json"), "utf8");
+    const parsed = JSON.parse(raw);
+    const map = parsed && typeof parsed.links === "object" && parsed.links ? parsed.links : parsed;
+    return map && typeof map === "object" ? map : {};
+  } catch {
+    return {};
+  }
+}
+
+// Map catalog song key -> internal Burnthday lyrics page path, for the song
+// "Learn It" block. A match exists only when the archive has a lyrics page whose
+// own title IS this song (so the page's HTML necessarily contains the title).
+// We deliberately never fall back to the generic /lyrics-chords/ hub — a missing
+// match means the internal chip is omitted rather than faked.
+function buildLyricsResourceIndex(archiveEntries = []) {
+  const byKey = new Map();
+  for (const entry of archiveEntries) {
+    if (archiveSection(entry).href !== "/lyrics-chords/") continue;
+    if (!entry.path) continue;
+    const songName = cleanArchiveTitle(entry.title)
+      .replace(/\b(album\s+)?lyrics?\b/gi, "")
+      .replace(/\bchords?\b/gi, "")
+      .replace(/[|–—-]\s*burnthday.*$/i, "")
+      .trim();
+    const key = normalizeTitle(songName);
+    if (!key) continue;
+    const contentLen = String(entry.content || "").length;
+    const existing = byKey.get(key);
+    // Prefer the most specific (shortest) page for a song — a dedicated per-song
+    // lyrics page over a giant multi-track album-lyrics compilation.
+    if (!existing || contentLen < existing.contentLen) {
+      byKey.set(key, { href: entry.path, contentLen });
+    }
+  }
+  const result = new Map();
+  for (const [key, value] of byKey) result.set(key, value.href);
+  return result;
+}
+
+// The guitarist-facing "Learn It" resource row: internal lyrics (only when a real
+// archive page exists), Everyday Companion (community canon, deep-linked when
+// verified), and a Songsterr tab search. Sits right after the song facts.
+function renderSongLearnIt(song, data) {
+  const chips = [];
+  const internal = data.lyricsResourceByKey?.get(song.key);
+  if (internal) {
+    chips.push(`<a class="learn-chip" href="${escapeAttr(internal)}">Lyrics on Burnthday<small>lyrics &amp; chords</small></a>`);
+  }
+  const ecHref = data.ecLinksByKey?.[song.key] || "http://everydaycompanion.com/";
+  chips.push(`<a class="learn-chip learn-ext" href="${escapeAttr(ecHref)}" target="_blank" rel="noopener noreferrer">Everyday Companion <span class="learn-go" aria-hidden="true">↗</span><small>lyrics &amp; chords</small></a>`);
+  chips.push(`<a class="learn-chip learn-ext" href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer">Songsterr tab <span class="learn-go" aria-hidden="true">↗</span></a>`);
+  return `<section class="song-learn" aria-labelledby="song-learn-h">
+        <h2 class="song-learn-eyebrow" id="song-learn-h">LEARN IT</h2>
+        <div class="song-learn-chips">${chips.join("")}</div>
+      </section>`;
+}
+
 function renderSongPage(song, data, albums, slugMap) {
   const rarity = calculateRarity(song);
   const heat = calculateRotationHeat(song, data.totals?.postedSetlists || 0);
@@ -2661,6 +2728,7 @@ function renderSongPage(song, data, albums, slugMap) {
         ${spanYears != null ? `<div><dt>In the rotation</dt><dd>${spanYears === 0 ? "under a year" : `${spanYears} year${spanYears === 1 ? "" : "s"}`} of history</dd></div>` : ""}
         <div><dt>Type</dt><dd>${escapeHtml(eyebrow)}</dd></div>
       </dl>
+      ${renderSongLearnIt(song, data)}
       ${onAlbums.length ? `<section class="song-albums">
         <h2>Appears on</h2>
         <div class="song-album-chips">${onAlbums.map((a) => `<a href="/albums/${escapeAttr(a.slug)}/">${escapeHtml(a.title)}<small>${escapeHtml(albumYear(a))}</small></a>`).join("")}</div>
@@ -2669,7 +2737,6 @@ function renderSongPage(song, data, albums, slugMap) {
         <a href="/song-origins/${escapeAttr(origin.slug)}/"><span class="xl-eyebrow">Song Origin</span><span class="xl-title">The story behind “${escapeHtml(origin.title)}”</span><span class="xl-go" aria-hidden="true">→</span></a>
       </nav>` : ""}
       ${renderSongPerformanceLog(song, data)}
-      <p class="song-resources"><a href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer">Chords &amp; tabs on Songsterr <span aria-hidden="true">↗</span></a></p>
       <p class="song-back"><a href="/songs/">← All songs</a></p>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
@@ -8575,9 +8642,19 @@ body.stagelight .perf-more a:hover { color: var(--sl-ink); }
   body.stagelight .perf-loc { grid-column: 2; grid-row: 2; text-align: right; }
   body.stagelight .perf-go { grid-column: 3; grid-row: 2; }
 }
-body.stagelight .song-resources { margin-top: 22px; }
-body.stagelight .song-resources a { display: inline-flex; align-items: center; gap: 7px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--sl-muted); border-bottom: 1px solid var(--sl-line); padding-bottom: 3px; }
-body.stagelight .song-resources a:hover { color: var(--sl-ink); border-color: var(--sl-line-strong); }
+/* "Learn It" resource row — guitarist-facing, styled to match .song-album-chips */
+body.stagelight .song-learn { margin: 0 0 30px; }
+body.stagelight .song-learn-eyebrow { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 14px; }
+body.stagelight .song-learn-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+body.stagelight .song-learn-chips a {
+  display: inline-flex; align-items: baseline; gap: 8px; padding: 10px 16px; border-radius: var(--sl-r-pill);
+  background: var(--sl-glass); border: 1px solid var(--sl-line); box-shadow: var(--sl-shadow-1); color: var(--sl-ink);
+  font-family: var(--sl-display); font-size: 15px; font-weight: 560; transition: border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+body.stagelight .song-learn-chips a:hover { border-color: var(--sl-line-strong); transform: translateY(-2px); box-shadow: var(--sl-shadow-2); }
+body.stagelight .song-learn-chips a small { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
+body.stagelight .song-learn-chips .learn-go { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); align-self: center; }
+body.stagelight .song-learn-chips .learn-ext:hover .learn-go { color: var(--sl-ink); }
 /* 404 — lost at the show */
 body.stagelight .nf-main { max-width: 620px; text-align: center; padding: 40px 0 60px; }
 body.stagelight .nf-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 14px; }

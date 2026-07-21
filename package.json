@@ -13,6 +13,7 @@
   "import:setlistfm": "node scripts/import-setlistfm.mjs",
     "enrich:setlist-transitions": "node scripts/enrich-setlist-transitions.mjs",
     "import:song-origins": "node scripts/import-song-origins.mjs",
+    "verify:ec-links": "node scripts/verify-ec-links.mjs",
     "validate:playstats": "node scripts/validate-playstats-match.mjs",
     "validate:tour-data": "node scripts/validate-current-tour-data.mjs",
     "validate:production": "node scripts/validate-production-readiness.mjs",
