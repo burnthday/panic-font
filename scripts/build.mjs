@@ -76,6 +76,7 @@ const footerColumns = [
   ["Live", [
     ["Setlists", "/#setlists"],
     ["Tour In Review", "/tour-in-review/"],
+    ["Newsletters", "/newsletters/"],
     ["Rumors", "/rumors/"]
   ]],
   ["Songbook", [
@@ -113,6 +114,12 @@ async function main() {
   await copyAssets();
   // lookup so archive/lyrics pages can cross-link to a matching Song Origin
   siteData.originsByTitle = new Map((songOrigins || []).map((origin) => [normalizeTitle(origin.title), origin]));
+  // Mikey-era archival layers: Porch Songs + tour posters decorate the Tour In
+  // Review hub; the newsletters payload drives the /newsletters/ archive page.
+  const [porchSongs, tourPosters, newsletters] = await Promise.all([loadPorchSongs(), loadTourPosters(), loadNewsletters()]);
+  siteData.porchSongs = porchSongs;
+  siteData.tourPosters = tourPosters;
+  siteData.newsletters = newsletters;
   // Data layers the lyric/archive pages join against must exist BEFORE those pages
   // render: albums (album chip), song slug map (/song/ live-history link) and the
   // lyrics resource index. These are pure, deterministic joins over already-loaded
@@ -138,6 +145,7 @@ async function main() {
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
   await writePrivacyPage(siteData);
+  await writeNewslettersPage(siteData);
   await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
   siteData.songVideosByKey = await loadSongVideos();
@@ -373,6 +381,42 @@ async function loadCuratedSongOrigins() {
       .map((origin) => ({ ...origin, curated: true }));
   } catch {
     return [];
+  }
+}
+
+// Mikey-era archival decorations for the Tour In Review hub and the Newsletters
+// page. Each is a curated, attributed pull (the band's own Porch Songs series, the
+// official poster archive, and the Moon Times / Panicle newsletters preserved via
+// the Internet Archive + a fan transcription). Missing file → empty, never a throw.
+async function loadPorchSongs() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "porch-songs.json"), "utf8");
+    const payload = JSON.parse(raw);
+    return (payload.entries || []).filter((entry) => entry.title);
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
+}
+
+async function loadTourPosters() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "tour-posters.json"), "utf8");
+    const payload = JSON.parse(raw);
+    return (payload.posters || []).filter((poster) => poster.image && poster.tour);
+  } catch (error) {
+    if (error.code === "ENOENT") return [];
+    throw error;
+  }
+}
+
+async function loadNewsletters() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "newsletters.json"), "utf8");
+    return JSON.parse(raw);
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
   }
 }
 
@@ -2146,6 +2190,169 @@ function renderPrivacyPage(data) {
 </html>`;
 }
 
+async function writeNewslettersPage(data) {
+  await writeStaticPage("/newsletters/index.html", renderNewslettersPage(data));
+}
+
+// Newsletter archive: the official Moon Times (preserved by the Internet Archive)
+// and the fan-run Panicle (transcribed by a fan blog). This is preservation with
+// attribution, not republication: each issue shows a short excerpt and a prominent
+// outbound link to the source that holds the full text. Known gaps are surfaced
+// honestly so the archive does not read as complete when it is not.
+function renderNewslettersPage(data) {
+  const nl = data.newsletters || {};
+  const sources = nl.sources || [];
+  const moonSource = sources.find((source) => source.publication === "Moon Times") || {};
+  const panicleSource = sources.find((source) => source.publication === "The Panicle") || {};
+  const issues = nl.issues || [];
+  const moon = issues.filter((issue) => issue.publication === "Moon Times");
+  const panicle = issues.filter((issue) => issue.publication === "The Panicle");
+  const description = "A preserved archive of Widespread Panic fan newsletters: the official Moon Times via the Internet Archive and the fan-run Panicle via fan transcription, each linked back to its source.";
+
+  const excerpt = (text) => {
+    const clean = String(text || "").replace(/\s+/g, " ").trim();
+    if (!clean) return "";
+    return clean.length > 260 ? `${clean.slice(0, 260).trim()}…` : clean;
+  };
+
+  const originChips = (issue) => {
+    const seen = new Set();
+    const chips = [];
+    for (const mention of issue.songMentions || []) {
+      if (!mention.crossReferencesOrigin || !mention.originSlug || seen.has(mention.originSlug)) continue;
+      seen.add(mention.originSlug);
+      chips.push(`<a class="nl-chip" href="/song-origins/${escapeAttr(mention.originSlug)}/">${escapeHtml(mention.song)}</a>`);
+    }
+    return chips.length ? `<div class="nl-origins"><span class="nl-origins-label">Song origins mentioned</span>${chips.join("")}</div>` : "";
+  };
+
+  const issueCard = (issue, sourceLabel) => {
+    const meta = [issue.label, issue.date].filter(Boolean).map((part) => escapeHtml(String(part))).join(" · ");
+    const body = excerpt(issue.text);
+    return `<li class="nl-issue">
+              <div class="nl-issue-head">
+                <h3>${escapeHtml(issue.title || issue.label || "Newsletter")}</h3>
+                <p class="nl-meta">${meta}</p>
+              </div>
+              ${body ? `<p class="nl-excerpt">${escapeHtml(body)}</p>` : ""}
+              ${originChips(issue)}
+              ${issue.sourceUrl ? `<p class="nl-actions"><a class="nl-source" href="${escapeAttr(issue.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(sourceLabel)}</a></p>` : ""}
+            </li>`;
+  };
+
+  // Moon Times, grouped by volume (ascending), issues ordered by number.
+  const moonByVolume = new Map();
+  for (const issue of moon) {
+    const vol = issue.volume ?? 0;
+    if (!moonByVolume.has(vol)) moonByVolume.set(vol, []);
+    moonByVolume.get(vol).push(issue);
+  }
+  const moonVolumes = [...moonByVolume.keys()].sort((a, b) => a - b);
+  const moonSection = moon.length ? `<section class="nl-section" aria-labelledby="moon-heading">
+          <div class="nl-section-head">
+            <h2 id="moon-heading">Moon Times</h2>
+            <p>${escapeHtml(moonSource.attribution || "The official Widespread Panic newsletter.")}</p>
+          </div>
+          ${moonVolumes.map((vol) => `<div class="nl-volume">
+            <h3 class="nl-volume-head">Volume ${escapeHtml(String(vol))}</h3>
+            <ul class="nl-issue-grid">${moonByVolume.get(vol).sort((a, b) => (a.number || 0) - (b.number || 0)).map((issue) => issueCard(issue, "Read on the Internet Archive")).join("")}</ul>
+          </div>`).join("")}
+        </section>` : "";
+
+  const panicleSection = panicle.length ? `<section class="nl-section" aria-labelledby="panicle-heading">
+          <div class="nl-section-head">
+            <h2 id="panicle-heading">The Panicle</h2>
+            <p>${escapeHtml(panicleSource.attribution || "A fan-run Widespread Panic newsletter, transcribed by fans.")}</p>
+          </div>
+          <ul class="nl-issue-grid">${panicle.map((issue) => issueCard(issue, "Read the transcription")).join("")}</ul>
+        </section>` : "";
+
+  // Honest "what's missing" note from knownGaps + unreachable.
+  const gaps = nl.knownGaps || {};
+  const gapItems = [];
+  for (const gap of gaps.moonTimes || []) gapItems.push(`<li><strong>Moon Times ${escapeHtml(gap.label)}:</strong> ${escapeHtml(gap.note || "not located online.")}</li>`);
+  for (const gap of gaps.moonTimesMastheadOnly || []) gapItems.push(`<li><strong>Moon Times ${escapeHtml(gap.label)}:</strong> masthead archived, but the content pages redirect to ${escapeHtml(gap.duplicateOf || "another issue")}, so no distinct copy survives online.</li>`);
+  for (const gap of gaps.panicle || []) gapItems.push(`<li><strong>Panicle ${escapeHtml(gap.label)}${gap.date ? ` (${escapeHtml(gap.date)})` : ""}:</strong> ${escapeHtml(gap.note || "no transcription located online.")}</li>`);
+  const unreachable = nl.unreachable || [];
+  for (const item of unreachable) gapItems.push(`<li><strong>${escapeHtml(item.publication)} ${escapeHtml(item.label)}:</strong> the archived snapshot no longer loads.</li>`);
+  const gapsSection = gapItems.length ? `<section class="nl-gaps" aria-labelledby="gaps-heading">
+          <h2 id="gaps-heading">What's missing</h2>
+          ${gaps.note ? `<p>${escapeHtml(gaps.note)}</p>` : ""}
+          <ul>${gapItems.join("")}</ul>
+        </section>` : "";
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Widespread Panic Newsletters | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com/newsletters/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <style>${renderNewslettersCss()}</style>
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Newsletters", "https://burnthday.com/newsletters/"]
+    ])}</script>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main">
+      <article class="archive-page nl-page">
+        <header class="archive-title">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Newsletters</span></nav>
+          <h1>Newsletters</h1>
+          <p class="nl-deck">Two Widespread Panic fan newsletters, preserved and linked back to their sources. The official Moon Times and the fan-run Panicle.</p>
+        </header>
+        <section class="nl-attribution" aria-label="Sources and attribution">
+          <p>Moon Times was the official Widespread Panic newsletter. Its text is preserved by the <a href="https://web.archive.org/" target="_blank" rel="noopener noreferrer">Internet Archive's Wayback Machine</a>${moonSource.indexUrl ? ` from <a href="${escapeAttr(moonSource.indexUrl)}" target="_blank" rel="noopener noreferrer">widespreadpanic.com's own archived pages</a>` : ""}.</p>
+          <p>The Panicle was a fan-run newsletter from Athens, Georgia. The issues here were transcribed by the <a href="${escapeAttr(panicleSource.indexUrl || "http://widespread-panic.blogspot.com/")}" target="_blank" rel="noopener noreferrer">Nothing But Widespread Panic</a> fan blog. Credit to the blog and the original Panicle authors.</p>
+          <p class="nl-attribution-note">This is preservation with attribution, not republication. Each issue below links out to the source that holds the full text.</p>
+        </section>
+        ${moonSection}
+        ${panicleSection}
+        ${gapsSection}
+      </article>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+  </body>
+</html>`;
+}
+
+function renderNewslettersCss() {
+  return `
+      .nl-page { max-width: 940px; }
+      .nl-deck { font-size: 1rem; opacity: 0.8; }
+      .nl-attribution { border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 1rem 1.2rem; background: rgba(255,255,255,0.55); margin: 1.5rem 0 2rem; }
+      .nl-attribution p { margin: 0 0 0.6rem; font-size: 0.9rem; line-height: 1.55; }
+      .nl-attribution p:last-child { margin-bottom: 0; }
+      .nl-attribution-note { opacity: 0.72; }
+      .nl-section { margin-top: 2.5rem; }
+      .nl-section-head h2 { margin: 0 0 0.35rem; }
+      .nl-section-head p { margin: 0; font-size: 0.85rem; opacity: 0.72; line-height: 1.5; }
+      .nl-volume { margin-top: 1.5rem; }
+      .nl-volume-head { font-size: 0.95rem; margin: 0 0 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85; }
+      .nl-issue-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+      .nl-issue { border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 1rem 1.1rem; background: rgba(255,255,255,0.5); display: flex; flex-direction: column; gap: 0.6rem; }
+      .nl-issue-head h3 { margin: 0; font-size: 1rem; line-height: 1.25; }
+      .nl-meta { margin: 0.25rem 0 0; font-size: 0.8rem; opacity: 0.72; }
+      .nl-excerpt { margin: 0; font-size: 0.88rem; line-height: 1.5; opacity: 0.9; }
+      .nl-origins { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: baseline; }
+      .nl-origins-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; width: 100%; }
+      .nl-chip { font-size: 0.8rem; font-weight: 600; padding: 0.1rem 0.5rem; border: 1px solid rgba(0,0,0,0.18); border-radius: 999px; }
+      .nl-actions { margin: auto 0 0; padding-top: 0.35rem; }
+      .nl-source { font-size: 0.82rem; font-weight: 600; }
+      .nl-gaps { margin-top: 2.5rem; border-top: 1px solid rgba(0,0,0,0.12); padding-top: 1.5rem; }
+      .nl-gaps h2 { margin: 0 0 0.5rem; }
+      .nl-gaps p { font-size: 0.9rem; opacity: 0.8; line-height: 1.55; }
+      .nl-gaps ul { font-size: 0.88rem; line-height: 1.6; padding-left: 1.1rem; }
+  `;
+}
+
 async function writeGeneratedTourReviewPages(data) {
   const reviews = [];
   const review2025 = await buildGeneratedTourReview(2025, data);
@@ -2719,6 +2926,96 @@ function decadeLabel(decade) {
   return `${decade}s`;
 }
 
+// Porch Songs: the band's own archival-release series of historic Mikey-era shows.
+// Burnthday is the compiler here, not the narrator: the highlight prose is the
+// band's own copy, rendered as a quoted, attributed block that links back to the
+// official page. Full text stays on widespreadpanic.com. No cross-links are mined
+// from the prose (the data carries no explicit song fields).
+function renderPorchSongsSection(data) {
+  const entries = [...(data.porchSongs || [])].sort((a, b) => String(a.dateSort || "").localeCompare(String(b.dateSort || "")) || String(a.year || "").localeCompare(String(b.year || "")));
+  if (!entries.length) return "";
+
+  const cards = entries.map((entry) => {
+    const place = String(entry.title || "").replace(/^Porch Songs:\s*/i, "").trim() || entry.title;
+    const meta = [entry.date, entry.venue].filter(Boolean).map((part) => escapeHtml(String(part))).join(" · ");
+    const listen = entry.listen || {};
+    const listenLinks = [];
+    if (listen.relisten) listenLinks.push(`<a class="porch-listen" href="${escapeAttr(listen.relisten)}" target="_blank" rel="noopener noreferrer">Listen on Relisten</a>`);
+    if (listen.archiveOrg) listenLinks.push(`<a class="porch-listen" href="${escapeAttr(listen.archiveOrg)}" target="_blank" rel="noopener noreferrer">archive.org</a>`);
+    const highlight = entry.hasHighlights && entry.highlights
+      ? `<blockquote class="porch-note"><p>${escapeHtml(String(entry.highlights))}</p><cite>From the band's Porch Songs series, <a href="${escapeAttr(entry.sourceUrl)}" target="_blank" rel="noopener noreferrer">widespreadpanic.com</a></cite></blockquote>`
+      : (entry.sourceUrl ? `<p class="porch-source"><a href="${escapeAttr(entry.sourceUrl)}" target="_blank" rel="noopener noreferrer">Read on widespreadpanic.com</a></p>` : "");
+    return `<li class="porch-card${entry.hasHighlights ? " has-note" : ""}">
+              <div class="porch-card-head">
+                <h3>${escapeHtml(place)}</h3>
+                <p class="porch-meta">${meta}</p>
+              </div>
+              ${highlight}
+              ${listenLinks.length ? `<p class="porch-actions">${listenLinks.join("")}</p>` : ""}
+            </li>`;
+  }).join("");
+
+  return `<section class="tour-porch" aria-labelledby="porch-heading">
+          <div class="tour-index-head">
+            <h2 id="porch-heading">Porch Songs</h2>
+            <span>The band's archival releases of historic Mikey-era shows, with their note and a link to listen.</span>
+          </div>
+          <ul class="porch-grid">${cards}</ul>
+        </section>`;
+}
+
+// Tour Prints: one commissioned poster per tour from the band's official archive.
+// Poster art is © the credited artists, so every image renders with its artist
+// credit and a link back to the official page. Never an unattributed image, never
+// an invented artist name.
+function renderTourPrintsSection(data) {
+  const posters = [...(data.tourPosters || [])].sort((a, b) => String(a.tourSort || a.year || "").localeCompare(String(b.tourSort || b.year || "")));
+  if (!posters.length) return "";
+
+  const cards = posters.map((poster) => {
+    const alt = `${poster.tour} tour poster${poster.artist ? ` by ${poster.artist}` : ""}`;
+    const credit = poster.artist
+      ? `<a class="print-credit" href="${escapeAttr(poster.sourceUrl)}" target="_blank" rel="noopener noreferrer">Print by ${escapeHtml(poster.artist)}</a>`
+      : `<a class="print-credit" href="${escapeAttr(poster.sourceUrl)}" target="_blank" rel="noopener noreferrer">via widespreadpanic.com</a>`;
+    return `<li class="print-card">
+              <a class="print-image" href="${escapeAttr(poster.sourceUrl)}" target="_blank" rel="noopener noreferrer"><img src="${escapeAttr(poster.image)}" alt="${escapeAttr(alt)}" loading="lazy"></a>
+              <p class="print-tour">${escapeHtml(poster.tour)}</p>
+              ${credit}
+            </li>`;
+  }).join("");
+
+  return `<section class="tour-prints" aria-labelledby="prints-heading">
+          <div class="tour-index-head">
+            <h2 id="prints-heading">Tour Prints</h2>
+            <span>One commissioned print per tour from the band's official poster archive. Art belongs to the credited artists.</span>
+          </div>
+          <ul class="print-grid">${cards}</ul>
+        </section>`;
+}
+
+// Scoped styles for the Porch Songs + Tour Prints archival sections on the hub.
+function renderTourArchiveCss() {
+  return `
+      .tour-porch, .tour-prints { margin-top: 3rem; }
+      .porch-grid, .print-grid { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 1rem; }
+      .porch-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+      .porch-card { border: 1px solid rgba(0,0,0,0.12); border-radius: 10px; padding: 1rem 1.1rem; background: rgba(255,255,255,0.55); display: flex; flex-direction: column; gap: 0.6rem; }
+      .porch-card-head h3 { margin: 0; font-size: 1.05rem; line-height: 1.2; }
+      .porch-meta { margin: 0.25rem 0 0; font-size: 0.82rem; opacity: 0.72; }
+      .porch-note { margin: 0; border-left: 3px solid rgba(0,0,0,0.28); padding: 0.1rem 0 0.1rem 0.85rem; }
+      .porch-note p { margin: 0; font-size: 0.9rem; line-height: 1.5; }
+      .porch-note cite { display: block; margin-top: 0.5rem; font-size: 0.78rem; font-style: normal; opacity: 0.72; }
+      .porch-actions, .porch-source { margin: auto 0 0; display: flex; flex-wrap: wrap; gap: 0.75rem; padding-top: 0.35rem; }
+      .porch-listen, .porch-source a { font-size: 0.82rem; font-weight: 600; }
+      .print-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+      .print-card { display: flex; flex-direction: column; gap: 0.4rem; }
+      .print-image { display: block; border-radius: 8px; overflow: hidden; border: 1px solid rgba(0,0,0,0.12); }
+      .print-image img { display: block; width: 100%; height: auto; }
+      .print-tour { margin: 0.35rem 0 0; font-size: 0.88rem; font-weight: 600; line-height: 1.25; }
+      .print-credit { font-size: 0.78rem; opacity: 0.8; }
+  `;
+}
+
 function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], tourInReviews = []) {
   const description = "Burnthday's Widespread Panic Tour In Review: one computed page per tour from setlist.fm, unified with Alex's hand-written reviews.";
 
@@ -2805,6 +3102,7 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
+    <style>${renderTourArchiveCss()}</style>
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
       ["Home", "https://burnthday.com/"],
       ["Tour In Review", "https://burnthday.com/tour-in-review/"]
@@ -2833,6 +3131,9 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
       ${tourIndex}
       <p class="song-empty" id="tour-empty" hidden>No tours match those filters.</p>
       ${yearSummary}
+      ${renderPorchSongsSection(data)}
+      ${renderTourPrintsSection(data)}
+      <p class="tour-archive-more">More band history lives in the <a href="/newsletters/">newsletter archive</a>: the official Moon Times and the fan-run Panicle.</p>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
     <script>${renderTourHubScript()}</script>
@@ -12136,6 +12437,9 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
     <loc>https://burnthday.com${escapeHtml(tour.route)}</loc>
     <lastmod>${escapeHtml(tour.last)}</lastmod>
   </url>`).join("\n  ")}
+  <url>
+    <loc>https://burnthday.com/newsletters/</loc>
+  </url>
   <url>
     <loc>https://burnthday.com/shelf/</loc>
   </url>

@@ -41,6 +41,7 @@ async function main() {
   checkEyebrowAudit(allHtmlFiles, allHtml);
   await checkTourInReviewPages();
   await checkArchiveIndex();
+  await checkArchivalDecorations();
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkCommandPalette(allHtmlFiles, allHtml, siteData);
   await checkLaminateRim();
@@ -553,7 +554,7 @@ function checkNavigation(html, siteData) {
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
-  const expectedFooter = ["Setlists", "Tour In Review", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "Song List", "The Shelf", "About"];
+  const expectedFooter = ["Setlists", "Tour In Review", "Newsletters", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "Song List", "The Shelf", "About"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerColumns = sectionsByClass(html, "footer-links");
   const footerNav = footerColumns.flatMap((column) => linkTexts(column));
@@ -954,10 +955,13 @@ async function checkMusicLayer(files, htmlByFile) {
     const stripped = htmlByFile[index]
       .replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
       .replace(/<a class="perf-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
-      .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
+      .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      // Porch Songs archival listen links: curated Relisten URLs supplied by the
+      // band's own Porch Songs data, rendered on the Tour In Review hub.
+      .replace(/<a class="porch-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
     return /relisten\.net/.test(stripped);
   }).map((file) => path.relative(root, file));
-  record("relisten.net links render only through the gated Pick, performance-row, and show-card controls", relistenOffenders.length === 0, relistenOffenders.join("; "));
+  record("relisten.net links render only through the gated Pick, performance-row, show-card, and Porch Songs controls", relistenOffenders.length === 0, relistenOffenders.join("; "));
 }
 
 // Global command-palette (⌘K) search. Verifies: the trigger + dialog are on
@@ -1056,7 +1060,8 @@ async function checkCommandPalette(files, htmlByFile, siteData) {
     const stripped = htmlByFile[i]
       .replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
       .replace(/<a class="perf-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
-      .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
+      .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      .replace(/<a class="porch-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
     return /relisten\.net/.test(stripped);
   });
   record("Command palette introduces no un-gated static relisten.net link", staticLeak.length === 0, staticLeak.map((f) => path.relative(root, f)).join("; "));
@@ -1293,6 +1298,42 @@ async function checkArchiveIndex() {
   record("Archive index uses a single H1 with no duplicate eyebrow",
     (html.match(/<h1>/g) || []).length === 1 && !/class="[a-z-]*eyebrow"/.test(html),
     "expected one H1 and no page eyebrow");
+}
+
+// Mikey-era archival layers: the /newsletters/ archive page, plus the Porch Songs
+// and Tour Prints decorations on the Tour In Review hub. These verify the data is
+// wired in with its required attribution (Internet Archive, per-poster artist link).
+async function checkArchivalDecorations() {
+  const newsletters = await readText("dist/newsletters/index.html").catch(() => "");
+  const hasMoon = newsletters.includes('id="moon-heading"') && /Moon Times/.test(newsletters);
+  const hasPanicle = newsletters.includes('id="panicle-heading"') && /The Panicle/.test(newsletters);
+  const hasArchiveLink = newsletters.includes('href="https://web.archive.org/');
+  record("Newsletters page renders Moon Times + Panicle sections with the Internet Archive attribution link",
+    hasMoon && hasPanicle && hasArchiveLink,
+    `moon=${hasMoon} panicle=${hasPanicle} archiveLink=${hasArchiveLink}`);
+
+  const hub = await readText("dist/tour-in-review/index.html").catch(() => "");
+  const hasPorch = hub.includes('class="tour-porch"') && hub.includes('id="porch-heading"');
+  const listenCount = (hub.match(/class="porch-listen"/g) || []).length;
+  record("Tour In Review hub renders the Porch Songs section with at least 10 listen links",
+    hasPorch && listenCount >= 10, `porch=${hasPorch} listenLinks=${listenCount}`);
+
+  const posterCards = hub.match(/<li class="print-card">[\s\S]*?<\/li>/g) || [];
+  let posterBad = 0;
+  for (const card of posterCards) {
+    const img = card.match(/<img[^>]*\balt="([^"]*)"[^>]*>/);
+    const altOk = img && img[1].trim().length > 0;
+    const creditLink = card.match(/<a class="print-credit" href="(https:\/\/widespreadpanic\.com[^"]*)"/);
+    const imgIndex = card.indexOf("<img");
+    const creditIndex = card.indexOf("print-credit");
+    if (!altOk || !creditLink || creditIndex < imgIndex) posterBad += 1;
+  }
+  record("Every rendered tour poster has a nonempty alt and a following widespreadpanic.com attribution link",
+    posterCards.length > 0 && posterBad === 0, `posters=${posterCards.length} failing=${posterBad}`);
+
+  const sitemap = await readText("dist/sitemap.xml").catch(() => "");
+  record("Newsletters page appears in the sitemap",
+    sitemap.includes("https://burnthday.com/newsletters/"), "expected /newsletters/ in sitemap.xml");
 }
 
 async function listFiles(dir, predicate) {
