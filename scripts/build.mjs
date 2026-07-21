@@ -6660,6 +6660,21 @@ body.stagelight .live-dot { width: 7px; height: 7px; border-radius: 50%; backgro
 }
 
 /* ---- TOUR STATS DENSITY + RARITY SYMBOLS ---- */
+body.stagelight .signal-cell strong { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 620; }
+body.stagelight .signal-cell small { display: block; margin-top: 4px; font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); letter-spacing: 0.02em; font-weight: 400; }
+body.stagelight .tour-table td, body.stagelight .tour-table th[scope="row"] { vertical-align: top; }
+body.stagelight .data-toolbar .mobile-sort { display: none; }
+body.stagelight .data-toolbar select {
+  -webkit-appearance: none; appearance: none; border: 0; background: transparent;
+  font-weight: 560; font-size: 14px; color: var(--sl-ink); padding: 0 4px;
+}
+body.stagelight .data-toolbar select:focus-visible { outline: 2px solid rgba(242,242,240,0.35); outline-offset: 3px; border-radius: 6px; }
+body.stagelight .show-filter { gap: 12px; }
+@media (max-width: 760px) {
+  body.stagelight .data-toolbar .mobile-sort { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--sl-line-strong); }
+  body.stagelight .data-toolbar .mobile-sort span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+}
+
 body.stagelight .tour-stats { padding: 26px 28px 20px; }
 body.stagelight .tour-table th, body.stagelight .tour-table td,
 body.stagelight .data-table th, body.stagelight .data-table td { padding: 16px 18px; }
