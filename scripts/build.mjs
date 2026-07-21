@@ -2403,21 +2403,34 @@ function calculateRotationHeat(song, shows) {
   return { expectedGap, score, label };
 }
 
-function renderSheetDrawer(key, label, count, desc, boardHtml) {
-  return `<details class="sheet-drawer sheet-drawer-${key}">
-    <summary class="sheet-drawer-summary">
-      <span class="sd-name">${escapeHtml(label)}</span>
-      <span class="sd-count">${formatNumber(count)} songs</span>
-      <span class="sd-desc">${escapeHtml(desc)}</span>
-      <span class="sd-open" aria-hidden="true"></span>
-    </summary>
-    <div class="sheet-drawer-body">${boardHtml}</div>
-  </details>`;
+function renderBentoCard(key, label, count, desc, extra) {
+  return `<button type="button" class="bento-card bento-${key}" data-bento="${key}" aria-expanded="false" aria-controls="bento-panel-${key}">
+    <span class="bc-open" aria-hidden="true">+</span>
+    <span class="bc-name">${escapeHtml(label)}</span>
+    <span class="bc-count">${formatNumber(count)}<small>SONGS</small></span>
+    <span class="bc-desc">${escapeHtml(desc)}</span>
+    ${extra}
+  </button>`;
+}
+
+function bentoFact(left, right) {
+  return `<span class="bc-fact"><span>${escapeHtml(left)}</span><span>${escapeHtml(right)}</span></span>`;
 }
 
 function renderShelfBoard(data) {
-  const shelfCount = (data.boards.shelfOriginals?.length || 0) + (data.boards.shelfCovers?.length || 0);
-  const purgCount = (data.boards.purgatoryOriginals?.length || 0) + (data.boards.purgatoryCovers?.length || 0);
+  const shelfRows = [...(data.boards.shelfOriginals || []), ...(data.boards.shelfCovers || [])];
+  const purgRows = [...(data.boards.purgatoryOriginals || []), ...(data.boards.purgatoryCovers || [])];
+  const woodCount = (data.boards.woodshedOriginals?.length || 0) + (data.boards.woodshedCovers?.length || 0);
+  const rotationCount = (data.boards.rotationOriginals?.length || 0) + (data.boards.rotationCovers?.length || 0);
+  const cleared = Math.max(0, rotationCount - woodCount);
+  const clearedPct = rotationCount ? Math.round((cleared / rotationCount) * 100) : 0;
+  const topShelf = [...shelfRows].filter((row) => row.total).sort((a, b) => (b.total || 0) - (a.total || 0)).slice(0, 2);
+  const purgSample = purgRows.slice(0, 2);
+
+  const shelfFacts = topShelf.map((row) => bentoFact(row.title.toUpperCase(), `${formatNumber(row.total)} PLAYS · LAST ${row.lastDisplay || ""}`)).join("");
+  const purgFacts = purgSample.map((row) => bentoFact(row.title.toUpperCase(), `ONE PLAY${row.lastDisplay ? ` · ${row.lastDisplay}` : ""}`)).join("");
+  const woodExtra = `<span class="bc-bar" aria-hidden="true"><i style="width:${clearedPct}%"></i></span>${bentoFact(`${formatNumber(cleared)} OF ${formatNumber(rotationCount)} CLEARED`, `${clearedPct}%`)}`;
+
   const shelf = `<section class="laminate shelf-board" id="shelf">
   ${renderBoardHeader("THE SHELF")}
   ${renderSongPanel("shelf-originals", "ORIGINALS", data.boards.shelfOriginals, { shelfMode: true, columns: 3 })}
@@ -2428,8 +2441,26 @@ function renderShelfBoard(data) {
   ${renderSongPanel("purgatory-originals", "ORIGINALS", data.boards.purgatoryOriginals, { shelfMode: true, columns: 3 })}
   ${renderSongPanel("purgatory-covers", "COVERS", data.boards.purgatoryCovers, { shelfMode: true, columns: 3 })}
 </section>`;
-  return renderSheetDrawer("shelf", "The Shelf", shelfCount, "Not played in 200 shows — off the sheet, not forgotten.", shelf)
-    + renderSheetDrawer("purgatory", "Purgatory", purgCount, "Played once, ever — waiting on a second life.", purgatory);
+
+  return `<div class="bento-grid" aria-label="Reference sheets">
+    ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
+    ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
+    ${renderBentoCard("woodshed", "The Woodshed", woodCount, "On the current sheet, not yet played with Nick.", woodExtra)}
+  </div>
+  <div class="bento-panel" id="bento-panel-shelf" hidden>${shelf}</div>
+  <div class="bento-panel" id="bento-panel-purgatory" hidden>${purgatory}</div>
+  <script>
+    document.querySelectorAll("[data-bento]").forEach((card) => card.addEventListener("click", () => {
+      const wasOpen = card.getAttribute("aria-expanded") === "true";
+      document.querySelectorAll("[data-bento]").forEach((other) => other.setAttribute("aria-expanded", "false"));
+      document.querySelectorAll(".bento-panel").forEach((panel) => { panel.hidden = true; });
+      if (!wasOpen) {
+        card.setAttribute("aria-expanded", "true");
+        const panel = document.getElementById("bento-panel-" + card.getAttribute("data-bento"));
+        if (panel) { panel.hidden = false; panel.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+      }
+    }));
+  </script>`;
 }
 
 function renderShelfWatch(data) {
@@ -2457,14 +2488,12 @@ function renderShelfWatch(data) {
 }
 
 function renderWoodshedBoard(data) {
-  const woodCount = (data.boards.woodshedOriginals?.length || 0) + (data.boards.woodshedCovers?.length || 0);
   const wood = `<section class="laminate woodshed-board" id="woodshed">
   ${renderBoardHeader("THE WOODSHED")}
   ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
 </section>`;
-  return renderSheetDrawer("woodshed", "The Woodshed", woodCount, "On the current sheet, not yet played with Nick.", wood)
-    + renderNickJohnsonFeature(data);
+  return `<div class="bento-panel" id="bento-panel-woodshed" hidden>${wood}</div>` + renderNickJohnsonFeature(data);
 }
 
 function renderNickJohnsonFeature(data) {
@@ -2643,7 +2672,26 @@ function renderLatestSetlist(data) {
   return `<section class="latest-setlist" id="latest-setlist">
   ${renderShowCard(data, featured, { latest: true, open: true, priority: true })}
   ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map((show) => renderShowCard(data, show, { lazy: true })).join("")}</div>` : ""}
+  ${renderNextShowStrip(data, featured)}
 </section>`;
+}
+
+function renderNextShowStrip(data, featured) {
+  if (data.site.isShowDayPreview) return "";
+  const next = (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (featured?.isoDate || ""));
+  if (!next) return "";
+  const dow = weekdayName(next.isoDate).slice(0, 3).toUpperCase();
+  return `<div class="next-strip">
+    <div class="ns-lead">
+      <p class="ns-tag">Next Show</p>
+      <p class="ns-city">${escapeHtml(next.location)}</p>
+      <p class="ns-venue">${escapeHtml(next.venue)}</p>
+    </div>
+    <div class="ns-meta">
+      <span class="ns-date">${escapeHtml(dow)} · ${escapeHtml(next.date)}</span>
+      <a class="sc-chip sc-chip-glass" href="https://widespreadpanic.com/tour"><span class="live-dot" aria-hidden="true"></span> nugs.net livestream</a>
+    </div>
+  </div>`;
 }
 
 function weekdayName(isoDate) {
@@ -2653,7 +2701,7 @@ function weekdayName(isoDate) {
   return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getUTCDay()];
 }
 
-function renderShowPulls(data, show) {
+function computeShowPulls(data, show) {
   const byKey = new Map((data.catalog || []).map((row) => [row.key, row]));
   const titles = [...new Set((show.sets || []).flatMap((set) => set.songTitles || []))];
   const pulls = titles
@@ -2662,13 +2710,17 @@ function renderShowPulls(data, show) {
     .map((entry) => ({ ...entry, rarity: calculateRarity(entry.row) }))
     .filter((entry) => entry.rarity.score != null && entry.rarity.score >= 70)
     .sort((left, right) => right.rarity.score - left.rarity.score);
-  if (!pulls.length) return "";
   const groups = [];
   for (const pull of pulls) {
     let group = groups.find((entry) => entry.label === pull.rarity.label);
     if (!group) { group = { label: pull.rarity.label, tier: pull.rarity.tier, songs: [] }; groups.push(group); }
     group.songs.push(pull.title);
   }
+  return groups;
+}
+
+function renderShowPulls(groups) {
+  if (!groups.length) return "";
   return `<div class="sc-row sc-pulls"><span class="sc-label">Pulls</span><span class="sc-pull-list">${groups.map((group) =>
     `<span class="sc-pull">${renderRaritySymbol(group.tier)}<span class="sc-tier">${escapeHtml(group.label)}</span> ${group.songs.map((song) => `<b>${escapeHtml(song)}</b>`).join(", ")}</span>`
   ).join("")}</span></div>`;
@@ -2680,6 +2732,11 @@ function renderShowCard(data, show, options = {}) {
   const hasSetlist = sets.length > 0;
   const iso = show.isoDate || "";
   const weekday = weekdayName(iso);
+  let venueLine = show.venue;
+  try {
+    const run = tourRunInfo(data.tourDates || [], show);
+    if (run && run.length > 1) venueLine = `${show.venue} · Night ${run.number}`;
+  } catch {}
   const longDate = formatLongDate(iso || show.date);
   const heading = options.latest ? "h3" : "h4";
   const ariaHeading = escapeAttr(formatSetlistHeading(show));
@@ -2691,7 +2748,12 @@ function renderShowCard(data, show, options = {}) {
   const notes = (annotations.guestNotes.length || annotations.bracketNotes.length)
     ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}${renderSetlistNotes(annotations)}</div></div>`
     : "";
-  const pullsRow = hasSetlist ? renderShowPulls(data, show) : "";
+  const pullGroups = hasSetlist ? computeShowPulls(data, show) : [];
+  const pullsRow = renderShowPulls(pullGroups);
+  const pullCount = sum(pullGroups.map((group) => group.songs.length));
+  const miniPulls = pullGroups.length
+    ? `<span class="sc-mini-pulls">${renderRaritySymbol(pullGroups[0].tier)}<b>${escapeHtml(pullGroups[0].songs[0])}</b>${pullCount > 1 ? `<span class="sc-more">+${pullCount - 1} MORE</span>` : ""}</span>`
+    : "";
   const previewNote = hasSetlist ? "" : `<div class="sc-row"><span class="sc-label" aria-hidden="true"></span><p class="sc-preview-note">The setlist posts here after the show, verified against the official page.</p></div>`;
   const body = setRows || previewNote || pullsRow || notes
     ? `<div class="sc-body"><div class="sc-sets">${setRows}${notes}${previewNote}${pullsRow}</div></div>`
@@ -2707,13 +2769,14 @@ function renderShowCard(data, show, options = {}) {
       ${bg}
       <span class="sc-closed">
         <time class="sc-date" datetime="${escapeAttr(iso)}">${escapeHtml(show.date)}</time>
-        <span class="sc-place"><strong>${escapeHtml(show.location)}</strong><small>${escapeHtml(show.venue)}</small></span>
+        <span class="sc-place"><strong>${escapeHtml(show.location)}</strong><small>${escapeHtml(venueLine)}</small></span>
+        ${miniPulls}
       </span>
       <span class="sc-lockup">
         <span class="sc-lock">
           <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
           <${heading} class="sc-city">${escapeHtml(show.location)}</${heading}>
-          <span class="sc-venue">${escapeHtml(show.venue)}</span>
+          <span class="sc-venue">${escapeHtml(venueLine)}</span>
           ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
         </span>
         ${photo}
@@ -6058,11 +6121,24 @@ body.stagelight {
 }
 body.stagelight::before {
   content: "";
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
   background:
-    radial-gradient(1200px 1000px at 88% -6%, rgba(40,110,158,0.30), transparent 60%),
-    radial-gradient(1300px 1200px at -18% 32%, rgba(212,81,79,0.19), transparent 62%),
-    radial-gradient(1500px 1300px at 108% 76%, rgba(45,124,82,0.17), transparent 64%);
+    radial-gradient(1700px 1500px at calc(100% + 420px) -420px, rgba(40, 110, 158, 0.40), rgba(40, 110, 158, 0.12) 46%, transparent 70%),
+    radial-gradient(1700px 1700px at -620px 22%, rgba(212, 81, 79, 0.30), rgba(212, 81, 79, 0.09) 46%, transparent 70%),
+    radial-gradient(1900px 1800px at calc(100% + 680px) 52%, rgba(45, 124, 82, 0.28), rgba(45, 124, 82, 0.08) 46%, transparent 70%),
+    radial-gradient(1500px 1400px at -520px 84%, rgba(40, 110, 158, 0.16), transparent 62%);
+}
+body.stagelight::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 body.stagelight > * { position: relative; z-index: 1; }
 body.stagelight ::selection { background: rgba(212,81,79,0.45); color: #fff; }
@@ -6327,40 +6403,61 @@ body.stagelight .footer-links a, body.stagelight .social-links a { color: var(--
 body.stagelight .footer-links a:hover, body.stagelight .social-links a:hover { color: var(--sl-ink); }
 body.stagelight .social-mark { background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); }
 
-/* ---- BENTO DRAWERS: Shelf / Purgatory / Woodshed ---- */
-.sheet-drawer { display: block; }
-.sheet-drawer summary { list-style: none; cursor: pointer; }
-.sheet-drawer summary::-webkit-details-marker { display: none; }
-body.stagelight .sheet-drawer {
+/* ---- BENTO CARDS: Shelf / Purgatory / Woodshed ---- */
+body.stagelight .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 56px; }
+body.stagelight .bento-card {
+  position: relative; text-align: left; padding: 26px; cursor: pointer;
+  font: inherit; color: var(--sl-ink);
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
   border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
-  overflow: hidden; margin: 16px 0;
+  transition: transform 0.18s ease, border-color 0.18s ease;
 }
-body.stagelight .sheet-drawer-summary {
-  display: grid; grid-template-columns: max-content max-content 1fr max-content;
-  gap: 8px 20px; align-items: baseline; padding: 22px 28px;
+body.stagelight .bento-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.2); }
+body.stagelight .bento-card[aria-expanded="true"] { border-color: rgba(255,255,255,0.24); }
+body.stagelight .bento-shelf[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(212,81,79,0.4); }
+body.stagelight .bento-purgatory[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(40,110,158,0.45); }
+body.stagelight .bento-woodshed[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(45,124,82,0.45); }
+body.stagelight .bc-open { position: absolute; top: 22px; right: 24px; color: var(--sl-faint); font-size: 22px; line-height: 1; font-weight: 300; transition: transform 0.2s ease; }
+body.stagelight .bento-card[aria-expanded="true"] .bc-open { transform: rotate(45deg); color: var(--sl-ink); }
+body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
+body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 38px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
+body.stagelight .bc-count small { font-size: 13px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
+body.stagelight .bc-desc { display: block; font-size: 13.5px; color: var(--sl-muted); margin-top: 10px; line-height: 1.5; min-height: 42px; }
+body.stagelight .bc-fact { display: flex; justify-content: space-between; gap: 12px; font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); }
+body.stagelight .bc-bar { display: block; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); margin-top: 16px; overflow: hidden; }
+body.stagelight .bc-bar i { display: block; height: 100%; background: var(--green); }
+body.stagelight .bento-panel { margin-top: 16px; }
+body.stagelight .bento-panel[hidden] { display: none; }
+@media (max-width: 900px) { body.stagelight .bento-grid { grid-template-columns: 1fr; } }
+
+/* ---- CLOSED-BAR MINI PULLS ---- */
+body.stagelight .sc-mini-pulls { margin-left: auto; display: inline-flex; align-items: baseline; gap: 8px; font-size: 14px; color: var(--sl-muted); white-space: nowrap; }
+body.stagelight .sc-mini-pulls b { color: var(--sl-ink); font-weight: 600; }
+body.stagelight .sc-mini-pulls svg { height: 9px; width: auto; }
+body.stagelight .sc-mini-pulls [fill="#111111"] { fill: #f2f2f0; }
+body.stagelight .sc-mini-pulls [stroke="#111111"] { stroke: #f2f2f0; }
+body.stagelight .sc-more { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); }
+
+/* ---- NEXT SHOW STRIP ---- */
+body.stagelight .next-strip {
+  margin-top: 16px; padding: 22px 30px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
 }
-body.stagelight .sd-name { font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; color: var(--sl-ink); }
-body.stagelight .sd-count { font-family: var(--sl-mono); font-size: 13px; color: var(--sl-muted); }
-body.stagelight .sd-desc { font-size: 13.5px; color: var(--sl-faint); }
-body.stagelight .sd-open { justify-self: end; align-self: center; width: 13px; height: 13px; position: relative; }
-body.stagelight .sd-open::before, body.stagelight .sd-open::after {
-  content: ""; position: absolute; background: var(--sl-muted); transition: transform 0.2s ease;
-}
-body.stagelight .sd-open::before { top: 6px; left: 0; width: 13px; height: 1.5px; }
-body.stagelight .sd-open::after { left: 6px; top: 0; width: 1.5px; height: 13px; }
-body.stagelight .sheet-drawer[open] .sd-open::after { transform: scaleY(0); }
-body.stagelight .sheet-drawer[open] { border-color: var(--sl-line-strong); }
-body.stagelight .sheet-drawer-shelf[open] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(212,81,79,0.38); }
-body.stagelight .sheet-drawer-purgatory[open] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(40,110,158,0.42); }
-body.stagelight .sheet-drawer-woodshed[open] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(45,124,82,0.42); }
-body.stagelight .sheet-drawer-body { padding: 0 22px 24px; }
-body.stagelight .sheet-drawer-body .laminate { margin: 6px 0 0; }
-@media (max-width: 640px) {
-  body.stagelight .sheet-drawer-summary { grid-template-columns: 1fr max-content; gap: 4px 16px; }
-  body.stagelight .sd-desc { grid-column: 1 / -1; }
-  body.stagelight .sd-open { grid-row: 1; }
+body.stagelight .ns-tag { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--sl-faint); text-transform: uppercase; margin: 0; }
+body.stagelight .ns-city { font-family: var(--sl-display); font-weight: 640; font-size: 22px; letter-spacing: -0.005em; line-height: 1.15; margin: 2px 0 0; }
+body.stagelight .ns-venue { font-size: 14px; color: var(--sl-muted); margin: 2px 0 0; }
+body.stagelight .ns-meta { display: flex; align-items: center; gap: 22px; margin-left: auto; flex-wrap: wrap; }
+body.stagelight .ns-date { font-family: var(--sl-mono); font-size: 14px; letter-spacing: 0.06em; }
+body.stagelight .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px rgba(212,81,79,0.9); animation: sl-pulse 2.4s ease-in-out infinite; }
+@keyframes sl-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .live-dot { animation: none; } }
+@media (max-width: 760px) {
+  body.stagelight .next-strip { padding: 20px; gap: 14px; }
+  body.stagelight .ns-meta { margin-left: 0; width: 100%; justify-content: space-between; }
+  body.stagelight .sc-mini-pulls { margin-left: 0; width: 100%; }
 }
 
 /* ---- THE PAPER SHEETS: keep white, add the spotlight case ---- */
