@@ -116,6 +116,8 @@ async function main() {
   await attachSetlistFmPerformances(siteData);
   siteData.ecLinksByKey = await loadEcLinks();
   siteData.lyricsResourceByKey = buildLyricsResourceIndex(archiveEntries);
+  siteData.songVideosByKey = await loadSongVideos();
+  siteData.relistenDates = await loadRelistenDates();
   attachBestGuesses(siteData, await loadBestGuesses());
   await writeSongPages(siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
@@ -2350,6 +2352,8 @@ function renderSongOriginPage(origin, origins, data) {
   const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
   const previous = origins[currentIndex - 1] || null;
   const next = origins[currentIndex + 1] || null;
+  const originBody = renderOriginText(origin.text);
+  const hasLiteEmbed = originBody.includes('class="yt-lite"');
 
   return `<!doctype html>
 <html lang="en">
@@ -2381,7 +2385,7 @@ function renderSongOriginPage(origin, origins, data) {
         <div class="origin-layout">
           ${origin.image ? `<figure class="origin-image"><img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" decoding="async"></figure>` : ""}
           <div class="origin-body">
-            ${renderOriginText(origin.text)}
+            ${originBody}
             <p class="origin-source"><a href="${escapeAttr(origin.sourceUrl)}">Original Facebook post</a></p>
           </div>
         </div>
@@ -2392,6 +2396,7 @@ function renderSongOriginPage(origin, origins, data) {
       </article>
     </main>
     ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } }, { stagelight: true })}
+    ${hasLiteEmbed ? LITE_EMBED_SCRIPT : ""}
   </body>
 </html>
 `;
@@ -2428,12 +2433,63 @@ function renderLinkedText(text) {
     const trailing = rawUrl.match(/[),.]+$/)?.[0] || "";
     const url = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
     pieces.push(escapeHtml(safeText.slice(cursor, start)));
-    pieces.push(`<a href="${escapeAttr(url)}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`);
+    const ytId = extractYouTubeId(url);
+    if (ytId) {
+      // Hand-placed YouTube link in an origin post → click-to-play lite embed.
+      pieces.push(renderLiteEmbed(ytId, { fallbackUrl: url }));
+      pieces.push(escapeHtml(trailing));
+    } else {
+      pieces.push(`<a href="${escapeAttr(url)}">${escapeHtml(url)}</a>${escapeHtml(trailing)}`);
+    }
     cursor = start + rawUrl.length;
   }
   pieces.push(escapeHtml(safeText.slice(cursor)));
   return pieces.join("");
 }
+
+// ---- Shared "lite" YouTube embed (Feature 1 origins + Feature 2 song WATCH) ----
+// A privacy-lean, click-to-play facade: a static thumbnail + play button that
+// only swaps in the real (no-cookie) iframe on interaction. One tiny delegated
+// script (LITE_EMBED_SCRIPT) drives every facade on a page; the original link is
+// preserved inside <noscript> so it degrades cleanly. Marker class: yt-lite.
+
+// Pull the 11-char video id out of a watch / youtu.be / embed URL. Tolerates the
+// player_embedded feature param and #! fragments the Blogger export left behind.
+function extractYouTubeId(rawUrl) {
+  try {
+    const u = new URL(String(rawUrl).replace(/^http:/i, "https:"));
+    const host = u.hostname.replace(/^www\./i, "").toLowerCase();
+    const valid = (id) => (/^[A-Za-z0-9_-]{11}$/.test(id) ? id : "");
+    if (host === "youtu.be") return valid(u.pathname.split("/").filter(Boolean)[0] || "");
+    if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+      if (u.pathname === "/watch") return valid(u.searchParams.get("v") || "");
+      const m = u.pathname.match(/^\/(?:embed|v|shorts)\/([A-Za-z0-9_-]{11})/);
+      if (m) return m[1];
+    }
+  } catch {
+    // Not a parseable URL → not a YouTube link.
+  }
+  return "";
+}
+
+function renderLiteEmbed(id, options = {}) {
+  const title = options.title || "video";
+  const thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
+  const fallback = options.fallbackUrl || `https://www.youtube.com/watch?v=${id}`;
+  const label = `Play video: ${title}`;
+  return `<span class="yt-lite" data-yt-src="${escapeAttr(embed)}">` +
+    `<button type="button" class="yt-lite-btn" aria-label="${escapeAttr(label)}">` +
+    `<img class="yt-lite-thumb" src="${escapeAttr(thumb)}" alt="" loading="lazy" decoding="async" width="480" height="360">` +
+    `<span class="yt-lite-play" aria-hidden="true"><svg viewBox="0 0 68 48" width="52" height="37"><path class="yt-lite-play-bg" d="M66.5 7.5a8 8 0 0 0-5.6-5.7C56 .5 34 .5 34 .5s-22 0-26.9 1.3A8 8 0 0 0 1.5 7.5 83 83 0 0 0 .2 24a83 83 0 0 0 1.3 16.5 8 8 0 0 0 5.6 5.7C12 47.5 34 47.5 34 47.5s22 0 26.9-1.3a8 8 0 0 0 5.6-5.7A83 83 0 0 0 67.8 24a83 83 0 0 0-1.3-16.5Z"/><path d="M27 34l18-10-18-10z" fill="#fff"/></svg></span>` +
+    `</button>` +
+    `<noscript><a href="${escapeAttr(fallback)}" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></noscript>` +
+    `</span>`;
+}
+
+// One shared, delegated handler. Native button semantics give us keyboard
+// activation (Enter/Space fire a click) for free.
+const LITE_EMBED_SCRIPT = `<script>document.addEventListener("click",function(e){var b=e.target.closest(".yt-lite-btn");if(!b)return;var w=b.parentNode,src=w.getAttribute("data-yt-src");if(!src)return;var f=document.createElement("iframe");f.className="yt-lite-frame";f.setAttribute("src",src);f.setAttribute("title",b.getAttribute("aria-label")||"YouTube video");f.setAttribute("frameborder","0");f.setAttribute("allow","accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share");f.setAttribute("allowfullscreen","");w.classList.add("is-playing");w.innerHTML="";w.appendChild(f);f.focus();});</script>`;
 
 function renderBreadcrumbJsonLd(items) {
   return JSON.stringify({
@@ -2779,6 +2835,83 @@ function renderSongLearnIt(song, data) {
       </section>`;
 }
 
+// Official-video support (Feature 2). Real data lives in data/source/song-videos.json,
+// which deliberately does NOT ship in the repo — only song-videos.example.json documents
+// the shape. When the real file is absent the whole WATCH layer stays dormant. Keys are
+// normalizedTitle(song); each value is an array of { youtubeId, title, era, official }.
+async function loadSongVideos() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "song-videos.json"), "utf8");
+    const parsed = JSON.parse(raw);
+    const source = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      ? (parsed.videos && typeof parsed.videos === "object" ? parsed.videos : parsed)
+      : {};
+    const byKey = new Map();
+    for (const [rawKey, value] of Object.entries(source)) {
+      if (!Array.isArray(value)) continue;
+      const key = normalizeTitle(rawKey);
+      if (!key) continue;
+      const entries = value.filter((entry) => entry && entry.youtubeId && entry.official === true);
+      if (entries.length) byKey.set(key, entries);
+    }
+    return byKey;
+  } catch {
+    return new Map();
+  }
+}
+
+// Relisten links (Feature 3). data/source/relisten-dates.json is an array of
+// "YYYY-MM-DD" strings — the show dates archive.org has confirmed streamable at
+// relisten.net. The file does NOT ship in the repo; when absent the entire Relisten
+// layer stays dormant (empty Set → no links anywhere). Populate it with
+// scripts/verify-relisten-dates.mjs where network access exists.
+async function loadRelistenDates() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "relisten-dates.json"), "utf8");
+    const parsed = JSON.parse(raw);
+    const list = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.dates) ? parsed.dates : []);
+    return new Set(list.filter((value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value))));
+  } catch {
+    return new Set();
+  }
+}
+
+// relisten.net organizes Widespread Panic streams by /YYYY/MM/DD.
+function relistenUrlFor(isoDate) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(isoDate || ""));
+  return match ? `https://relisten.net/widespread-panic/${match[1]}/${match[2]}/${match[3]}` : "";
+}
+
+// The WATCH section (Feature 2): a single lite embed of the "definitive" official
+// video for a song. Sits between LEARN IT and "Appears on". Selection: if the song
+// debuted in the Houser era (first played before 2002-08-11) AND a houser-era entry
+// exists, prefer that performance; otherwise take the first listed entry. Only
+// official:true entries are ever loaded, so nothing else can render here.
+const HOUSER_ERA_CUTOFF = "2002-08-11";
+
+function selectSongVideo(song, data) {
+  const entries = data.songVideosByKey?.get(song.key);
+  if (!entries || !entries.length) return null;
+  const firstIso = parseDateKey(song.first);
+  const houserEra = firstIso && firstIso < HOUSER_ERA_CUTOFF;
+  if (houserEra) {
+    const houserPick = entries.find((entry) => entry.era === "houser");
+    if (houserPick) return houserPick;
+  }
+  return entries[0];
+}
+
+function renderSongWatch(song, data) {
+  const video = selectSongVideo(song, data);
+  if (!video) return "";
+  const id = extractYouTubeId(`https://www.youtube.com/watch?v=${video.youtubeId}`) || video.youtubeId;
+  if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return "";
+  return `<section class="song-watch" aria-labelledby="song-watch-h">
+        <h2 class="song-watch-eyebrow" id="song-watch-h">WATCH</h2>
+        <div class="song-watch-embed">${renderLiteEmbed(id, { title: video.title || song.title })}</div>
+      </section>`;
+}
+
 function renderSongPage(song, data, albums, slugMap) {
   const rarity = calculateRarity(song);
   const heat = calculateRotationHeat(song, data.totals?.postedSetlists || 0);
@@ -2813,6 +2946,9 @@ function renderSongPage(song, data, albums, slugMap) {
     : [`${song.title} — Live History`, song.title];
   let pageTitle = `${titleCandidates.find((c) => (c + titleSuffix).length <= 70) ?? song.title}${titleSuffix}`;
   if (pageTitle.length > 70) pageTitle = `${song.title.slice(0, 70 - titleSuffix.length - 1).trimEnd()}…${titleSuffix}`;
+
+  const songWatch = renderSongWatch(song, data);
+  const hasLiteEmbed = songWatch.includes('class="yt-lite"');
 
   return `<!doctype html>
 <html lang="en">
@@ -2849,6 +2985,7 @@ function renderSongPage(song, data, albums, slugMap) {
         <div><dt>Type</dt><dd>${escapeHtml(eyebrow)}</dd></div>
       </dl>
       ${renderSongLearnIt(song, data)}
+      ${songWatch}
       ${onAlbums.length ? `<section class="song-albums">
         <h2>Appears on</h2>
         <div class="song-album-chips">${onAlbums.map((a) => `<a href="/albums/${escapeAttr(a.slug)}/">${escapeHtml(a.title)}<small>${escapeHtml(albumYear(a))}</small></a>`).join("")}</div>
@@ -2861,6 +2998,7 @@ function renderSongPage(song, data, albums, slugMap) {
       <p class="song-back"><a href="/songs/">← All songs</a></p>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
+    ${hasLiteEmbed ? LITE_EMBED_SCRIPT : ""}
   </body>
 </html>
 `;
@@ -2896,6 +3034,7 @@ function renderSongPerformanceLog(song, data) {
   const SHOWN = 40;
   const recent = performances.slice(0, SHOWN);
   const searchUrl = `https://www.setlist.fm/search?query=${encodeURIComponent(`Widespread Panic ${song.title}`)}`;
+  const relistenDates = data.relistenDates || new Set();
   const rows = recent.map((perf) => {
     const loc = [perf.city, perf.state].filter(Boolean).join(", ");
     const tags = [
@@ -2907,9 +3046,15 @@ function renderSongPerformanceLog(song, data) {
         <span class="perf-venue">${escapeHtml(perf.venue || "Unknown venue")}</span>
         <span class="perf-loc">${escapeHtml(loc)}</span>
         ${tags ? `<span class="perf-tags">${tags}</span>` : ""}`;
-    return `<li class="perf">${perf.url
+    // Relisten link is a sibling of the setlist.fm anchor, never nested inside it.
+    const relistenUrl = relistenDates.has(perf.date) ? relistenUrlFor(perf.date) : "";
+    const relisten = relistenUrl
+      ? `<a class="perf-relisten" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer">Listen <span aria-hidden="true">↗</span></a>`
+      : "";
+    const main = perf.url
       ? `<a href="${escapeAttr(perf.url)}" target="_blank" rel="noopener noreferrer">${inner}<span class="perf-go" aria-hidden="true">↗</span></a>`
-      : `<span class="perf-static">${inner}</span>`}</li>`;
+      : `<span class="perf-static">${inner}</span>`;
+    return `<li class="perf${relisten ? " has-relisten" : ""}">${main}${relisten}</li>`;
   }).join("");
   return `<section class="song-history">
         <div class="song-history-head">
@@ -4236,8 +4381,10 @@ function renderShowCard(data, show, options = {}) {
   const longDate = formatLongDate(iso || show.date);
   const heading = options.latest ? "h3" : "h4";
   const ariaHeading = escapeAttr(formatSetlistHeading(show));
+  const relistenUrl = (data.relistenDates || new Set()).has(iso) ? relistenUrlFor(iso) : "";
   const chips = [
     show.streamUrl ? `<a class="sc-chip sc-chip-primary" href="${escapeAttr(show.streamUrl)}" aria-label="Listen to ${ariaHeading} at Nugs.net"><svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path d="M1.5 1.2c0-.66.72-1.07 1.29-.73l8 4.8a.85.85 0 0 1 0 1.46l-8 4.8A.85.85 0 0 1 1.5 10.8V1.2Z" fill="currentColor"/></svg>nugs.net</a>` : "",
+    relistenUrl ? `<a class="sc-chip sc-chip-glass sc-chip-relisten" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Listen to ${ariaHeading} on Relisten">Listen on Relisten</a>` : "",
     show.sourceUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(show.sourceUrl)}" aria-label="${hasSetlist ? "Official setlist and photos" : "Show details"} for ${ariaHeading}">${hasSetlist ? "Photos" : "Show Details"}</a>` : ""
   ].filter(Boolean).join("");
   const setRows = sets.map((set) => `<div class="sc-row"><span class="sc-label">${escapeHtml(formatSetLabel(set.label))}</span><p class="sc-prose">${renderSetSongs(set, annotations)}</p></div>`).join("");
@@ -8798,6 +8945,43 @@ body.stagelight .song-learn-chips a:hover { border-color: var(--sl-line-strong);
 body.stagelight .song-learn-chips a small { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
 body.stagelight .song-learn-chips .learn-go { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); align-self: center; }
 body.stagelight .song-learn-chips .learn-ext:hover .learn-go { color: var(--sl-ink); }
+/* Lite YouTube embed — click-to-play facade shared by Song Origins + song WATCH */
+body.stagelight .yt-lite {
+  display: block; position: relative; width: 100%; max-width: 640px; aspect-ratio: 16 / 9;
+  border-radius: var(--sl-r); overflow: hidden; background: #000;
+  border: 1px solid var(--sl-line); box-shadow: var(--sl-shadow-1);
+}
+body.stagelight .yt-lite-btn {
+  display: block; position: absolute; inset: 0; width: 100%; height: 100%; padding: 0;
+  margin: 0; border: 0; cursor: pointer; background: #000; overflow: hidden;
+}
+body.stagelight .yt-lite-thumb {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0.92;
+}
+body.stagelight .yt-lite-btn:hover .yt-lite-thumb, body.stagelight .yt-lite-btn:focus-visible .yt-lite-thumb { transform: scale(1.03); opacity: 1; }
+body.stagelight .yt-lite-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: flex; align-items: center; justify-content: center;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.5)); transition: transform 0.16s ease;
+}
+body.stagelight .yt-lite-play .yt-lite-play-bg { fill: #212121; opacity: 0.86; transition: fill 0.16s ease, opacity 0.16s ease; }
+body.stagelight .yt-lite-btn:hover .yt-lite-play, body.stagelight .yt-lite-btn:focus-visible .yt-lite-play { transform: translate(-50%, -50%) scale(1.06); }
+body.stagelight .yt-lite-btn:hover .yt-lite-play-bg, body.stagelight .yt-lite-btn:focus-visible .yt-lite-play-bg { fill: #ff0000; opacity: 1; }
+body.stagelight .yt-lite-btn:focus-visible { outline: 2px solid var(--sl-ink); outline-offset: -3px; }
+body.stagelight .yt-lite.is-playing { border-color: var(--sl-line-strong); }
+body.stagelight .yt-lite-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+body.stagelight .yt-lite noscript a { position: absolute; inset: auto 0 0 0; padding: 8px 12px; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-ink); background: rgba(0,0,0,0.6); }
+/* origin body: keep an inline embed on its own line with breathing room */
+body.stagelight .origin-body .yt-lite { margin: 18px 0; }
+/* WATCH section — one official video, mono eyebrow, between LEARN IT and Appears on */
+body.stagelight .song-watch { margin: 0 0 30px; }
+body.stagelight .song-watch-eyebrow { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 14px; }
+/* Relisten link on a performance row — compact, sits after the setlist.fm anchor */
+body.stagelight .perf.has-relisten { display: flex; align-items: center; gap: 14px; }
+body.stagelight .perf.has-relisten > a:first-child, body.stagelight .perf.has-relisten > .perf-static { flex: 1 1 auto; min-width: 0; }
+body.stagelight .perf-relisten { flex: 0 0 auto; padding-right: 8px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+body.stagelight .perf-relisten:hover { color: var(--sl-ink); }
 /* "Best Guess" — Alex's verbatim lyric transcription + interpretation, editorial */
 body.stagelight .song-bestguess { margin: 0 0 34px; }
 body.stagelight .bg-eyebrow { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 8px; }

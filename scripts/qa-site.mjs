@@ -35,6 +35,7 @@ async function main() {
   await checkBestGuessSection(siteData);
   await checkLegacyPages(siteData);
   await checkTourInReviewPages();
+  await checkMusicLayer(allHtmlFiles, allHtml);
   await checkLocalAssets(allHtml);
 
   const failed = checks.filter((check) => !check.passed);
@@ -586,6 +587,55 @@ function checkMarkerLegend(html, siteData) {
   });
   const matchesHtml = legend.every((item) => html.includes(item.color) && html.includes(item.label));
   record("Marker legend matches the last four posted shows", matchesData && matchesHtml, JSON.stringify(legend));
+}
+
+// The music layer (Song Origins video embeds, official-video WATCH, Relisten links).
+// The two data files that light up WATCH and Relisten (song-videos.json,
+// relisten-dates.json) are intentionally NOT committed, so QA asserts the DORMANT
+// state: the click-to-play facade renders on origin pages (from committed origin
+// data), but no WATCH section and no relisten.net link appears anywhere.
+async function checkMusicLayer(files, htmlByFile) {
+  // Feature 1: at least one Song Origins page renders the lite-embed facade, and it
+  // ships the click-to-play affordance (accessible button) + the swap-in script.
+  const facadePages = [];
+  for (let index = 0; index < files.length; index += 1) {
+    if (!files[index].includes(`${path.sep}song-origins${path.sep}`)) continue;
+    if (/class="yt-lite"/.test(htmlByFile[index])) facadePages.push(files[index]);
+  }
+  record("At least one Song Origins page renders the lite YouTube embed facade", facadePages.length >= 1, `${facadePages.length} origin pages with a facade`);
+  const facadeSample = facadePages.length ? htmlByFile[files.indexOf(facadePages[0])] : "";
+  record("Origin lite-embed facade uses a keyboard-accessible button with a play affordance", /<button[^>]*class="yt-lite-btn"[^>]*aria-label=/.test(facadeSample) && facadeSample.includes("yt-lite-play"), path.relative(root, facadePages[0] || ""));
+  record("Origin lite-embed preserves the original link in <noscript>", /<noscript><a href="[^"]*youtu/.test(facadeSample), "noscript fallback link present");
+  record("A page with a facade ships the click-to-play swap-in script", facadeSample.includes("yt-lite-frame"), "LITE_EMBED_SCRIPT injected");
+
+  // Feature 2: song-videos.json must NOT be committed — only the documented example.
+  record("Real song-videos.json is absent from the repo (dormant by default)", !(await fileExists("data/source/song-videos.json")), "data/source/song-videos.json should not exist");
+  record("Documented song-videos.example.json exists and is valid JSON", await isValidJson("data/source/song-videos.example.json"), "data/source/song-videos.example.json");
+  const watchOffenders = files.filter((file, index) => /class="song-watch"|id="song-watch-h"/.test(htmlByFile[index])).map((file) => path.relative(root, file));
+  record("No WATCH section renders anywhere while song-videos.json is absent", watchOffenders.length === 0, watchOffenders.join("; "));
+
+  // Feature 3: relisten-dates.json must NOT be committed — Relisten stays dormant.
+  record("relisten-dates.json is absent from the repo (dormant by default)", !(await fileExists("data/source/relisten-dates.json")), "data/source/relisten-dates.json should not exist");
+  const relistenOffenders = files.filter((file, index) => /relisten\.net/.test(htmlByFile[index])).map((file) => path.relative(root, file));
+  record("No relisten.net links render anywhere while relisten-dates.json is absent", relistenOffenders.length === 0, relistenOffenders.join("; "));
+}
+
+async function fileExists(relPath) {
+  try {
+    await stat(path.join(root, relPath));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function isValidJson(relPath) {
+  try {
+    JSON.parse(await readFile(path.join(root, relPath), "utf8"));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function checkLocalAssets(htmlByFile) {
