@@ -1328,7 +1328,8 @@ function renderNotFoundPage(data) {
     <meta name="robots" content="noindex">
     <title>Page Not Found | Burnthday</title>
     <meta name="description" content="That Burnthday page could not be found.">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="stylesheet" href="/stagelight.css">
   </head>
   <body class="stagelight">
@@ -1368,7 +1369,8 @@ function renderPrivacyPage(data) {
     <title>Privacy | Burnthday</title>
     <meta name="description" content="How Burnthday uses analytics and handles visitor information.">
     <link rel="canonical" href="https://burnthday.com/privacy/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -1524,7 +1526,8 @@ function renderArchivePage(entry, data) {
     <title>${escapeHtml(title)}</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com${escapeAttr(publicPath(entry.path))}">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -1686,7 +1689,8 @@ function renderShelfInfoPage(data, oldShelfEntry) {
     <title>Widespread Panic Shelf &amp; Purgatory | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com/shelf/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -1728,7 +1732,8 @@ function renderRumorsPage(data, oldRumorsEntry) {
     <title>Widespread Panic Tour Rumors | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com/rumors/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -1809,7 +1814,8 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
     <title>Widespread Panic Tour In Review | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com/tour-in-review/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -1842,7 +1848,8 @@ function renderGeneratedTourReviewPage(review, data) {
     <title>${escapeHtml(review.title)} | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com${escapeAttr(publicPath(review.path))}">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -1888,7 +1895,8 @@ function renderSongOriginsIndex(origins, options = {}) {
     <title>Widespread Panic Song Origins | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com${escapeAttr(canonicalPath)}">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -1937,7 +1945,8 @@ function renderSongOriginPage(origin, origins, data) {
     <title>${escapeHtml(origin.title)} Song Origin | Burnthday</title>
     <meta name="description" content="${escapeAttr(description)}">
     <link rel="canonical" href="https://burnthday.com/song-origins/${escapeAttr(origin.slug)}/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -2088,7 +2097,8 @@ function renderAlbumsIndex(albums, data) {
     <title>Widespread Panic Albums | Burnthday</title>
     <meta name="description" content="The modern Widespread Panic studio albums — tracklists, credits, and how each record lives on stage.">
     <link rel="canonical" href="https://burnthday.com/albums/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -2152,7 +2162,8 @@ function renderAlbumPage(album, albums, data) {
     <title>${escapeHtml(album.title)} | Widespread Panic Album | Burnthday</title>
     <meta name="description" content="${escapeAttr(fitMetaText(description, 155))}">
     <link rel="canonical" href="https://burnthday.com/albums/${escapeAttr(album.slug)}/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -2248,7 +2259,8 @@ function renderArchiveListPage({ title, deck, canonicalPath, noindex = false, en
     <title>${escapeHtml(title)} | Burnthday</title>
     <meta name="description" content="${escapeAttr(deck)}">
     <link rel="canonical" href="https://burnthday.com${escapeAttr(canonicalPath)}">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
@@ -2323,7 +2335,8 @@ function renderHtml(data) {
     <meta name="twitter:image" content="https://burnthday.com/assets/social-card.png">
     <meta name="twitter:image:alt" content="Burnthday fish and crossbones logo">
     <link rel="canonical" href="https://burnthday.com/">
-    <link rel="icon" href="/assets/marker-1.png" type="image/png">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
