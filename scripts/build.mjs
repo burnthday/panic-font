@@ -3414,19 +3414,32 @@ function renderMarkerLegend(items = []) {
   return `<ol class="marker-legend">${items.map((item) => `<li><img src="/assets/${escapeAttr(item.asset)}" alt=""><span><strong>${escapeHtml(item.color)}</strong><em>${escapeHtml(item.label)}</em></span></li>`).join("")}</ol>`;
 }
 
+// Dry-erase number marker: live text with an animated cross-out swipe, as if
+// someone struck the number off the board. Replaces the old marker-N.png scans.
+function renderMarkerNumber(value) {
+  const strikes = [
+    "M6,58 C28,44 62,60 94,40 M70,49 C52,56 34,60 18,64",
+    "M8,42 C36,58 68,40 94,56 M78,46 C60,52 42,56 24,52",
+    "M6,52 C40,38 60,62 94,46 M28,60 C46,50 66,44 84,42",
+    "M8,60 C30,40 70,58 94,38 M66,54 C48,60 30,58 16,54"
+  ];
+  const d = strikes[(value - 1) % strikes.length];
+  return `<span class="marker-num-t v${value}" aria-hidden="true"><b>${value}</b><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${d}" pathLength="1" vector-effect="non-scaling-stroke"/></svg></span>`;
+}
+
 function renderBoardHeader(title, subtitle = "") {
   return `<div class="header-row">
     <div class="nums left">
-      <img alt="1" class="marker-num" src="/assets/marker-1.png">
-      <img alt="2" class="marker-num" src="/assets/marker-2.png">
+      ${renderMarkerNumber(1)}
+      ${renderMarkerNumber(2)}
     </div>
     <div class="board-title">
       <h1>${escapeHtml(title)}</h1>
       ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ""}
     </div>
     <div class="nums right">
-      <img alt="3" class="marker-num" src="/assets/marker-3.png">
-      <img alt="4" class="marker-num" src="/assets/marker-4.png">
+      ${renderMarkerNumber(3)}
+      ${renderMarkerNumber(4)}
     </div>
   </div>`;
 }
@@ -3437,15 +3450,15 @@ function renderPrimaryBoardHeader(data) {
 
   return `<div class="header-row primary-header">
     <div class="nums left">
-      <img alt="1" class="marker-num" src="/assets/marker-1.png">
-      <img alt="2" class="marker-num" src="/assets/marker-2.png">
+      ${renderMarkerNumber(1)}
+      ${renderMarkerNumber(2)}
     </div>
     <div class="board-title">
       <h1>${escapeHtml(title.toUpperCase())}</h1>
     </div>
     <div class="nums right">
-      <img alt="3" class="marker-num" src="/assets/marker-3.png">
-      <img alt="4" class="marker-num" src="/assets/marker-4.png">
+      ${renderMarkerNumber(3)}
+      ${renderMarkerNumber(4)}
     </div>
   </div>`;
 }
@@ -7742,6 +7755,42 @@ body.stagelight .ticket-link { text-decoration: none; }
 /* ---- THE PAPER SHEETS: keep white, add the spotlight case ---- */
 /* the sheets are paper artifacts — undo the dark-page text/heading cascade */
 body.stagelight .laminate { position: relative; color: #111; }
+
+/* dry-erase number markers: live text struck through with an animated swipe */
+.marker-num-t {
+  position: relative;
+  width: clamp(48px, 4.4vw, 80px);
+  height: clamp(58px, 5vw, 92px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.marker-num-t b {
+  font-family: var(--sl-display, "Bricolage Grotesque"), "MilkRun", system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(40px, 3.6vw, 66px);
+  line-height: 1;
+  color: #17150f;
+}
+.marker-num-t.v1 { transform: rotate(-5deg); }
+.marker-num-t.v2 { transform: rotate(3deg) translateY(4px); }
+.marker-num-t.v3 { transform: rotate(-3deg) translateY(3px); }
+.marker-num-t.v4 { transform: rotate(6deg); }
+.marker-num-t svg { position: absolute; left: -14%; top: 10%; width: 128%; height: 80%; overflow: visible; pointer-events: none; }
+.marker-num-t svg path {
+  fill: none; stroke: #c9403e; stroke-width: 4.5px; stroke-linecap: round;
+  opacity: 0.88; mix-blend-mode: multiply;
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: marker-strike 0.55s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+}
+.nums.left .marker-num-t:nth-child(1) svg path { animation-delay: 0.35s; }
+.nums.left .marker-num-t:nth-child(2) svg path { animation-delay: 0.6s; }
+.nums.right .marker-num-t:nth-child(1) svg path { animation-delay: 0.85s; }
+.nums.right .marker-num-t:nth-child(2) svg path { animation-delay: 1.1s; }
+@keyframes marker-strike { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .marker-num-t svg path { animation: none; stroke-dashoffset: 0; }
+}
 body.stagelight .primary-board::before,
 body.stagelight .shelf-board::before,
 body.stagelight .woodshed-board::before,
