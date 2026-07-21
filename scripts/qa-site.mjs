@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -43,6 +44,7 @@ async function main() {
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkSocialCard(homeHtml);
   await checkLocalAssets(allHtml);
+  await checkStylesheetCacheBusting(allHtmlFiles, allHtml);
 
   const failed = checks.filter((check) => !check.passed);
   for (const check of checks) {
@@ -628,7 +630,7 @@ async function checkLegacyPages(siteData) {
   for (const [label, html] of [["Rumors", rumors], ["Tour In Review", tourReview], ["The Shelf", shelf], ["Privacy", privacy]]) {
     assertIncludes(html, 'class="stagelight"', `${label} page uses the Stagelight dark shell`);
     assertIncludes(html, 'id="mega-menu"', `${label} page carries the shared mega menu`);
-    assertIncludes(html, 'href="/stagelight.css"', `${label} page loads the Stagelight stylesheet`);
+    assertIncludes(html, 'href="/stagelight.css?v=', `${label} page loads the versioned Stagelight stylesheet`);
   }
 }
 
@@ -983,6 +985,54 @@ async function checkLocalAssets(htmlByFile) {
     }
   }
   record("All generated local asset references exist", missing.length === 0, missing.slice(0, 20).join("\n"));
+}
+
+// Cache-busting: every stylesheet <link> must carry a ?v=<10-hex> content hash,
+// the hash must match the actual built CSS, and _headers must ship the CSS +
+// HTML cache rules. This is what stops fresh HTML from pairing with stale CSS
+// after a deploy (the "Franken-styling" bug).
+async function checkStylesheetCacheBusting(files, htmlByFile) {
+  const shortHash = (str) => createHash("sha256").update(String(str), "utf8").digest("hex").slice(0, 10);
+  const stagelightHash = shortHash(await readText("dist/stagelight.css"));
+  const stylesHash = shortHash(await readText("dist/styles.css"));
+
+  const badStagelight = [];
+  const badStyles = [];
+  for (let index = 0; index < files.length; index += 1) {
+    const html = htmlByFile[index];
+    const rel = path.relative(root, files[index]);
+    // Any stagelight.css link must be versioned with the correct hash.
+    for (const match of html.matchAll(/href="\/stagelight\.css([^"]*)"/g)) {
+      if (match[1] !== `?v=${stagelightHash}`) badStagelight.push(`${rel}: ${match[0]}`);
+    }
+    for (const match of html.matchAll(/href="\/styles\.css([^"]*)"/g)) {
+      if (match[1] !== `?v=${stylesHash}`) badStyles.push(`${rel}: ${match[0]}`);
+    }
+  }
+  const stagelightLinkCount = htmlByFile.filter((html) => html.includes("/stagelight.css?v=")).length;
+  record("Every page's Stagelight stylesheet link carries a ?v= content hash",
+    badStagelight.length === 0 && stagelightLinkCount > 0,
+    badStagelight.slice(0, 20).join("\n") || "no versioned stagelight.css links found");
+  record("The ?v= hash matches the built stagelight.css content hash",
+    /^[0-9a-f]{10}$/.test(stagelightHash) && badStagelight.length === 0,
+    `expected ?v=${stagelightHash} on every stagelight.css link`);
+  record("Any styles.css link is versioned with the built styles.css content hash",
+    badStyles.length === 0,
+    badStyles.slice(0, 20).join("\n"));
+
+  const headers = await readText("dist/_headers");
+  record("_headers gives stagelight.css an immutable Cache-Control rule",
+    /\/stagelight\.css\s*\n\s*Cache-Control: public, max-age=31536000, immutable/.test(headers),
+    "missing immutable Cache-Control for /stagelight.css");
+  record("_headers gives styles.css an immutable Cache-Control rule",
+    /\/styles\.css\s*\n\s*Cache-Control: public, max-age=31536000, immutable/.test(headers),
+    "missing immutable Cache-Control for /styles.css");
+  record("_headers revalidates HTML on every load via the /* catch-all",
+    /\/\*[\s\S]*?Cache-Control: public, max-age=0, must-revalidate/.test(headers),
+    "missing must-revalidate Cache-Control on the /* HTML catch-all");
+  record("_headers keeps /assets/* immutable after the HTML rule",
+    /\/assets\/\*\s*\n\s*Cache-Control: public, max-age=31536000, immutable/.test(headers),
+    "assets immutable rule missing or altered");
 }
 
 async function checkTourInReviewPages() {

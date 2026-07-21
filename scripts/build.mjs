@@ -1749,8 +1749,37 @@ async function writeStaticPage(pagePath, html) {
   await writeFile(target, finalizeHtml(html), "utf8");
 }
 
+// Content-hash cache-busting for the stylesheets. The generated CSS strings are
+// deterministic (renderCss / renderStagelightCss take no arguments), so we hash
+// them once, lazily, and reuse the digest for every page. A short hash (first 10
+// hex of sha256) is plenty to distinguish deploys while keeping the URL tidy.
+let cssVersionCache = null;
+function cssVersions() {
+  if (!cssVersionCache) {
+    const shortHash = (str) => crypto.createHash("sha256").update(String(str), "utf8").digest("hex").slice(0, 10);
+    cssVersionCache = {
+      stagelight: shortHash(renderStagelightCss()),
+      styles: shortHash(renderCss())
+    };
+  }
+  return cssVersionCache;
+}
+
+// Rewrite every sitewide stylesheet <link> to carry a ?v=<contenthash> query.
+// This is what actually fixes the "Franken-styling" bug: browsers cache CSS by
+// the FULL URL including the query string, so when the CSS content changes the
+// query changes and the browser is forced to fetch the new file — it can never
+// pair fresh HTML with a stale immutable-cached stylesheet. Runs on every page
+// (via finalizeHtml) and is idempotent (an existing ?v= is replaced, not stacked).
+function versionStylesheetLinks(html) {
+  const { stagelight, styles } = cssVersions();
+  return String(html || "")
+    .replace(/href="\/stagelight\.css(?:\?[^"]*)?"/g, `href="/stagelight.css?v=${stagelight}"`)
+    .replace(/href="\/styles\.css(?:\?[^"]*)?"/g, `href="/styles.css?v=${styles}"`);
+}
+
 function finalizeHtml(html) {
-  const value = normalizeMetaDescriptionHtml(rewriteLegacyCoreLinks(String(html || "")));
+  const value = normalizeMetaDescriptionHtml(rewriteLegacyCoreLinks(versionStylesheetLinks(html)));
   if (!/<\/head>/i.test(value) || /name="robots" content="noindex"/i.test(value)) return value;
   return value.replace(/<\/head>/i, `${renderSocialMeta(value)}${renderAnalyticsHead()}\n  </head>`);
 }
@@ -10994,12 +11023,34 @@ body.stagelight .tour-year-summary strong { font-family: var(--sl-display); font
 }
 
 function renderHeaders() {
+  // Cache-Control strategy (fixes the "Franken-styling" bug: fresh HTML paired
+  // with stale cached CSS after a deploy):
+  //   - HTML (the /* catch-all) is revalidated on every load, so a new deploy's
+  //     markup is never served from a stale browser cache.
+  //   - Stylesheets are immutable-cached, which is safe ONLY because their <link>
+  //     href carries a ?v=<contenthash> query added in finalizeHtml. Browsers key
+  //     their cache on the FULL URL including the query string, so when the CSS
+  //     changes the hash changes and the browser fetches the new file — the
+  //     immutable cache can never serve stale CSS for a new hash. (Cloudflare's CDN
+  //     may ignore the query in its own cache key; harmless, since the bug we fix
+  //     is the *browser* pairing new HTML with old CSS, which the query defeats.)
+  //   - _headers precedence: every matching rule applies, and for a shared header
+  //     the later / more-specific rule wins. The /* rule is first (least specific),
+  //     so the more-specific /assets/*, /stagelight.css and /styles.css rules below
+  //     override its Cache-Control — /assets/* keeps its immutable caching.
   return `/*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Cache-Control: public, max-age=0, must-revalidate
 
 /assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/stagelight.css
+  Cache-Control: public, max-age=31536000, immutable
+
+/styles.css
   Cache-Control: public, max-age=31536000, immutable
 
 /data/*
