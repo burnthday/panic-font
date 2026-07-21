@@ -3436,7 +3436,7 @@ function renderMarkerLegend(items = []) {
   return `<ol class="marker-legend">${items.map((item) => {
     const color = STRIKE_COLORS[item.asset];
     const swatch = color
-      ? `<svg class="marker-swipe legend-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${STRIKE_PATHS[0][0]}" stroke="${color}"/></svg>`
+      ? `<svg class="marker-swipe legend-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${STRIKE_PATHS[0]}" stroke="${color}"/></svg>`
       : `<img src="/assets/${escapeAttr(item.asset)}" alt="">`;
     return `<li>${swatch}<span><strong>${escapeHtml(item.color)}</strong><em>${escapeHtml(item.label)}</em></span></li>`;
   }).join("")}</ol>`;
@@ -3502,13 +3502,13 @@ const STRIKE_COLORS = {
   "marker-red.png": "#d4514f"
 };
 
-// Hand-wobble swipe variants (viewBox 0 0 400 12). Two passes like a real
-// cross-out: the main stroke and a lighter return tail.
+// One thick, confident swipe per song (viewBox 0 0 400 12) — a straight
+// dry-erase cross-out with only a hair of tilt/bow so rows don't look stamped.
 const STRIKE_PATHS = [
-  ["M8,7 C70,3 150,10 226,6 S340,4 393,6.5", "M338,8.5 C282,10 224,9 178,7.5"],
-  ["M7,5.5 C88,9 170,3.5 250,7 S352,8 394,5.5", "M96,4 C160,2.8 230,5 292,4.2"],
-  ["M9,6.5 C60,9.5 160,4 240,8 S330,9 392,7", "M310,5 C250,3.6 190,5.4 140,4.6"],
-  ["M6,8 C90,4 180,9.5 262,5.5 S356,5 394,7.5", "M120,9 C185,10.4 255,9.2 315,10"]
+  "M5,6.4 C130,5.9 270,6.3 395,5.7",
+  "M5,5.7 C140,6.3 260,5.8 395,6.4",
+  "M5,6.1 C120,6.5 280,5.6 395,6.0",
+  "M5,6.0 C150,5.6 250,6.5 395,6.1"
 ];
 
 function strikeHash(value) {
@@ -3521,9 +3521,9 @@ function renderStrikeMark(asset, seed) {
   const color = STRIKE_COLORS[asset];
   if (!color) return `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(asset)}" alt=""></span>`;
   const h = strikeHash(String(seed || ""));
-  const [main, tail] = STRIKE_PATHS[h % STRIKE_PATHS.length];
+  const main = STRIKE_PATHS[h % STRIKE_PATHS.length];
   const delay = (h >> 4) % 7;
-  return `<span class="marker-mask" style="--sd:${delay * 0.045}s"><svg class="marker-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${main}" pathLength="1" stroke="${color}"/><path d="${tail}" pathLength="1" stroke="${color}"/></svg></span>`;
+  return `<span class="marker-mask" style="--sd:${delay * 0.045}s"><svg class="marker-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${main}" pathLength="1" stroke="${color}"/></svg></span>`;
 }
 
 function renderSong(row, options = {}) {
@@ -7859,13 +7859,11 @@ body.stagelight .laminate::after {
 }
 
 /* ---- DRY-ERASE STRIKES: SVG marker swipes over played songs ---- */
-.marker-swipe { display: block; width: 100%; height: 100%; overflow: visible; opacity: 0.88; mix-blend-mode: multiply; }
-.marker-swipe path { fill: none; stroke-width: 5px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-.marker-swipe path + path { stroke-width: 3.4px; opacity: 0.6; }
+.marker-swipe { display: block; width: 100%; height: 100%; overflow: visible; opacity: 0.82; mix-blend-mode: multiply; }
+.marker-swipe path { fill: none; stroke-width: 8px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 /* draw-in when the board scrolls into view */
 .can-strike .marker-swipe path { stroke-dasharray: 1; stroke-dashoffset: 1; }
-.can-strike .marker-mask.draw .marker-swipe path { animation: strike-swipe 0.4s ease-out forwards; animation-delay: var(--sd, 0s); }
-.can-strike .marker-mask.draw .marker-swipe path + path { animation-duration: 0.3s; animation-delay: calc(var(--sd, 0s) + 0.22s); }
+.can-strike .marker-mask.draw .marker-swipe path { animation: strike-swipe 0.3s ease-out forwards; animation-delay: var(--sd, 0s); }
 @keyframes strike-swipe { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .can-strike .marker-swipe path { stroke-dasharray: none; stroke-dashoffset: 0; animation: none !important; }
