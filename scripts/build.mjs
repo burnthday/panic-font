@@ -2160,13 +2160,49 @@ function fitMetaText(value, maxLength) {
 
 function renderShelfInfoPage(data, oldShelfEntry) {
   const year = data.site.year;
-  const newShelfRows = data.catalog
-    .filter((row) => row.total > 1 && !row.playedThisTour && row.seedSlp < data.rules.rotationSlpLimit && row.effectiveSlp >= data.rules.rotationSlpLimit)
-    .sort(byTitle);
-  const newShelfOriginals = newShelfRows.filter((row) => row.type === "Original");
-  const newShelfCovers = newShelfRows.filter((row) => row.type === "Cover");
+  const limit = data.rules.rotationSlpLimit;
+  const slugMap = data.songSlugMap || new Map();
+
+  // The Shelf board, same definition as the homepage bento (songs off rotation,
+  // plus the handful that returned this tour). Kept in sync so the two views agree.
+  const shelfRows = [...(data.boards.shelfOriginals || []), ...(data.boards.shelfCovers || [])];
+  const shelfCount = shelfRows.length;
+  const offRotation = shelfRows
+    .filter((row) => !row.playedThisTour)
+    .sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
+  const returns = shelfRows.filter((row) => row.playedFromShelf).sort((a, b) => b.total - a.total || byTitle(a, b));
+  const longest = offRotation[0] || null;
+
+  // Freshly shelved this era: songs that were inside the window last tour
+  // (seedSlp < limit) but have now crossed it. This is the computed replacement
+  // for the old bulleted "New Additions" dump — same rule, designed as rows.
+  const newAdds = data.catalog
+    .filter((row) => row.total > 1 && !row.playedThisTour && row.seedSlp < limit && row.effectiveSlp >= limit)
+    .sort((a, b) => b.effectiveSlp - a.effectiveSlp || byTitle(a, b));
+  const newAddKeys = new Set(newAdds.map((row) => row.key));
+  // Longest-gone cut: the deepest of the shelf, excluding the just-shelved so the
+  // two lists never repeat a title.
+  const deepest = offRotation.filter((row) => !newAddKeys.has(row.key)).slice(0, 8);
+
+  const purgCount = (data.boards.purgatoryOriginals?.length || 0) + (data.boards.purgatoryCovers?.length || 0);
+  const woodCount = (data.boards.woodshedOriginals?.length || 0) + (data.boards.woodshedCovers?.length || 0);
+
   const description = `Burnthday's Widespread Panic Shelf and Purgatory notes for the ${year} tour.`;
   const historicalContent = removeFirstArchiveGraphic(oldShelfEntry?.content || "", "shelf.png");
+
+  // Stat strip — reuse the .song-stat tile pattern. Tabular mono numbers, and
+  // any tile whose number we can't compute is omitted rather than faked.
+  const tile = (value, label, sub = "") => `<div class="song-stat"><strong>${escapeHtml(String(value))}</strong><span>${escapeHtml(label)}</span>${sub ? `<small>${escapeHtml(sub)}</small>` : ""}</div>`;
+  const statTiles = [];
+  if (shelfCount) statTiles.push(tile(formatNumber(shelfCount), "songs shelved", `off the ${formatNumber(limit)}-show window`));
+  if (longest) statTiles.push(tile(formatNumber(longest.effectiveSlp), "longest gap", `${longest.title} · last ${longest.lastDisplay}`));
+  if (newAdds.length) statTiles.push(tile(formatNumber(newAdds.length), "shelved this era", `crossed the ${formatNumber(limit)}-show line`));
+  if (returns.length) statTiles.push(tile(formatNumber(returns.length), "came back this tour", returns.map((row) => row.title).slice(0, 2).join(" · ")));
+
+  const neighbors = [
+    { href: "/#purgatory", name: "Purgatory", count: purgCount, desc: "Played once, ever — waiting on a second life." },
+    { href: "/#woodshed", name: "The Woodshed", count: woodCount, desc: "On the current sheet, not yet played with Nick Johnson." }
+  ].filter((item) => item.count);
 
   return `<!doctype html>
 <html lang="en">
@@ -2184,15 +2220,39 @@ function renderShelfInfoPage(data, oldShelfEntry) {
   </head>
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
-    <main class="archive-main">
+    <main class="archive-main shelf-main">
       <article class="archive-page shelf-info-page">
-        ${renderPageGraphicTitle("The Shelf", "shelf.png")}
-        <section class="shelf-current-update prose-plate">
-          <h2>Spring ${escapeHtml(String(year))} New Additions To The Shelf</h2>
-          ${renderShelfAdditionList("Originals", newShelfOriginals)}
-          ${renderShelfAdditionList("Covers", newShelfCovers)}
+        <header class="archive-title">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">The Shelf</span></nav>
+          <h1>The Shelf</h1>
+          <p class="shelf-deck">${escapeHtml(`${formatNumber(shelfCount)} songs sit off the ${formatNumber(limit)}-show rotation window — off the sheet, not forgotten. When a song goes ${formatNumber(limit)} shows without a play, it drops here until it earns its way back.`)}</p>
+        </header>
+        ${statTiles.length ? `<div class="song-stat-grid">${statTiles.join("")}</div>` : ""}
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>Spring ${escapeHtml(String(year))} New Additions To The Shelf</h2>
+            <span>${escapeHtml(`${formatNumber(newAdds.length)} songs crossed the line this era · longest gap first`)}</span>
+          </div>
+          ${newAdds.length ? `<div class="shelf-list">${newAdds.map((row) => renderShelfRow(row, slugMap, limit)).join("")}</div>` : "<p class=\"shelf-empty\">Nothing new to the Shelf this era.</p>"}
         </section>
-        ${historicalContent ? `<section class="legacy-shelf-notes"><h2>Previous Shelf Updates</h2><div class="archive-content prose-plate">${historicalContent}</div></section>` : ""}
+        ${deepest.length ? `<section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>Longest Gone</h2>
+            <span>the deepest of the ${escapeHtml(formatNumber(shelfCount))} · shows since last played</span>
+          </div>
+          <div class="shelf-list is-compact">${deepest.map((row) => renderShelfRow(row, slugMap, limit, { compact: true })).join("")}</div>
+          <p class="shelf-more">The Shelf runs ${escapeHtml(formatNumber(shelfCount))} songs deep. <a href="/songs/">Browse the full catalog on the Song Index →</a></p>
+        </section>` : ""}
+        ${neighbors.length ? `<section class="shelf-neighbors">
+          <div class="shelf-section-head"><h2>Related Sheets</h2><span>tracked live on the homepage</span></div>
+          <div class="shelf-neighbor-grid">${neighbors.map((item) => `<a class="shelf-neighbor" href="${escapeAttr(item.href)}">
+            <span class="shn-count">${formatNumber(item.count)}<small>songs</small></span>
+            <span class="shn-name">${escapeHtml(item.name)}</span>
+            <span class="shn-desc">${escapeHtml(item.desc)}</span>
+            <span class="shn-go" aria-hidden="true">Open on the homepage →</span>
+          </a>`).join("")}</div>
+        </section>` : ""}
+        ${historicalContent ? `<section class="legacy-shelf-notes"><div class="shelf-section-head"><h2>Previous Shelf Updates</h2><span>from the Shelf, in Burnthday's own words</span></div><div class="archive-content prose-plate">${historicalContent}</div></section>` : ""}
       </article>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
@@ -2201,11 +2261,32 @@ function renderShelfInfoPage(data, oldShelfEntry) {
 `;
 }
 
-function renderShelfAdditionList(title, rows) {
-  return `<div class="shelf-addition-group">
-    <h3>${escapeHtml(title)}</h3>
-    ${rows.length ? `<ul>${rows.map((row) => `<li>${escapeHtml(row.title)}</li>`).join("")}</ul>` : "<p>None.</p>"}
-  </div>`;
+// One designed Shelf row: title (links to the song's live history), type, last
+// played, and the shows-since-last "gap" with a meter showing how far past the
+// rotation line it sits. Meter scale = shows past the line as a fraction of one
+// full rotation window (`limit`), capped — so a just-shelved song reads short and
+// a long-gone one reads full. Compact rows drop the type + meter.
+function renderShelfRow(row, slugMap, limit, options = {}) {
+  const slug = slugMap.get(row.key) || "";
+  const gap = row.effectiveSlp ?? 0;
+  const past = Math.max(0, gap - limit);
+  const pct = Math.min(100, Math.max(4, Math.round((past / limit) * 100)));
+  const title = escapeHtml(row.title);
+  const open = slug ? `<a class="shelf-row${options.compact ? " is-compact" : ""}" href="/song/${escapeAttr(slug)}/">` : `<div class="shelf-row${options.compact ? " is-compact" : ""}">`;
+  const close = slug ? "</a>" : "</div>";
+  if (options.compact) {
+    return `${open}
+      <span class="shr-title">${title}</span>
+      <span class="shr-last">${escapeHtml(row.lastDisplay || "")}<small>last played</small></span>
+      <span class="shr-gap-num">${formatNumber(gap)}<small>gap</small></span>
+    ${close}`;
+  }
+  return `${open}
+      <span class="shr-title">${title}</span>
+      <span class="shr-type">${escapeHtml(row.type)}</span>
+      <span class="shr-last">${escapeHtml(row.lastDisplay || "")}<small>last played</small></span>
+      <span class="shr-gap"><span class="shr-meter" aria-hidden="true"><i style="width:${pct}%"></i></span><span class="shr-gap-num">${formatNumber(gap)}<small>gap</small></span></span>
+    ${close}`;
 }
 
 function renderRumorsPage(data, oldRumorsEntry) {
@@ -9788,7 +9869,57 @@ body.stagelight .album-nav a:hover strong { color: #fff; }
 /* song index + per-song history */
 body.stagelight .songs-main { width: min(1000px, calc(100% - 48px)); }
 body.stagelight .song-main { width: min(820px, calc(100% - 48px)); }
+body.stagelight .shelf-main { width: min(1000px, calc(100% - 48px)); }
 body.stagelight .songs-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
+
+/* ---- THE SHELF: designed data page (hero deck, stat strip via .song-stat,
+   designed row list with gap meter, related-sheet cards) ---- */
+body.stagelight .shelf-info-page .archive-title { border-bottom: 0; margin-bottom: 22px; padding-bottom: 0; }
+body.stagelight .archive-title p.shelf-deck { font-family: var(--sl-display); font-size: 17px; line-height: 1.55; letter-spacing: -0.01em; text-transform: none; color: var(--sl-muted); margin: 14px 0 0; max-width: 62ch; }
+body.stagelight .shelf-list-section, body.stagelight .shelf-neighbors { margin-top: 52px; }
+body.stagelight .shelf-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .shelf-section-head h2 { font-family: var(--sl-display); font-size: 21px; font-weight: 640; letter-spacing: -0.01em; color: var(--sl-ink); }
+body.stagelight .shelf-section-head span { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .shelf-list { display: flex; flex-direction: column; }
+body.stagelight .shelf-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 96px 132px 168px; align-items: center; gap: 20px;
+  padding: 14px 10px; color: var(--sl-ink); border-bottom: 1px solid var(--sl-line-faint); transition: background 0.16s ease;
+}
+body.stagelight .shelf-row:hover { background: rgba(255,255,255,0.03); }
+body.stagelight .shelf-row.is-compact { grid-template-columns: minmax(0, 1fr) 132px 96px; }
+body.stagelight .shr-title { font-family: var(--sl-display); font-size: 15px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.stagelight .shr-type { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .shr-last { font-family: var(--sl-mono); font-size: 13.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+body.stagelight .shr-last small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
+body.stagelight .shr-gap { display: flex; align-items: center; gap: 12px; justify-content: flex-end; }
+body.stagelight .shr-meter { flex: 1; min-width: 40px; height: 5px; border-radius: var(--sl-r-pill); background: rgba(255,255,255,0.07); overflow: hidden; }
+body.stagelight .shr-meter i { display: block; height: 100%; border-radius: var(--sl-r-pill); background: linear-gradient(90deg, rgba(212,81,79,0.55), rgba(212,81,79,0.95)); }
+body.stagelight .shr-gap-num { flex: none; text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .shr-gap-num small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
+body.stagelight .shelf-more { margin-top: 18px; font-size: 14px; color: var(--sl-muted); }
+body.stagelight .shelf-more a { color: var(--sl-ink); text-decoration: underline; text-decoration-color: var(--sl-line-strong); text-underline-offset: 3px; }
+body.stagelight .shelf-more a:hover { text-decoration-color: var(--sl-ink); }
+body.stagelight .shelf-empty { color: var(--sl-faint); font-size: 15px; padding: 14px 10px; }
+body.stagelight .shelf-neighbor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+body.stagelight .shelf-neighbor { display: flex; flex-direction: column; gap: 8px; padding: 22px 22px 20px; border-radius: var(--sl-r-md); border: 1px solid var(--sl-line); background: rgba(255,255,255,0.03); transition: border-color 0.16s ease, background 0.16s ease; }
+body.stagelight .shelf-neighbor:hover { border-color: var(--sl-line-strong); background: rgba(255,255,255,0.05); }
+body.stagelight .shn-count { font-family: var(--sl-mono); font-size: 26px; font-weight: 640; color: var(--sl-ink); line-height: 1; font-variant-numeric: tabular-nums; }
+body.stagelight .shn-count small { margin-left: 8px; font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .shn-name { font-family: var(--sl-display); font-size: 18px; font-weight: 640; letter-spacing: -0.01em; color: var(--sl-ink); }
+body.stagelight .shn-desc { font-size: 14px; line-height: 1.5; color: var(--sl-muted); }
+body.stagelight .shn-go { margin-top: 4px; font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .shelf-neighbor:hover .shn-go { color: var(--sl-muted); }
+body.stagelight .legacy-shelf-notes { margin-top: 56px; }
+@media (max-width: 640px) {
+  body.stagelight .shelf-row { grid-template-columns: minmax(0, 1fr) 88px; grid-auto-rows: auto; row-gap: 6px; column-gap: 14px; }
+  body.stagelight .shr-type { grid-column: 1; grid-row: 2; }
+  body.stagelight .shr-last { grid-column: 1; grid-row: 3; }
+  body.stagelight .shr-gap { grid-column: 2; grid-row: 1 / span 3; flex-direction: column; align-items: flex-end; justify-content: center; gap: 8px; }
+  body.stagelight .shr-meter { width: 100%; flex: none; }
+  body.stagelight .shelf-row.is-compact { grid-template-columns: minmax(0, 1fr) 88px; }
+  body.stagelight .shelf-row.is-compact .shr-last { grid-column: 1; grid-row: 2; }
+  body.stagelight .shelf-row.is-compact .shr-gap-num { grid-column: 2; grid-row: 1; }
+}
 body.stagelight .song-search {
   position: sticky; top: 78px; z-index: 3; display: flex; align-items: center; gap: 12px;
   margin: 28px 0 18px; padding: 13px 18px; border-radius: var(--sl-r-md);

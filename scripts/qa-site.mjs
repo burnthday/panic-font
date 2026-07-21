@@ -597,6 +597,31 @@ async function checkLegacyPages(siteData) {
   assertIncludes(shelf, `<h2>Spring ${siteData.site.year} New Additions To The Shelf</h2>`, "Shelf page leads with the current seasonal additions");
   record("Shelf page omits duplicate live counters", !/on The Shelf<\/span>|in Purgatory<\/span>|show cutoff<\/span>/.test(shelf));
   record("Shelf page preserves historical updates after the current additions", indexOf(shelf, `Spring ${siteData.site.year} New Additions To The Shelf`) < indexOf(shelf, "Previous Shelf Updates") && /The Shelf Updated: April 1st, 2019/.test(shelfText));
+  // Redesigned /shelf/: a computed stat strip, a designed row list (no lazy
+  // bullet dump for the computed shelf), Alex's seasonal notes kept verbatim,
+  // and a single H1 with no redundant eyebrow.
+  const shelfBoardCount = (siteData.boards?.shelfOriginals?.length || 0) + (siteData.boards?.shelfCovers?.length || 0);
+  const shelfBoardLabel = new Intl.NumberFormat("en-US").format(shelfBoardCount);
+  record("Shelf page shows a computed stat strip with the live shelf count",
+    shelf.includes('class="song-stat-grid"') && shelf.includes(`<strong>${shelfBoardLabel}</strong>`) && /songs shelved/.test(shelf),
+    `expected a song-stat tile with ${shelfBoardLabel}`);
+  record("Shelf page renders the computed shelf as a designed row list linking to song history",
+    shelf.includes('class="shelf-row"') && /class="shelf-row"\s+href="\/song\//.test(shelf),
+    "no shelf-row with a /song/ link found");
+  const additionsBlock = (() => {
+    const start = indexOf(shelf, "New Additions To The Shelf</h2>");
+    const end = indexOf(shelf, "Longest Gone");
+    return start >= 0 && end > start ? shelf.slice(start, end) : "";
+  })();
+  record("Shelf page's computed additions are rows, not a bare bullet list",
+    Boolean(additionsBlock) && additionsBlock.includes('class="shelf-row"') && !additionsBlock.includes("<li>"),
+    "the New Additions block still renders <li> bullets");
+  record("Shelf page keeps Alex's seasonal notes verbatim",
+    /there's certainly a method to their madness/i.test(shelfText),
+    "distinctive verbatim shelf-notes phrase missing");
+  record("Shelf page uses a single H1 with no redundant eyebrow",
+    (shelf.match(/<h1>/g) || []).length === 1 && !/class="[^"]*eyebrow[^"]*"[^>]*>\s*The Shelf/i.test(shelf),
+    "found a duplicate eyebrow echoing the H1");
   record("Primary archive pages omit migration eyebrows", !rumors.includes("<p>The Widespread Panic Spread Sheet</p>") && !tourReview.includes("<p>The Widespread Panic Spread Sheet</p>"));
   for (const [label, html] of [["Rumors", rumors], ["Tour In Review", tourReview], ["The Shelf", shelf], ["Privacy", privacy]]) {
     assertIncludes(html, 'class="stagelight"', `${label} page uses the Stagelight dark shell`);
