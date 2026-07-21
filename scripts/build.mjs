@@ -2254,6 +2254,7 @@ function renderStagelightHeader(data) {
   const latestCol = featured ? `<div class="mega-col">
       <div class="mega-col-head"><p class="mega-label">Latest Show</p><a class="mega-more" href="/#latest-setlist">View Setlist</a></div>
       <div class="mega-show">
+        ${featured.image ? `<a class="mega-show-photo" href="/#latest-setlist" tabindex="-1" aria-hidden="true"><img src="${escapeAttr(featured.image)}" alt="" loading="lazy" decoding="async"></a>` : ""}
         <time class="mega-show-date" datetime="${escapeAttr(featured.isoDate || "")}">${escapeHtml([weekdayName(featured.isoDate), featured.date].filter(Boolean).join(" · "))}</time>
         <p class="mega-show-city">${escapeHtml(featured.location)}</p>
         <p class="mega-show-venue">${escapeHtml(featured.venue)}</p>
@@ -2490,7 +2491,7 @@ function renderTourStats(data) {
         return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-rarity-tier="${escapeAttr(rarity.tier)}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
           <th scope="row">${escapeHtml(song.title)}</th>
           <td class="plays-cell">${formatNumber(song.tourCount)}</td>
-          <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.score == null ? "new this tour" : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
+          <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.tier === "new" ? "new this tour" : rarity.tier === "bustout" || rarity.tier === "mega" ? `back after ${formatNumber(song.seedSlp || 0)} shows · LTP ${escapeHtml(song.seedLast || "")}` : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
           <td class="signal-cell heat-cell"><strong>${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} ago</strong><small>usual gap ${heat.expectedGap.toFixed(1)} shows</small></td>
           <td>${escapeHtml(song.lastDisplay)}</td>
         </tr>`;
@@ -2499,36 +2500,46 @@ function renderTourStats(data) {
   </div>
   <details class="index-method">
     <summary>WHAT THESE MEAN</summary>
-    <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Double Rare, Ultra Rare, or Hyper Rare. It is driven mostly by plays in the last 100 shows, with lifetime play count as a small tie-breaker. The numbers below the badge show the actual last-100 and lifetime counts. The symbols follow trading-card language: a black circle, diamond, or star; two black stars; two silver stars; three gold stars. A song new this tour gets an open star until it has history.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
+    <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Ultra Rare, or Hyper Rare, driven mostly by plays in the last 100 shows with lifetime play count as a small tie-breaker. Two gap tiers outrank them all: a song that returns after 200+ shows away (the Shelf cutoff) is a <strong>Bustout</strong>, and one back after 1,000+ shows is a <strong>Mega Bustout</strong>. The symbols follow trading-card language: a black circle, diamond, or star; two silver stars; three gold stars; a radiant star for a Bustout, doubled for a Mega. A song new this tour gets an open star until it has history.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
   </details>
   </div>
   </details>
 </section>`;
 }
 
+const BUSTOUT_SLP = 200;
+const MEGA_BUSTOUT_SLP = 1000;
+
 function calculateRarity(song) {
   if (song.seedTotal === 0) return { score: null, sortValue: 101, label: "New", tier: "new" };
+  // Gap tiers outrank frequency tiers: a song pulled after a 200-show
+  // absence (the Shelf cutoff) is a Bustout no matter how often it ran before.
+  if (song.playedThisTour && (song.seedSlp || 0) >= MEGA_BUSTOUT_SLP) {
+    return { score: null, sortValue: 120, label: "Mega Bustout", tier: "mega" };
+  }
+  if (song.playedThisTour && (song.seedSlp || 0) >= BUSTOUT_SLP) {
+    return { score: null, sortValue: 110, label: "Bustout", tier: "bustout" };
+  }
   const recentScarcity = 1 - Math.min((song.l100 || 0) / 25, 1);
   const lifetimeScarcity = 1 - Math.min(Math.log10((song.total || 0) + 1) / 3, 1);
   const score = Math.round((recentScarcity * 0.9 + lifetimeScarcity * 0.1) * 100);
-  const tier = score >= 95
+  const tier = score >= 85
     ? ["Hyper Rare", "hyper"]
-    : score >= 85
+    : score >= 70
       ? ["Ultra Rare", "ultra"]
-      : score >= 70
-        ? ["Double Rare", "double"]
-        : score >= 50
-          ? ["Rare", "rare"]
-          : score >= 25
-            ? ["Uncommon", "uncommon"]
-            : ["Common", "common"];
+      : score >= 50
+        ? ["Rare", "rare"]
+        : score >= 25
+          ? ["Uncommon", "uncommon"]
+          : ["Common", "common"];
   return { score, sortValue: score, label: tier[0], tier: tier[1] };
 }
 
 const RARITY_TIER_ORDER = [
+  ["mega", "Mega Bustout"],
+  ["bustout", "Bustout"],
   ["hyper", "Hyper Rare"],
   ["ultra", "Ultra Rare"],
-  ["double", "Double Rare"],
   ["rare", "Rare"],
   ["uncommon", "Uncommon"],
   ["common", "Common"],
@@ -2563,12 +2574,14 @@ const RARITY_STAR_POINTS = "10,0.5 12.23,6.93 19.03,7.06 13.61,11.17 15.58,17.69
 
 function renderRaritySymbol(tier) {
   const star = (x, y, fill) => `<polygon points="${RARITY_STAR_POINTS}" fill="${fill}" transform="translate(${x} ${y})"/>`;
+  const burst = (x, fill) => `<g transform="translate(${x} 0)"><g stroke="${fill}" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="-3.2" x2="10" y2="-0.6"/><line x1="20.4" y1="4" x2="18.2" y2="5.3"/><line x1="20.4" y1="15" x2="18.2" y2="13.7"/><line x1="-0.4" y1="4" x2="1.8" y2="5.3"/><line x1="-0.4" y1="15" x2="1.8" y2="13.7"/></g>${star(0, 1.5, fill)}</g>`;
   if (tier === "common") return `<svg class="rarity-common" viewBox="0 0 20 19"><circle cx="10" cy="9.5" r="8" fill="${RARITY_INK}"/></svg>`;
   if (tier === "uncommon") return `<svg class="rarity-uncommon" viewBox="0 0 20 19"><polygon points="10,1 18.5,9.5 10,18 1.5,9.5" fill="${RARITY_INK}"/></svg>`;
   if (tier === "rare") return `<svg class="rarity-rare" viewBox="0 0 20 19">${star(0, 0, RARITY_INK)}</svg>`;
-  if (tier === "double") return `<svg class="rarity-double" viewBox="0 0 42 19">${star(0, 0, RARITY_INK)}${star(22, 0, RARITY_INK)}</svg>`;
   if (tier === "ultra") return `<svg class="rarity-ultra" viewBox="0 0 42 19">${star(0, 0, RARITY_SILVER)}${star(22, 0, RARITY_SILVER)}</svg>`;
   if (tier === "hyper") return `<svg class="rarity-hyper" viewBox="0 0 42 30.5">${star(11, 0, RARITY_GOLD)}${star(0, 11.5, RARITY_GOLD)}${star(22, 11.5, RARITY_GOLD)}</svg>`;
+  if (tier === "bustout") return `<svg class="rarity-bustout" viewBox="-2 -4.5 24 25">${burst(0, RARITY_GOLD)}</svg>`;
+  if (tier === "mega") return `<svg class="rarity-mega" viewBox="-2 -4.5 46 25">${burst(0, RARITY_GOLD)}${burst(22, RARITY_GOLD)}</svg>`;
   return `<svg class="rarity-new" viewBox="-1.5 -1.5 23 22"><polygon points="${RARITY_STAR_POINTS}" fill="none" stroke="${RARITY_INK}" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
 }
 
@@ -2929,8 +2942,8 @@ function computeShowPulls(data, show) {
     .map((title) => ({ title, row: byKey.get(normalizeTitle(title)) }))
     .filter((entry) => entry.row)
     .map((entry) => ({ ...entry, rarity: calculateRarity(entry.row) }))
-    .filter((entry) => entry.rarity.score != null && entry.rarity.score >= 70)
-    .sort((left, right) => right.rarity.score - left.rarity.score);
+    .filter((entry) => entry.rarity.tier !== "new" && entry.rarity.sortValue >= 70)
+    .sort((left, right) => right.rarity.sortValue - left.rarity.sortValue);
   const groups = [];
   for (const pull of pulls) {
     let group = groups.find((entry) => entry.label === pull.rarity.label);
@@ -6584,7 +6597,7 @@ body.stagelight .menu-open .menu-toggle .menu-icon i:last-child { top: 4.2px; tr
 /* ---- MEGA MENU ---- */
 body.stagelight .mega-menu {
   position: fixed; inset: 0; z-index: 55; overflow-y: auto;
-  padding: 130px max(28px, calc((100% - 1400px) / 2)) 72px;
+  padding: 104px max(28px, calc((100% - 1400px) / 2)) 64px;
   background: linear-gradient(180deg, rgba(10,10,12,0.97), rgba(8,8,10,0.985));
   -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3);
 }
@@ -6598,23 +6611,25 @@ body.stagelight .mega-inner {
 body.stagelight .mega-col { border-top: 1px solid var(--sl-line-strong); padding-top: 18px; min-width: 0; }
 body.stagelight .mega-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .mega-col-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-body.stagelight .mega-nav { display: flex; flex-direction: column; margin-top: 26px; }
+body.stagelight .mega-nav { display: flex; flex-direction: column; margin-top: 22px; }
 body.stagelight .mega-link {
-  font-family: var(--sl-display); font-size: clamp(30px, 3.2vw, 42px); font-weight: 620;
-  letter-spacing: -0.015em; line-height: 1.14; padding: 7px 0; color: var(--sl-ink);
+  font-family: var(--sl-display); font-size: clamp(29px, 3vw, 40px); font-weight: 620;
+  letter-spacing: -0.015em; line-height: 1.08; padding: 5px 0; color: var(--sl-ink);
   transition: color 0.15s ease, transform 0.18s ease;
 }
 body.stagelight .mega-link:hover { color: #fff; transform: translateX(6px); }
 body.stagelight .mega-sub {
-  display: flex; align-items: baseline; gap: 12px; padding: 5px 0 5px 6px;
-  font-family: var(--sl-display); font-size: clamp(20px, 2vw, 25px); font-weight: 480;
+  display: flex; align-items: baseline; gap: 12px; padding: 3px 0 3px 6px;
+  font-family: var(--sl-display); font-size: clamp(19px, 1.9vw, 24px); font-weight: 480;
   letter-spacing: -0.01em; color: var(--sl-muted); transition: color 0.15s ease, transform 0.18s ease;
 }
 body.stagelight .mega-sub::before { content: "\\21B3"; color: var(--sl-faint); font-size: 0.8em; }
 body.stagelight .mega-sub:hover { color: var(--sl-ink); transform: translateX(6px); }
 body.stagelight .mega-more { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); border-bottom: 1px solid var(--sl-line-strong); padding-bottom: 3px; }
 body.stagelight .mega-more:hover { color: var(--sl-ink); border-color: var(--sl-ink); }
-body.stagelight .mega-show { margin-top: 30px; }
+body.stagelight .mega-show { margin-top: 24px; }
+body.stagelight .mega-show-photo { display: block; margin-bottom: 20px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 24px 50px -22px rgba(0,0,0,0.8); }
+body.stagelight .mega-show-photo img { display: block; width: 100%; aspect-ratio: 16 / 9.5; object-fit: cover; }
 body.stagelight .mega-show-date { display: block; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .mega-show-city { font-family: var(--sl-display); font-size: clamp(26px, 2.6vw, 34px); font-weight: 680; letter-spacing: -0.015em; margin-top: 10px; color: var(--sl-ink); }
 body.stagelight .mega-show-venue { font-size: 15px; color: var(--sl-muted); margin-top: 6px; }
