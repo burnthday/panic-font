@@ -122,6 +122,10 @@ async function main() {
   siteData.albums = [...albums].sort((a, b) => String(b.releaseDate || "").localeCompare(String(a.releaseDate || "")));
   siteData.songSlugMap = buildSongSlugMap(siteData.catalog || []);
   siteData.lyricsResourceByKey = buildLyricsResourceIndex(archiveEntries);
+  // Everyday Companion deep links must load BEFORE the lyric/archive pages render:
+  // the Lyrics & Chords hub links EC-only songs and every lyric subpage carries an
+  // "Also on Everyday Companion" cross-reference. Absent file → homepage fallback.
+  siteData.ecLinksByKey = await loadEcLinks();
   await writeBloggerArchive(archiveEntries, siteData);
   await writeModernArchivePages(archiveEntries, siteData);
   await writeShelfInfoPage(siteData, archiveEntries);
@@ -129,7 +133,6 @@ async function main() {
   await writePrivacyPage(siteData);
   await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
-  siteData.ecLinksByKey = await loadEcLinks();
   siteData.songVideosByKey = await loadSongVideos();
   siteData.relistenDates = await loadRelistenDates();
   attachBestGuesses(siteData, await loadBestGuesses());
@@ -1268,46 +1271,59 @@ async function writeModernArchivePages(entries, data) {
   }
 }
 
-// Enumerate every lyric/chord archive page (excluding the hub's own legacy source)
-// as a computed row: the bare song name plus a cheap catalog join for meta. Sorted
-// alphabetically. Nothing is authored — every field is derived from existing data.
-function collectLyricPages(entries, data, hubLegacyPath) {
-  const seen = new Set();
-  const rows = [];
-  for (const entry of entries) {
-    if (!entry.path || entry.path === hubLegacyPath) continue;
-    if (!isLyricArchivePage(entry)) continue;
-    if (seen.has(entry.path)) continue;
-    seen.add(entry.path);
-    const join = lyricPageJoin(entry, data);
-    const title = join.songName || cleanArchiveTitle(entry.title);
-    rows.push({ entry, title, ...join });
-  }
-  return rows.sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
+// Build one Lyrics & Chords hub row per CATALOG song (owner UX decision — the hub
+// covers the full catalog, not just the songs with an internal transcription).
+// Each row is a pure build-time join: title, primary album, lifetime plays, and a
+// link target that prefers our internal transcription and otherwise sends the
+// reader to Everyday Companion (verified deep link or safe homepage fallback —
+// never a guessed 404). Nothing is authored; sorted alphabetically by title.
+function collectLyricRows(data) {
+  const catalog = [...(data.catalog || [])];
+  return catalog.map((song) => {
+    const internal = data.lyricsResourceByKey?.get(song.key) || "";
+    const primaryAlbum = songAlbumsFor(song, data.albums || [])[0] || null;
+    const ec = internal ? null : ecLinkFor(song, data);
+    return {
+      song,
+      title: song.title,
+      type: song.type,
+      album: primaryAlbum ? primaryAlbum.title : "",
+      total: Number.isFinite(song.total) ? song.total : 0,
+      internal,
+      ecHref: ec ? ec.href : ""
+    };
+  }).sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
 }
 
 function renderLyricsChordsIndex(entries, data, hubEntry) {
-  const pages = collectLyricPages(entries, data, hubEntry.legacyPath);
-  const matched = pages.filter((page) => page.song).length;
-  const rows = pages.map((page) => {
-    const plays = page.song && Number.isFinite(page.song.total) && page.song.total > 0
-      ? `${formatNumber(page.song.total)}<small>plays</small>`
-      : "";
-    const sub = page.primaryAlbum ? page.primaryAlbum.title : (page.song ? page.song.type : "Lyrics & chords");
-    return `<a class="lyric-row" href="${escapeAttr(page.entry.path)}" data-title="${escapeAttr(page.title.toLowerCase())}">
-      <span class="lr-title">${escapeHtml(page.title)}</span>
+  const rowsData = collectLyricRows(data);
+  const total = rowsData.length;
+  const matched = rowsData.filter((row) => row.internal).length;
+  const albums = [...new Set(rowsData.map((row) => row.album).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
+  const rows = rowsData.map((row) => {
+    const plays = row.total > 0 ? `${formatNumber(row.total)}<small>plays</small>` : "";
+    const href = row.internal || row.ecHref;
+    const ext = !row.internal;
+    const badge = row.internal
+      ? `<span class="lr-badge lr-badge-internal">Burnthday transcription</span>`
+      : `<span class="lr-badge lr-ext">Everyday Companion<span class="lr-ext-arrow" aria-hidden="true">↗</span></span>`;
+    const sub = row.album || row.type || "Lyrics &amp; chords";
+    return `<a class="lyric-row" href="${escapeAttr(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""} data-title="${escapeAttr(row.title.toLowerCase())}" data-transcription="${row.internal ? "yes" : "no"}" data-type="${escapeAttr(row.type.toLowerCase())}" data-album="${escapeAttr(row.album)}">
+      <span class="lr-title">${escapeHtml(row.title)}${badge}</span>
       <span class="lr-sub">${escapeHtml(sub)}</span>
       <span class="lr-plays">${plays}</span>
     </a>`;
   }).join("");
-  const count = `${formatNumber(pages.length)} song${pages.length === 1 ? "" : "s"} with lyrics &amp; chords`;
+  const count = `${formatNumber(total)} song${total === 1 ? "" : "s"} · ${formatNumber(matched)} with Burnthday transcriptions`;
+  const albumOptions = albums.map((title) => `<option value="${escapeAttr(title)}">${escapeHtml(title)}</option>`).join("");
   return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Widespread Panic Lyrics &amp; Chords | Burnthday</title>
-    <meta name="description" content="Search every Widespread Panic lyric and chord sheet on Burnthday — song by song, with live play counts and the album each came from.">
+    <meta name="description" content="Every Widespread Panic song — where to find its lyrics and chords. Our own transcriptions where they exist, and Everyday Companion for the rest, with live play counts.">
     <link rel="canonical" href="https://burnthday.com/lyrics-chords/">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
@@ -1320,17 +1336,25 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
     <main class="archive-main songs-main">
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Lyrics &amp; Chords</span></nav>
-        <p class="archive-eyebrow">LYRICS &amp; CHORDS</p>
         <h1>Lyrics &amp; Chords</h1>
-        <p class="songs-deck">Every lyric and chord sheet in the archive — search it, then open the song. ${count}.</p>
+        <p class="songs-deck">Every song in the catalog and where to find its words and chords — our own transcriptions where they exist, Everyday Companion for the rest. ${count}.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <input type="search" id="lyric-search" placeholder="Search ${formatNumber(pages.length)} songs…" autocomplete="off" aria-label="Search lyrics and chords">
+        <input type="search" id="lyric-search" placeholder="Search ${formatNumber(total)} songs…" autocomplete="off" aria-label="Search lyrics and chords">
         <span class="song-count" id="lyric-count">${count}</span>
       </div>
+      <div class="index-toolbar" role="group" aria-label="Filter lyrics and chords">
+        <div class="type-filter" role="group" aria-label="Filter songs by type">
+          <button type="button" class="is-active" data-type-filter="all">All</button>
+          <button type="button" data-type-filter="original">Originals</button>
+          <button type="button" data-type-filter="cover">Covers</button>
+        </div>
+        <button type="button" class="index-toggle" data-transcription-filter aria-pressed="false">Has Burnthday transcription</button>
+        <label class="index-select"><span>Album</span><select data-album-filter aria-label="Filter by album"><option value="">All albums</option>${albumOptions}</select></label>
+      </div>
       <div class="song-list lyrics-list" id="lyric-list">${rows}</div>
-      <p class="song-empty" id="lyric-empty" hidden>No songs match that search.</p>
+      <p class="song-empty" id="lyric-empty" hidden>No songs match those filters.</p>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
     <script>${renderLyricsSearchScript()}</script>
@@ -1339,9 +1363,10 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
 `;
 }
 
-// Client-side title filter for the Lyrics & Chords hub. Adapted from
-// renderSongSearchScript (the Song Index) against the lyric-row markup — kept as
-// its own copy rather than imported so the two indexes can drift independently.
+// Client-side search + multi-facet filter for the Lyrics & Chords hub. Composes a
+// title search, a Type button group, a "Has Burnthday transcription" toggle and an
+// Album <select> — all reading the data-* attributes on each .lyric-row. Modeled on
+// the homepage Tour Stats rarity/type filter interaction.
 function renderLyricsSearchScript() {
   return `(() => {
     const input = document.getElementById("lyric-search");
@@ -1349,17 +1374,39 @@ function renderLyricsSearchScript() {
     const count = document.getElementById("lyric-count");
     const empty = document.getElementById("lyric-empty");
     const total = rows.length;
+    const matched = rows.filter((row) => row.dataset.transcription === "yes").length;
+    const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
+    const transToggle = document.querySelector("[data-transcription-filter]");
+    const albumSelect = document.querySelector("[data-album-filter]");
+    let selectedType = "all";
+    const base = total + " songs · " + matched + " with Burnthday transcriptions";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
+      const transOnly = transToggle && transToggle.getAttribute("aria-pressed") === "true";
+      const album = albumSelect ? albumSelect.value : "";
       let shown = 0;
       rows.forEach((row) => {
-        const hit = !q || row.dataset.title.includes(q);
+        const hit = (!q || row.dataset.title.includes(q))
+          && (selectedType === "all" || row.dataset.type === selectedType)
+          && (!transOnly || row.dataset.transcription === "yes")
+          && (!album || row.dataset.album === album);
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      count.textContent = q ? shown + " of " + total + " songs" : total + " songs with lyrics & chords";
+      const filtered = q || selectedType !== "all" || transOnly || album;
+      count.textContent = filtered ? shown + " of " + total + " songs" : base;
     };
+    typeButtons.forEach((btn) => btn.addEventListener("click", () => {
+      selectedType = btn.dataset.typeFilter;
+      typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+      apply();
+    }));
+    if (transToggle) transToggle.addEventListener("click", () => {
+      transToggle.setAttribute("aria-pressed", transToggle.getAttribute("aria-pressed") === "true" ? "false" : "true");
+      apply();
+    });
+    if (albumSelect) albumSelect.addEventListener("change", apply);
     input.addEventListener("input", apply);
     input.focus();
   })();`;
@@ -1812,6 +1859,13 @@ function renderLyricCrosslinks(entry, data) {
   if (song && slug) links.push(`<a class="origin-xlink" href="/song/${escapeAttr(slug)}/"><span class="oxl-label">Live history</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
   if (origin) links.push(`<a class="origin-xlink" href="/song-origins/${escapeAttr(origin.slug)}/"><span class="oxl-label">Song origin</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
   if (primaryAlbum) links.push(`<a class="origin-xlink" href="/albums/${escapeAttr(primaryAlbum.slug)}/"><span class="oxl-label">Appears on ${escapeHtml(primaryAlbum.title)}</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
+  // Small cross-reference to the community canon on Everyday Companion — a verified
+  // deep link when one exists, else the safe EC homepage (never a guessed 404). Our
+  // verbatim transcription above stays the primary content; this is a courtesy exit.
+  if (song) {
+    const ec = ecLinkFor(song, data);
+    links.push(`<a class="origin-xlink origin-xlink-ext" href="${escapeAttr(ec.href)}" target="_blank" rel="noopener noreferrer"><span class="oxl-label">Also on Everyday Companion</span><span class="oxl-go" aria-hidden="true">↗</span></a>`);
+  }
   if (!links.length) return "";
   return `<nav class="origin-crosslinks" aria-label="Related pages">${links.join("")}</nav>`;
 }
@@ -2995,7 +3049,7 @@ function renderSongsIndex(data, slugMap) {
   const rows = catalog.map((song) => {
     const rarity = calculateRarity(song);
     const hasBestGuess = data.bestGuessByKey?.has(song.key);
-    return `<a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}">
+    return `<a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-bestguess="${hasBestGuess ? "yes" : "no"}">
       <span class="sr-title">${escapeHtml(song.title)}${hasBestGuess ? '<span class="sr-bestguess">Best Guess</span>' : ""}</span>
       <span class="sr-type">${escapeHtml(song.type)}</span>
       <span class="sr-tier">${song.playedThisTour ? '<span class="sr-onsheet">this tour</span>' : ""}${escapeHtml(rarity.label)}</span>
@@ -3029,6 +3083,15 @@ function renderSongsIndex(data, slugMap) {
         <input type="search" id="song-search" placeholder="Search ${formatNumber(catalog.length)} songs…" autocomplete="off" aria-label="Search songs">
         <span class="song-count" id="song-count">${formatNumber(catalog.length)} songs · ${formatNumber(originals)} originals · ${formatNumber(covers)} covers</span>
       </div>
+      <div class="index-toolbar" role="group" aria-label="Filter songs">
+        <div class="type-filter" role="group" aria-label="Filter songs by type">
+          <button type="button" class="is-active" data-type-filter="all">All</button>
+          <button type="button" data-type-filter="original">Originals</button>
+          <button type="button" data-type-filter="cover">Covers</button>
+        </div>
+        <button type="button" class="index-toggle" data-tour-filter aria-pressed="false">This tour</button>
+        <button type="button" class="index-toggle" data-bestguess-filter aria-pressed="false">Has Best Guess</button>
+      </div>
       <div class="song-list" id="song-list">${rows}</div>
       <p class="song-empty" id="song-empty" hidden>No songs match that search.</p>
     </main>
@@ -3039,6 +3102,10 @@ function renderSongsIndex(data, slugMap) {
 `;
 }
 
+// Client-side search + multi-facet filter for the Song Index. Composes a title
+// search, a Type button group, a "This tour" toggle and a "Has Best Guess" toggle —
+// all reading the data-* attributes on each .song-row. Modeled on the homepage Tour
+// Stats rarity/type filter interaction.
 function renderSongSearchScript() {
   return `(() => {
     const input = document.getElementById("song-search");
@@ -3046,17 +3113,37 @@ function renderSongSearchScript() {
     const count = document.getElementById("song-count");
     const empty = document.getElementById("song-empty");
     const total = rows.length;
+    const baseLabel = count.textContent;
+    const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
+    const tourToggle = document.querySelector("[data-tour-filter]");
+    const bestToggle = document.querySelector("[data-bestguess-filter]");
+    let selectedType = "all";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
+      const tourOnly = tourToggle && tourToggle.getAttribute("aria-pressed") === "true";
+      const bestOnly = bestToggle && bestToggle.getAttribute("aria-pressed") === "true";
       let shown = 0;
       rows.forEach((row) => {
-        const hit = !q || row.dataset.title.includes(q);
+        const hit = (!q || row.dataset.title.includes(q))
+          && (selectedType === "all" || row.dataset.type === selectedType)
+          && (!tourOnly || row.dataset.tour === "yes")
+          && (!bestOnly || row.dataset.bestguess === "yes");
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      count.textContent = q ? shown + " of " + total + " songs" : total + " songs";
+      const filtered = q || selectedType !== "all" || tourOnly || bestOnly;
+      count.textContent = filtered ? shown + " of " + total + " songs" : baseLabel;
     };
+    typeButtons.forEach((btn) => btn.addEventListener("click", () => {
+      selectedType = btn.dataset.typeFilter;
+      typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+      apply();
+    }));
+    [tourToggle, bestToggle].forEach((btn) => btn && btn.addEventListener("click", () => {
+      btn.setAttribute("aria-pressed", btn.getAttribute("aria-pressed") === "true" ? "false" : "true");
+      apply();
+    }));
     input.addEventListener("input", apply);
     input.focus();
   })();`;
@@ -3217,6 +3304,18 @@ function buildLyricsResourceIndex(archiveEntries = []) {
   return result;
 }
 
+// Resolve the Everyday Companion link for a catalog song: the verified deep link
+// from data/source/ec-links.json when it exists, else the safe homepage fallback.
+// We NEVER synthesize a guessed per-song URL that could 404. Shared by the song
+// "Learn It" block, the Lyrics & Chords hub and the lyric-subpage cross-reference
+// so all three stay in lockstep. Returns { href, deep } — `deep` is true only when
+// the link is a verified per-song page.
+function ecLinkFor(song, data) {
+  const key = (song && song.key) || normalizeTitle((song && song.title) || "");
+  const deep = key ? (data.ecLinksByKey?.[key] || "") : "";
+  return { href: deep || "http://everydaycompanion.com/", deep: Boolean(deep) };
+}
+
 // The guitarist-facing "Learn It" resource row: internal lyrics (only when a real
 // archive page exists), Everyday Companion (community canon, deep-linked when
 // verified), and a Songsterr tab search. Sits right after the song facts.
@@ -3226,7 +3325,7 @@ function renderSongLearnIt(song, data) {
   if (internal) {
     chips.push(`<a class="learn-chip" href="${escapeAttr(internal)}">Lyrics on Burnthday<small>lyrics &amp; chords</small></a>`);
   }
-  const ecHref = data.ecLinksByKey?.[song.key] || "http://everydaycompanion.com/";
+  const ecHref = ecLinkFor(song, data).href;
   chips.push(`<a class="learn-chip learn-ext" href="${escapeAttr(ecHref)}" target="_blank" rel="noopener noreferrer">Everyday Companion <span class="learn-go" aria-hidden="true">↗</span><small>lyrics &amp; chords</small></a>`);
   chips.push(`<a class="learn-chip learn-ext" href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer">Songsterr tab <span class="learn-go" aria-hidden="true">↗</span></a>`);
   return `<section class="song-learn" aria-labelledby="song-learn-h">
@@ -9476,7 +9575,31 @@ body.stagelight .song-search input {
 }
 body.stagelight .song-search input::placeholder { color: var(--sl-faint); }
 body.stagelight .song-count { flex: none; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); white-space: nowrap; }
+/* Shared index filter toolbar — Song Index + Lyrics & Chords hub. Reuses the
+   homepage .type-filter button group; toggles + album select match its chip vocab. */
+body.stagelight .index-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0 0 22px; }
+body.stagelight .index-toggle {
+  height: 40px; padding: 0 16px; border-radius: var(--sl-r-pill);
+  border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04);
+  color: var(--sl-muted); font-size: 13px; font-weight: 560; letter-spacing: 0.01em; cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+body.stagelight .index-toggle:hover { color: var(--sl-ink); background: rgba(255,255,255,0.08); }
+body.stagelight .index-toggle[aria-pressed="true"] { background: var(--sl-ink); color: #111; border-color: var(--sl-ink); }
+body.stagelight .index-select {
+  display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 8px 0 15px;
+  border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04);
+}
+body.stagelight .index-select span { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .index-select select {
+  background: transparent; border: 0; outline: none; color: var(--sl-ink);
+  font-family: var(--sl-display); font-size: 14px; font-weight: 560; cursor: pointer; padding: 0 6px 0 0;
+}
+body.stagelight .index-select select option { color: #111; }
 body.stagelight .song-list { display: grid; gap: 1px; }
+/* The row's own display:grid outweighs the UA [hidden] rule, so filtered/searched
+   rows need an explicit, equal-specificity hide. */
+body.stagelight .song-row[hidden], body.stagelight .lyric-row[hidden] { display: none; }
 body.stagelight .song-row {
   display: grid; grid-template-columns: minmax(0, 1fr) 84px minmax(120px, auto) 92px;
   align-items: center; gap: 16px; padding: 14px 10px; color: var(--sl-ink);
@@ -9506,6 +9629,9 @@ body.stagelight .lyric-row {
 }
 body.stagelight .lyric-row:hover { background: rgba(255,255,255,0.03); }
 body.stagelight .lr-title { font-family: var(--sl-display); font-size: 15px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.stagelight .lr-badge { margin-left: 10px; font-family: var(--sl-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); vertical-align: middle; white-space: nowrap; }
+body.stagelight .lr-badge-internal { border-color: rgba(212,81,79,0.5); color: var(--sl-ink); }
+body.stagelight .lr-ext-arrow { margin-left: 5px; color: var(--sl-faint); }
 body.stagelight .lr-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.stagelight .lr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
 body.stagelight .lr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
@@ -9749,6 +9875,8 @@ body.stagelight .origin-xlink:hover { transform: translateY(-2px); border-color:
 body.stagelight .origin-xlink .oxl-label { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
 body.stagelight .origin-xlink .oxl-go { color: var(--sl-faint); transition: color 0.18s ease; }
 body.stagelight .origin-xlink:hover .oxl-go { color: var(--sl-ink); }
+body.stagelight .origin-xlink-ext { background: transparent; border-style: dashed; }
+body.stagelight .origin-xlink-ext .oxl-label { color: var(--sl-muted); }
 body.stagelight .origin-nav { display: flex; justify-content: space-between; gap: 16px; margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--sl-line); }
 body.stagelight .origin-nav a { display: flex; flex-direction: column; gap: 5px; font-size: 15px; color: var(--sl-muted); max-width: 48%; }
 body.stagelight .origin-nav .origin-nav-next { text-align: right; margin-left: auto; align-items: flex-end; }

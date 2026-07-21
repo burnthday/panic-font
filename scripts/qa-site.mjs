@@ -36,7 +36,8 @@ async function main() {
   await checkLegacyPages(siteData);
   await checkProsePlate(allHtmlFiles, allHtml);
   await checkSongOrigins(allHtmlFiles, allHtml, siteData);
-  await checkLyricsChords(allHtmlFiles, allHtml);
+  await checkLyricsChords(allHtmlFiles, allHtml, siteData);
+  checkEyebrowAudit(allHtmlFiles, allHtml);
   await checkTourInReviewPages();
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkLocalAssets(allHtml);
@@ -461,6 +462,15 @@ async function checkSongPages(siteData) {
   record("Song Index lists every catalog song once", rowCount === catalog.length, `${rowCount} rows vs ${catalog.length} songs`);
   assertIncludes(index, `${catalog.length.toLocaleString("en-US")} songs`, "Song Index reports the full catalog count");
 
+  // Client-side multi-select filters (Type / This tour / Has Best Guess) compose
+  // with the search box. The controls are real buttons and the rows carry the
+  // data-* attributes those filters read.
+  assertIncludes(index, 'class="index-toolbar"', "Song Index exposes the filter toolbar");
+  for (const type of ["all", "original", "cover"]) assertIncludes(index, `data-type-filter="${type}"`, `Song Index offers the ${type} type filter`);
+  assertIncludes(index, "data-tour-filter", "Song Index offers the This-tour filter");
+  assertIncludes(index, "data-bestguess-filter", "Song Index offers the Has-Best-Guess filter");
+  record("Song Index rows carry the filter data-* attributes", /class="song-row"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-bestguess="(?:yes|no)"/.test(index), "song-row data-type/data-tour/data-bestguess present");
+
   const songDirs = await readdir(path.join(distDir, "song"), { withFileTypes: true })
     .then((entries) => entries.filter((entry) => entry.isDirectory()).length)
     .catch(() => 0);
@@ -697,22 +707,42 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
 // altered. Verifies the hub search + rows, a known lyric page's eyebrow, its
 // computed "Live history" link resolving to a real /song/ page, and that a
 // distinctive lyric line survives untouched on the prose plate.
-async function checkLyricsChords(files, htmlByFile) {
+async function checkLyricsChords(files, htmlByFile, siteData) {
+  const catalog = siteData?.catalog || [];
   const hub = await readText("dist/lyrics-chords/index.html").catch(() => "");
   record("Lyrics & Chords hub is generated", hub.length > 0);
   assertIncludes(hub, 'id="lyric-search"', "Lyrics & Chords hub carries the client-side search box");
+  // The hub now covers the FULL catalog (owner UX decision), one row per song, not
+  // just the ~53 songs with an internal transcription.
   const rowCount = (hub.match(/class="lyric-row"/g) || []).length;
-  record("Lyrics & Chords hub lists lyric pages as rows", rowCount > 0, `${rowCount} lyric rows`);
-  assertIncludes(hub, "songs with lyrics &amp; chords", "Lyrics & Chords hub reports a song count");
-  assertIncludes(hub, 'class="archive-eyebrow">LYRICS &amp; CHORDS', "Lyrics & Chords hub shows the section eyebrow");
-  // The hub must no longer be the raw Blogger link-list: its rows link to real
-  // archive pages that exist in dist.
-  const firstRowHref = hub.match(/class="lyric-row" href="([^"]+)"/)?.[1] || "";
-  const firstRowExists = firstRowHref ? files.some((f) => f.endsWith(firstRowHref.replace(/^\//, "").split("/").join(path.sep))) : false;
-  record("Lyrics & Chords hub rows link to real archive pages in dist", firstRowExists, firstRowHref || "no row href found");
+  record("Lyrics & Chords hub lists the full catalog", catalog.length > 0 && rowCount === catalog.length, `${rowCount} lyric rows vs ${catalog.length} catalog songs`);
+  assertIncludes(hub, "with Burnthday transcriptions", "Lyrics & Chords hub reports songs + transcription count");
 
-  // Known lyric subpages: carry the framing eyebrow, a computed crosslink to a
-  // real /song/ live-history page, and keep a distinctive verbatim lyric line.
+  // PART 3: the redundant hub eyebrow (duplicate of the H1 + breadcrumb crumb) is
+  // gone. It stays on the categorizing lyric SUBPAGES (checked below).
+  record("Lyrics & Chords hub drops the redundant LYRICS & CHORDS eyebrow", !hub.includes('class="archive-eyebrow">LYRICS &amp; CHORDS'), "hub eyebrow should be removed");
+
+  // Internal-transcription rows carry the badge AND link a real dist file; EC rows
+  // point at everydaycompanion.com (verified deep link or safe homepage fallback —
+  // never a guessed 404). Assert both populations exist and resolve correctly.
+  const internalCount = (hub.match(/class="lr-badge lr-badge-internal"/g) || []).length;
+  record("Lyrics & Chords hub badges internal transcriptions", internalCount > 0, `${internalCount} Burnthday-transcription rows`);
+  const internalRows = [...hub.matchAll(/<a class="lyric-row" href="([^"]+)"(?![^>]*target)[^>]*data-transcription="yes"/g)].map((m) => m[1]);
+  record("Every badged internal row links a real archive page in dist", internalRows.length > 0 && internalRows.every((href) => files.some((f) => f.endsWith(href.replace(/^\//, "").split("/").join(path.sep)))), `${internalRows.length} internal rows checked`);
+  const ecRows = [...hub.matchAll(/<a class="lyric-row" href="([^"]+)"[^>]*target="_blank"[^>]*data-transcription="no"/g)].map((m) => m[1]);
+  record("Lyrics & Chords hub sends EC rows to everydaycompanion.com", ecRows.length > 0 && ecRows.every((href) => /^https?:\/\/(?:www\.)?everydaycompanion\.com\//.test(href)), `${ecRows.length} EC rows checked`);
+
+  // PART 2: the multi-select filters (Type / Has transcription / Album) compose
+  // with the search box; the controls are real and the rows carry the data-*.
+  assertIncludes(hub, 'class="index-toolbar"', "Lyrics & Chords hub exposes the filter toolbar");
+  assertIncludes(hub, "data-transcription-filter", "Lyrics & Chords hub offers the transcription filter");
+  assertIncludes(hub, "data-album-filter", "Lyrics & Chords hub offers the album filter");
+  for (const type of ["all", "original", "cover"]) assertIncludes(hub, `data-type-filter="${type}"`, `Lyrics & Chords hub offers the ${type} type filter`);
+  record("Lyrics & Chords rows carry the filter data-* attributes", /class="lyric-row"[^>]*data-transcription="(?:yes|no)"[^>]*data-type="[^"]*"[^>]*data-album="[^"]*"/.test(hub), "lyric-row data-transcription/data-type/data-album present");
+
+  // Known lyric subpages: KEEP the framing eyebrow (categorizes them into the
+  // section), carry a computed crosslink to a real /song/ live-history page, add
+  // the "Also on Everyday Companion" cross-reference, and keep a verbatim lyric.
   const knowns = [
     { path: "dist/2023/06/king-baby-lyrics.html", line: "Feed it", song: "/song/king-baby/" },
     { path: "dist/2020/07/life-as-tree-lyrics.html", line: "Daydreams and nightlights", song: "/song/life-as-a-tree/" }
@@ -722,16 +752,45 @@ async function checkLyricsChords(files, htmlByFile) {
     const html = await readText(known.path).catch(() => "");
     if (!html) continue;
     checkedOne = true;
-    assertIncludes(html, 'class="archive-eyebrow">LYRICS &amp; CHORDS', `${known.path} carries the LYRICS & CHORDS eyebrow`);
+    assertIncludes(html, 'class="archive-eyebrow">LYRICS &amp; CHORDS', `${known.path} keeps the categorizing LYRICS & CHORDS eyebrow`);
     const liveHref = html.match(/class="origin-xlink" href="(\/song\/[^"]+)"/)?.[1] || "";
     const targetExists = liveHref ? files.some((f) => f.endsWith(path.join(liveHref.replace(/^\//, "").replace(/\/$/, ""), "index.html"))) : false;
     record(`${known.path} links Live history to a real /song/ page in dist`, liveHref === known.song && targetExists, `${liveHref || "no link"} → ${targetExists ? "exists" : "missing"}`);
+    // The "Also on Everyday Companion" cross-reference points at everydaycompanion.com.
+    const ecHref = html.match(/class="origin-xlink origin-xlink-ext" href="([^"]+)"/)?.[1] || "";
+    record(`${known.path} adds the "Also on Everyday Companion" cross-reference`, /^https?:\/\/(?:www\.)?everydaycompanion\.com\//.test(ecHref) && html.includes("Also on Everyday Companion"), ecHref || "no EC cross-ref");
     // Body is verbatim: the distinctive lyric line is present unchanged, on the
     // shared prose plate, and this check never rewrites it.
     assertIncludes(html, 'class="archive-content prose-plate"', `${known.path} keeps the verbatim body on the prose plate`);
     assertIncludes(html, known.line, `${known.path} lyric body is unchanged (distinctive line intact)`);
   }
   record("At least one known lyric page was framing-checked", checkedOne, "king-baby / life-as-tree lyric page present in dist");
+}
+
+// PART 3 audit: redundant eyebrows are removed on HUB/INDEX pages where they merely
+// duplicated the H1 + breadcrumb crumb, and categorizing eyebrows are KEPT on DETAIL
+// pages where they add information. Scans dist for both populations.
+function checkEyebrowAudit(files, htmlByFile) {
+  const htmlAt = (needle) => {
+    const idx = files.findIndex((file) => file.endsWith(needle.split("/").join(path.sep)));
+    return idx === -1 ? "" : htmlByFile[idx];
+  };
+  const anyMatch = (dirFragment, re) => files.some((file, index) => file.includes(dirFragment) && re.test(htmlByFile[index]));
+
+  // Removed on hubs/indexes (pure duplicates of title + crumb).
+  const lyricsHub = htmlAt("lyrics-chords/index.html");
+  const songsIndex = htmlAt("songs/index.html");
+  record("Lyrics & Chords hub has no duplicate eyebrow", lyricsHub.length > 0 && !lyricsHub.includes('class="archive-eyebrow">LYRICS &amp; CHORDS'), "hub eyebrow removed");
+  record("Song Index has no duplicate eyebrow", songsIndex.length > 0 && !/class="[a-z-]*eyebrow"/.test(songsIndex.replace(/class="sc-eyebrow"[^>]*>[^<]*<\/time>/g, "")), "song index carries no page eyebrow");
+
+  // Kept on detail pages (they categorize — these add information).
+  record("Song detail pages keep the categorizing eyebrow", anyMatch(`${path.sep}song${path.sep}`, /class="song-eyebrow"/), "song-eyebrow present on /song/ pages");
+  record("Song Origin detail pages keep the SONG ORIGIN eyebrow", anyMatch(`${path.sep}song-origins${path.sep}`, /class="origin-eyebrow">SONG ORIGIN</), "origin-eyebrow present");
+  record("Best Guess sections keep the BEST GUESS eyebrow", anyMatch(`${path.sep}song${path.sep}`, /class="bg-eyebrow"[^>]*>BEST GUESS</), "bg-eyebrow present");
+  record("Tour In Review detail pages keep the Tour In Review eyebrow", anyMatch(`${path.sep}tour-in-review${path.sep}`, /class="tour-eyebrow">Tour In Review</), "tour-eyebrow present");
+  record("Album detail pages keep the Studio Album eyebrow", anyMatch(`${path.sep}albums${path.sep}`, /class="album-eyebrow">Studio Album/), "album-eyebrow present");
+  // Lyric SUBPAGES keep their categorizing eyebrow (verified in checkLyricsChords too).
+  record("Lyric subpages keep the LYRICS & CHORDS eyebrow", files.some((file, index) => /lyrics\.html$/.test(file) && htmlByFile[index].includes('class="archive-eyebrow">LYRICS &amp; CHORDS')), "lyric subpage eyebrow kept");
 }
 
 function checkMarkerLegend(html, siteData) {
