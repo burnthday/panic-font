@@ -30,6 +30,7 @@ async function main() {
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml, siteData);
+  await checkSongPages(siteData);
   await checkLegacyPages(siteData);
   await checkLocalAssets(allHtml);
 
@@ -444,9 +445,34 @@ function checkGuestAnnotations(homeHtml, review2025Html) {
   record("No song-specific guest credit remains inside brackets", unkeyedGuestCredits.length === 0, unkeyedGuestCredits.join("\n"));
 }
 
+async function checkSongPages(siteData) {
+  const catalog = siteData.catalog || [];
+  const index = await readText("dist/songs/index.html").catch(() => "");
+  record("Song Index page is generated", index.length > 0);
+  assertIncludes(index, 'id="song-search"', "Song Index carries the client-side search box");
+  const rowCount = (index.match(/class="song-row"/g) || []).length;
+  record("Song Index lists every catalog song once", rowCount === catalog.length, `${rowCount} rows vs ${catalog.length} songs`);
+  assertIncludes(index, `${catalog.length.toLocaleString("en-US")} songs`, "Song Index reports the full catalog count");
+
+  const songDirs = await readdir(path.join(distDir, "song"), { withFileTypes: true })
+    .then((entries) => entries.filter((entry) => entry.isDirectory()).length)
+    .catch(() => 0);
+  record("Every catalog song has its own history page", songDirs === catalog.length, `${songDirs} pages vs ${catalog.length} songs`);
+
+  // spot-check a real page carries the live-history numbers straight from the catalog
+  const sample = catalog.find((song) => (song.total || 0) > 1 && (song.total || 0) < 1000) || catalog[0];
+  if (sample) {
+    const slug = siteData.songSlugMap?.[sample.key] || null;
+    const files = await listFiles(path.join(distDir, "song"), (filePath) => filePath.endsWith("index.html"));
+    const match = (await Promise.all(files.map(async (filePath) => ({ filePath, html: await readFile(filePath, "utf8") }))))
+      .find((page) => new RegExp(`<h1>${sample.title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}</h1>`).test(page.html));
+    record("A song history page reflects catalog play totals", Boolean(match) && match.html.includes("lifetime plays") && match.html.includes(sample.total.toLocaleString("en-US")), `${sample.title}: ${sample.total} plays${slug ? ` (/song/${slug}/)` : ""}`);
+  }
+}
+
 function checkNavigation(html, siteData) {
-  const expectedMega = ["Home", "Song Possibilities", "Tour Stats", "Setlists", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
-  const expectedFooter = ["Song List", "Albums", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About", "Privacy"];
+  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", "Setlists", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
+  const expectedFooter = ["Song List", "Song Index", "Albums", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About", "Privacy"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerNav = linkTexts(sectionByClass(html, "footer-links"));
   record("Mega menu covers every Burnthday destination plus the homepage sections", arraysEqual(megaNav, expectedMega), megaNav.join(" | "));

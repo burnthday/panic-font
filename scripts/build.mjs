@@ -60,6 +60,7 @@ const primaryNavItems = [
 const navSubLinks = {
   "Home": [
     ["Song Possibilities", "/#song-list"],
+    ["Song Index", "/songs/"],
     ["Tour Stats", "/#tour-stats"],
     ["Setlists", "/#setlists"]
   ],
@@ -71,6 +72,7 @@ const navSubLinks = {
 
 const footerNavItems = [
   ["Song List", "/"],
+  ["Song Index", "/songs/"],
   ["Albums", "/albums/"],
   ["The Shelf", "/shelf/"],
   ["Tour In Review", "/tour-in-review/"],
@@ -111,6 +113,7 @@ async function main() {
   await writePrivacyPage(siteData);
   const albums = await loadAlbums();
   await writeAlbumPages(siteData, albums);
+  await writeSongPages(siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews);
   await writeFile(path.join(dist, "index.html"), finalizeHtml(renderHtml(siteData)), "utf8");
@@ -2034,6 +2037,193 @@ function renderBreadcrumbJsonLd(items) {
   }).replace(/</g, "\\u003c");
 }
 
+// ---- SONG INDEX + per-song history pages ----
+function buildSongSlugMap(catalog) {
+  const map = new Map();
+  const used = new Set();
+  for (const song of catalog) {
+    let base = slugify(song.title);
+    let slug = base;
+    let n = 2;
+    while (used.has(slug)) slug = `${base}-${n++}`;
+    used.add(slug);
+    map.set(song.key, slug);
+  }
+  return map;
+}
+
+function songAlbumsFor(song, albums) {
+  return (albums || [])
+    .filter((album) => (album.tracks || []).some((track) => {
+      const t = normalizeTitle(track.title);
+      return t === song.key || normalizeTitle(String(track.title).replace(/\s*\([^)]*\)\s*$/, "")) === song.key;
+    }));
+}
+
+async function writeSongPages(data, albums) {
+  const catalog = data.catalog || [];
+  if (!catalog.length) return;
+  const slugMap = buildSongSlugMap(catalog);
+  data.songSlugMap = slugMap;
+  await writeStaticPage("/songs/index.html", renderSongsIndex(data, slugMap));
+  for (const song of catalog) {
+    const slug = slugMap.get(song.key);
+    await writeStaticPage(`/song/${slug}/index.html`, renderSongPage(song, data, albums, slugMap));
+  }
+}
+
+function renderSongsIndex(data, slugMap) {
+  const catalog = [...(data.catalog || [])].sort((a, b) => a.title.localeCompare(b.title));
+  const originals = catalog.filter((s) => s.type === "Original").length;
+  const covers = catalog.length - originals;
+  const rows = catalog.map((song) => {
+    const rarity = calculateRarity(song);
+    return `<a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}">
+      <span class="sr-title">${escapeHtml(song.title)}</span>
+      <span class="sr-type">${escapeHtml(song.type)}</span>
+      <span class="sr-tier">${song.playedThisTour ? '<span class="sr-onsheet">this tour</span>' : ""}${escapeHtml(rarity.label)}</span>
+      <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
+    </a>`;
+  }).join("");
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Song Index | Every Widespread Panic Song | Burnthday</title>
+    <meta name="description" content="Search every song in the Widespread Panic catalog and see its full live history — total plays, first and last, rarity, and the album it came from.">
+    <link rel="canonical" href="https://burnthday.com/songs/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main songs-main">
+      <header class="archive-title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Songs</span></nav>
+        <h1>Song Index</h1>
+        <p class="songs-deck">Every song in the catalog — search it, and open its full live history.</p>
+      </header>
+      <div class="song-search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="search" id="song-search" placeholder="Search ${formatNumber(catalog.length)} songs…" autocomplete="off" aria-label="Search songs">
+        <span class="song-count" id="song-count">${formatNumber(catalog.length)} songs · ${formatNumber(originals)} originals · ${formatNumber(covers)} covers</span>
+      </div>
+      <div class="song-list" id="song-list">${rows}</div>
+      <p class="song-empty" id="song-empty" hidden>No songs match that search.</p>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+    <script>${renderSongSearchScript()}</script>
+  </body>
+</html>
+`;
+}
+
+function renderSongSearchScript() {
+  return `(() => {
+    const input = document.getElementById("song-search");
+    const rows = [...document.querySelectorAll(".song-row")];
+    const count = document.getElementById("song-count");
+    const empty = document.getElementById("song-empty");
+    const total = rows.length;
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+      rows.forEach((row) => {
+        const hit = !q || row.dataset.title.includes(q);
+        row.hidden = !hit;
+        if (hit) shown++;
+      });
+      empty.hidden = shown !== 0;
+      count.textContent = q ? shown + " of " + total + " songs" : total + " songs";
+    };
+    input.addEventListener("input", apply);
+    input.focus();
+  })();`;
+}
+
+function renderSongPage(song, data, albums, slugMap) {
+  const rarity = calculateRarity(song);
+  const heat = calculateRotationHeat(song, data.totals?.postedSetlists || 0);
+  const onAlbums = songAlbumsFor(song, albums);
+  const origin = data.originsByTitle?.get(song.key) || null;
+  const writtenBy = onAlbums.flatMap((a) => a.tracks).find((t) => normalizeTitle(t.title) === song.key)?.writtenBy;
+  const firstLong = formatLongDate(parseDateKey(song.first) || song.first) || song.first;
+  const lastLong = song.effectiveLastIso ? formatLongDate(song.effectiveLastIso) : (formatLongDate(parseDateKey(song.last) || song.last) || song.lastDisplay);
+  const spanYears = (() => {
+    const f = parseDateKey(song.first), l = song.effectiveLastIso || parseDateKey(song.last);
+    if (!f || !l) return null;
+    return Math.max(0, Math.round((new Date(l) - new Date(f)) / (365.25 * 864e5)));
+  })();
+  const eyebrow = song.type === "Cover" ? `Cover${writtenBy ? ` · written by ${writtenBy}` : ""}` : "Original";
+
+  const tile = (value, label, sub = "") => `<div class="song-stat"><strong>${value}</strong><span>${escapeHtml(label)}</span>${sub ? `<small>${escapeHtml(sub)}</small>` : ""}</div>`;
+  const tiles = [
+    tile(formatNumber(song.total || 0), "lifetime plays", "since debut"),
+    tile(formatNumber(song.tourCount || 0), `played this tour`, song.playedThisTour ? "on the current sheet" : "not yet this tour"),
+    `<div class="song-stat"><strong class="song-rarity"><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><span>tour rarity</span>${rarity.tier !== "new" ? `<small>${formatNumber(song.l100 || 0)} in last 100</small>` : ""}</div>`,
+    tile(`${formatNumber(song.effectiveSlp ?? 0)}`, "shows since last", `usual gap ${heat.expectedGap.toFixed(1)}`)
+  ];
+  if (song.nickCount > 0) tiles.push(tile(formatNumber(song.nickCount), "plays with Nick", "current era"));
+
+  const description = `${song.title} — ${song.type.toLowerCase()} with ${formatNumber(song.total || 0)} live plays, first played ${song.first}, last ${song.lastDisplay}. Full Widespread Panic history from Burnthday.`;
+  const titleSuffix = " | Burnthday";
+  let pageTitle = `${song.title} — Live History${titleSuffix}`;
+  if (pageTitle.length > 70) pageTitle = `${song.title}${titleSuffix}`;
+  if (pageTitle.length > 70) pageTitle = `${song.title.slice(0, 70 - titleSuffix.length - 1).trimEnd()}…${titleSuffix}`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(pageTitle)}</title>
+    <meta name="description" content="${escapeAttr(fitMetaText(description, 155))}">
+    <link rel="canonical" href="https://burnthday.com/song/${escapeAttr(slugMap.get(song.key))}/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Songs", "https://burnthday.com/songs/"],
+      [song.title, `https://burnthday.com/song/${slugMap.get(song.key)}/`]
+    ])}</script>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main song-main">
+      <header class="archive-title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/songs/">Songs</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(song.title)}</span></nav>
+        <p class="song-eyebrow">${escapeHtml(eyebrow)}</p>
+        <h1>${escapeHtml(song.title)}</h1>
+      </header>
+      <div class="song-stat-grid">${tiles.join("")}</div>
+      <dl class="song-facts">
+        <div><dt>First played</dt><dd>${escapeHtml(firstLong)}</dd></div>
+        <div><dt>Last played</dt><dd>${escapeHtml(lastLong)}</dd></div>
+        ${spanYears != null ? `<div><dt>In the rotation</dt><dd>${spanYears === 0 ? "under a year" : `${spanYears} year${spanYears === 1 ? "" : "s"}`} of history</dd></div>` : ""}
+        <div><dt>Type</dt><dd>${escapeHtml(eyebrow)}</dd></div>
+      </dl>
+      ${onAlbums.length ? `<section class="song-albums">
+        <h2>Appears on</h2>
+        <div class="song-album-chips">${onAlbums.map((a) => `<a href="/albums/${escapeAttr(a.slug)}/">${escapeHtml(a.title)}<small>${escapeHtml(albumYear(a))}</small></a>`).join("")}</div>
+      </section>` : ""}
+      ${origin ? `<nav class="archive-crosslink" aria-label="Related">
+        <a href="/song-origins/${escapeAttr(origin.slug)}/"><span class="xl-eyebrow">Song Origin</span><span class="xl-title">The story behind “${escapeHtml(origin.title)}”</span><span class="xl-go" aria-hidden="true">→</span></a>
+      </nav>` : ""}
+      <p class="song-back"><a href="/songs/">← All songs</a></p>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+  </body>
+</html>
+`;
+}
+
 async function loadAlbums() {
   try {
     const raw = await readFile(path.join(root, "data", "source", "albums.json"), "utf8");
@@ -2047,6 +2237,7 @@ async function loadAlbums() {
 async function writeAlbumPages(data, albums) {
   if (!albums.length) return;
   const ordered = [...albums].sort((a, b) => String(b.releaseDate || "").localeCompare(String(a.releaseDate || "")));
+  data.albums = ordered;
   await writeStaticPage("/albums/index.html", renderAlbumsIndex(ordered, data));
   for (const album of ordered) {
     await writeStaticPage(`/albums/${album.slug}/index.html`, renderAlbumPage(album, ordered, data));
@@ -7629,6 +7820,70 @@ body.stagelight .album-nav a:hover strong { color: #fff; }
   body.stagelight .album-footprint { grid-template-columns: 1fr; }
 }
 
+/* song index + per-song history */
+body.stagelight .songs-main { width: min(1000px, calc(100% - 48px)); }
+body.stagelight .song-main { width: min(820px, calc(100% - 48px)); }
+body.stagelight .songs-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
+body.stagelight .song-search {
+  position: sticky; top: 78px; z-index: 3; display: flex; align-items: center; gap: 12px;
+  margin: 28px 0 18px; padding: 13px 18px; border-radius: 14px;
+  background: color-mix(in srgb, var(--sl-glass) 88%, #000); border: 1px solid var(--sl-line);
+  box-shadow: var(--sl-glass-shadow); backdrop-filter: blur(14px);
+}
+body.stagelight .song-search svg { flex: none; color: var(--sl-faint); }
+body.stagelight .song-search input {
+  flex: 1; min-width: 0; background: transparent; border: 0; outline: none;
+  color: var(--sl-ink); font-family: var(--sl-display); font-size: 17px; letter-spacing: -0.01em;
+}
+body.stagelight .song-search input::placeholder { color: var(--sl-faint); }
+body.stagelight .song-count { flex: none; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); white-space: nowrap; }
+body.stagelight .song-list { display: grid; gap: 1px; }
+body.stagelight .song-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 84px minmax(120px, auto) 92px;
+  align-items: center; gap: 16px; padding: 14px 10px; color: var(--sl-ink);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+body.stagelight .song-row:hover { background: rgba(255,255,255,0.03); }
+body.stagelight .sr-title { font-family: var(--sl-display); font-size: 16px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.stagelight .sr-type { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .sr-tier { display: flex; align-items: center; gap: 8px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .sr-onsheet { font-size: 9.5px; padding: 2px 7px; border-radius: 999px; border: 1px solid rgba(212,81,79,0.5); color: var(--sl-ink); }
+body.stagelight .sr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); }
+body.stagelight .sr-plays small { display: block; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
+body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(--sl-faint); font-size: 15px; }
+@media (max-width: 640px) {
+  body.stagelight .song-row { grid-template-columns: minmax(0, 1fr) 78px; grid-auto-rows: auto; row-gap: 4px; }
+  body.stagelight .sr-tier { grid-column: 1; }
+  body.stagelight .sr-plays { grid-column: 2; grid-row: 1; }
+  body.stagelight .song-count { display: none; }
+}
+
+body.stagelight .song-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 10px; }
+body.stagelight .song-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 22px 0 34px; }
+body.stagelight .song-stat { padding: 18px 20px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); }
+body.stagelight .song-stat strong { display: block; font-family: var(--sl-mono); font-size: 26px; font-weight: 640; color: var(--sl-ink); line-height: 1; }
+body.stagelight .song-stat span { display: block; font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); margin-top: 9px; }
+body.stagelight .song-stat small { display: block; font-size: 11px; color: var(--sl-muted); margin-top: 4px; }
+body.stagelight .song-rarity { display: flex; align-items: center; gap: 9px; font-family: var(--sl-display); font-size: 19px; font-weight: 620; letter-spacing: -0.01em; }
+body.stagelight .song-rarity .rarity-symbol { flex: none; }
+body.stagelight .song-rarity .rarity-symbol svg { width: 20px; height: 20px; }
+body.stagelight .song-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px 28px; margin: 0 0 36px; padding-bottom: 30px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .song-facts dt { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .song-facts dd { font-size: 16px; color: var(--sl-ink); margin: 6px 0 0; }
+body.stagelight .song-albums { margin-bottom: 8px; }
+body.stagelight .song-albums h2 { font-family: var(--sl-display); font-size: 20px; font-weight: 640; letter-spacing: -0.01em; margin-bottom: 16px; }
+body.stagelight .song-album-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+body.stagelight .song-album-chips a {
+  display: inline-flex; align-items: baseline; gap: 8px; padding: 10px 16px; border-radius: 999px;
+  background: var(--sl-glass); border: 1px solid var(--sl-line); color: var(--sl-ink);
+  font-family: var(--sl-display); font-size: 15px; font-weight: 560; transition: border-color 0.16s ease, transform 0.16s ease;
+}
+body.stagelight .song-album-chips a:hover { border-color: rgba(255,255,255,0.24); transform: translateY(-2px); }
+body.stagelight .song-album-chips a small { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
+body.stagelight .song-back { margin-top: 40px; }
+body.stagelight .song-back a { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .song-back a:hover { color: var(--sl-ink); }
+
 /* current rumors cards */
 body.stagelight .current-rumors { margin: 4px 0 44px; }
 body.stagelight .rumor-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
@@ -7796,8 +8051,21 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
     <loc>https://burnthday.com/lyrics-chords/</loc>
   </url>
   <url>
+    <loc>https://burnthday.com/albums/</loc>
+  </url>
+  <url>
+    <loc>https://burnthday.com/songs/</loc>
+    <lastmod>${updated}</lastmod>
+  </url>
+  <url>
     <loc>https://burnthday.com/song-origins/</loc>
   </url>
+  ${(data.albums || []).map((album) => `<url>
+    <loc>https://burnthday.com/albums/${escapeHtml(album.slug)}/</loc>
+  </url>`).join("\n  ")}
+  ${(data.catalog || []).map((song) => `<url>
+    <loc>https://burnthday.com/song/${escapeHtml(data.songSlugMap?.get(song.key) || slugify(song.title))}/</loc>
+  </url>`).join("\n  ")}
   <url>
     <loc>https://burnthday.com/tour-in-review/</loc>
   </url>
