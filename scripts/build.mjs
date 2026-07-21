@@ -1155,10 +1155,15 @@ async function copyAssets() {
   );
 
   await copyDirectory(path.join(root, "assets"), path.join(dist, "assets"));
-  await copyFile(
-    path.join(root, "node_modules", "@fontsource-variable", "geist", "files", "geist-latin-wght-normal.woff2"),
-    path.join(dist, "assets", "geist-latin-wght-normal.woff2")
-  );
+  const fontSources = [
+    ["geist", "geist-latin-wght-normal.woff2"],
+    ["bricolage-grotesque", "bricolage-grotesque-latin-wght-normal.woff2"],
+    ["geist-mono", "geist-mono-latin-wght-normal.woff2"]
+  ];
+  await Promise.all(fontSources.map(([pkg, file]) => copyFile(
+    path.join(root, "node_modules", "@fontsource-variable", pkg, "files", file),
+    path.join(dist, "assets", file)
+  )));
 }
 
 async function copyDirectory(sourceDir, targetDir) {
