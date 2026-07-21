@@ -256,12 +256,17 @@
       "writtenBy": "Widespread Panic",
       "firstPlayed": "7/1/97",
       "album": "'Til the Medicine Takes (1999)",
-      "text": "It started life as an instrumental in the summer of 1997; the lyrics didn't arrive until a couple of years later. The name belongs to a friend of the band — Colorado's Thomas “Bear” Guenther, who passed in 2019 — which is exactly why it reads as a near-lock whenever Panic sets up at Red Rocks. It found a studio home on 'Til the Medicine Takes.",
+      "text": "It started life as an instrumental in the summer of 1997; the lyrics didn't arrive until a couple of years later. The name belongs to a friend of the band — Colorado's Thomas “Bear” Guenther, who passed in 2019 — which is exactly why it reads as a near-lock whenever Panic sets up at Red Rocks. It found a studio home on 'Til the Medicine Takes. That friend — Tom “Bear” Guenther — goes all the way back to the band's King Avenue house in Athens, and he's the same Bear whose Telluride postcard became the song “Postcard.”",
       "sources": [
         {
           "label": "Widespread Panic at Red Rocks feature (Bear Guenther, instrumental-to-lyrics timeline)",
           "publisher": "JamBase",
           "url": "https://www.jambase.com/article/widespread-panic-bears-gone-fishing-happy-rebirtha-red-rocks-2016"
+        },
+        {
+          "label": "John Bell, Colorado Music Hall of Fame induction speech",
+          "publisher": "via Instagram (@ reel DaH3ejWizfL)",
+          "url": "https://www.instagram.com/reels/DaH3ejWizfL/"
         }
       ],
       "order": 12,
@@ -883,6 +888,33 @@
       "order": 40,
       "image": "",
       "sourceUrl": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+    },
+    {
+      "title": "Postcard",
+      "slug": "postcard",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "10/6/86",
+      "image": "",
+      "text": "The one that lives up to its name — it started as an actual postcard. JB tells it this way: back when the whole band shared the King Avenue house in Athens, they had a friend, Tom Guenther, known to everyone as Bear. Bear lit out of town, and some months later a postcard turned up at the band house — a skier catching big air on the front, a Telluride, Colorado postmark on the back, and a few scrawled lines about how great the air was, what an ass-kicking time he was having, and how he never wanted to leave. Those lines became “Postcard.” JB has joked that the friend still gets his little royalty checks for it. First played 10/6/86. (Bear is the same friend behind “Bear's Gone Fishin'.”)",
+      "sources": [
+        {
+          "label": "John Bell, Colorado Music Hall of Fame induction speech",
+          "publisher": "via Instagram (@ reel DaH3ejWizfL)",
+          "url": "https://www.instagram.com/reels/DaH3ejWizfL/"
+        },
+        {
+          "label": "John Bell & Todd Nance, KGSR interview, 4/12/97 (corroborating: \"a buddy wrote us a postcard and that turned into a song\")",
+          "publisher": "via Spreadnet"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "order": 41,
+      "sourceUrl": "https://www.instagram.com/reels/DaH3ejWizfL/"
     }
   ]
 }
