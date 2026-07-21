@@ -2641,9 +2641,87 @@ function renderLatestSetlist(data) {
     ? []
     : data.setlists.filter((show) => featuredRunDates.has(show.isoDate) && show.isoDate !== featured.isoDate);
   return `<section class="latest-setlist" id="latest-setlist">
-  ${renderFeaturedSetlist(featured, { priority: true })}
-  ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map((show) => renderFeaturedSetlist(show, { lazy: true })).join("")}</div>` : ""}
+  ${renderShowCard(data, featured, { latest: true, open: true, priority: true })}
+  ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map((show) => renderShowCard(data, show, { lazy: true })).join("")}</div>` : ""}
 </section>`;
+}
+
+function weekdayName(isoDate) {
+  if (!isoDate) return "";
+  const date = new Date(`${isoDate}T12:00:00Z`);
+  if (Number.isNaN(date.getTime())) return "";
+  return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][date.getUTCDay()];
+}
+
+function renderShowPulls(data, show) {
+  const byKey = new Map((data.catalog || []).map((row) => [row.key, row]));
+  const titles = [...new Set((show.sets || []).flatMap((set) => set.songTitles || []))];
+  const pulls = titles
+    .map((title) => ({ title, row: byKey.get(normalizeTitle(title)) }))
+    .filter((entry) => entry.row)
+    .map((entry) => ({ ...entry, rarity: calculateRarity(entry.row) }))
+    .filter((entry) => entry.rarity.score != null && entry.rarity.score >= 70)
+    .sort((left, right) => right.rarity.score - left.rarity.score);
+  if (!pulls.length) return "";
+  const groups = [];
+  for (const pull of pulls) {
+    let group = groups.find((entry) => entry.label === pull.rarity.label);
+    if (!group) { group = { label: pull.rarity.label, tier: pull.rarity.tier, songs: [] }; groups.push(group); }
+    group.songs.push(pull.title);
+  }
+  return `<div class="sc-row sc-pulls"><span class="sc-label">Pulls</span><span class="sc-pull-list">${groups.map((group) =>
+    `<span class="sc-pull">${renderRaritySymbol(group.tier)}<span class="sc-tier">${escapeHtml(group.label)}</span> ${group.songs.map((song) => `<b>${escapeHtml(song)}</b>`).join(", ")}</span>`
+  ).join("")}</span></div>`;
+}
+
+function renderShowCard(data, show, options = {}) {
+  const annotations = buildSetlistAnnotations(show);
+  const sets = (show.sets || []).filter((set) => (set.songTitles && set.songTitles.length) || clean(set.songs));
+  const hasSetlist = sets.length > 0;
+  const iso = show.isoDate || "";
+  const weekday = weekdayName(iso);
+  const longDate = formatLongDate(iso || show.date);
+  const heading = options.latest ? "h3" : "h4";
+  const ariaHeading = escapeAttr(formatSetlistHeading(show));
+  const chips = [
+    show.streamUrl ? `<a class="sc-chip sc-chip-primary" href="${escapeAttr(show.streamUrl)}" aria-label="Listen to ${ariaHeading} at Nugs.net"><svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path d="M1.5 1.2c0-.66.72-1.07 1.29-.73l8 4.8a.85.85 0 0 1 0 1.46l-8 4.8A.85.85 0 0 1 1.5 10.8V1.2Z" fill="currentColor"/></svg>nugs.net</a>` : "",
+    show.sourceUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(show.sourceUrl)}" aria-label="${hasSetlist ? "Official setlist and photos" : "Show details"} for ${ariaHeading}">${hasSetlist ? "Photos" : "Show Details"}</a>` : ""
+  ].filter(Boolean).join("");
+  const setRows = sets.map((set) => `<div class="sc-row"><span class="sc-label">${escapeHtml(formatSetLabel(set.label))}</span><p class="sc-prose">${renderSetSongs(set, annotations)}</p></div>`).join("");
+  const notes = (annotations.guestNotes.length || annotations.bracketNotes.length)
+    ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}${renderSetlistNotes(annotations)}</div></div>`
+    : "";
+  const pullsRow = hasSetlist ? renderShowPulls(data, show) : "";
+  const previewNote = hasSetlist ? "" : `<div class="sc-row"><span class="sc-label" aria-hidden="true"></span><p class="sc-preview-note">The setlist posts here after the show, verified against the official page.</p></div>`;
+  const body = setRows || previewNote || pullsRow || notes
+    ? `<div class="sc-body"><div class="sc-sets">${setRows}${notes}${previewNote}${pullsRow}</div></div>`
+    : "";
+  const loading = options.lazy ? ' loading="lazy"' : "";
+  const priority = options.priority ? ' fetchpriority="high"' : "";
+  const photo = show.image
+    ? `<span class="sc-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async"${loading}${priority}></span>`
+    : "";
+  const bg = show.image ? `<span class="sc-bg" aria-hidden="true"><img src="${escapeAttr(show.image)}" alt="" loading="lazy" decoding="async"></span>` : "";
+  return `<details class="show-entry${options.latest ? " is-latest" : ""}${show.image ? "" : " no-image"}"${options.latest || options.open ? " open" : ""}>
+    <summary>
+      ${bg}
+      <span class="sc-closed">
+        <time class="sc-date" datetime="${escapeAttr(iso)}">${escapeHtml(show.date)}</time>
+        <span class="sc-place"><strong>${escapeHtml(show.location)}</strong><small>${escapeHtml(show.venue)}</small></span>
+      </span>
+      <span class="sc-lockup">
+        <span class="sc-lock">
+          <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
+          <${heading} class="sc-city">${escapeHtml(show.location)}</${heading}>
+          <span class="sc-venue">${escapeHtml(show.venue)}</span>
+          ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
+        </span>
+        ${photo}
+      </span>
+      <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </summary>
+    ${body}
+  </details>`;
 }
 
 function renderSetlists(data, options = {}) {
@@ -2660,7 +2738,7 @@ function renderSetlists(data, options = {}) {
   <details class="setlist-archive-panel" open>
     <summary><span>VIEW OLDER SETLISTS</span><strong>${formatNumber(setlists.length)}</strong></summary>
     <div class="setlist-list">
-      ${setlists.map((show) => renderSetlistRow(show, { lazy: true })).join("")}
+      ${setlists.map((show) => renderShowCard(data, show, { lazy: true })).join("")}
     </div>
   </details>
 </section>`;
@@ -6033,21 +6111,105 @@ body.stagelight .home-trail a:hover { color: var(--sl-ink); }
 body.stagelight .section-heading h2 { font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; letter-spacing: -0.01em; }
 body.stagelight .section-heading span { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.06em; }
 
-/* ---- HERO / FEATURED SHOW ---- */
-body.stagelight .latest-setlist .setlist-feature {
+/* ---- TYPE SCALE + RHYTHM ---- */
+body.stagelight main { max-width: 1180px; }
+body.stagelight main > section { margin-top: 96px; }
+body.stagelight main > .latest-setlist { margin-top: 44px; }
+body.stagelight .section-heading h2 { font-size: 34px; }
+body.stagelight .section-heading { margin-bottom: 26px; }
+
+/* ---- NAV: single glass bar, wordmark left ---- */
+body.stagelight .site-head {
+  display: flex; align-items: center; gap: 28px; min-height: 64px;
+  padding: 0 max(28px, calc((100% - 1180px) / 2));
+  position: sticky; top: 0; z-index: 60;
+  background: linear-gradient(180deg, rgba(16,16,18,0.78), rgba(13,13,15,0.62));
+  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid var(--sl-line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+body.stagelight .masthead-row { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; }
+body.stagelight .header-social { order: 3; margin-left: 12px; }
+body.stagelight .jump-links { order: 2; margin-left: auto; border: 0; padding: 0; display: flex; gap: 24px; font-size: 14px; }
+body.stagelight .jump-links a { padding: 6px 0; border: 0; }
+body.stagelight .mobile-nav { order: 2; margin-left: auto; }
+
+/* ---- SHOW ENTRY: one component, two states ---- */
+body.stagelight .show-entry {
+  position: relative; overflow: hidden; border-radius: var(--sl-r);
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
-  overflow: hidden;
+  border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+  margin: 0 0 16px;
 }
-body.stagelight .setlist-feature .setlist-image img { border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); }
-body.stagelight .show-heading time { font-family: var(--sl-mono); color: var(--sl-muted); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; }
-body.stagelight .show-heading h3 { font-family: var(--sl-display); color: var(--sl-ink); font-weight: 720; letter-spacing: -0.015em; }
-body.stagelight .show-heading p { color: var(--sl-muted); }
-body.stagelight .setlist-sets p { color: var(--sl-ink); }
-body.stagelight .setlist-sets strong { color: var(--sl-faint); font-family: var(--sl-mono); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; }
-body.stagelight .setlist-links a, body.stagelight .setlist-text a { color: var(--sl-ink); border-color: var(--sl-line-strong); }
-body.stagelight .setlist-annotations { color: var(--sl-faint); }
+body.stagelight .show-entry summary { position: relative; display: block; cursor: pointer; list-style: none; }
+body.stagelight .show-entry summary::-webkit-details-marker { display: none; }
+body.stagelight .sc-chev { position: absolute; top: 26px; right: 26px; z-index: 3; color: var(--sl-faint); transition: transform 0.22s ease; }
+body.stagelight .show-entry[open] .sc-chev { transform: rotate(180deg); }
+body.stagelight .sc-bg { position: absolute; inset: 0; z-index: 0; display: block; }
+body.stagelight .sc-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
+body.stagelight .sc-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,9,11,0.95) 24%, rgba(9,9,11,0.68) 58%, rgba(9,9,11,0.4)); }
+body.stagelight .show-entry[open] .sc-bg { display: none; }
+body.stagelight .sc-closed { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; min-height: 84px; padding: 18px 70px 18px 28px; }
+body.stagelight .show-entry[open] .sc-closed { display: none; }
+body.stagelight .sc-date { font-family: var(--sl-mono); font-size: 13px; letter-spacing: 0.08em; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.stagelight .sc-place { display: flex; flex-direction: column; min-width: 0; }
+body.stagelight .sc-place strong { font-family: var(--sl-display); font-weight: 640; font-size: 19px; letter-spacing: -0.005em; color: var(--sl-ink); }
+body.stagelight .sc-place small { font-size: 13px; color: var(--sl-muted); margin-top: 2px; }
+body.stagelight .sc-lockup { display: none; }
+body.stagelight .show-entry[open] .sc-lockup { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 36px; align-items: center; padding: 34px 36px 0; }
+body.stagelight .show-entry.is-latest[open] .sc-lockup { grid-template-columns: 1.05fr 0.95fr; gap: 48px; padding: 44px 44px 0; }
+body.stagelight .show-entry.no-image[open] .sc-lockup { grid-template-columns: 1fr; }
+body.stagelight .sc-lock { display: block; }
+body.stagelight .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .sc-city { display: block; font-family: var(--sl-display); font-weight: 720; font-size: 34px; letter-spacing: -0.015em; line-height: 1.05; margin: 12px 0 0; color: var(--sl-ink); }
+body.stagelight .show-entry.is-latest .sc-city { font-size: 56px; letter-spacing: -0.02em; }
+body.stagelight .sc-venue { display: block; font-size: 16px; color: var(--sl-muted); margin-top: 10px; font-weight: 440; }
+body.stagelight .sc-chips { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+body.stagelight .sc-chip { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 18px; border-radius: 999px; font-size: 14px; font-weight: 560; white-space: nowrap; transition: transform 0.18s ease, background 0.18s ease; }
+body.stagelight .sc-chip svg { flex: none; }
+body.stagelight .sc-chip-primary { background: var(--sl-ink); color: #111; box-shadow: 0 8px 24px -8px rgba(242,242,240,0.35), inset 0 1px 0 rgba(255,255,255,0.9); border: 0; }
+body.stagelight .sc-chip-primary:hover { transform: translateY(-1px); background: #fff; }
+body.stagelight .sc-chip-glass { background: rgba(255,255,255,0.055); border: 1px solid var(--sl-line-strong); color: var(--sl-ink); }
+body.stagelight .sc-chip-glass:hover { transform: translateY(-1px); background: rgba(255,255,255,0.09); }
+body.stagelight .sc-photo { display: block; position: relative; }
+body.stagelight .sc-photo img { width: 100%; height: auto; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 30px 60px -24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1); }
+body.stagelight .sc-body { padding: 0 36px 32px; }
+body.stagelight .show-entry.is-latest .sc-body { padding: 0 44px 40px; }
+body.stagelight .sc-sets { border-top: 1px solid var(--sl-line); margin-top: 32px; padding-top: 30px; display: grid; gap: 18px; }
+body.stagelight .sc-row { display: grid; grid-template-columns: 96px 1fr; gap: 20px; }
+body.stagelight .sc-label { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; color: var(--sl-faint); text-transform: uppercase; padding-top: 5px; white-space: nowrap; }
+body.stagelight .sc-prose { font-size: 17px; line-height: 1.68; font-weight: 430; color: var(--sl-ink); margin: 0; }
+body.stagelight .sc-prose a { color: inherit; }
+body.stagelight .sc-preview-note { font-size: 14px; color: var(--sl-faint); margin: 0; }
+body.stagelight .sc-notes .setlist-annotations { color: var(--sl-faint); font-size: 13px; }
+body.stagelight .sc-pulls { border-top: 1px solid var(--sl-line); margin-top: 6px; padding-top: 22px; }
+body.stagelight .sc-pull-list { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: baseline; }
+body.stagelight .sc-pull { font-size: 15px; line-height: 1.6; }
+body.stagelight .sc-pull svg { display: inline-block; vertical-align: baseline; margin-right: 6px; height: 10px; width: auto; }
+body.stagelight .sc-pull .rarity-symbol svg { height: 10px; }
+body.stagelight .sc-tier { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); margin-right: 6px; }
+body.stagelight .sc-pull b { font-weight: 600; white-space: nowrap; color: var(--sl-ink); }
+body.stagelight .sc-pull [fill="#111111"] { fill: #f2f2f0; }
+body.stagelight .sc-pull [stroke="#111111"] { stroke: #f2f2f0; }
+body.stagelight .current-stop-setlists { display: grid; gap: 16px; margin-top: 16px; }
+body.stagelight .setlist-list { display: grid; gap: 16px; }
+body.stagelight .setlist-archive-panel > summary { display: none; }
+@media (max-width: 560px) {
+  body.stagelight .jump-links, body.stagelight .header-social { display: none; }
+  body.stagelight .mobile-nav { display: block; margin-left: auto; border: 0; }
+  body.stagelight .site-head { gap: 16px; }
+}
+@media (max-width: 900px) {
+  body.stagelight .show-entry[open] .sc-lockup,
+  body.stagelight .show-entry.is-latest[open] .sc-lockup { grid-template-columns: 1fr; gap: 24px; padding: 26px 22px 0; }
+  body.stagelight .show-entry.is-latest .sc-city { font-size: 38px; }
+  body.stagelight .sc-city { font-size: 28px; }
+  body.stagelight .sc-body, body.stagelight .show-entry.is-latest .sc-body { padding: 0 22px 26px; }
+  body.stagelight .sc-row { grid-template-columns: 1fr; gap: 6px; }
+  body.stagelight .sc-label { padding-top: 0; }
+  body.stagelight .sc-closed { padding: 16px 56px 16px 20px; gap: 12px; flex-wrap: wrap; }
+  body.stagelight .sc-chev { top: 22px; right: 18px; }
+}
 
 /* ---- DATA METRICS (stat tiles) ---- */
 body.stagelight .data-metrics .nick-stat {

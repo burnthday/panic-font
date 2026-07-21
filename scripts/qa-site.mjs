@@ -338,7 +338,7 @@ async function checkLatestSetlist(html, siteData) {
   }
 
   const featuredCard = featured.split('<div class="current-stop-setlists">')[0];
-  const renderedLabels = [...featuredCard.matchAll(/<p><strong>([^<]+):<\/strong>[\s\S]*?<\/p>/g)].map((match) => decodeHtml(match[1]));
+  const renderedLabels = [...featuredCard.matchAll(/<div class="sc-row"><span class="sc-label">([^<]+)<\/span><p class="sc-prose">/g)].map((match) => decodeHtml(match[1]));
   if (siteData.site?.isShowDayPreview) {
     record("Show-day setlists have no redundant section label or black rule", !featured.includes("CURRENT TOUR STOP") && !featured.includes('class="section-heading"'));
     assertIncludes(featured, `datetime="${featuredShow?.isoDate || ""}"`, "Tonight's blank setlist is featured first");
@@ -381,8 +381,8 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(archive, '<details class="setlist-archive-panel" open>', "Older setlists remain visible on desktop");
   assertIncludes(archive, "VIEW OLDER SETLISTS", "Older setlists have one clear mobile disclosure");
   assertIncludes(archive, 'class="setlist-list"', "Older shows use the compact show-index layout");
-  assertIncludes(archive, 'class="show-action play-action"', "Shows with audio expose a simple listening action");
-  record("Every archived show is individually expandable", (archive.match(/<details class="setlist-row">/g) || []).length === siteData.setlists.length - (siteData.site.featuredRunDates || []).filter((date) => siteData.setlists.some((show) => show.isoDate === date)).length);
+  assertIncludes(archive, 'aria-label="Listen to', "Shows with audio expose a simple listening action");
+  record("Every archived show is individually expandable", (archive.match(/<details class="show-entry[^"]*"/g) || []).length === siteData.setlists.length - (siteData.site.featuredRunDates || []).filter((date) => siteData.setlists.some((show) => show.isoDate === date)).length);
   assertIncludes(html, 'row.classList.toggle("is-selected-show"', "Selected-show songs receive a dedicated highlight state");
   assertIncludes(html, 'rightSelected - leftSelected', "Selected-show songs move ahead of the remaining tour table");
   record("Mobile initialization collapses Nick Stats and the older setlist archive", html.includes('.nick-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
@@ -592,6 +592,12 @@ function sectionHtml(html, id) {
 }
 
 function cardHtml(html, heading) {
+  const entryAnchor = html.indexOf(heading);
+  if (entryAnchor >= 0) {
+    const entryStart = html.lastIndexOf('<details class="show-entry', entryAnchor);
+    const entryEnd = html.indexOf("</details>", entryAnchor);
+    if (entryStart >= 0 && entryEnd > entryStart) return html.slice(entryStart, entryEnd + "</details>".length);
+  }
   const headingIndex = html.indexOf(`<h3>${heading}</h3>`);
   if (headingIndex >= 0) {
     const cardStart = html.lastIndexOf('<article class="setlist-card', headingIndex);
