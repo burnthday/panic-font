@@ -17,6 +17,7 @@
     "verify:relisten": "node scripts/verify-relisten-dates.mjs",
     "import:newsletters": "node scripts/import-newsletters.mjs",
     "import:porch-songs": "node scripts/import-porch-songs.mjs",
+    "import:tour-posters": "node scripts/import-tour-posters.mjs",
     "validate:playstats": "node scripts/validate-playstats-match.mjs",
     "validate:tour-data": "node scripts/validate-current-tour-data.mjs",
     "validate:production": "node scripts/validate-production-readiness.mjs",
