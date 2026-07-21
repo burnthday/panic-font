@@ -4795,7 +4795,7 @@ function renderFooterBottom(year) {
         <span class="footer-copy">© ${escapeHtml(String(year))} Burnthday</span>
         <a class="footer-privacy" href="/privacy/">Privacy</a>
         <a class="site-credit" href="https://gnarlywhal.com">Site by Gnarlywhal</a>
-        <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+        <a class="back-top" href="#top" aria-label="Back to top"><span aria-hidden="true">↑</span></a>
       </div>
     </div>`;
 }
@@ -9445,9 +9445,9 @@ body.stagelight .site-foot-inner {
 }
 body.stagelight .footer-lead { max-width: 340px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
-body.stagelight .footer-mark { height: 60px; width: auto; }
+body.stagelight .footer-mark { height: 78px; width: auto; }
 body.stagelight .footer-identity { margin: 14px 0 0; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
-body.stagelight .footer-copy { color: var(--sl-faint); }
+body.stagelight .footer-copy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 8px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }
 body.stagelight .footer-links { gap: 9px; }
 body.stagelight .footer-links strong { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 8px; }
@@ -9460,7 +9460,7 @@ body.stagelight .social-links .social-mark { width: 36px; height: 36px; flex: 0 
 body.stagelight .social-links a:hover .social-mark { color: var(--sl-ink); border-color: var(--sl-ink); background: rgba(255,255,255,0.1); transform: translateY(-1px); }
 body.stagelight .social-mark { background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, transform 0.18s ease; }
 body.stagelight .footer-bottom {
-  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px 24px; flex-wrap: wrap;
+  grid-column: 1 / -1; display: flex; align-items: center; gap: 8px 24px; flex-wrap: wrap;
   margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--sl-line);
 }
 body.stagelight .footer-legal { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 0; }
@@ -9468,11 +9468,11 @@ body.stagelight .footer-legal span { margin: 0 8px; }
 body.stagelight .footer-sources { margin: 0; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.03em; color: var(--sl-faint); }
 body.stagelight .footer-sources a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
 body.stagelight .footer-sources a:hover { color: var(--sl-ink); }
-body.stagelight .footer-bottom-links { display: flex; align-items: baseline; gap: 24px; margin-left: auto; }
+body.stagelight .footer-bottom-links { display: flex; align-items: center; gap: 24px; margin-left: auto; }
 body.stagelight .footer-privacy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .footer-privacy:hover { color: var(--sl-ink); }
-body.stagelight .back-top { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .back-top:hover { color: var(--sl-ink); }
+body.stagelight .back-top { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--sl-line); border-radius: 9px; font-size: 15px; color: var(--sl-faint); transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease; }
+body.stagelight .back-top:hover { color: var(--sl-ink); border-color: var(--sl-muted); transform: translateY(-2px); }
 @media (max-width: 900px) {
   body.stagelight .site-foot-inner { grid-template-columns: 1fr 1fr 1fr; padding: 48px 0 28px; gap: 30px 24px; }
   body.stagelight .footer-lead { grid-column: 1 / -1; max-width: 420px; }
