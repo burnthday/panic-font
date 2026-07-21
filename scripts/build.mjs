@@ -3235,7 +3235,7 @@ function renderSongOriginsIndex(origins, options = {}) {
           <img class="origin-fish" src="/assets/archive-media/SongOriginsOriginalWSPfish.png" alt="">
           <div>
             <h1>Widespread Panic Song Origins</h1>
-            <span>${origins.length} researched stories about how Widespread Panic songs were written, where they came from, and the people behind them, with play history and Burnthday's picks.</span>
+            <span>The stories behind the songs: how they got written, where they came from, and the people in them. Pulled from band interviews and old fan newsletters, with play history and Burnthday's picks.</span>
           </div>
         </header>
         <div class="origin-grid">
