@@ -1,0 +1,607 @@
+{
+  "description": "Hand-curated Widespread Panic song origins written in Burnthday's own voice — facts extracted from fan newsletters (Moon Times / The Panicle), band interviews, and the web, then paraphrased into original prose with sources cited. This is facts-into-original-prose, NOT republication. It is a supplement to the Facebook-sourced song-origins.json: entries with mode 'new' are songs not yet in that set; mode 'augment' entries add or correct facts on an existing origin without duplicating what is already there. The build merges these by slug.",
+  "conventions": {
+    "mode": "'new' = a song not in song-origins.json; 'augment' = adds/corrects facts on an existing entry",
+    "sources": "Every factual claim is traceable to a listed source. Unverifiable claims are omitted (evidence discipline).",
+    "attribution": "Moon Times = official WSP newsletter (Internet Archive); The Panicle = fan transcription (widespread-panic.blogspot.com); interviews credited to outlet + date."
+  },
+  "origins": [
+    {
+      "title": "North",
+      "slug": "north",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Jerry Joseph",
+      "firstPlayed": "9/25/99",
+      "text": "Not a Panic original — “North” belongs to Jerry Joseph, the songwriter Panic has leaned on for some of its darker, sharper material (most famously “Climb to Safety”). Joseph has said the song came together on the move: a lot of it was written in Nicaragua, in a stretch when he was bouncing between Southern California and Central America. What it aches for is an idealized version of the Pacific Northwest — the kind of longing, he admits, that burns out about three rainy days after you actually get there. He remembers working some of the lines out with his friend, the actor Woody Harrelson, around the mid-'90s. Widespread first worked it into the rotation on 9/25/99.",
+      "sources": [
+        {
+          "label": "Jerry Joseph, “Passion and Pain” interview (Part I)",
+          "publisher": "JamBase"
+        },
+        {
+          "label": "First-played date",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "order": 1,
+      "sourceUrl": "",
+      "image": ""
+    },
+    {
+      "title": "Time Zones",
+      "slug": "time-zones",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Dave Schools / Jerry Joseph",
+      "firstPlayed": "4/30/05",
+      "album": "Earth to America (2005)",
+      "text": "Born in the same two-day Athens writing session that produced “Second Skin.” Dave Schools set the ground rules — he told Jerry Joseph to leave his usual subjects (sex, drugs, death, religion, politics) at the door — and the two wrote ten songs, of which this was one. They handed it to the band in spring 2005, fresh off the year-long hiatus. JB caught the To Kill a Mockingbird references buried in Joseph's lyric and, characteristically, went and got the book (and the Cliff Notes) so his own verses would tie back to it. Schools figured “Time Zones” would be the big new anthem and “Second Skin” the slow-burn jam; onstage the two promptly swapped roles. Debuted 4/30/05 and landed on Earth to America.",
+      "sources": [
+        {
+          "label": "Dave Schools & John Bell, “New Frontiers” by Andy Tennille",
+          "publisher": "American Songwriter, July 2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        }
+      ],
+      "order": 2,
+      "sourceUrl": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/",
+      "image": ""
+    },
+    {
+      "title": "Her Dance Needs No Body",
+      "slug": "her-dance-needs-no-body",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic (music seeded by Jimmy Herring)",
+      "firstPlayed": "4/1/08",
+      "text": "One of the first songs to grow out of Jimmy Herring joining the band. JB has credited the musical seed of this one — along with “Three Candles” — to ideas Herring brought in already cooking. Where plenty of Panic tunes are built to wander off, as JB puts it, “into la la land,” he says they decided this one earned a straighter shape: verse, chorus, bridge, solo, out. First played 4/1/08.",
+      "sources": [
+        {
+          "label": "John Bell, “Tickle the Truth” interview",
+          "publisher": "Glide Magazine, 2008"
+        }
+      ],
+      "order": 3,
+      "sourceUrl": "",
+      "image": ""
+    },
+    {
+      "title": "Raise The Roof",
+      "slug": "raise-the-roof",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "1/27/94",
+      "album": "Ain't Life Grand (1994)",
+      "text": "Proof that Panic knew when to leave a song alone. JB has said “Raise the Roof” came out of Mikey's direction during the Ain't Life Grand demo sessions — the band followed him through it, cleaned up the demo vocals, and basically left it there. Coming back off a month and a half on the road, they listened again and decided it didn't need a jam bolted onto it: maybe another guitar, maybe a third vocal to fill it out, but in JB's words it “had what it had.” One of the prettier things on the record — and one they mostly shelved after 2001 (45 plays, last on 6/22/01).",
+      "sources": [
+        {
+          "label": "John Bell, R&R interview, Grady's Restaurant, Atlanta",
+          "publisher": "12/15/94"
+        },
+        {
+          "label": "Play counts",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "order": 4,
+      "sourceUrl": "",
+      "image": ""
+    },
+    {
+      "title": "Three Candles",
+      "slug": "three-candles",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic (music seeded by Jimmy Herring)",
+      "firstPlayed": "4/1/08",
+      "text": "Another one that traces back to Jimmy Herring settling into the band. JB has pointed to this song — alongside “Her Dance Needs No Body” — as growing out of musical ideas Jimmy brought in already cooking. It debuted 4/1/08 and stayed a relatively rare bird, a few dozen outings before it slipped out of rotation.",
+      "sources": [
+        {
+          "label": "John Bell, “Tickle the Truth” interview",
+          "publisher": "Glide Magazine, 2008"
+        },
+        {
+          "label": "Play counts",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "order": 5,
+      "sourceUrl": "",
+      "image": ""
+    },
+    {
+      "title": "From The Cradle",
+      "slug": "from-the-cradle",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Todd Nance",
+      "firstPlayed": "4/22/06",
+      "album": "Earth to America (2005)",
+      "text": "One of the quieter gut-punches in the catalog, and a Todd Nance song. Its imagery reads like the drowned aftermath of Hurricane Katrina — but, as American Songwriter noted, Nance actually wrote it before the storm ever hit, which somehow only makes it land harder. It surfaced on Earth to America and first reached a stage on 4/22/06.",
+      "sources": [
+        {
+          "label": "Andy Tennille, “New Frontiers”",
+          "publisher": "American Songwriter, July 2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        },
+        {
+          "label": "First-played date",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "order": 6,
+      "sourceUrl": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/",
+      "image": ""
+    },
+    {
+      "title": "Gomero Blanco",
+      "slug": "gomero-blanco",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "studio-only (not a live staple)",
+      "text": "A ghost from the very beginning. According to the Panicle, “Gomero Blanco” was cut during the May 1987 sessions at John Keane's Athens studio, around the making of the first Space Wrangler — but it never became a live fixture. The closest most fans ever got were similar-sounding jams during the band's early Uptown Lounge nights. One for the completists still digging through the oldest tapes.",
+      "sources": [
+        {
+          "label": "The Panicle, Vol. 1 #5 (July 1992)",
+          "publisher": "fan transcription, widespread-panic.blogspot.com",
+          "url": "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html"
+        }
+      ],
+      "order": 7,
+      "sourceUrl": "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html",
+      "image": ""
+    },
+    {
+      "title": "Driving Song",
+      "slug": "driving-song",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic (band-credited; biographically a John Bell / Michael Houser co-write)",
+      "firstPlayed": "4/7/86",
+      "album": "Space Wrangler (1988)",
+      "text": "One of the oldest things in the book, and pure Panic DNA. The band's own history traces it back to John Bell and Michael Houser writing together as University of Georgia roommates in the early '80s — the same partnership that gave up “Chilly Water” before there was even a Widespread Panic to play them. It anchored the 1988 debut, Space Wrangler, and years later Bell and Houser were still trading acoustic “Driving Song” duets. (Everyday Companion credits it band-wide, per Panic's shared-writing convention.)",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/DRIVIN.asp"
+        },
+        {
+          "label": "Bell/Houser roommate co-write history",
+          "publisher": "The Ticket Blog"
+        }
+      ],
+      "order": 8,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/DRIVIN.asp",
+      "image": ""
+    },
+    {
+      "title": "Rock",
+      "slug": "rock",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "10/4/89",
+      "album": "Widespread Panic / “Mom's Kitchen” (1991)",
+      "text": "A Panic original that traveled under a second name — the working title “Brass Shoes, Walking Blues.” It first turned up on the 1991 self-titled album fans call “Mom's Kitchen.”",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/ROCK.asp"
+        }
+      ],
+      "order": 9,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/ROCK.asp",
+      "image": ""
+    },
+    {
+      "title": "Tall Boy",
+      "slug": "tall-boy",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "8/3/95",
+      "album": "Bombs & Butterflies (1997)",
+      "text": "Logged on the band's own alias sheet as “Naked In The Mud,” Tall Boy made its studio home on Bombs & Butterflies (1997). The words drop you into a Mississippi Delta swelter — cold can sweating in your hand, sun overhead — which is about all the explanation a song this easy-going needs.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories & Originals index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/TALBOY.asp"
+        }
+      ],
+      "order": 10,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/TALBOY.asp",
+      "image": ""
+    },
+    {
+      "title": "Better Off",
+      "slug": "better-off",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic / T Lavitz",
+      "firstPlayed": "2/7/92",
+      "album": "Everyday (1993)",
+      "text": "The rare Panic song with an outside name on the credit. It's co-written with T Lavitz — the Dixie Dregs keyboardist who filled the WSP keyboard chair in 1991 and played on their Capricorn debut before the Dregs called him back home. The song itself surfaced on Everyday (1993), after his stint with the band had already ended.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/BETOFF.asp"
+        },
+        {
+          "label": "T Lavitz / Widespread Panic 1991",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/T_Lavitz"
+        }
+      ],
+      "order": 11,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/BETOFF.asp",
+      "image": ""
+    },
+    {
+      "title": "Bear's Gone Fishin'",
+      "slug": "bears-gone-fishin",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "7/1/97",
+      "album": "'Til the Medicine Takes (1999)",
+      "text": "It started life as an instrumental in the summer of 1997; the lyrics didn't arrive until a couple of years later. The name belongs to a friend of the band — Colorado's Thomas “Bear” Guenther, who passed in 2019 — which is exactly why it reads as a near-lock whenever Panic sets up at Red Rocks. It found a studio home on 'Til the Medicine Takes.",
+      "sources": [
+        {
+          "label": "Widespread Panic at Red Rocks feature (Bear Guenther, instrumental-to-lyrics timeline)",
+          "publisher": "JamBase",
+          "url": "https://www.jambase.com/article/widespread-panic-bears-gone-fishing-happy-rebirtha-red-rocks-2016"
+        }
+      ],
+      "order": 12,
+      "sourceUrl": "https://www.jambase.com/article/widespread-panic-bears-gone-fishing-happy-rebirtha-red-rocks-2016",
+      "image": ""
+    },
+    {
+      "title": "Surprise Valley",
+      "slug": "surprise-valley",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic (a signature Michael Houser piece)",
+      "firstPlayed": "6/27/99",
+      "album": "'Til the Medicine Takes (1999)",
+      "text": "One of Michael Houser's signature pieces, and another of the band's Colorado love letters — the state Dave Schools has called a second home. It arrived on 'Til the Medicine Takes (1999) and never really left the rotation.",
+      "sources": [
+        {
+          "label": "“7 Widespread Panic Stories Told By the Band” (Houser signature song; Colorado connection)",
+          "publisher": "Lockn' Festival",
+          "url": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+        }
+      ],
+      "order": 13,
+      "sourceUrl": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band",
+      "image": ""
+    },
+    {
+      "title": "Big Wooly Mammoth",
+      "slug": "big-wooly-mammoth",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "10/10/95",
+      "album": "Don't Tell the Band (2001)",
+      "text": "A JoJo Hermann showcase — that's him on the vocal — and a live favorite fans hollered for long before it finally got a proper studio cut on Don't Tell the Band (2001).",
+      "sources": [
+        {
+          "label": "Don't Tell the Band (JoJo Hermann vocal; long-time crowd favorite)",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
+        }
+      ],
+      "order": 14,
+      "sourceUrl": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band",
+      "image": ""
+    },
+    {
+      "title": "Blue Indian",
+      "slug": "blue-indian",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic (counted among Michael Houser's songs)",
+      "firstPlayed": "10/6/98",
+      "album": "'Til the Medicine Takes (1999)",
+      "text": "If you've ever wondered where the album title 'Til the Medicine Takes comes from — it's right here, lifted straight out of this song's chorus. Counted among Michael Houser's writing, “Blue Indian” sits fourth on that 1999 record.",
+      "sources": [
+        {
+          "label": "'Til the Medicine Takes (album title drawn from the chorus)",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/%27Til_the_Medicine_Takes"
+        },
+        {
+          "label": "Houser songwriting attribution",
+          "publisher": "Lockn' Festival",
+          "url": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+        }
+      ],
+      "order": 15,
+      "sourceUrl": "https://en.wikipedia.org/wiki/%27Til_the_Medicine_Takes",
+      "image": ""
+    },
+    {
+      "title": "Send Your Mind",
+      "slug": "send-your-mind",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Van Morrison",
+      "firstPlayed": "4/2/91",
+      "album": "Widespread Panic / “Mom's Kitchen” (1991)",
+      "text": "Not a Panic tune at all — it's a Van Morrison cover, drawn from the loose, funky sides Morrison cut for Bang Records in the late '60s. Panic worked up their own version for the 1991 self-titled record (“Mom's Kitchen”).",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/SENDYM.asp"
+        }
+      ],
+      "order": 16,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/SENDYM.asp",
+      "image": ""
+    },
+    {
+      "title": "Sleeping Man",
+      "slug": "sleeping-man",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Vic Chesnutt",
+      "firstPlayed": "3/21/95",
+      "text": "One of two Vic Chesnutt songs Panic carried into their sets — Chesnutt being the singular Athens songwriter the band kept close for years. His original turned up on 1993's Drunk; Panic's live reading later made it onto Live in the Classic City II.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/WTSMAN.asp"
+        }
+      ],
+      "order": 17,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/WTSMAN.asp",
+      "image": ""
+    },
+    {
+      "title": "Aunt Avis",
+      "slug": "aunt-avis",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Vic Chesnutt",
+      "firstPlayed": "9/9/95",
+      "album": "Bombs & Butterflies (1997)",
+      "text": "The other Vic Chesnutt song — and the one that stuck. Panic debuted their reading of the Athens songwriter's tune on 9/9/95 and it settled in as a fixture; the studio version landed on Bombs & Butterflies (1997). The 1997 video is a genuine curio: it was directed by Billy Bob Thornton.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/AUNTAV.asp"
+        },
+        {
+          "label": "Debut date & Billy Bob Thornton-directed video",
+          "publisher": "JamBase",
+          "url": "https://www.jambase.com/article/widespread-panic-performs-aunt-avis-late-night-conan-obrien-date-1997"
+        }
+      ],
+      "order": 18,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/AUNTAV.asp",
+      "image": ""
+    },
+    {
+      "title": "Bowlegged Woman",
+      "slug": "bowlegged-woman",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Calvin Carter / Bobby Rush",
+      "firstPlayed": "2/2/87",
+      "text": "A down-and-dirty blues cover — written by Calvin Carter and bluesman Bobby Rush, and sometimes billed with its fuller title, “Bowlegged Woman, Knock-Kneed Man.” Hot Tuna cut a version back in the '70s, which may well be the road it took to Panic; the band's own take shows up on Live at Myrtle Beach.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/BOWLW.asp"
+        }
+      ],
+      "order": 19,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/BOWLW.asp",
+      "image": ""
+    },
+    {
+      "title": "Henry Parsons Died",
+      "slug": "henry-parsons-died",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Daniel Hutchens & Eric Carter (Bloodkin)",
+      "firstPlayed": "1/27/89",
+      "album": "Everyday (1993)",
+      "text": "It landed on Panic's Everyday (1993), but the song belongs to Bloodkin — the Athens songwriting outfit of Daniel Hutchens and Eric Carter, longtime friends of the band whose catalog Panic raided more than once. A cover on paper; a family affair in practice.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp"
+        }
+      ],
+      "order": 20,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp",
+      "image": ""
+    },
+    {
+      "title": "Chainsaw City",
+      "slug": "chainsaw-city",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Jerry Joseph",
+      "firstPlayed": "6/23/95",
+      "text": "A Jerry Joseph song — like “Climb to Safety” and “North,” another piece of Joseph's writing Panic made its own. The original appeared on 1990's Pretty Wiped Out by Joseph's band, Little Women.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/CHAINS.asp"
+        }
+      ],
+      "order": 21,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/CHAINS.asp",
+      "image": ""
+    },
+    {
+      "title": "Quarter Tank Of Gasoline",
+      "slug": "quarter-tank-of-gasoline",
+      "mode": "new",
+      "type": "Cover",
+      "writtenBy": "Daniel Hutchens (Bloodkin)",
+      "firstPlayed": "7/5/99",
+      "text": "Easy to mistake for a Jerry Joseph tune, but it's actually Bloodkin — Daniel Hutchens' writing, off the band's 1994 record Good Luck Charm. One more the band borrowed from their Athens running mates.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/QTOGAS.asp"
+        }
+      ],
+      "order": 22,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/QTOGAS.asp",
+      "image": ""
+    },
+    {
+      "title": "Party At Your Mama's House",
+      "slug": "party-at-your-mamas-house",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "5/7/97",
+      "album": "'Til the Medicine Takes (1999)",
+      "text": "An instrumental that carries a second, funkier name on the band's own alias sheet — “That Thang.” It got room to stretch on 'Til the Medicine Takes (1999) and later on Über Cobra. First played 5/7/97.",
+      "sources": [
+        {
+          "label": "Everyday Companion — Song Histories (instrumental; a.k.a. “That Thang”)",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/PAYMH.asp"
+        }
+      ],
+      "order": 23,
+      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/PAYMH.asp",
+      "image": ""
+    },
+    {
+      "title": "Little Lilly",
+      "slug": "little-lilly",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "11/17/98",
+      "album": "Don't Tell the Band (2001)",
+      "text": "The song that kicks off Don't Tell the Band (2001) — and one that hides two other names. It's often listed in full as “Little Lilly (A.K.A. First Snow Or Blue Girl).” Listen for JB tipping his hat to the Beatles' “She Came In Through the Bathroom Window,” quietly swapping the bathroom for a bedroom. First played 11/17/98.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review (Beatles-lyric wink)",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        },
+        {
+          "label": "Full title / alternate names (“First Snow,” “Blue Girl”)",
+          "publisher": "lyric databases; corroborated by fan alias sheets"
+        }
+      ],
+      "order": 24,
+      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
+      "image": ""
+    },
+    {
+      "title": "Down",
+      "slug": "down",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "4/16/00",
+      "album": "Don't Tell the Band (2001)",
+      "text": "A milestone as much as a song. Don't Tell the Band (2001) is where Todd Nance stepped out from behind the kit as a genuine lead singer — and “Down” is the one that put him there. First played 4/16/00.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review (Nance's lead-vocal emergence)",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        }
+      ],
+      "order": 25,
+      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
+      "image": ""
+    },
+    {
+      "title": "Give",
+      "slug": "give",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "4/7/00",
+      "album": "Don't Tell the Band (2001)",
+      "text": "Built on one of Michael Houser's most aggressive guitar figures, “Give” got pegged at release as maybe the most commercially potent original Panic had — a heavy, direct thing in a catalog that usually prefers to wander. From Don't Tell the Band (2001); first played 4/7/00.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        }
+      ],
+      "order": 26,
+      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
+      "image": ""
+    },
+    {
+      "title": "Casa Del Grillo",
+      "slug": "casa-del-grillo",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "7/16/00",
+      "album": "Don't Tell the Band (2001)",
+      "text": "“House of the Cricket,” give or take, out of the Spanish. It's the band leaning all the way into the Latin thread Domingo “Sunny” Ortiz has run through Panic's music from the very start — Spanish lyrics and all — with John Keane layering some extra guitar effects onto the studio take. From Don't Tell the Band (2001); first played 7/16/00.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review (Spanish lyrics; Ortiz's Latin influence)",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        },
+        {
+          "label": "John Keane guitar effects",
+          "publisher": "Wikipedia — Don't Tell the Band",
+          "url": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
+        }
+      ],
+      "order": 27,
+      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
+      "image": ""
+    },
+    {
+      "title": "Sleepy Monkey",
+      "slug": "sleepy-monkey",
+      "mode": "new",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "2/24/85",
+      "album": "Space Baby 45 (1986)",
+      "text": "Deep-roots trivia. “Sleepy Monkey” is bound up with the band's very first record: in 1986 they self-released a 45 on their own Space Baby label — all of 500 copies — carrying a shortened version of this tune, “Monkey Image,” on the B-side. JB has told the story of driving in from their King Avenue house to Atlanta to pick the box of singles up from the presser. The song itself reaches back to Panic's earliest days; it first turned up on a stage on 2/24/85, the same night the band's whole story starts.",
+      "sources": [
+        {
+          "label": "Widespread Panic debut-single reissue (Space Baby label, 500 copies, JB's account)",
+          "publisher": "JamBase",
+          "url": "https://www.jambase.com/article/widespread-panic-debut-single-reissue"
+        },
+        {
+          "label": "Everyday Companion — Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/MONKEY.asp"
+        }
+      ],
+      "order": 28,
+      "sourceUrl": "https://www.jambase.com/article/widespread-panic-debut-single-reissue",
+      "image": ""
+    }
+  ]
+}

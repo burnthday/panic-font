@@ -148,6 +148,14 @@ Rebuild it from the live sources with:
 npm run import:newsletters
 ```
 
+## Curated Song Origins
+
+`data/source/song-origins-curated.json` holds hand-authored song origins written in **Burnthday's own voice** — facts mined from the fan newsletters, band interviews (via the Panicle blog, JamBase, American Songwriter, Glide, etc.), and the definitive [everydaycompanion.com](https://www.everydaycompanion.com/) song database, then paraphrased into original prose with every claim sourced. This is facts-into-original-prose, not republication.
+
+It is a **net-new supplement** to the Facebook-sourced `song-origins.json`: each entry is `mode: "new"` and cross-checked so it does not duplicate any of the existing 40 origins. Entries carry `title`, `slug`, `type` (Original/Cover), `firstPlayed`, `writtenBy`, `album`, Burnthday-voice `text`, a `sources[]` array (label/publisher/url) and a primary `sourceUrl`. Songs researched but left out (no sourced story beyond a debut date — e.g. Weight Of The World, Blackout Blues, Airplane, Vacation) are deliberately omitted under evidence discipline rather than filled with guesswork.
+
+**Wiring (pending, post-final-push):** these render once the build merges them. The merge point is `loadSongOrigins()` in `scripts/build.mjs` (append the curated `mode: "new"` entries), plus a small `renderSongOriginPage()` change to show the `sources[]` attribution instead of the hardcoded "Original Facebook post" link. Kept separate here to avoid colliding with in-flight build changes on the working branch.
+
 ## Live Google Sheets Automation
 
 For automatic rebuilds from Google Sheets, add a Google service account that has viewer access to this spreadsheet:
