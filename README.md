@@ -157,6 +157,9 @@ It is a **net-new supplement** to the Facebook-sourced `song-origins.json`, cros
 - **Facts as fields:** `type`, `isCover`, `composer`, `originalArtist`, `performedBy`, `aliases[]`, `albums[{name, year}]`, `firstPlayed` (ISO) + `firstPlayedDisplay`, `timesPlayed`, and a plain-language `summary` (meta description).
 - **`quotes[]`** as objects — `{text, speaker, speakerRole, source, sourceDate, url}` — so attribution is structured and linkable.
 - **`sources[]`** (`label`/`publisher`/`url`) and a **`sameAs[]`** authority list (EC, JamBase, American Songwriter, Wikipedia, etc.) per song.
+- **`clusters[]`** (writer / album / theme, for the pillar-cluster mesh), **`related[]`** (sibling origins with a reason), **`albumArt`** (cover asset when a WSP release), and **`faq[]`** (pre-computed Q&A for `FAQPage`).
+
+Full data + design handoff for the site build lives in [`data/source/SONG-ORIGINS-SPEC.md`](data/source/SONG-ORIGINS-SPEC.md); a page prototype is at [`design/prototypes/song-origin-page.html`](design/prototypes/song-origin-page.html).
 
 22 of the 41 lead with a verbatim attributed quote; the other 19 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Songs researched but left out (no sourced story beyond a debut date, e.g. Weight Of The World, Blackout Blues, Airplane) are deliberately omitted under evidence discipline. No em dashes, by request.
 
