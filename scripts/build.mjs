@@ -1828,6 +1828,8 @@ function renderPrivacyPage(data) {
           <h2>Analytics</h2>
           <p>Burnthday uses Google Analytics 4 to understand which pages people visit, how they found the site, and how the site performs on different devices. Google Analytics may use cookies and collect information such as browser and device details, approximate location, referring pages, and interactions with the site. Burnthday uses this information in aggregate to maintain and improve the site.</p>
           <p>Burnthday does not sell personal information. You can learn how Google handles information in the <a href="https://policies.google.com/privacy">Google Privacy Policy</a> and install the <a href="https://tools.google.com/dlpage/gaoptout">Google Analytics opt-out browser add-on</a>.</p>
+          <h2>Affiliation</h2>
+          <p>Burnthday is a fan project. It is not affiliated with, endorsed by, or operated by Widespread Panic, the band's management, or its record labels. Band names, song titles, and album artwork belong to their respective owners and appear here for identification and commentary. Setlist data is used with attribution per the source terms shown in the footer. If you own a photo or other work shown here and would like credit added or the item removed, message Burnthday and it happens.</p>
           <h2>External Links</h2>
           <p>The site links to Widespread Panic, Nugs.net, Facebook, Instagram, X, YouTube, and other independent sources. Those sites have their own privacy practices, and Burnthday does not control them.</p>
           <h2>Questions</h2>
@@ -4788,9 +4790,9 @@ function renderFooterColumns() {
 
 function renderFooterBottom(year) {
   return `<div class="footer-bottom">
-      <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
       <p class="footer-sources">Setlist data via <a href="https://www.setlist.fm/" rel="noopener">setlist.fm</a> and <a href="https://widespreadpanic.com/" rel="noopener">widespreadpanic.com</a> · Song history from <a href="http://everydaycompanion.com/" rel="noopener">Everyday Companion</a></p>
       <div class="footer-bottom-links">
+        <span class="footer-copy">© ${escapeHtml(String(year))} Burnthday</span>
         <a class="footer-privacy" href="/privacy/">Privacy</a>
         <a class="site-credit" href="https://gnarlywhal.com">Site by Gnarlywhal</a>
         <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
@@ -4804,8 +4806,9 @@ function renderSiteFooter(data, options = {}) {
     return `<footer class="site-foot">
   <div class="site-foot-inner">
     <div class="footer-lead">
-      <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true"><span>Burnthday</span></a>
-      <p>The working Widespread Panic song list, setlists, and tour data.</p>
+      <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="Burnthday"></a>
+      <p class="footer-identity">Burnthday's Widespread Panic Spread Sheet</p>
+      <p>The same song list the band uses to make setlists, with ${year} tour data and more.</p>
       ${renderFooterSocialRow()}
     </div>
     ${renderFooterColumns()}
@@ -9442,8 +9445,10 @@ body.stagelight .site-foot-inner {
 }
 body.stagelight .footer-lead { max-width: 340px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
-body.stagelight .footer-mark { height: 34px; width: auto; }
-body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 14px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }
+body.stagelight .footer-mark { height: 60px; width: auto; }
+body.stagelight .footer-identity { margin: 14px 0 0; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
+body.stagelight .footer-copy { color: var(--sl-faint); }
+body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 8px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }
 body.stagelight .footer-links { gap: 9px; }
 body.stagelight .footer-links strong { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 8px; }
 body.stagelight .footer-links a { color: var(--sl-muted); font-size: 13.5px; transition: color 0.15s ease, transform 0.15s ease; }
