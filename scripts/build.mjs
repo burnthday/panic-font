@@ -1651,6 +1651,7 @@ function renderRumorsPage(data, oldRumorsEntry) {
     <main class="archive-main">
       <article class="archive-page rumors-page">
         ${renderPageGraphicTitle("Rumors", "crystalball.png")}
+        ${renderCurrentRumors(data)}
         <div class="archive-content">${removeFirstArchiveGraphic(oldRumorsEntry?.content || "", "crystalball.png")}</div>
       </article>
     </main>
@@ -1658,6 +1659,42 @@ function renderRumorsPage(data, oldRumorsEntry) {
   </body>
 </html>
 `;
+}
+
+// Current-season rumors, in Burnthday's own words. These are speculation the
+// band has not confirmed — kept clearly flagged as such.
+const CURRENT_RUMORS = [
+  {
+    slot: "Halloween",
+    place: "New Orleans, LA",
+    heat: "Rumored",
+    note: "The frontrunner for the Halloween run is a New Orleans stand — the long-wished-for “NOLAween.” Nothing is locked, and a couple of other Southeast rooms keep getting floated, so read this as a lean, not a lock."
+  },
+  {
+    slot: "New Year's Eve",
+    place: "Charlotte, NC",
+    heat: "Heavily rumored",
+    note: "Charlotte is the heavy favorite for the New Year's run. It is not official until the band says so, but this one has legs."
+  }
+];
+
+function renderCurrentRumors(data) {
+  const year = data?.site?.year || 2026;
+  return `<section class="current-rumors">
+    <div class="rumor-heading">
+      <h2>${escapeHtml(String(year))} Rumors</h2>
+      <span>Speculation only — confirm before you book</span>
+    </div>
+    <div class="rumor-grid">
+      ${CURRENT_RUMORS.map((rumor) => `<article class="rumor-card">
+        <p class="rumor-slot">${escapeHtml(rumor.slot)}</p>
+        <p class="rumor-place">${escapeHtml(rumor.place)}</p>
+        <p class="rumor-note">${escapeHtml(rumor.note)}</p>
+        <span class="rumor-flag">${escapeHtml(rumor.heat)}</span>
+      </article>`).join("")}
+    </div>
+    <p class="rumor-foot">Heard something with a date, venue, and city? Pass it along to <a href="https://www.facebook.com/burnthday">Burnthday on Facebook</a>. Only rumors with real details get posted.</p>
+  </section>`;
 }
 
 function renderMovementList(title, rows, emptyText) {
@@ -7212,6 +7249,24 @@ body.stagelight .archive-list em { grid-column: 1 / -1; font-family: var(--sl-mo
 body.stagelight .current-review-link { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
 body.stagelight .current-review-link div { padding: 18px 22px; border-radius: 16px; background: var(--sl-glass); border: 1px solid var(--sl-line); }
 body.stagelight .current-review-link a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; }
+
+/* current rumors cards */
+body.stagelight .current-rumors { margin: 4px 0 44px; }
+body.stagelight .rumor-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+body.stagelight .rumor-heading h2 { font-family: var(--sl-display); font-size: 26px; font-weight: 640; letter-spacing: -0.01em; color: var(--sl-ink); }
+body.stagelight .rumor-heading span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .rumor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+body.stagelight .rumor-card {
+  position: relative; padding: 24px 26px; border-radius: var(--sl-r);
+  background: var(--sl-glass); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+}
+body.stagelight .rumor-slot { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin: 0; }
+body.stagelight .rumor-place { font-family: var(--sl-display); font-size: 24px; font-weight: 660; letter-spacing: -0.015em; color: var(--sl-ink); margin: 8px 0 0; }
+body.stagelight .rumor-note { font-size: 14.5px; line-height: 1.6; color: var(--sl-muted); margin: 14px 0 0; }
+body.stagelight .rumor-flag { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-ink); border: 1px solid rgba(212,81,79,0.5); border-radius: 999px; padding: 6px 14px; }
+body.stagelight .rumor-flag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--red); box-shadow: 0 0 8px rgba(212,81,79,0.9); }
+body.stagelight .rumor-foot { margin: 22px 0 0; font-size: 13.5px; color: var(--sl-faint); }
+body.stagelight .rumor-foot a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; }
 
 /* shelf info page */
 body.stagelight .shelf-current-update h2, body.stagelight .legacy-shelf-notes h2 { font-family: var(--sl-display); color: var(--sl-ink); font-size: 24px; margin: 30px 0 16px; }
