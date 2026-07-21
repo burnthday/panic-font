@@ -35,6 +35,7 @@ async function main() {
   await checkBestGuessSection(siteData);
   await checkLegacyPages(siteData);
   await checkProsePlate(allHtmlFiles, allHtml);
+  await checkSongOrigins(allHtmlFiles, allHtml, siteData);
   await checkTourInReviewPages();
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkLocalAssets(allHtml);
@@ -614,6 +615,54 @@ async function checkProsePlate(files, htmlByFile) {
   record("A song-origin page carries the shared prose plate class", Boolean(originPage), originPage || "no origin-body prose-plate container found");
   const css = await readText("dist/stagelight.css");
   record("Stagelight stylesheet defines the prose plate reading system", /body\.stagelight \.prose-plate\b/.test(css) && /--prose-measure/.test(css), "prose plate rules present in stagelight.css");
+}
+
+// Song Origins detail template: the designed article that frames Alex's verbatim
+// story with computed live data. These checks confirm the chrome (eyebrow,
+// breadcrumb, prose plate) plus the "JSON logic" — a stat strip with a real plays
+// number and a "Full live history" link that points at a /song/ page that exists.
+async function checkSongOrigins(files, htmlByFile, siteData) {
+  const originSep = `${path.sep}song-origins${path.sep}`;
+  const originPages = [];
+  let indexHtml = "";
+  for (let i = 0; i < files.length; i += 1) {
+    if (!files[i].includes("song-origins")) continue;
+    if (files[i].endsWith(`song-origins${path.sep}index.html`)) { indexHtml = htmlByFile[i]; continue; }
+    if (files[i].includes(originSep)) originPages.push({ file: files[i], html: htmlByFile[i] });
+  }
+  record("Song Origins detail pages are generated", originPages.length > 0, `${originPages.length} origin pages`);
+
+  // Every origin page ships the article chrome: SONG ORIGIN eyebrow, a Home ›
+  // Song Origins › Title breadcrumb, and the verbatim story in a prose plate.
+  const missingEyebrow = originPages.filter((p) => !/class="origin-eyebrow">SONG ORIGIN</.test(p.html));
+  record("Every Song Origin page renders the SONG ORIGIN eyebrow", missingEyebrow.length === 0, missingEyebrow.map((p) => path.relative(root, p.file)).join("; "));
+  const missingCrumb = originPages.filter((p) => !(/class="crumbs"/.test(p.html) && p.html.includes('href="/song-origins/"') && p.html.includes(">Home</a>")));
+  record("Every Song Origin page renders a Home › Song Origins breadcrumb", missingCrumb.length === 0, missingCrumb.map((p) => path.relative(root, p.file)).join("; "));
+  const missingPlate = originPages.filter((p) => !p.html.includes('class="origin-body prose-plate"'));
+  record("Every Song Origin page carries the verbatim story in a prose plate", missingPlate.length === 0, missingPlate.map((p) => path.relative(root, p.file)).join("; "));
+
+  // The computed stat strip: how many origins matched the catalog. A matched page
+  // shows a lifetime-plays number and a working "Full live history" /song/ link.
+  const withStrip = originPages.filter((p) => p.html.includes('class="origin-strip"'));
+  record("At least one Song Origin joins the catalog and shows a computed stat strip", withStrip.length > 0, `${withStrip.length}/${originPages.length} origins matched the catalog`);
+
+  let stripWithPlays = 0;
+  let liveHistoryVerified = 0;
+  for (const p of withStrip) {
+    if (/<strong>[\d,]+<\/strong><span>lifetime plays/.test(p.html)) stripWithPlays += 1;
+    const m = p.html.match(/href="\/song\/([a-z0-9-]+)\/"[^>]*>(?:(?!<\/a>).)*Full live history/);
+    if (m) {
+      // eslint-disable-next-line no-await-in-loop
+      if (await fileExists(path.join("dist", "song", m[1], "index.html"))) liveHistoryVerified += 1;
+    }
+  }
+  record("A matched Song Origin's stat strip shows a lifetime plays number", stripWithPlays > 0, `${stripWithPlays} matched origins show a plays tile`);
+  record("A matched Song Origin links Full live history to a real /song/ page in dist", liveHistoryVerified > 0 && liveHistoryVerified === withStrip.filter((p) => p.html.includes("Full live history")).length, `${liveHistoryVerified} verified /song/ targets`);
+
+  // The index still lists every origin.
+  const expected = siteData.songOrigins?.totalEntries || 0;
+  const cardCount = (indexHtml.match(/class="origin-card"/g) || []).length;
+  record("Song Origins index lists every origin", expected > 0 && cardCount === expected, `index has ${cardCount} cards, expected ${expected}`);
 }
 
 function checkMarkerLegend(html, siteData) {

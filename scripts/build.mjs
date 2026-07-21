@@ -115,7 +115,6 @@ async function main() {
   siteData.originsByTitle = new Map((songOrigins || []).map((origin) => [normalizeTitle(origin.title), origin]));
   await writeBloggerArchive(archiveEntries, siteData);
   await writeModernArchivePages(archiveEntries, siteData);
-  await writeSongOrigins(songOrigins, siteData);
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
   await writePrivacyPage(siteData);
@@ -128,6 +127,9 @@ async function main() {
   siteData.relistenDates = await loadRelistenDates();
   attachBestGuesses(siteData, await loadBestGuesses());
   await writeSongPages(siteData, albums);
+  // Origins are written AFTER the song/album/setlist data layers are attached so
+  // each origin can join its catalog song (stat strip, /song/ link, album chip).
+  await writeSongOrigins(songOrigins, siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   const tourInReviews = await writeTourInReviewPages(siteData, archiveEntries);
   await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews, tourInReviews);
@@ -1252,14 +1254,29 @@ async function writeModernArchivePages(entries, data) {
   }
 }
 
-async function writeSongOrigins(origins, data) {
+async function writeSongOrigins(origins, data, albums = []) {
   if (!origins.length) return;
 
   await writeStaticPage("/song-origins/index.html", renderSongOriginsIndex(origins, {
     canonicalPath: "/song-origins/",
-    data
+    data,
+    albums
   }));
-  await Promise.all(origins.map((origin) => writeStaticPage(`/song-origins/${origin.slug}/index.html`, renderSongOriginPage(origin, origins, data))));
+  await Promise.all(origins.map((origin) => writeStaticPage(`/song-origins/${origin.slug}/index.html`, renderSongOriginPage(origin, origins, data, albums))));
+}
+
+// Join a Song Origin to the rich data layer WITHOUT touching Alex's prose. Every
+// field here is computed at build time from the catalog / albums / setlist data —
+// nothing is authored, nothing is written in his voice. Returns null-ish members
+// when a join is missing so the template can omit tiles/links cleanly.
+function originDataJoin(origin, data, albums = []) {
+  const key = normalizeTitle(origin.title);
+  const song = (data.catalog || []).find((row) => row.key === key) || null;
+  if (!song) return { song: null, slug: "", onAlbums: [], lyricsHref: "" };
+  const slug = data.songSlugMap?.get(song.key) || "";
+  const onAlbums = songAlbumsFor(song, albums);
+  const lyricsHref = data.lyricsResourceByKey?.get(song.key) || "";
+  return { song, slug, onAlbums, lyricsHref };
 }
 
 async function writeStaticPage(pagePath, html) {
@@ -2310,6 +2327,7 @@ function renderTourInReviewPage(tour, data, prev, next, crosslink) {
 function renderSongOriginsIndex(origins, options = {}) {
   const canonicalPath = options.canonicalPath || "/song-origins/";
   const data = options.data;
+  const albums = options.albums || [];
   const description = "Widespread Panic song origins, histories, notes, and Burnthday picks.";
   return `<!doctype html>
 <html lang="en">
@@ -2337,7 +2355,7 @@ function renderSongOriginsIndex(origins, options = {}) {
           </div>
         </header>
         <div class="origin-grid">
-          ${origins.map(renderSongOriginCard).join("")}
+          ${origins.map((origin) => renderSongOriginCard(origin, data, albums)).join("")}
         </div>
       </section>
     </main>
@@ -2347,21 +2365,59 @@ function renderSongOriginsIndex(origins, options = {}) {
 `;
 }
 
-function renderSongOriginCard(origin) {
+function renderSongOriginCard(origin, data, albums = []) {
+  // Cheap computed meta line: lifetime plays and/or its album, joined from the
+  // catalog. Nothing authored — purely derived, omitted when the join is missing.
+  const { song, onAlbums } = data ? originDataJoin(origin, data, albums) : { song: null, onAlbums: [] };
+  const bits = [];
+  if (song && Number.isFinite(song.total) && song.total > 0) bits.push(`${formatNumber(song.total)} plays`);
+  if (onAlbums[0]) bits.push(escapeHtml(onAlbums[0].title));
+  const meta = bits.length ? `<small class="origin-card-meta">${bits.join('<span class="ocm-sep" aria-hidden="true">·</span>')}</small>` : "";
   return `<a class="origin-card" href="/song-origins/${escapeAttr(origin.slug)}/">
     ${origin.image ? `<img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" loading="lazy" decoding="async">` : ""}
     <span>Song Origins</span>
     <strong>${escapeHtml(origin.title)}</strong>
+    ${meta}
   </a>`;
 }
 
-function renderSongOriginPage(origin, origins, data) {
+function renderSongOriginPage(origin, origins, data, albums = []) {
   const description = clean(origin.text).slice(0, 180) || `Burnthday Song Origins: ${origin.title}`;
   const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
   const previous = origins[currentIndex - 1] || null;
   const next = origins[currentIndex + 1] || null;
   const originBody = renderOriginText(origin.text);
   const hasLiteEmbed = originBody.includes('class="yt-lite"');
+
+  // ---- Computed data join (nothing here is authored in Alex's voice) ----
+  const { song, slug, onAlbums, lyricsHref } = originDataJoin(origin, data, albums);
+  const firstLong = song ? (formatLongDate(parseDateKey(song.first) || song.first) || song.first) : "";
+  const lastIso = song ? (song.effectiveLastIso || parseDateKey(song.last)) : null;
+  const lastLong = song ? (lastIso ? formatLongDate(lastIso) : song.lastDisplay || "") : "";
+  const primaryAlbum = onAlbums[0] || null;
+
+  // Stat strip — reuse the .song-stat tile pattern. Each tile is omitted when its
+  // datum is missing; the whole strip is omitted when the origin has no catalog song.
+  const tile = (value, label, sub = "") => `<div class="song-stat"><strong>${value}</strong><span>${escapeHtml(label)}</span>${sub ? `<small>${escapeHtml(sub)}</small>` : ""}</div>`;
+  const statTiles = [];
+  if (song) {
+    if (Number.isFinite(song.total) && song.total > 0) statTiles.push(tile(formatNumber(song.total), "lifetime plays", "live performances"));
+    if (firstLong) statTiles.push(`<div class="song-stat"><strong class="song-stat-date">${escapeHtml(firstLong)}</strong><span>first played</span></div>`);
+    if (lastLong) statTiles.push(`<div class="song-stat"><strong class="song-stat-date">${escapeHtml(lastLong)}</strong><span>last played</span></div>`);
+    if (primaryAlbum) statTiles.push(`<div class="song-stat"><strong class="song-stat-album">${escapeHtml(primaryAlbum.title)}</strong><span>appears on</span>${albumYear(primaryAlbum) ? `<small>${escapeHtml(albumYear(primaryAlbum))}</small>` : ""}</div>`);
+  }
+  const statStrip = statTiles.length
+    ? `<div class="origin-strip" aria-label="Live history for ${escapeAttr(origin.title)}">${statTiles.join("")}</div>`
+    : "";
+
+  // Cross-links (article footer) — all computed from the join.
+  const links = [];
+  if (song && slug) links.push(`<a class="origin-xlink" href="/song/${escapeAttr(slug)}/"><span class="oxl-label">Full live history</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
+  if (lyricsHref) links.push(`<a class="origin-xlink" href="${escapeAttr(lyricsHref)}"><span class="oxl-label">Lyrics &amp; chords</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
+  if (primaryAlbum) links.push(`<a class="origin-xlink" href="/albums/${escapeAttr(primaryAlbum.slug)}/"><span class="oxl-label">Appears on ${escapeHtml(primaryAlbum.title)}</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
+  const crosslinks = links.length
+    ? `<nav class="origin-crosslinks" aria-label="Related pages">${links.join("")}</nav>`
+    : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -2385,21 +2441,22 @@ function renderSongOriginPage(origin, origins, data) {
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main origins-main">
-      <article class="archive-page origin-page">
-        <nav class="origin-back"><a href="/song-origins/">Song Origins</a></nav>
-        <header class="archive-title origin-title">
+      <article class="archive-page origin-article">
+        <header class="origin-article-head">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/song-origins/">Song Origins</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(origin.title)}</span></nav>
+          <p class="origin-eyebrow">SONG ORIGIN</p>
           <h1>${escapeHtml(origin.title)}</h1>
         </header>
-        <div class="origin-layout">
-          ${origin.image ? `<figure class="origin-image"><img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" decoding="async"></figure>` : ""}
-          <div class="origin-body prose-plate">
-            ${originBody}
-            <p class="origin-source"><a href="${escapeAttr(origin.sourceUrl)}">Original Facebook post</a></p>
-          </div>
+        ${origin.image ? `<figure class="origin-hero-media"><img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" decoding="async"></figure>` : ""}
+        ${statStrip}
+        <div class="origin-body prose-plate">
+          ${originBody}
+          <p class="origin-source"><a href="${escapeAttr(origin.sourceUrl)}">Original Facebook post</a></p>
         </div>
+        ${crosslinks}
         <nav class="origin-nav" aria-label="Song origin navigation">
-          ${previous ? `<a href="/song-origins/${escapeAttr(previous.slug)}/">${escapeHtml(previous.title)}</a>` : "<span></span>"}
-          ${next ? `<a href="/song-origins/${escapeAttr(next.slug)}/">${escapeHtml(next.title)}</a>` : "<span></span>"}
+          ${previous ? `<a class="origin-nav-prev" href="/song-origins/${escapeAttr(previous.slug)}/"><span class="onav-dir">← Previous origin</span><span class="onav-title">${escapeHtml(previous.title)}</span></a>` : "<span></span>"}
+          ${next ? `<a class="origin-nav-next" href="/song-origins/${escapeAttr(next.slug)}/"><span class="onav-dir">Next origin →</span><span class="onav-title">${escapeHtml(next.title)}</span></a>` : "<span></span>"}
         </nav>
       </article>
     </main>
@@ -9282,23 +9339,42 @@ body.stagelight .origin-card {
 body.stagelight .origin-card:hover { transform: translateY(-3px); border-color: var(--sl-line-strong); }
 body.stagelight .origin-card img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border: 0; border-radius: 0; margin: 0; }
 body.stagelight .origin-card span { display: block; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); padding: 16px 18px 0; }
-body.stagelight .origin-card strong { display: block; font-family: var(--sl-display); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; padding: 4px 18px 18px; }
+body.stagelight .origin-card strong { display: block; font-family: var(--sl-display); font-size: 17px; font-weight: 600; letter-spacing: -0.01em; padding: 4px 18px 4px; }
+body.stagelight .origin-card-meta { display: block; font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); padding: 0 18px 18px; font-variant-numeric: tabular-nums; }
+body.stagelight .origin-card:not(:has(strong + .origin-card-meta)) strong { padding-bottom: 18px; }
+body.stagelight .origin-card-meta .ocm-sep { margin: 0 7px; opacity: 0.6; }
 
-/* single origin page */
-body.stagelight .origin-back { margin-bottom: 20px; }
-body.stagelight .origin-back a, body.stagelight .origin-source a { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .origin-back a:hover, body.stagelight .origin-source a:hover { color: var(--sl-ink); }
-body.stagelight .origin-title { border: 0; padding: 0; margin-bottom: 26px; }
-body.stagelight .origin-layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 36px; align-items: start; }
-body.stagelight .origin-image img { width: 100%; border-radius: var(--sl-r); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow); }
-body.stagelight .origin-body { color: var(--sl-muted); font-size: 17px; line-height: 1.7; }
-body.stagelight .origin-body p { margin: 0 0 16px; }
-body.stagelight .origin-body a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; word-break: break-word; }
+/* single origin page — designed article: hero, computed stat strip, verbatim story, crosslinks */
+body.stagelight .origin-article { max-width: 860px; }
+body.stagelight .origin-article-head { margin-bottom: 30px; }
+body.stagelight .origin-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 4px 0 12px; }
+body.stagelight .origin-article-head h1 { font-family: var(--sl-display); font-weight: 660; font-size: clamp(32px, 5vw, 52px); letter-spacing: -0.02em; color: var(--sl-ink); margin: 0; line-height: 1.02; }
+body.stagelight .origin-hero-media { margin: 0 0 34px; }
+body.stagelight .origin-hero-media img { width: 100%; height: auto; display: block; border-radius: var(--sl-r-lg); border: 1px solid var(--sl-line); box-shadow: var(--sl-shadow-2); }
+body.stagelight .origin-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 0 0 38px; }
+body.stagelight .origin-strip .song-stat { font-variant-numeric: tabular-nums; }
+body.stagelight .origin-strip .song-stat-date { font-family: var(--sl-mono); font-size: 17px; font-weight: 600; letter-spacing: -0.005em; line-height: 1.15; }
+body.stagelight .origin-strip .song-stat-album { font-family: var(--sl-display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+body.stagelight .origin-source { margin-top: 26px; }
+body.stagelight .origin-source a { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .origin-source a:hover { color: var(--sl-ink); }
 body.stagelight .origin-stats { font-family: var(--sl-mono); font-size: 13.5px; line-height: 1.9; color: var(--sl-ink); background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); padding: 16px 18px; }
-body.stagelight .origin-source { margin-top: 24px; }
+body.stagelight .origin-crosslinks { display: flex; flex-wrap: wrap; gap: 12px; margin: 40px 0 0; padding-top: 30px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-xlink {
+  display: inline-flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: var(--sl-r-pill);
+  background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); color: var(--sl-ink);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+body.stagelight .origin-xlink:hover { transform: translateY(-2px); border-color: var(--sl-line-strong); }
+body.stagelight .origin-xlink .oxl-label { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+body.stagelight .origin-xlink .oxl-go { color: var(--sl-faint); transition: color 0.18s ease; }
+body.stagelight .origin-xlink:hover .oxl-go { color: var(--sl-ink); }
 body.stagelight .origin-nav { display: flex; justify-content: space-between; gap: 16px; margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--sl-line); }
-body.stagelight .origin-nav a { font-size: 15px; color: var(--sl-muted); }
-body.stagelight .origin-nav a:hover { color: var(--sl-ink); }
+body.stagelight .origin-nav a { display: flex; flex-direction: column; gap: 5px; font-size: 15px; color: var(--sl-muted); max-width: 48%; }
+body.stagelight .origin-nav .origin-nav-next { text-align: right; margin-left: auto; align-items: flex-end; }
+body.stagelight .origin-nav .onav-dir { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .origin-nav .onav-title { font-family: var(--sl-display); font-size: 16px; font-weight: 560; color: var(--sl-ink); }
+body.stagelight .origin-nav a:hover .onav-title { color: #fff; }
 
 /* tour-in-review generated page: setlist card grid */
 body.stagelight .setlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
@@ -9355,8 +9431,11 @@ body.stagelight .ti-meta { flex: none; font-family: var(--sl-mono); font-size: 1
 }
 
 @media (max-width: 760px) {
-  body.stagelight .origin-layout { grid-template-columns: 1fr; gap: 22px; }
   body.stagelight .origin-hero { flex-direction: column; align-items: flex-start; gap: 18px; }
+  body.stagelight .origin-strip { grid-template-columns: repeat(2, 1fr); }
+  body.stagelight .origin-nav { flex-direction: column; }
+  body.stagelight .origin-nav a { max-width: 100%; }
+  body.stagelight .origin-nav .origin-nav-next { text-align: left; margin-left: 0; align-items: flex-start; }
   body.stagelight .archive-main { margin-top: 40px; }
 }
 
