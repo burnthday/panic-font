@@ -99,6 +99,7 @@ async function main() {
   await writeFile(path.join(dist, "index.html"), finalizeHtml(renderHtml(siteData)), "utf8");
   await writeStaticPage("/404.html", renderNotFoundPage(siteData));
   await writeFile(path.join(dist, "styles.css"), renderCss(), "utf8");
+  await writeFile(path.join(dist, "stagelight.css"), renderStagelightCss(), "utf8");
   await writeFile(path.join(dist, "data", "site-data.json"), JSON.stringify(siteData, null, 2), "utf8");
   await writeFile(path.join(dist, "data", "freshness.json"), JSON.stringify(buildFreshnessReport(siteData, archiveEntries, songOrigins, generatedTourReviews), null, 2), "utf8");
   await writeFile(path.join(dist, "_headers"), renderHeaders(), "utf8");
@@ -2017,7 +2018,7 @@ function renderHtml(data) {
     <link rel="icon" href="/assets/marker-1.png" type="image/png">
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebSite",
@@ -3125,6 +3126,158 @@ function renderStat(value, label) {
   const displayValue = typeof value === "string" && value.endsWith("%") ? value : formatNumber(value);
   return `<div class="stat"><strong>${escapeHtml(String(displayValue))}</strong><span>${escapeHtml(label)}</span></div>`;
 }
+
+
+function extractCssBlocks(css, keys) {
+  const out = [];
+  let i = 0;
+  const n = css.length;
+  while (i < n) {
+    const b = css.indexOf("{", i);
+    if (b < 0) break;
+    const sel = css.slice(i, b).trim();
+    let depth = 1;
+    let j = b + 1;
+    while (j < n && depth) {
+      if (css[j] === "{") depth += 1;
+      else if (css[j] === "}") depth -= 1;
+      j += 1;
+    }
+    const body = css.slice(b + 1, j - 1);
+    if (sel.startsWith("@media")) {
+      const inner = extractCssBlocks(body, keys);
+      if (inner.trim()) out.push(`${sel} {\n${inner}\n}`);
+    } else if (!sel.startsWith("@") && keys.some((key) => sel.includes(key))) {
+      out.push(`${sel} {${body}}`);
+    }
+    i = j;
+  }
+  return out.join("\n");
+}
+
+const SHEET_CSS_KEYS = ["laminate", "primary-board", "primary-header", "board-title", "marker-num", "marker-wrap", "marker-text", "song-panel", ".songs", ".col", ".nums", "rotation-song", "shelf-board", "purgatory-board", "woodshed-board", "header-row", "shelf-addition", "handwritten"];
+
+function renderStagelightCss() {
+  const base = renderCss();
+  const marker = "/* ============================================================\n   STAGELIGHT";
+  const markerIdx = base.indexOf(marker);
+  const legacy = markerIdx >= 0 ? base.slice(0, markerIdx) : base;
+  const overrides = markerIdx >= 0 ? base.slice(markerIdx) : "";
+  const fonts = (legacy.match(/@font-face[^}]*}/g) || []).join("\n");
+  const rootBlock = legacy.slice(legacy.indexOf(":root {"), legacy.indexOf("}", legacy.indexOf(":root {")) + 1);
+  const sheetSelf = extractCssBlocks(legacy, [".laminate"]);
+  const legacyScoped = `.laminate {\n${legacy.replace(/@font-face[^}]*}/g, "").replace(/:root\s*\{[^}]*\}/g, "")}\n}`;
+  return `${fonts}\n${rootBlock}\n${STAGELIGHT_STRUCTURE}\n${sheetSelf}\n${legacyScoped}\n${overrides}`;
+}
+
+const STAGELIGHT_STRUCTURE = `
+/* ===== Stagelight structural base (homepage only; no legacy cascade) ===== */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--ui-font); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; }
+button, select { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+h1, h2, h3, h4, p, ul, ol, dl { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+summary { list-style: none; cursor: pointer; }
+summary::-webkit-details-marker { display: none; }
+sup { line-height: 0; }
+main { width: min(1180px, calc(100% - 56px)); margin: 0 auto; }
+main > section { margin-top: 96px; }
+.section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
+.section-heading h2 { font-size: 34px; font-weight: 640; letter-spacing: -0.01em; line-height: 1.12; }
+.section-heading span { font-size: 12px; letter-spacing: 0.08em; }
+
+/* nav internals */
+.site-head .brand { display: inline-flex; align-items: center; gap: 12px; }
+.header-social { display: flex; gap: 10px; }
+.header-social .social-dot { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; font-size: 14px; }
+.jump-links a { display: inline-block; }
+.mobile-nav { display: none; position: relative; }
+.mobile-nav summary { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; }
+.mobile-nav-links { position: absolute; right: 0; top: 48px; min-width: 220px; padding: 10px; border-radius: 16px; z-index: 70; }
+.mobile-nav-links a { display: block; padding: 11px 16px; border-radius: 10px; font-size: 15px; }
+.menu-icon { display: inline-flex; flex-direction: column; gap: 3px; }
+.menu-icon i { width: 14px; height: 1.5px; display: block; }
+.home-trail { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+
+/* stat tiles + toolbar */
+.data-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+.data-metrics .nick-stat { padding: 20px 22px; border-radius: 16px; }
+.data-metrics .nick-stat strong { display: block; font-size: 30px; font-weight: 620; line-height: 1; }
+.data-metrics .nick-stat span { display: block; font-size: 11px; letter-spacing: 0.14em; margin-top: 9px; }
+.data-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.show-filter { display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.16); }
+.show-filter span { font-size: 11px; letter-spacing: 0.14em; }
+.type-filter { display: inline-flex; border-radius: 999px; overflow: hidden; border: 1px solid rgba(255,255,255,0.16); }
+.type-filter button { padding: 0 18px; height: 40px; font-size: 13px; font-weight: 560; }
+.show-filter-status { margin-left: auto; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* data tables */
+.tour-table-wrap, .data-table-wrap { overflow-x: auto; border-radius: 20px; }
+.tour-table, .data-table { width: 100%; border-collapse: collapse; }
+.tour-table th, .tour-table td, .data-table th, .data-table td { text-align: left; padding: 14px 18px; }
+.tour-table td:last-child, .tour-table th:last-child { text-align: right; }
+.tour-table thead th, .data-table thead th { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; }
+.slp-progress { display: inline-block; width: 64px; height: 3px; border-radius: 2px; margin-left: 10px; overflow: hidden; vertical-align: middle; }
+.slp-progress i { display: block; height: 100%; }
+
+/* tour dates */
+.tour-dates li { display: grid; grid-template-columns: 130px minmax(0, 1fr) auto; gap: 6px 18px; align-items: center; padding: 15px 24px; }
+.tour-dates li time { font-size: 13px; letter-spacing: 0.06em; }
+.tour-dates li span { grid-column: 2; font-size: 13px; }
+.tour-dates li strong { grid-column: 2; font-size: 15px; }
+.tour-dates li em { grid-column: 3; grid-row: 1 / span 2; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-style: normal; border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 4px 12px; }
+
+/* sheet key */
+.sheet-key { padding: 24px 28px; border-radius: 20px; }
+.sheet-key .key-topline { display: flex; gap: 20px 40px; flex-wrap: wrap; align-items: flex-start; }
+.key-block h3 { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 10px; }
+.marker-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+.marker-legend li { display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 8px 16px 8px 12px; }
+.marker-legend img { width: 22px; height: auto; }
+.marker-legend strong { font-size: 13px; }
+.marker-legend em { font-size: 12px; font-style: normal; }
+
+/* nick feature */
+.nick-feature { padding: 34px 36px; border-radius: 20px; }
+.nick-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 22px 0; }
+.nick-summary .nick-stat { padding: 20px 22px; border-radius: 16px; }
+.nick-summary .nick-stat strong { display: block; font-size: 30px; font-weight: 620; line-height: 1; }
+.nick-summary .nick-stat span { display: block; font-size: 11px; letter-spacing: 0.14em; margin-top: 9px; }
+.nick-progress { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; margin: 14px 0; }
+.nick-progress i { display: block; height: 100%; }
+.nick-ranking { display: grid; gap: 4px; }
+.nick-ranking li { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+/* footer + community */
+.community-links { display: flex; align-items: center; justify-content: center; gap: 28px; flex-wrap: wrap; margin-top: 96px; }
+.ticket-link { display: inline-flex; align-items: center; height: 44px; padding: 0 26px; border-radius: 999px; font-weight: 650; }
+.posse-link img { width: 220px; border-radius: 12px; }
+.site-foot { margin-top: 110px; }
+.site-foot-inner { width: min(1180px, calc(100% - 56px)); margin: 0 auto; display: flex; justify-content: space-between; gap: 44px; flex-wrap: wrap; padding: 56px 0 40px; }
+.footer-lead p { margin-top: 12px; max-width: 300px; font-size: 14px; line-height: 1.55; }
+.footer-brand { font-size: 20px; font-weight: 800; letter-spacing: 0.045em; }
+.footer-links, .social-links { display: flex; flex-direction: column; gap: 2px; }
+.footer-links strong, .social-links strong { font-size: 11px; letter-spacing: 0.18em; margin-bottom: 12px; font-weight: 500; }
+.footer-links a, .social-links a { padding: 5px 0; font-size: 14px; }
+.social-links a { display: inline-flex; align-items: center; gap: 10px; }
+.social-mark { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-size: 12px; }
+
+@media (max-width: 900px) {
+  .data-metrics, .nick-summary { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  main { width: calc(100% - 36px); }
+  main > section { margin-top: 64px; }
+  .section-heading h2 { font-size: 28px; }
+  .mobile-nav { display: block; }
+  .data-metrics, .nick-summary { grid-template-columns: 1fr 1fr; }
+  .tour-dates li { grid-template-columns: auto minmax(0, 1fr); padding: 14px 16px; }
+  .tour-dates li em { grid-column: 2; grid-row: auto; justify-self: start; }
+  .marker-legend { grid-template-columns: 1fr; }
+}
+`;
 
 function renderCss() {
   return `@font-face {
