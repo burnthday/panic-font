@@ -341,18 +341,18 @@ async function checkLatestSetlist(html, siteData) {
   const renderedLabels = [...featuredCard.matchAll(/<div class="sc-row"><span class="sc-label">([^<]+)<\/span><p class="sc-prose">/g)].map((match) => decodeHtml(match[1]));
   if (siteData.site?.isShowDayPreview) {
     record("Show-day setlists have no redundant section label or black rule", !featured.includes("CURRENT TOUR STOP") && !featured.includes('class="section-heading"'));
-    assertIncludes(featured, `datetime="${featuredShow?.isoDate || ""}"`, "Tonight's blank setlist is featured first");
-    record("Preview setlist omits empty Set 1/2/Encore lines until songs post", renderedLabels.length === 0, renderedLabels.join(", "));
-    record("Preview setlist contains no song copy", [...featuredCard.matchAll(/<p><strong>[^<]+:<\/strong>([\s\S]*?)<\/p>/g)].every((match) => !decodeHtml(match[1]).trim()));
-    assertIncludes(featuredCard, ">Show Details</a>", "Tonight links to show details");
+    const stripStart = featured.indexOf('<details class="next-strip');
+    const strip = stripStart >= 0 ? featured.slice(stripStart, featured.indexOf("</details>", stripStart) + "</details>".length) : "";
+    record("Tonight appears as a closed strip after the latest run", strip.includes(`datetime="${featuredShow?.isoDate || ""}"`), featuredShow?.isoDate || "");
+    record("Tonight's strip has no set rows until songs post", strip.length > 0 && !strip.includes('class="sc-label"'));
+    assertIncludes(strip, ">Show Details</a>", "Tonight links to show details");
     record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));
-    record("Tonight does not advertise a post-show Nugs archive", !featuredCard.includes("Listen at Nugs.net"));
-
+    record("Tonight does not advertise a post-show Nugs archive", !strip.includes("Listen at Nugs.net"));
+    record("First-visit preview uses its configured venue image", !featuredShow?.image || strip.includes(`src="${escapeHtml(featuredShow.image)}"`), featuredShow?.image || "");
     const completedHeading = `${latestShow?.date || ""} ${latestShow?.venue || ""}, ${latestShow?.location || ""}`;
-    const archive = sectionHtml(html, "setlists");
-    record("Previous tour stop moves below the Song List on preview day", Boolean(cardHtml(archive, escapeHtml(completedHeading))), completedHeading);
-    record("Previous tour stop is absent from the preview feature", !cardHtml(featured, escapeHtml(completedHeading)), completedHeading);
-    record("First-visit preview uses its configured venue image", !featuredShow?.image || featuredCard.includes(`src="${escapeHtml(featuredShow.image)}"`), featuredShow?.image || "");
+    record("Latest posted show leads the page on show day", Boolean(cardHtml(featured, escapeHtml(completedHeading))), completedHeading);
+    const archiveNow = sectionHtml(html, "setlists");
+    record("Latest posted run is not duplicated in the archive", !cardHtml(archiveNow, escapeHtml(completedHeading)), completedHeading);
   } else {
     record(
       "Completed featured setlist has no redundant section label or black rule",
