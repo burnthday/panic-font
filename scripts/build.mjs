@@ -2162,7 +2162,8 @@ function renderAlbumPage(album, albums, data) {
       [album.title, `https://burnthday.com/albums/${album.slug}/`]
     ])}</script>
   </head>
-  <body class="stagelight">
+  <body class="stagelight album-page-body">
+    <div class="album-backdrop"${album.cover ? ` style="--album-art:url('${escapeAttr(album.cover)}')"` : ""} aria-hidden="true"></div>
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main album-main">
       <header class="archive-title">
@@ -7555,6 +7556,22 @@ body.stagelight .acf-title { font-family: var(--sl-display); font-weight: 640; f
 body.stagelight .acf-note { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .album-tile-title { display: block; font-family: var(--sl-display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin-top: 14px; }
 body.stagelight .album-tile-year { display: block; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); margin-top: 3px; }
+
+/* ---- ALBUMS: full-width atmospheric backdrop (color bled from the cover) ---- */
+body.stagelight .album-backdrop { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+body.stagelight .album-backdrop::before {
+  content: ""; position: absolute; inset: -12%;
+  background-image: var(--album-art); background-size: cover; background-position: center 22%;
+  filter: blur(90px) saturate(1.35); opacity: 0.55; transform: scale(1.25);
+}
+body.stagelight .album-backdrop::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(120% 80% at 50% -10%, transparent, rgba(11,11,12,0.5) 46%, rgba(11,11,12,0.82) 68%, var(--sl-bg) 92%),
+    linear-gradient(180deg, rgba(11,11,12,0.35), var(--sl-bg) 88%);
+}
+body.stagelight.album-page-body .album-main { position: relative; z-index: 1; }
+body.stagelight.album-page-body .album-cover-lg { box-shadow: 0 40px 90px -30px rgba(0,0,0,0.9), 0 0 0 1px var(--sl-line), inset 0 1px 0 rgba(255,255,255,0.08); }
 
 /* ---- ALBUMS: single album page ---- */
 body.stagelight .album-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 10px; }
