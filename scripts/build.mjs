@@ -88,6 +88,8 @@ async function main() {
   await mkdir(path.join(dist, "data"), { recursive: true });
 
   await copyAssets();
+  // lookup so archive/lyrics pages can cross-link to a matching Song Origin
+  siteData.originsByTitle = new Map((songOrigins || []).map((origin) => [normalizeTitle(origin.title), origin]));
   await writeBloggerArchive(archiveEntries, siteData);
   await writeModernArchivePages(archiveEntries, siteData);
   await writeSongOrigins(songOrigins, siteData);
@@ -1498,7 +1500,7 @@ function renderArchivePage(entry, data) {
   const datedTitle = entry.hasDuplicateTitle ? `${entry.title} - ${formatArchiveDate(entry.published)}` : entry.title;
   const title = fitMetaText(entry.seoTitle || `${datedTitle} | Burnthday`, 68);
   const description = archiveMetaDescription(entry);
-  const content = repairArchiveAlbumArtwork(removeFirstArchiveGraphic(entry.content, entry.pageGraphic), entry.path);
+  const content = sanitizeArchiveProse(repairArchiveAlbumArtwork(removeFirstArchiveGraphic(entry.content, entry.pageGraphic), entry.path));
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -1516,16 +1518,11 @@ function renderArchivePage(entry, data) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page">
-        ${entry.pageGraphic
-          ? renderPageGraphicTitle(entry.title, entry.pageGraphic)
-          : `<header class="archive-title">
-            <p>${escapeHtml(formatArchiveDate(entry.published))}</p>
-            <h1>${escapeHtml(entry.title)}</h1>
-            ${entry.categories.length ? `<div class="archive-tags">${entry.categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("")}</div>` : ""}
-          </header>`}
+        ${renderArchiveHeader(entry)}
         <div class="archive-content">
           ${content}
         </div>
+        ${renderArchiveOriginLink(entry, data)}
       </article>
     </main>
     ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } }, { stagelight: true })}
@@ -1534,11 +1531,86 @@ function renderArchivePage(entry, data) {
 `;
 }
 
-function renderPageGraphicTitle(title, filename) {
+// The legacy Blogger clip-art PNGs (crystal ball, guitar house, etc.) were
+// low-res raster art built for a white page. We retire them in favor of a
+// clean typographic title; the source files stay in the repo but aren't shown.
+function renderPageGraphicTitle(title) {
   return `<header class="page-graphic-title">
-    <img src="/assets/archive-media/${encodeURIComponent(filename)}" alt="" decoding="async">
     <h1>${escapeHtml(title)}</h1>
   </header>`;
+}
+
+// Strip the Blogger "Microsoft Word" inline formatting so imported prose
+// inherits the Stagelight type system. Lyric line breaks (<br>) are preserved;
+// only absurd 4+ runs are collapsed.
+function sanitizeArchiveProse(content) {
+  return String(content || "")
+    .replace(/\s*(?:text-align|font-family|font-size|line-height|letter-spacing|color|background(?:-color)?)\s*:\s*[^;"']*;?/gi, "")
+    .replace(/\s*style=(["'])\s*\1/gi, "")
+    .replace(/<span>\s*/gi, "")
+    .replace(/\s*<\/span>/gi, "")
+    .replace(/<o:p>\s*<\/o:p>/gi, "")
+    .replace(/(?:\s*<br\s*\/?>\s*){4,}/gi, "<br><br>")
+    .replace(/<div>\s*<\/div>/gi, "");
+}
+
+// Display-clean a Blogger post title: drop the "Widespread Panic" prefix and
+// trailing "Lyrics"/"Chords" noise for the H1 and breadcrumb.
+function cleanArchiveTitle(title) {
+  let value = clean(String(title || "").replace(/^widespread panic\s+/i, "")) || String(title || "");
+  // Blogger shouted some titles in all caps; title-case those for a pro feel.
+  if (value && value === value.toUpperCase() && /[A-Z]/.test(value)) {
+    const small = new Set(["a", "an", "and", "the", "of", "to", "in", "on", "for", "at", "by"]);
+    value = value.toLowerCase().replace(/[a-z0-9][a-z0-9'’]*/g, (word, index) =>
+      index !== 0 && small.has(word) ? word : word.charAt(0).toUpperCase() + word.slice(1)
+    );
+  }
+  return value;
+}
+
+function archiveSection(entry) {
+  const haystack = `${entry.title || ""} ${(entry.categories || []).join(" ")}`.toLowerCase();
+  if (/^\s*about\b/.test((entry.title || "").toLowerCase())) return { label: "About", href: "/about/" };
+  if (/lyric|chord/.test(haystack)) return { label: "Lyrics & Chords", href: "/lyrics-chords/" };
+  if (/tour in review|in review/.test(haystack)) return { label: "Tour In Review", href: "/tour-in-review/" };
+  if (/rumor/.test(haystack)) return { label: "Rumors", href: "/rumors/" };
+  if (/\bshelf\b|purgatory/.test(haystack)) return { label: "The Shelf", href: "/shelf/" };
+  return { label: "Archive", href: "/archive/" };
+}
+
+function renderArchiveHeader(entry) {
+  const section = archiveSection(entry);
+  const title = cleanArchiveTitle(entry.title);
+  const isLanding = section.label.toLowerCase() === title.toLowerCase();
+  const trail = [`<a href="/">Home</a>`];
+  if (!isLanding) trail.push(`<a href="${escapeAttr(section.href)}">${escapeHtml(section.label)}</a>`);
+  trail.push(`<span aria-current="page">${escapeHtml(title)}</span>`);
+  return `<header class="archive-title">
+    <nav class="crumbs" aria-label="Breadcrumb">${trail.join('<span class="crumb-sep" aria-hidden="true">›</span>')}</nav>
+    <h1>${escapeHtml(title)}</h1>
+    ${entry.categories && entry.categories.length ? `<div class="archive-tags">${entry.categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("")}</div>` : ""}
+  </header>`;
+}
+
+// If a lyrics/archive page resolves to a single catalog song that has a
+// researched Song Origin, link the two together at the foot of the page.
+function renderArchiveOriginLink(entry, data) {
+  const index = data?.originsByTitle;
+  if (!index || !index.size) return "";
+  const songName = cleanArchiveTitle(entry.title)
+    .replace(/\b(album\s+)?lyrics?\b/gi, "")
+    .replace(/\bchords?\b/gi, "")
+    .replace(/[|–—-]\s*burnthday.*$/i, "")
+    .trim();
+  const origin = index.get(normalizeTitle(songName));
+  if (!origin) return "";
+  return `<nav class="archive-crosslink" aria-label="Related">
+    <a href="/song-origins/${escapeAttr(origin.slug)}/">
+      <span class="xl-eyebrow">Song Origin</span>
+      <span class="xl-title">The story behind “${escapeHtml(origin.title)}”</span>
+      <span class="xl-go" aria-hidden="true">→</span>
+    </a>
+  </nav>`;
 }
 
 function removeFirstArchiveGraphic(content, filename) {
@@ -7218,12 +7290,21 @@ body.stagelight .archive-title h1 {
 }
 body.stagelight .archive-title { margin-bottom: 34px; border-bottom: 1px solid var(--sl-line); padding-bottom: 24px; }
 body.stagelight .archive-title p { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 12px; }
+/* breadcrumbs */
+body.stagelight .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+body.stagelight .crumbs a { color: var(--sl-faint); }
+body.stagelight .crumbs a:hover { color: var(--sl-ink); }
+body.stagelight .crumbs [aria-current="page"] { color: var(--sl-muted); }
+body.stagelight .crumb-sep { color: var(--sl-faint); opacity: 0.6; }
 body.stagelight .archive-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 body.stagelight .archive-tags span { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); border: 1px solid var(--sl-line-strong); border-radius: 999px; padding: 5px 12px; }
 
-/* imported Blogger prose */
-body.stagelight .archive-content { color: var(--sl-muted); font-size: 16.5px; line-height: 1.7; }
+/* imported Blogger prose — editorial, left-aligned, no Word-doc centering */
+body.stagelight .archive-content { color: var(--sl-muted); font-size: 16.5px; line-height: 1.7; text-align: left; }
+body.stagelight .archive-content [style*="text-align"], body.stagelight .archive-content [align] { text-align: left !important; }
+body.stagelight .archive-content div { text-align: left; }
 body.stagelight .archive-content p { margin: 0 0 18px; color: var(--sl-muted); }
+body.stagelight .archive-content b, body.stagelight .archive-content strong { color: var(--sl-ink); font-weight: 620; }
 body.stagelight .archive-content h2, body.stagelight .archive-content h3, body.stagelight .archive-content h4 { font-family: var(--sl-display); color: var(--sl-ink); letter-spacing: -0.01em; margin: 34px 0 14px; line-height: 1.15; }
 body.stagelight .archive-content h2 { font-size: 24px; }
 body.stagelight .archive-content h3 { font-size: 20px; }
@@ -7237,6 +7318,20 @@ body.stagelight .archive-content hr { border: 0; border-top: 1px solid var(--sl-
 body.stagelight .archive-content table { width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 14.5px; }
 body.stagelight .archive-content th, body.stagelight .archive-content td { border-bottom: 1px solid var(--sl-line); padding: 10px 12px; text-align: left; }
 body.stagelight .archive-content strong, body.stagelight .archive-content b { color: var(--sl-ink); }
+
+/* song-origin cross-link at the foot of a lyrics/archive page */
+body.stagelight .archive-crosslink { margin-top: 40px; }
+body.stagelight .archive-crosslink a {
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 16px;
+  padding: 22px 26px; border-radius: var(--sl-r); color: var(--sl-ink);
+  background: var(--sl-glass); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+body.stagelight .archive-crosslink a:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.22); }
+body.stagelight .xl-eyebrow { grid-column: 1; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .xl-title { grid-column: 1; font-family: var(--sl-display); font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+body.stagelight .xl-go { grid-column: 2; grid-row: 1 / span 2; font-size: 22px; color: var(--sl-faint); }
+body.stagelight .archive-crosslink a:hover .xl-go { color: var(--sl-ink); }
 
 /* archive + tour-review index lists */
 body.stagelight .archive-index .archive-title p { text-transform: none; font-family: var(--ui-font); font-size: 15px; letter-spacing: 0; color: var(--sl-muted); }
