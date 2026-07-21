@@ -72,3 +72,7 @@ Prototype: `design/prototypes/song-origin-page.html` (Postcard). Notable moves:
 ## Acknowledgments
 
 The file carries an `acknowledgments[]` field. Ethan Ice contributed the Relix (Oct/Nov 2003) "Southeast of Eden" scans that sourced the seven Ball-era origins (Fishing, Papa Johnny Road, Nebulous, Travelin' Man, Tortured Artist, Meeting of the Waters, Counting Train Cars). Surface a "special thanks" credit where these render.
+
+## Porch Songs (Mikey-era tour context)
+
+`data/source/porch-songs.json` (run `npm run import:porch-songs`) is the band's own "Porch Songs" archival-release series — 27 specific historic shows, mostly 1991–2002, 13 of them with real highlight notes ("first ever 'Bear's Gone Fishin'," "the very first 'Don't Tell the Band,' sit-ins by the Dickinson brothers…"). Each entry: title, volume, year, date (ISO where known), venue, `highlights`, `sourceUrl` (links back to the official band page), and a `listen` link (Relisten / archive.org). Use it to **decorate Tour-in-Review**, especially the sparse pre-2002 years: show the band's highlight note + a listen link, and cross-link to origins for songs that debuted that show. Curation + attribution, not republication — full text stays on the band's site.
