@@ -939,6 +939,11 @@
           "slug": "aunt-avis",
           "title": "Aunt Avis",
           "why": "Bombs & Butterflies"
+        },
+        {
+          "slug": "you-got-yours",
+          "title": "You Got Yours",
+          "why": "Bombs & Butterflies"
         }
       ]
     },
@@ -1215,13 +1220,13 @@
           "why": "The Colorado songs"
         },
         {
-          "slug": "blue-indian",
-          "title": "Blue Indian",
+          "slug": "airplane",
+          "title": "Airplane",
           "why": "Michael Houser"
         },
         {
-          "slug": "dream-song",
-          "title": "Dream Song",
+          "slug": "blue-indian",
+          "title": "Blue Indian",
           "why": "Michael Houser"
         }
       ]
@@ -1394,6 +1399,16 @@
       ],
       "related": [
         {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
           "slug": "dream-song",
           "title": "Dream Song",
           "why": "Michael Houser"
@@ -1401,16 +1416,6 @@
         {
           "slug": "driving-song",
           "title": "Driving Song",
-          "why": "Michael Houser"
-        },
-        {
-          "slug": "surprise-valley",
-          "title": "Surprise Valley",
-          "why": "Michael Houser"
-        },
-        {
-          "slug": "travelin-man",
-          "title": "Travelin' Man",
           "why": "Michael Houser"
         }
       ]
@@ -1668,6 +1673,11 @@
         {
           "slug": "tall-boy",
           "title": "Tall Boy",
+          "why": "Bombs & Butterflies"
+        },
+        {
+          "slug": "you-got-yours",
+          "title": "You Got Yours",
           "why": "Bombs & Butterflies"
         }
       ]
@@ -2667,23 +2677,23 @@
       ],
       "related": [
         {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
           "slug": "blue-indian",
           "title": "Blue Indian",
           "why": "Michael Houser"
         },
         {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
           "slug": "dream-song",
           "title": "Dream Song",
-          "why": "Michael Houser"
-        },
-        {
-          "slug": "driving-song",
-          "title": "Driving Song",
-          "why": "Michael Houser"
-        },
-        {
-          "slug": "surprise-valley",
-          "title": "Surprise Valley",
           "why": "Michael Houser"
         }
       ]
@@ -3189,23 +3199,23 @@
       ],
       "related": [
         {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
           "slug": "blue-indian",
           "title": "Blue Indian",
           "why": "Michael Houser"
         },
         {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
           "slug": "driving-song",
           "title": "Driving Song",
-          "why": "Michael Houser"
-        },
-        {
-          "slug": "surprise-valley",
-          "title": "Surprise Valley",
-          "why": "Michael Houser"
-        },
-        {
-          "slug": "travelin-man",
-          "title": "Travelin' Man",
           "why": "Michael Houser"
         }
       ]
@@ -4574,6 +4584,274 @@
           "why": "After Houser (the Ball era)"
         }
       ]
+    },
+    {
+      "title": "Burned Faceless",
+      "slug": "burned-faceless",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": null,
+      "firstPlayedDisplay": null,
+      "timesPlayed": null,
+      "summary": "“Burned Faceless” is an unreleased Michael Houser song, discussed in a 1997 interview but never a live staple.",
+      "quotes": [
+        {
+          "text": "Well, that’s a song that I wrote. I guess we didn’t play it on our last tour. We’re not really comfortable with it right now. We haven’t really found the heart of it yet. It may sit for a couple of years before we ever do anything about it. We write songs all the time. Most of them get to your ears, but some of them don’t. ‘Burned Faceless’ could have used a little more work on our part before we brought it forth. I think you’ll see it reappear, I just don’t know where. I like it; I wrote it.",
+          "speaker": "Michael Houser",
+          "speakerRole": "guitarist",
+          "source": "Interview by Todd A. Prusin, conducted 8/22/1997 (Relix, Oct/Nov 2003)",
+          "sourceDate": "1997-08-22",
+          "url": null
+        }
+      ],
+      "notes": "A Michael Houser composition the band shelved; not on any album and not a documented live song. One of the deep unreleased cuts Houser mentioned before his death in 2002.",
+      "sources": [
+        {
+          "label": "Michael Houser interview by Todd A. Prusin (conducted 8/22/1997), published posthumously in Relix, Oct/Nov 2003",
+          "publisher": "Relix",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Burned Faceless”?",
+          "a": "“Burned Faceless” was written by Michael Houser."
+        },
+        {
+          "q": "Is “Burned Faceless” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        }
+      ],
+      "related": [
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Michael Houser"
+        }
+      ]
+    },
+    {
+      "title": "You Got Yours",
+      "slug": "you-got-yours",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Bombs & Butterflies",
+          "year": 1997
+        }
+      ],
+      "firstPlayed": "1995-09-16",
+      "firstPlayedDisplay": "9/16/95",
+      "timesPlayed": 267,
+      "summary": "“You Got Yours” is a Michael Houser song, and one of the handful he sang lead on. It appears on Bombs & Butterflies (1997).",
+      "quotes": [
+        {
+          "text": "No. I never wanted to be a singer. One day I had a song... for a long time I’d write a song and give it to JB and say, ‘You sing it.’",
+          "speaker": "Michael Houser",
+          "speakerRole": "guitarist",
+          "source": "Interview by Todd A. Prusin, conducted 8/22/1997 (Relix, Oct/Nov 2003)",
+          "sourceDate": "1997-08-22",
+          "url": null
+        }
+      ],
+      "notes": "Among the few songs Michael Houser sang lead on (with “Ain’t Life Grand” and “Airplane”). On Bombs & Butterflies (1997).",
+      "sources": [
+        {
+          "label": "Michael Houser interview by Todd A. Prusin (conducted 8/22/1997), published posthumously in Relix, Oct/Nov 2003",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "Bombs & Butterflies",
+          "slug": "album-bombs-butterflies"
+        }
+      ],
+      "albumArt": "/assets/archive-media/bombs-and-butterflies-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “You Got Yours”?",
+          "a": "“You Got Yours” was written by Michael Houser."
+        },
+        {
+          "q": "Is “You Got Yours” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “You Got Yours” on?",
+          "a": "It appears on Bombs & Butterflies (1997)."
+        },
+        {
+          "q": "When did Widespread Panic first play “You Got Yours”?",
+          "a": "Its live debut was 9/16/95."
+        },
+        {
+          "q": "How many times has Widespread Panic played “You Got Yours”?",
+          "a": "About 267 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        }
+      ]
+    },
+    {
+      "title": "Airplane",
+      "slug": "airplane",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1994-03-02",
+      "firstPlayedDisplay": "3/2/94",
+      "timesPlayed": 358,
+      "summary": "“Airplane” is a Michael Houser song, and one of the few he sang lead on himself.",
+      "quotes": [],
+      "notes": "One of the handful of songs Michael Houser sang lead on rather than handing to John Bell (per his 1997 Relix interview). Debuted 3/2/94.",
+      "sources": [
+        {
+          "label": "Michael Houser interview by Todd A. Prusin (conducted 8/22/1997), published posthumously in Relix, Oct/Nov 2003",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Airplane”?",
+          "a": "“Airplane” was written by Michael Houser."
+        },
+        {
+          "q": "Is “Airplane” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Airplane”?",
+          "a": "Its live debut was 3/2/94."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Airplane”?",
+          "a": "About 358 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Michael Houser"
+        }
+      ]
     }
   ],
   "schema": {
@@ -4584,7 +4862,7 @@
   "acknowledgments": [
     {
       "name": "Ethan Ice",
-      "for": "providing scans of the Relix (Oct/Nov 2003) \"Southeast of Eden\" feature, which sourced the Ball-era song origins (Fishing, Papa Johnny Road, Nebulous, Travelin' Man, Tortured Artist, Meeting of the Waters, Counting Train Cars)"
+      "for": "providing scans of the Relix (Oct/Nov 2003) issue — the \"Southeast of Eden\" Ball feature and the posthumous 8/22/1997 Michael Houser interview — which sourced the Ball-era origins and the Houser songs (including the unreleased \"Burned Faceless\")"
     }
   ]
 }
