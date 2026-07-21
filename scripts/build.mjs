@@ -116,6 +116,7 @@ async function main() {
   await attachSetlistFmPerformances(siteData);
   siteData.ecLinksByKey = await loadEcLinks();
   siteData.lyricsResourceByKey = buildLyricsResourceIndex(archiveEntries);
+  attachBestGuesses(siteData, await loadBestGuesses());
   await writeSongPages(siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   const tourInReviews = await writeTourInReviewPages(siteData, archiveEntries);
@@ -2532,8 +2533,9 @@ function renderSongsIndex(data, slugMap) {
   const covers = catalog.length - originals;
   const rows = catalog.map((song) => {
     const rarity = calculateRarity(song);
+    const hasBestGuess = data.bestGuessByKey?.has(song.key);
     return `<a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}">
-      <span class="sr-title">${escapeHtml(song.title)}</span>
+      <span class="sr-title">${escapeHtml(song.title)}${hasBestGuess ? '<span class="sr-bestguess">Best Guess</span>' : ""}</span>
       <span class="sr-type">${escapeHtml(song.type)}</span>
       <span class="sr-tier">${song.playedThisTour ? '<span class="sr-onsheet">this tour</span>' : ""}${escapeHtml(rarity.label)}</span>
       <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
@@ -2616,6 +2618,119 @@ async function loadEcLinks() {
   }
 }
 
+// Alex's "Best Guess" lyric transcriptions + interpretations, one markdown file
+// per song in data/source/best-guess/. Each file is frontmatter (song, published,
+// source, note) then a "## Best guess…" lyric section and a "## Notes" commentary
+// section. We render his words verbatim — no paraphrasing, no summarizing — only
+// the minimal markdown he uses: blank-line-separated blocks, **bold**, and (in the
+// lyric section) preserved line breaks so the stanza shape survives.
+async function loadBestGuesses() {
+  const dir = path.join(root, "data", "source", "best-guess");
+  let files = [];
+  try {
+    files = (await readdir(dir)).filter((file) => file.endsWith(".md"));
+  } catch {
+    return [];
+  }
+  const entries = [];
+  for (const file of files.sort()) {
+    let raw;
+    try {
+      raw = await readFile(path.join(dir, file), "utf8");
+    } catch {
+      continue;
+    }
+    const parsed = parseBestGuess(raw, file);
+    if (parsed) entries.push(parsed);
+  }
+  return entries;
+}
+
+function parseBestGuess(raw, file) {
+  const fm = raw.match(/^﻿?---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!fm) {
+    console.warn(`Best Guess: ${file} has no frontmatter; skipping.`);
+    return null;
+  }
+  const front = {};
+  for (const line of fm[1].split(/\r?\n/)) {
+    const idx = line.indexOf(":");
+    if (idx === -1) continue;
+    const key = line.slice(0, idx).trim();
+    if (key) front[key] = line.slice(idx + 1).trim();
+  }
+  const body = fm[2];
+  const heads = [];
+  const headRe = /^##\s+(.+?)\s*$/gm;
+  let match;
+  while ((match = headRe.exec(body))) {
+    heads.push({ title: match[1].trim(), contentStart: headRe.lastIndex, headStart: match.index });
+  }
+  const sections = {};
+  for (let i = 0; i < heads.length; i++) {
+    const end = i + 1 < heads.length ? heads[i + 1].headStart : body.length;
+    sections[heads[i].title] = body.slice(heads[i].contentStart, end).trim();
+  }
+  const bestKey = Object.keys(sections).find((k) => /best\s*guess/i.test(k));
+  const notesKey = Object.keys(sections).find((k) => /notes/i.test(k));
+  return {
+    song: front.song || "",
+    published: front.published || "",
+    source: front.source || "",
+    note: front.note || "",
+    key: normalizeTitle(front.song || ""),
+    transcriptionHtml: bestKey ? renderBestGuessBlocks(sections[bestKey], "stanza") : "",
+    notesHtml: notesKey ? renderBestGuessBlocks(sections[notesKey], "para") : "",
+    file
+  };
+}
+
+// Render blank-line-separated blocks. In "stanza" mode each source line becomes a
+// <br>-separated line so the lyric shape is preserved; in "para" mode wrapped lines
+// are joined into flowing prose. Text is HTML-escaped first, then **bold** applied
+// (the escape leaves ** untouched), so bold can span a preserved line break.
+function renderBestGuessBlocks(text, mode) {
+  const joiner = mode === "stanza" ? "<br>" : " ";
+  const cls = mode === "stanza" ? "bg-stanza" : "bg-para";
+  return String(text || "")
+    .split(/\r?\n[ \t]*\r?\n/)
+    .map((block) => block.replace(/^\s+|\s+$/g, ""))
+    .filter(Boolean)
+    .map((block) => {
+      const inner = block
+        .split(/\r?\n/)
+        .map((line) => escapeHtml(line.trim()))
+        .join(joiner);
+      return `<p class="${cls}">${applyBestGuessBold(inner)}</p>`;
+    })
+    .join("\n");
+}
+
+function applyBestGuessBold(text) {
+  return text.replace(/\*\*([\s\S]+?)\*\*/g, "<strong>$1</strong>");
+}
+
+// Build the catalog-key -> Best Guess map, warning (and skipping) any file that
+// does not match a catalog song so a transcription is never attached to the wrong
+// song.
+function attachBestGuesses(data, entries) {
+  const catalogKeys = new Set((data.catalog || []).map((song) => song.key || normalizeTitle(song.title)));
+  const byKey = new Map();
+  for (const entry of entries) {
+    if (!entry.key) {
+      console.warn(`Best Guess: ${entry.file} has no song title in frontmatter; skipping.`);
+      continue;
+    }
+    if (!catalogKeys.has(entry.key)) {
+      console.warn(`Best Guess: no catalog match for "${entry.song}" (${entry.file}); skipping.`);
+      continue;
+    }
+    byKey.set(entry.key, entry);
+  }
+  data.bestGuessByKey = byKey;
+  return byKey;
+}
+
 // Map catalog song key -> internal Burnthday lyrics page path, for the song
 // "Learn It" block. A match exists only when the archive has a lyrics page whose
 // own title IS this song (so the page's HTML necessarily contains the title).
@@ -2688,10 +2803,15 @@ function renderSongPage(song, data, albums, slugMap) {
   ];
   if (song.nickCount > 0) tiles.push(tile(formatNumber(song.nickCount), "plays with Nick", "current era"));
 
-  const description = `${song.title} — ${song.type.toLowerCase()} with ${formatNumber(song.total || 0)} live plays, first played ${song.first}, last ${song.lastDisplay}. Full Widespread Panic history from Burnthday.`;
+  const bestGuess = data.bestGuessByKey?.get(song.key) || null;
+  const description = bestGuess
+    ? `Best Guess lyric transcription and interpretation of ${song.title}, plus its full Widespread Panic live history — total plays, first and last — from Burnthday.`
+    : `${song.title} — ${song.type.toLowerCase()} with ${formatNumber(song.total || 0)} live plays, first played ${song.first}, last ${song.lastDisplay}. Full Widespread Panic history from Burnthday.`;
   const titleSuffix = " | Burnthday";
-  let pageTitle = `${song.title} — Live History${titleSuffix}`;
-  if (pageTitle.length > 70) pageTitle = `${song.title}${titleSuffix}`;
+  const titleCandidates = bestGuess
+    ? [`${song.title} — Lyrics (Best Guess) & Live History`, `${song.title} — Lyrics (Best Guess)`, `${song.title} — Live History`, song.title]
+    : [`${song.title} — Live History`, song.title];
+  let pageTitle = `${titleCandidates.find((c) => (c + titleSuffix).length <= 70) ?? song.title}${titleSuffix}`;
   if (pageTitle.length > 70) pageTitle = `${song.title.slice(0, 70 - titleSuffix.length - 1).trimEnd()}…${titleSuffix}`;
 
   return `<!doctype html>
@@ -2733,6 +2853,7 @@ function renderSongPage(song, data, albums, slugMap) {
         <h2>Appears on</h2>
         <div class="song-album-chips">${onAlbums.map((a) => `<a href="/albums/${escapeAttr(a.slug)}/">${escapeHtml(a.title)}<small>${escapeHtml(albumYear(a))}</small></a>`).join("")}</div>
       </section>` : ""}
+      ${renderSongBestGuess(song, data)}
       ${origin ? `<nav class="archive-crosslink" aria-label="Related">
         <a href="/song-origins/${escapeAttr(origin.slug)}/"><span class="xl-eyebrow">Song Origin</span><span class="xl-title">The story behind “${escapeHtml(origin.title)}”</span><span class="xl-go" aria-hidden="true">→</span></a>
       </nav>` : ""}
@@ -2743,6 +2864,27 @@ function renderSongPage(song, data, albums, slugMap) {
   </body>
 </html>
 `;
+}
+
+// Alex's "Best Guess" lyric transcription + interpretation, rendered as a distinct
+// editorial section between the album chips and the performance log. His voice
+// appears ONLY in his verbatim words — the eyebrow, byline, dates and source line
+// are neutral UI chrome; nothing is written in his style.
+function renderSongBestGuess(song, data) {
+  const entry = data.bestGuessByKey?.get(song.key);
+  if (!entry) return "";
+  const dateLong = entry.published ? formatLongDate(entry.published) : "";
+  const byline = `Burnthday${dateLong ? ` · ${escapeHtml(dateLong)}` : ""}`;
+  return `<section class="song-bestguess" aria-labelledby="song-bg-h">
+        <p class="bg-eyebrow" id="song-bg-h">BEST GUESS</p>
+        <p class="bg-byline">${byline}</p>
+        ${entry.note ? `<p class="bg-note">${escapeHtml(entry.note)}</p>` : ""}
+        <div class="bg-card">
+          ${entry.transcriptionHtml ? `<div class="bg-lyrics">${entry.transcriptionHtml}</div>` : ""}
+          ${entry.notesHtml ? `<div class="bg-notes"><h3 class="bg-notes-label">Notes</h3>${entry.notesHtml}</div>` : ""}
+        </div>
+        ${entry.source ? `<p class="bg-source"><a href="${escapeAttr(entry.source)}" target="_blank" rel="noopener noreferrer">Originally posted on X <span aria-hidden="true">↗</span></a></p>` : ""}
+      </section>`;
 }
 
 // "Every performance" log from the setlist.fm cache. Empty (section omitted)
@@ -8583,6 +8725,7 @@ body.stagelight .sr-title { font-family: var(--sl-display); font-size: 15px; fon
 body.stagelight .sr-type { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .sr-tier { display: flex; align-items: center; gap: 8px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .sr-onsheet { font-size: 12px; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid rgba(212,81,79,0.5); color: var(--sl-ink); }
+body.stagelight .sr-title .sr-bestguess { margin-left: 9px; font-family: var(--sl-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); vertical-align: middle; }
 body.stagelight .sr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); }
 body.stagelight .sr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
 body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(--sl-faint); font-size: 15px; }
@@ -8655,6 +8798,27 @@ body.stagelight .song-learn-chips a:hover { border-color: var(--sl-line-strong);
 body.stagelight .song-learn-chips a small { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
 body.stagelight .song-learn-chips .learn-go { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); align-self: center; }
 body.stagelight .song-learn-chips .learn-ext:hover .learn-go { color: var(--sl-ink); }
+/* "Best Guess" — Alex's verbatim lyric transcription + interpretation, editorial */
+body.stagelight .song-bestguess { margin: 0 0 34px; }
+body.stagelight .bg-eyebrow { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 8px; }
+body.stagelight .bg-byline { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-muted); margin: 0 0 6px; }
+body.stagelight .bg-note { font-size: 13.5px; line-height: 1.6; color: var(--sl-faint); margin: 0 0 16px; max-width: 62ch; }
+body.stagelight .bg-card {
+  padding: 34px 36px; border-radius: var(--sl-r);
+  background: var(--sl-glass); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+}
+body.stagelight .bg-lyrics { font-family: "Geist", system-ui, sans-serif; font-size: 17px; line-height: 1.7; color: var(--sl-ink); }
+body.stagelight .bg-stanza { margin: 0 0 20px; }
+body.stagelight .bg-stanza:last-child { margin-bottom: 0; }
+body.stagelight .bg-notes { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--sl-line); }
+body.stagelight .bg-notes-label { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 14px; }
+body.stagelight .bg-para { font-family: "Geist", system-ui, sans-serif; font-size: 15px; line-height: 1.7; color: var(--sl-muted); margin: 0 0 14px; }
+body.stagelight .bg-para:last-child { margin-bottom: 0; }
+body.stagelight .bg-notes strong, body.stagelight .bg-lyrics strong { color: var(--sl-ink); font-weight: 640; }
+body.stagelight .bg-source { margin: 16px 0 0; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.03em; color: var(--sl-faint); }
+body.stagelight .bg-source a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
+body.stagelight .bg-source a:hover { color: var(--sl-ink); }
+@media (max-width: 640px) { body.stagelight .bg-card { padding: 24px 22px; } }
 /* 404 — lost at the show */
 body.stagelight .nf-main { max-width: 620px; text-align: center; padding: 40px 0 60px; }
 body.stagelight .nf-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 14px; }
@@ -9119,6 +9283,11 @@ function rowBelongsToYear(row, year) {
 const NORMALIZED_TITLE_ALIASES = {
   bowleggedwomanknockkneedman: "bowleggedwoman",
   conradthecaterpillar: "conrad",
+  // Alex titles his Best Guess file "Cosmic Confidant"; the catalog spells it
+  // "Cosmic Confidante" (verified against catalog.csv / albums.json). Alias his
+  // spelling to the catalog key so the transcription attaches — his file is left
+  // exactly as written.
+  cosmicconfidant: "cosmicconfidante",
   fixintodieblues: "fixintodie",
   goodmorningschoolgirl: "goodmorninglittleschoolgirl",
   heroesdavidbowie: "heroesdb",

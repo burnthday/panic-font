@@ -32,6 +32,7 @@ async function main() {
   checkNavigation(homeHtml, siteData);
   await checkSongPages(siteData);
   await checkSongLearnBlock(siteData);
+  await checkBestGuessSection(siteData);
   await checkLegacyPages(siteData);
   await checkTourInReviewPages();
   await checkLocalAssets(allHtml);
@@ -735,6 +736,39 @@ function cardHtml(html, heading) {
   const rowStart = html.lastIndexOf('<details class="setlist-row"', dateIndex);
   const rowEnd = html.indexOf("</details>", dateIndex);
   return rowStart >= 0 && rowEnd > rowStart ? html.slice(rowStart, rowEnd + "</details>".length) : "";
+}
+
+// Alex's "Best Guess" lyric transcriptions: the two songs that have a markdown
+// file carry the section (with his verbatim words intact and correctly placed),
+// a song without a file has none, and the songs index badges the ones that do.
+async function checkBestGuessSection(siteData) {
+  const wweoh = await readText("dist/song/we-walk-each-other-home/index.html").catch(() => "");
+  const cosmic = await readText("dist/song/cosmic-confidante/index.html").catch(() => "");
+  const chilly = await readText("dist/song/chilly-water/index.html").catch(() => "");
+  const index = await readText("dist/songs/index.html").catch(() => "");
+
+  record("We Walk Each Other Home carries the BEST GUESS section", wweoh.includes('class="song-bestguess"') && wweoh.includes(">BEST GUESS<"));
+  record("Cosmic Confidante carries the BEST GUESS section", cosmic.includes('class="song-bestguess"') && cosmic.includes(">BEST GUESS<"));
+
+  // Verbatim words must survive exactly — the preserved EDIT correction and a
+  // distinctive lyric line from each transcription.
+  record("We Walk Each Other Home keeps the verbatim EDIT correction", wweoh.includes("EDIT: This song is NOT a eulogy"));
+  record("We Walk Each Other Home keeps the 'Sticks and bones' lyric", wweoh.includes("Sticks and bones"));
+  record("Cosmic Confidante keeps the 'Cosmic confidant' lyric", cosmic.includes("Cosmic confidant"));
+
+  // Placement: the section sits after the album chips and before the performance log.
+  const bgIdx = indexOf(wweoh, 'class="song-bestguess"');
+  const albumsIdx = indexOf(wweoh, "Appears on");
+  const perfIdx = indexOf(wweoh, "Every performance");
+  record("BEST GUESS sits after album chips and before the performance log",
+    bgIdx >= 0 && (albumsIdx < 0 || albumsIdx < bgIdx) && (perfIdx < 0 || bgIdx < perfIdx),
+    `albums=${albumsIdx} bestguess=${bgIdx} perf=${perfIdx}`);
+
+  // A song without a Best Guess file must not sprout a section.
+  record("A song without a Best Guess file has no section", chilly.length > 0 && !chilly.includes('class="song-bestguess"'));
+
+  // The songs index badges rows that have a transcription.
+  record("Songs index shows the Best Guess badge", index.includes('class="sr-bestguess"'));
 }
 
 function sectionByClass(html, className) {
