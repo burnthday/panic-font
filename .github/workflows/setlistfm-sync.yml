@@ -47,7 +47,7 @@ jobs:
           SETLISTFM_API_KEY: ${{ secrets.SETLISTFM_API_KEY }}
 
       - name: Pull setlists from setlist.fm
-        run: npm run import:setlistfm
+        run: npm run import:setlistfm -- --mbid 3797a6d0-7700-44bf-96fb-f44386bc9ab2
         env:
           SETLISTFM_API_KEY: ${{ secrets.SETLISTFM_API_KEY }}
 
