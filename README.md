@@ -150,11 +150,17 @@ npm run import:newsletters
 
 ## Curated Song Origins
 
-`data/source/song-origins-curated.json` holds hand-authored song origins written in **Burnthday's own voice** — facts mined from the fan newsletters, band interviews (via the Panicle blog, JamBase, American Songwriter, Glide, etc.), and the definitive [everydaycompanion.com](https://www.everydaycompanion.com/) song database, then paraphrased into original prose with every claim sourced. This is facts-into-original-prose, not republication.
+`data/source/song-origins-curated.json` holds 41 net-new song origins compiled from the fan newsletters, band interviews (the Panicle blog, JamBase, American Songwriter, Glide, the Spreadnet interview archive, a Colorado Music Hall of Fame speech), and the definitive [everydaycompanion.com](https://www.everydaycompanion.com/) song database. Burnthday is the **compiler**, not a narrator: entries lead with the source's own words, attributed, and never a ghostwritten voice-over. Every claim is sourced.
 
-It is a **net-new supplement** to the Facebook-sourced `song-origins.json`: each entry is `mode: "new"` and cross-checked so it does not duplicate any of the existing 40 origins. Entries carry `title`, `slug`, `type` (Original/Cover), `firstPlayed`, `writtenBy`, `album`, Burnthday-voice `text`, a `sources[]` array (label/publisher/url) and a primary `sourceUrl`. Songs researched but left out (no sourced story beyond a debut date — e.g. Weight Of The World, Blackout Blues, Airplane, Vacation) are deliberately omitted under evidence discipline rather than filled with guesswork.
+It is a **net-new supplement** to the Facebook-sourced `song-origins.json`, cross-checked so it duplicates none of the existing 40. The data is **structured for SEO** so the build can emit schema.org JSON-LD (`MusicComposition` + `Quotation` + `FAQPage`) rather than a prose blob. Each entry carries:
 
-**Wiring (pending, post-final-push):** these render once the build merges them. The merge point is `loadSongOrigins()` in `scripts/build.mjs` (append the curated `mode: "new"` entries), plus a small `renderSongOriginPage()` change to show the `sources[]` attribution instead of the hardcoded "Original Facebook post" link. Kept separate here to avoid colliding with in-flight build changes on the working branch.
+- **Facts as fields:** `type`, `isCover`, `composer`, `originalArtist`, `performedBy`, `aliases[]`, `albums[{name, year}]`, `firstPlayed` (ISO) + `firstPlayedDisplay`, `timesPlayed`, and a plain-language `summary` (meta description).
+- **`quotes[]`** as objects — `{text, speaker, speakerRole, source, sourceDate, url}` — so attribution is structured and linkable.
+- **`sources[]`** (`label`/`publisher`/`url`) and a **`sameAs[]`** authority list (EC, JamBase, American Songwriter, Wikipedia, etc.) per song.
+
+22 of the 41 lead with a verbatim attributed quote; the other 19 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Songs researched but left out (no sourced story beyond a debut date, e.g. Weight Of The World, Blackout Blues, Airplane) are deliberately omitted under evidence discipline. No em dashes, by request.
+
+**Wiring (pending, post-final-push):** these render once the build merges them. The merge point is `loadSongOrigins()` in `scripts/build.mjs` (append the curated entries), plus a `renderSongOriginPage()` pass that renders from the structured fields (quotes as attributed blockquotes with source links) **and** emits the schema.org JSON-LD. Kept separate here to avoid colliding with in-flight build changes on the working branch.
 
 ## Live Google Sheets Automation
 
