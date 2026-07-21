@@ -1318,6 +1318,10 @@ const ABOUT_FAQ = [
     a: "Burnthday is an independent Widespread Panic fan site, running since June 2007. It tracks the working song list, setlists, tour stats, albums, lyrics, and song origins. It is not affiliated with the band."
   },
   {
+    q: "Why is it called Burnthday?",
+    a: "The name comes from Alex's mom. His sister went to UGA in 1997 and sent him home with Widespread Panic tapes. A blown-out knee from lacrosse turned that into an obsession: a CD burner, traded shows, and hours under headphones. One day his mom pulled the headphones off and said, “Don't burn the day away. Get outside and go have fun.” It stuck."
+  },
+  {
     q: "How does the Widespread Panic song rotation work?",
     a: "Widespread Panic rarely repeats a song within a run of shows. After each show, Burnthday crosses off every song played in the last four shows. What is left uncrossed is the pool the band is most likely drawing from tonight. That cross-off sheet is the heart of the site."
   },
