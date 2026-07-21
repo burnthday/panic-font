@@ -2473,17 +2473,16 @@ function renderShelfWatch(data) {
     <h2>SHELF WATCH</h2>
     <span>songs nearing the ${escapeHtml(String(cutoff))}-show cutoff</span>
   </div>
-  <div class="data-table-wrap shelf-watch-table-wrap"><table class="data-table shelf-watch-table">
-    <thead><tr><th>Song</th><th>Last played</th><th>SLP</th><th>To Shelf</th></tr></thead>
-    <tbody>${songs.map((song) => {
+  <div class="shelf-grid">${songs.map((song) => {
     const remaining = Math.max(0, cutoff - song.effectiveSlp);
-    const progress = Math.min(100, Math.round((song.effectiveSlp / cutoff) * 100));
-    return `<tr data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}">
-      <th scope="row">${escapeHtml(song.title)}</th><td>${escapeHtml(song.lastDisplay)}</td>
-      <td><strong>${formatNumber(song.effectiveSlp)}</strong><span class="slp-progress" aria-hidden="true"><i style="width:${progress}%"></i></span></td>
-      <td><strong>${formatNumber(remaining)}</strong></td>
-    </tr>`;
-  }).join("")}</tbody></table></div>
+    const heat = remaining <= 5 ? "heat-hot" : remaining <= 12 ? "heat-warm" : "heat-cool";
+    return `<div class="shelf-card ${heat}" data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}">
+      <p class="n">${formatNumber(remaining)}</p><p class="to">to The Shelf</p>
+      <p class="song">${escapeHtml(song.title)}</p>
+      <p class="slp">SLP ${formatNumber(song.effectiveSlp)} · LAST ${escapeHtml(song.lastDisplay)}</p>
+    </div>`;
+  }).join("")}</div>
+  <p class="shelf-note">SLP — shows since last play. At ${escapeHtml(String(cutoff))}, a song goes to The Shelf.</p>
 </section>`;
 }
 
@@ -6459,6 +6458,38 @@ body.stagelight .live-dot { width: 7px; height: 7px; border-radius: 50%; backgro
   body.stagelight .ns-meta { margin-left: 0; width: 100%; justify-content: space-between; }
   body.stagelight .sc-mini-pulls { margin-left: 0; width: 100%; }
 }
+
+/* ---- SHELF WATCH HEAT CARDS ---- */
+body.stagelight .shelf-watch { background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+body.stagelight .shelf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+body.stagelight .shelf-card {
+  padding: 24px; position: relative; border-radius: var(--sl-r);
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+  transition: transform 0.18s ease;
+}
+body.stagelight .shelf-card:hover { transform: translateY(-2px); }
+body.stagelight .shelf-card .n { font-family: var(--sl-mono); font-size: 34px; font-weight: 640; line-height: 1; font-variant-numeric: tabular-nums; margin: 0; }
+body.stagelight .shelf-card .to { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--sl-faint); text-transform: uppercase; margin: 7px 0 0; }
+body.stagelight .shelf-card .song { font-size: 17px; font-weight: 580; margin: 16px 0 0; line-height: 1.35; }
+body.stagelight .shelf-card .slp { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--sl-muted); margin: 6px 0 0; }
+body.stagelight .heat-hot { border-color: rgba(212,81,79,0.42); box-shadow: var(--sl-glass-shadow), 0 0 56px -6px rgba(212,81,79,0.35), inset 0 1px 0 rgba(255,177,175,0.16); }
+body.stagelight .heat-hot .n { color: #ef9390; text-shadow: 0 0 24px rgba(212,81,79,0.65); }
+body.stagelight .heat-warm { border-color: rgba(212,81,79,0.2); box-shadow: var(--sl-glass-shadow), 0 0 40px -8px rgba(212,81,79,0.16); }
+body.stagelight .heat-warm .n { color: #e5b3b1; }
+body.stagelight .shelf-note { font-size: 13px; color: var(--sl-faint); margin-top: 18px; }
+@media (max-width: 900px) { body.stagelight .shelf-grid { grid-template-columns: 1fr; } }
+
+/* ---- PAGE TITLE + TRAIL: quiet overline, not a masthead ---- */
+body.stagelight main > h1 {
+  font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.22em;
+  color: var(--sl-faint); text-transform: uppercase; font-weight: 500;
+  margin: 34px 0 0;
+}
+body.stagelight .home-trail { margin-top: 6px; }
+body.stagelight .home-trail a { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; text-decoration: none; text-transform: uppercase; }
+body.stagelight .ticket-link { text-decoration: none; }
 
 /* ---- THE PAPER SHEETS: keep white, add the spotlight case ---- */
 /* the sheets are paper artifacts — undo the dark-page text/heading cascade */

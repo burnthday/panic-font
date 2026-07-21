@@ -203,11 +203,11 @@ function checkShelfWatch(html, siteData) {
   for (const song of expected) {
     const remaining = cutoff - song.effectiveSlp;
     assertIncludes(feature, `data-song-title="${escapeAttribute(song.title)}" data-slp="${song.effectiveSlp}"`, `Shelf Watch includes ${song.title} at ${song.effectiveSlp} SLP`);
-    assertIncludes(feature, `<td>${song.lastDisplay}</td>`, `Shelf Watch gives ${song.title}'s last-played date`);
+    assertIncludes(feature, `LAST ${song.lastDisplay}`, `Shelf Watch gives ${song.title}'s last-played date`);
     const rowStart = feature.indexOf(`data-song-title="${escapeAttribute(song.title)}"`);
-    const rowEnd = feature.indexOf("</tr>", rowStart);
+    const rowEnd = (() => { const next = feature.indexOf('<div class="shelf-card', rowStart + 1); return next >= 0 ? next : feature.length; })();
     const row = rowStart >= 0 && rowEnd > rowStart ? feature.slice(rowStart, rowEnd) : "";
-    assertIncludes(row, `<td><strong>${remaining}</strong></td>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
+    assertIncludes(row, `<p class="n">${remaining}</p>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
   }
 }
 
