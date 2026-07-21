@@ -1430,6 +1430,7 @@ function renderAboutPage(entry, data, cache) {
     ["Daniel Hutchens", "Worked the premiere solo record."],
     ["Trondossa Music Festival", "Digital marketing for the band's own festival in Charleston, SC, produced with Live Nation."],
     ["Band of Heathens", "Concepted and produced a music video People premiered. The band's public credit: “A special shoutout goes to Alex Moura for conceptualizing and putting it together so beautifully.”"],
+    ["PanicStream Compilations", "Curated live Widespread Panic compilations for the fan streaming vault, back in its day."],
     ["Jimmy Herring Has a Posse", "Yes, those shirts. Alex made them."]
   ];
   const creditCards = credits.map(([who, what]) => `<div class="about-credit">
