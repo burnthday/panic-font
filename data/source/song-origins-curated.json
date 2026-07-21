@@ -13,7 +13,7 @@
       "type": "Cover",
       "writtenBy": "Jerry Joseph",
       "firstPlayed": "9/25/99",
-      "text": "Not a Panic original — “North” belongs to Jerry Joseph, the songwriter Panic has leaned on for some of its darker, sharper material (most famously “Climb to Safety”). Joseph has said the song came together on the move: a lot of it was written in Nicaragua, in a stretch when he was bouncing between Southern California and Central America. What it aches for is an idealized version of the Pacific Northwest — the kind of longing, he admits, that burns out about three rainy days after you actually get there. He remembers working some of the lines out with his friend, the actor Woody Harrelson, around the mid-'90s. Widespread first worked it into the rotation on 9/25/99.",
+      "text": "Not a Panic original — “North” belongs to Jerry Joseph, the songwriter Panic has leaned on for some of its darker, sharper material (most famously “Climb to Safety”). Joseph has said the song came together on the move: a lot of it was written in Nicaragua, in a stretch when he was bouncing between Southern California and Central America. What it aches for is an idealized version of the Pacific Northwest — the kind of longing, he admits, that burns out about three rainy days after you actually get there. He remembers working some of the lines out with his friend, the actor Woody Harrelson, around the mid-'90s. Widespread first worked it into the rotation on 9/25/99. Jerry Joseph wrote it long before Panic adopted it — JB reckons around the time they first met Joseph, roughly the mid-'90s — and it finally got a studio home as one of two covers on Dirty Side Down (2010). Warren Haynes has sat in on it live (Wanee, 2010).",
       "sources": [
         {
           "label": "Jerry Joseph, “Passion and Pain” interview (Part I)",
@@ -22,6 +22,11 @@
         {
           "label": "First-played date",
           "publisher": "Everyday Companion / Burnthday catalog"
+        },
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
         }
       ],
       "order": 1,
@@ -806,6 +811,78 @@
       "order": 37,
       "image": "",
       "sourceUrl": ""
+    },
+    {
+      "title": "Cotton Was King",
+      "slug": "cotton-was-king",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "5/5/10",
+      "album": "Dirty Side Down (2010)",
+      "text": "Panic's send-off to Dirty Side Down, and JB's tribute to New Orleans — past, present, and future. He's framed the city as a kind of inevitability: a geographic hot spot that was always going to happen no matter what. The lyric even borrows a phrase, “before the beginning,” that JB cops — full disclosure, his words — from the Firesign Theatre. First played 5/5/10.",
+      "sources": [
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 38,
+      "image": "",
+      "sourceUrl": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+    },
+    {
+      "title": "St. Louis",
+      "slug": "st-louis",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "10/19/07",
+      "album": "Dirty Side Down (2010)",
+      "text": "A short instrumental the band had been using live as a transition piece before it firmed up in the studio — built around a free, airy jam in the middle. On Dirty Side Down it pulls double duty as a long, elaborate intro leading into “Shut Up and Drive.” One of the instrumental pieces from the Jimmy Herring era, when his intricate, odd-metered ideas were working their way into Panic's writing. First played 10/19/07.",
+      "sources": [
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 39,
+      "image": "",
+      "sourceUrl": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+    },
+    {
+      "title": "Shut Up And Drive",
+      "slug": "shut-up-and-drive",
+      "type": "Original",
+      "writtenBy": "Widespread Panic",
+      "firstPlayed": "5/8/10",
+      "album": "Dirty Side Down (2010)",
+      "text": "Exactly what the title promises — a road tune, and, as JB put it, that's what it was meant for. On Dirty Side Down it arrives paired with the instrumental “St. Louis,” which the band tacked onto the front as a long intro; together they mark the natural seam between the album's two sides. First played 5/8/10.",
+      "sources": [
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog"
+        }
+      ],
+      "mode": "new",
+      "order": 40,
+      "image": "",
+      "sourceUrl": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
     }
   ]
 }
