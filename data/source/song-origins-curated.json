@@ -1,5 +1,5 @@
 {
-  "description": "Hand-curated Widespread Panic song origins written in Burnthday's own voice — facts extracted from fan newsletters (Moon Times / The Panicle), band interviews, and the web, then paraphrased into original prose with sources cited. This is facts-into-original-prose, NOT republication. It is a supplement to the Facebook-sourced song-origins.json: entries with mode 'new' are songs not yet in that set; mode 'augment' entries add or correct facts on an existing origin without duplicating what is already there. The build merges these by slug.",
+  "description": "Hand-curated Widespread Panic song origins written in Burnthday's own voice, facts extracted from fan newsletters (Moon Times / The Panicle), band interviews, and the web, then paraphrased into original prose with sources cited. This is facts-into-original-prose, NOT republication. It is a supplement to the Facebook-sourced song-origins.json: entries with mode 'new' are songs not yet in that set; mode 'augment' entries add or correct facts on an existing origin without duplicating what is already there. The build merges these by slug.",
   "conventions": {
     "mode": "'new' = a song not in song-origins.json; 'augment' = adds/corrects facts on an existing entry",
     "sources": "Every factual claim is traceable to a listed source. Unverifiable claims are omitted (evidence discipline).",
@@ -9,19 +9,51 @@
     {
       "title": "North",
       "slug": "north",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Jerry Joseph",
-      "firstPlayed": "9/25/99",
-      "text": "“The song was written by Jerry Joseph a long time ago, probably when we first met him, around 16 years ago.”\n—John Bell, jambands.com, 4/30/2010\n\n“A lot of that I wrote in Nicaragua... I still had this kinda idealic vision of the Northwest. [laughing] Burns out really quickly. As soon as you're there for three days in the rain you're like, ‘what the fuck was I thinking.’”\n—Jerry Joseph, “Passion and Pain” interview\n\n# of times played: 287 First time played: 9/25/99\nNotes: A Jerry Joseph cover; one of two covers on Dirty Side Down (2010). Warren Haynes sat in on it at Wanee, 2010.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Jerry Joseph",
+      "originalArtist": "Jerry Joseph",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "1999-09-25",
+      "firstPlayedDisplay": "9/25/99",
+      "timesPlayed": 287,
+      "summary": "“North” is a song by Jerry Joseph, covered by Widespread Panic. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "The song was written by Jerry Joseph a long time ago, probably when we first met him, around 16 years ago.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "text": "A lot of that I wrote in Nicaragua... I still had this kinda idealic vision of the Northwest. [laughing] Burns out really quickly. As soon as you're there for three days in the rain you're like, ‘what the fuck was I thinking.’",
+          "speaker": "Jerry Joseph",
+          "speakerRole": "songwriter",
+          "source": "“Passion and Pain” interview",
+          "sourceDate": null,
+          "url": null
+        }
+      ],
+      "notes": "A Jerry Joseph cover; one of two covers on Dirty Side Down (2010). Warren Haynes sat in on it at Wanee, 2010.",
       "sources": [
         {
           "label": "Jerry Joseph, “Passion and Pain” interview (Part I)",
-          "publisher": "JamBase"
+          "publisher": "JamBase",
+          "url": null
         },
         {
           "label": "First-played date",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         },
         {
           "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
@@ -29,19 +61,48 @@
           "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
         }
       ],
-      "order": 1,
-      "sourceUrl": "",
-      "image": ""
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ]
     },
     {
       "title": "Time Zones",
       "slug": "time-zones",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Dave Schools / Jerry Joseph",
-      "firstPlayed": "4/30/05",
-      "album": "Earth to America (2005)",
-      "text": "“It's funny because when we were writing them, Jerry and I thought ‘Time Zones’ would be the big new Panic anthem and ‘Second Skin’ would be this Massive Attack-style jam, but once they were played live, they kind of flipped roles.”\n—Dave Schools, American Songwriter, 2006\n\n“With ‘Time Zones,’ which I thought was real hip, there were references to To Kill a Mockingbird. So I went to the library and got the Cliff Notes and the book...”\n—John Bell, American Songwriter, 2006\n\n# of times played: 126 First time played: 4/30/05\nNotes: Written by Schools & Jerry Joseph in the same session as “Second Skin.” On Earth to America (2005).",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Earth to America",
+          "year": 2005
+        }
+      ],
+      "firstPlayed": "2005-04-30",
+      "firstPlayedDisplay": "4/30/05",
+      "timesPlayed": 126,
+      "summary": "“Time Zones” is a Widespread Panic original. It appears on Earth to America (2005).",
+      "quotes": [
+        {
+          "text": "It's funny because when we were writing them, Jerry and I thought ‘Time Zones’ would be the big new Panic anthem and ‘Second Skin’ would be this Massive Attack-style jam, but once they were played live, they kind of flipped roles.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "American Songwriter, 2006",
+          "sourceDate": "2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        },
+        {
+          "text": "With ‘Time Zones,’ which I thought was real hip, there were references to To Kill a Mockingbird. So I went to the library and got the Cliff Notes and the book...",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "American Songwriter, 2006",
+          "sourceDate": "2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        }
+      ],
+      "notes": "Written by Schools & Jerry Joseph in the same session as “Second Skin.” On Earth to America (2005).",
       "sources": [
         {
           "label": "Dave Schools & John Bell, “New Frontiers” by Andy Tennille",
@@ -49,82 +110,152 @@
           "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
         }
       ],
-      "order": 2,
-      "sourceUrl": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/",
-      "image": ""
+      "sameAs": [
+        "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+      ]
     },
     {
       "title": "Her Dance Needs No Body",
       "slug": "her-dance-needs-no-body",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic (music seeded by Jimmy Herring)",
-      "firstPlayed": "4/1/08",
-      "text": "“This song is more deserving of just verse chorus, verse chorus, bridge and solo and out kind of thing... the musical beginnings of ‘Three Candles’ and ‘Her Dance’... coming from Jimmy [Herring].”\n—John Bell, “Tickle the Truth” (Glide), 2008\n\n# of times played: 40 First time played: 4/1/08",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "2008-04-01",
+      "firstPlayedDisplay": "4/1/08",
+      "timesPlayed": 40,
+      "summary": "“Her Dance Needs No Body” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "This song is more deserving of just verse chorus, verse chorus, bridge and solo and out kind of thing... the musical beginnings of ‘Three Candles’ and ‘Her Dance’... coming from Jimmy [Herring].",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "“Tickle the Truth” (Glide), 2008",
+          "sourceDate": "2008",
+          "url": "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+        }
+      ],
+      "notes": null,
       "sources": [
         {
           "label": "John Bell, “Tickle the Truth” interview",
-          "publisher": "Glide Magazine, 2008"
+          "publisher": "Glide Magazine, 2008",
+          "url": null
         }
       ],
-      "order": 3,
-      "sourceUrl": "",
-      "image": ""
+      "sameAs": [
+        "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+      ]
     },
     {
       "title": "Raise The Roof",
       "slug": "raise-the-roof",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "1/27/94",
-      "album": "Ain't Life Grand (1994)",
-      "text": "“The song came from Mikey's direction and we all just hauntingly followed along during the demo sessions, and cleaned up the vocals on the demos, and left it like that... There's no place really to go except maybe put some more guitars on, add a third vocal part... In essence, it had what it had, you know?”\n—John Bell, Rock & Road interview, Atlanta, 12/15/94\n\n# of times played: 45 First time played: 1/27/94\nNotes: On Ain't Life Grand (1994); mostly retired after 2001 (last on 6/22/01).",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ain't Life Grand",
+          "year": 1994
+        }
+      ],
+      "firstPlayed": "1994-01-27",
+      "firstPlayedDisplay": "1/27/94",
+      "timesPlayed": 45,
+      "summary": "“Raise The Roof” is a Widespread Panic original. It appears on Ain't Life Grand (1994).",
+      "quotes": [
+        {
+          "text": "The song came from Mikey's direction and we all just hauntingly followed along during the demo sessions, and cleaned up the vocals on the demos, and left it like that... There's no place really to go except maybe put some more guitars on, add a third vocal part... In essence, it had what it had, you know?",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Rock & Road interview, Atlanta, 12/15/94",
+          "sourceDate": "12/15/94",
+          "url": null
+        }
+      ],
+      "notes": "On Ain't Life Grand (1994); mostly retired after 2001 (last on 6/22/01).",
       "sources": [
         {
           "label": "John Bell, R&R interview, Grady's Restaurant, Atlanta",
-          "publisher": "12/15/94"
+          "publisher": "12/15/94",
+          "url": null
         },
         {
           "label": "Play counts",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "order": 4,
-      "sourceUrl": "",
-      "image": ""
+      "sameAs": []
     },
     {
       "title": "Three Candles",
       "slug": "three-candles",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic (music seeded by Jimmy Herring)",
-      "firstPlayed": "4/1/08",
-      "text": "“The musical beginnings of ‘Three Candles’ and ‘Her Dance’... coming from Jimmy [Herring]. He had a bunch of great ideas that had already been cooking.”\n—John Bell, “Tickle the Truth” (Glide), 2008\n\n# of times played: 33 First time played: 4/1/08",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "2008-04-01",
+      "firstPlayedDisplay": "4/1/08",
+      "timesPlayed": 33,
+      "summary": "“Three Candles” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "The musical beginnings of ‘Three Candles’ and ‘Her Dance’... coming from Jimmy [Herring]. He had a bunch of great ideas that had already been cooking.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "“Tickle the Truth” (Glide), 2008",
+          "sourceDate": "2008",
+          "url": "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+        }
+      ],
+      "notes": null,
       "sources": [
         {
           "label": "John Bell, “Tickle the Truth” interview",
-          "publisher": "Glide Magazine, 2008"
+          "publisher": "Glide Magazine, 2008",
+          "url": null
         },
         {
           "label": "Play counts",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "order": 5,
-      "sourceUrl": "",
-      "image": ""
+      "sameAs": [
+        "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+      ]
     },
     {
       "title": "From The Cradle",
       "slug": "from-the-cradle",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Todd Nance",
-      "firstPlayed": "4/22/06",
-      "album": "Earth to America (2005)",
-      "text": "# of times played: 125 First time played: 4/22/06\nNotes: A Todd Nance song. Per American Songwriter (2006), its imagery evokes the aftermath of Hurricane Katrina, though Nance wrote it before the storm. On Earth to America (2005).",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Earth to America",
+          "year": 2005
+        }
+      ],
+      "firstPlayed": "2006-04-22",
+      "firstPlayedDisplay": "4/22/06",
+      "timesPlayed": 125,
+      "summary": "“From The Cradle” is a Widespread Panic original. It appears on Earth to America (2005).",
+      "quotes": [],
+      "notes": "A Todd Nance song. Per American Songwriter (2006), its imagery evokes the aftermath of Hurricane Katrina, though Nance wrote it before the storm. On Earth to America (2005).",
       "sources": [
         {
           "label": "Andy Tennille, “New Frontiers”",
@@ -133,21 +264,39 @@
         },
         {
           "label": "First-played date",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "order": 6,
-      "sourceUrl": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/",
-      "image": ""
+      "sameAs": [
+        "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+      ]
     },
     {
       "title": "Gomero Blanco",
       "slug": "gomero-blanco",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "studio-only (not a live staple)",
-      "text": "“Gomero Blanco: First recorded during the May 1987 sessions at John Keene's Studio in Athens for the initial release of ‘Space Wrangler.’ While this song is not played live, several shows at the Uptown Lounge featured similar sounding jams.”\n—The Panicle, Vol. 1 #5, July 1992\n\nNotes: A studio-era track; not a live staple.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": null,
+      "firstPlayedDisplay": null,
+      "timesPlayed": null,
+      "summary": "“Gomero Blanco” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "Gomero Blanco: First recorded during the May 1987 sessions at John Keene's Studio in Athens for the initial release of ‘Space Wrangler.’ While this song is not played live, several shows at the Uptown Lounge featured similar sounding jams.",
+          "speaker": "The Panicle",
+          "speakerRole": "fan newsletter",
+          "source": "Vol. 1 #5, July 1992",
+          "sourceDate": "1992",
+          "url": null
+        }
+      ],
+      "notes": "A studio-era track; not a live staple.",
       "sources": [
         {
           "label": "The Panicle, Vol. 1 #5 (July 1992)",
@@ -155,86 +304,139 @@
           "url": "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html"
         }
       ],
-      "order": 7,
-      "sourceUrl": "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html",
-      "image": ""
+      "sameAs": [
+        "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html"
+      ]
     },
     {
       "title": "Driving Song",
       "slug": "driving-song",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic (band-credited; biographically a John Bell / Michael Houser co-write)",
-      "firstPlayed": "4/7/86",
-      "album": "Space Wrangler (1988)",
-      "text": "# of times played: 831 First time played: 4/7/86\nNotes: A Widespread Panic original; biographically a John Bell / Michael Houser co-write from their UGA-roommate days. On Space Wrangler (1988). Source: Everyday Companion; The Ticket Blog.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Space Wrangler",
+          "year": 1988
+        }
+      ],
+      "firstPlayed": "1986-04-07",
+      "firstPlayedDisplay": "4/7/86",
+      "timesPlayed": 831,
+      "summary": "“Driving Song” is a Widespread Panic original. It appears on Space Wrangler (1988).",
+      "quotes": [],
+      "notes": "A Widespread Panic original; biographically a John Bell / Michael Houser co-write from their UGA-roommate days. On Space Wrangler (1988). Source: Everyday Companion; The Ticket Blog.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/DRIVIN.asp"
         },
         {
           "label": "Bell/Houser roommate co-write history",
-          "publisher": "The Ticket Blog"
+          "publisher": "The Ticket Blog",
+          "url": null
         }
       ],
-      "order": 8,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/DRIVIN.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/DRIVIN.asp"
+      ]
     },
     {
       "title": "Rock",
       "slug": "rock",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "10/4/89",
-      "album": "Widespread Panic / “Mom's Kitchen” (1991)",
-      "text": "# of times played: 734 First time played: 10/4/89\nNotes: A Widespread Panic original, also titled “Brass Shoes, Walking Blues.” On the 1991 self-titled album (“Mom's Kitchen”). Source: Everyday Companion.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "Brass Shoes, Walking Blues"
+      ],
+      "albums": [
+        {
+          "name": "Widespread Panic (Mom's Kitchen)",
+          "year": 1991
+        }
+      ],
+      "firstPlayed": "1989-10-04",
+      "firstPlayedDisplay": "10/4/89",
+      "timesPlayed": 734,
+      "summary": "“Rock” is a Widespread Panic original. It appears on Widespread Panic (Mom's Kitchen) (1991).",
+      "quotes": [],
+      "notes": "A Widespread Panic original, also titled “Brass Shoes, Walking Blues.” On the 1991 self-titled album (“Mom's Kitchen”). Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/ROCK.asp"
         }
       ],
-      "order": 9,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/ROCK.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/ROCK.asp"
+      ]
     },
     {
       "title": "Tall Boy",
       "slug": "tall-boy",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "8/3/95",
-      "album": "Bombs & Butterflies (1997)",
-      "text": "# of times played: 512 First time played: 8/3/95\nNotes: A Widespread Panic original, also titled “Naked In The Mud.” On Bombs & Butterflies (1997). Source: Everyday Companion.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "Naked In The Mud"
+      ],
+      "albums": [
+        {
+          "name": "Bombs & Butterflies",
+          "year": 1997
+        }
+      ],
+      "firstPlayed": "1995-08-03",
+      "firstPlayedDisplay": "8/3/95",
+      "timesPlayed": 512,
+      "summary": "“Tall Boy” is a Widespread Panic original. It appears on Bombs & Butterflies (1997).",
+      "quotes": [],
+      "notes": "A Widespread Panic original, also titled “Naked In The Mud.” On Bombs & Butterflies (1997). Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories & Originals index",
+          "label": "Everyday Companion, Song Histories & Originals index",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/TALBOY.asp"
         }
       ],
-      "order": 10,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/TALBOY.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/TALBOY.asp"
+      ]
     },
     {
       "title": "Better Off",
       "slug": "better-off",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic / T Lavitz",
-      "firstPlayed": "2/7/92",
-      "album": "Everyday (1993)",
-      "text": "# of times played: 340 First time played: 2/7/92\nNotes: A Widespread Panic original co-credited to T Lavitz, the Dixie Dregs keyboardist who played with the band in 1991. On Everyday (1993). Source: Everyday Companion; Wikipedia.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Everyday",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1992-02-07",
+      "firstPlayedDisplay": "2/7/92",
+      "timesPlayed": 340,
+      "summary": "“Better Off” is a Widespread Panic original. It appears on Everyday (1993).",
+      "quotes": [],
+      "notes": "A Widespread Panic original co-credited to T Lavitz, the Dixie Dregs keyboardist who played with the band in 1991. On Everyday (1993). Source: Everyday Companion; Wikipedia.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/BETOFF.asp"
         },
@@ -244,19 +446,32 @@
           "url": "https://en.wikipedia.org/wiki/T_Lavitz"
         }
       ],
-      "order": 11,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/BETOFF.asp",
-      "image": ""
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/T_Lavitz",
+        "https://www.everydaycompanion.com/spreadsheet/histories/BETOFF.asp"
+      ]
     },
     {
       "title": "Bear's Gone Fishin'",
       "slug": "bears-gone-fishin",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "7/1/97",
-      "album": "'Til the Medicine Takes (1999)",
-      "text": "# of times played: 248 First time played: 7/1/97\nNotes: Debuted as an instrumental in July 1997; lyrics added ~two years later. Named for the band's Colorado friend Thomas “Bear” Guenther (d. 2019) — the same “Bear” behind “Postcard.” On 'Til the Medicine Takes (1999). Source: JamBase; Dave Schools, Colorado Music Hall of Fame induction speech.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1997-07-01",
+      "firstPlayedDisplay": "7/1/97",
+      "timesPlayed": 248,
+      "summary": "“Bear's Gone Fishin'” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "Debuted as an instrumental in July 1997; lyrics added ~two years later. Named for the band's Colorado friend Thomas “Bear” Guenther (d. 2019), the same “Bear” behind “Postcard.” On 'Til the Medicine Takes (1999). Source: JamBase; Dave Schools, Colorado Music Hall of Fame induction speech.",
       "sources": [
         {
           "label": "Widespread Panic at Red Rocks feature (Bear Guenther, instrumental-to-lyrics timeline)",
@@ -269,19 +484,32 @@
           "url": "https://www.instagram.com/reels/DaH3ejWizfL/"
         }
       ],
-      "order": 12,
-      "sourceUrl": "https://www.jambase.com/article/widespread-panic-bears-gone-fishing-happy-rebirtha-red-rocks-2016",
-      "image": ""
+      "sameAs": [
+        "https://www.instagram.com/reels/DaH3ejWizfL/",
+        "https://www.jambase.com/article/widespread-panic-bears-gone-fishing-happy-rebirtha-red-rocks-2016"
+      ]
     },
     {
       "title": "Surprise Valley",
       "slug": "surprise-valley",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic (a signature Michael Houser piece)",
-      "firstPlayed": "6/27/99",
-      "album": "'Til the Medicine Takes (1999)",
-      "text": "# of times played: 390 First time played: 6/27/99\nNotes: A Widespread Panic original, one of Michael Houser's signature pieces, tied to the band's Colorado connection. On 'Til the Medicine Takes (1999). Source: Lockn' Festival.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1999-06-27",
+      "firstPlayedDisplay": "6/27/99",
+      "timesPlayed": 390,
+      "summary": "“Surprise Valley” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "A Widespread Panic original, one of Michael Houser's signature pieces, tied to the band's Colorado connection. On 'Til the Medicine Takes (1999). Source: Lockn' Festival.",
       "sources": [
         {
           "label": "“7 Widespread Panic Stories Told By the Band” (Houser signature song; Colorado connection)",
@@ -289,19 +517,31 @@
           "url": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
         }
       ],
-      "order": 13,
-      "sourceUrl": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band",
-      "image": ""
+      "sameAs": [
+        "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+      ]
     },
     {
       "title": "Big Wooly Mammoth",
       "slug": "big-wooly-mammoth",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "10/10/95",
-      "album": "Don't Tell the Band (2001)",
-      "text": "# of times played: 275 First time played: 10/10/95\nNotes: A Widespread Panic original sung by JoJo Hermann; a long-time live favorite finally cut for Don't Tell the Band (2001). Source: Wikipedia.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "1995-10-10",
+      "firstPlayedDisplay": "10/10/95",
+      "timesPlayed": 275,
+      "summary": "“Big Wooly Mammoth” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original sung by JoJo Hermann; a long-time live favorite finally cut for Don't Tell the Band (2001). Source: Wikipedia.",
       "sources": [
         {
           "label": "Don't Tell the Band (JoJo Hermann vocal; long-time crowd favorite)",
@@ -309,19 +549,31 @@
           "url": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
         }
       ],
-      "order": 14,
-      "sourceUrl": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band",
-      "image": ""
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
+      ]
     },
     {
       "title": "Blue Indian",
       "slug": "blue-indian",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic (counted among Michael Houser's songs)",
-      "firstPlayed": "10/6/98",
-      "album": "'Til the Medicine Takes (1999)",
-      "text": "# of times played: 311 First time played: 10/6/98\nNotes: A Widespread Panic original (counted among Michael Houser's songs). The album title 'Til the Medicine Takes is drawn from a line in its chorus. Source: Wikipedia; Lockn' Festival.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1998-10-06",
+      "firstPlayedDisplay": "10/6/98",
+      "timesPlayed": 311,
+      "summary": "“Blue Indian” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "A Widespread Panic original (counted among Michael Houser's songs). The album title 'Til the Medicine Takes is drawn from a line in its chorus. Source: Wikipedia; Lockn' Festival.",
       "sources": [
         {
           "label": "'Til the Medicine Takes (album title drawn from the chorus)",
@@ -334,61 +586,108 @@
           "url": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
         }
       ],
-      "order": 15,
-      "sourceUrl": "https://en.wikipedia.org/wiki/%27Til_the_Medicine_Takes",
-      "image": ""
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/%27Til_the_Medicine_Takes",
+        "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+      ]
     },
     {
       "title": "Send Your Mind",
       "slug": "send-your-mind",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Van Morrison",
-      "firstPlayed": "4/2/91",
-      "album": "Widespread Panic / “Mom's Kitchen” (1991)",
-      "text": "# of times played: 342 First time played: 4/2/91\nNotes: A Van Morrison cover (from his late-'60s Bang Records sides). On the 1991 self-titled album (“Mom's Kitchen”). Source: Everyday Companion.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Van Morrison",
+      "originalArtist": "Van Morrison",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Widespread Panic (Mom's Kitchen)",
+          "year": 1991
+        }
+      ],
+      "firstPlayed": "1991-04-02",
+      "firstPlayedDisplay": "4/2/91",
+      "timesPlayed": 342,
+      "summary": "“Send Your Mind” is a song by Van Morrison, covered by Widespread Panic. It appears on Widespread Panic (Mom's Kitchen) (1991).",
+      "quotes": [],
+      "notes": "A Van Morrison cover (from his late-'60s Bang Records sides). On the 1991 self-titled album (“Mom's Kitchen”). Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/SENDYM.asp"
         }
       ],
-      "order": 16,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/SENDYM.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/SENDYM.asp"
+      ]
     },
     {
       "title": "Sleeping Man",
       "slug": "sleeping-man",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Vic Chesnutt",
-      "firstPlayed": "3/21/95",
-      "text": "# of times played: 246 First time played: 3/21/95\nNotes: A Vic Chesnutt cover (from his 1993 album Drunk). Source: Everyday Companion.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Vic Chesnutt",
+      "originalArtist": "Vic Chesnutt",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Drunk (Vic Chesnutt)",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1995-03-21",
+      "firstPlayedDisplay": "3/21/95",
+      "timesPlayed": 246,
+      "summary": "“Sleeping Man” is a song by Vic Chesnutt, covered by Widespread Panic. It appears on Drunk (Vic Chesnutt) (1993).",
+      "quotes": [],
+      "notes": "A Vic Chesnutt cover (from his 1993 album Drunk). Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/WTSMAN.asp"
         }
       ],
-      "order": 17,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/WTSMAN.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/WTSMAN.asp"
+      ]
     },
     {
       "title": "Aunt Avis",
       "slug": "aunt-avis",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Vic Chesnutt",
-      "firstPlayed": "9/9/95",
-      "album": "Bombs & Butterflies (1997)",
-      "text": "“Vic Chestnutt deserves to win Grammy after Grammy. He's the Bob Dylan of the ’90s. We just made a video with Billy Bob. He directed the video for the song ‘Aunt Avis.’ Laura Dern is in it. Vic is in it. It was filmed in Arkansas.”\n—Dave Schools, Centerstage, 5/4/01\n\n# of times played: 268 First time played: 9/9/95\nNotes: A Vic Chesnutt song; on Bombs & Butterflies (1997). Thornton also directed a 1991 WSP documentary.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Vic Chesnutt",
+      "originalArtist": "Vic Chesnutt",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Bombs & Butterflies",
+          "year": 1997
+        }
+      ],
+      "firstPlayed": "1995-09-09",
+      "firstPlayedDisplay": "9/9/95",
+      "timesPlayed": 268,
+      "summary": "“Aunt Avis” is a song by Vic Chesnutt, covered by Widespread Panic. It appears on Bombs & Butterflies (1997).",
+      "quotes": [
+        {
+          "text": "Vic Chestnutt deserves to win Grammy after Grammy. He's the Bob Dylan of the ’90s. We just made a video with Billy Bob. He directed the video for the song ‘Aunt Avis.’ Laura Dern is in it. Vic is in it. It was filmed in Arkansas.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "Centerstage, 5/4/01",
+          "sourceDate": "5/4/01",
+          "url": null
+        }
+      ],
+      "notes": "A Vic Chesnutt song; on Bombs & Butterflies (1997). Thornton also directed a 1991 WSP documentary.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/AUNTAV.asp"
         },
@@ -399,122 +698,210 @@
         },
         {
           "label": "Billy Bob Thornton video details (Laura Dern; Arkansas; 1991 WSP documentary)",
-          "publisher": "Centerstage (2001) & South Bend Tribune (1997), via Spreadnet"
+          "publisher": "Centerstage (2001) & South Bend Tribune (1997), via Spreadnet",
+          "url": null
         }
       ],
-      "order": 18,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/AUNTAV.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/AUNTAV.asp",
+        "https://www.jambase.com/article/widespread-panic-performs-aunt-avis-late-night-conan-obrien-date-1997"
+      ]
     },
     {
       "title": "Bowlegged Woman",
       "slug": "bowlegged-woman",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Calvin Carter / Bobby Rush",
-      "firstPlayed": "2/2/87",
-      "text": "# of times played: 242 First time played: 2/2/87\nNotes: A blues cover written by Calvin Carter and Bobby Rush (full title “Bowlegged Woman, Knock-Kneed Man”); also cut by Hot Tuna. Source: Everyday Companion.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Calvin Carter, Bobby Rush",
+      "originalArtist": "Calvin Carter, Bobby Rush",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1987-02-02",
+      "firstPlayedDisplay": "2/2/87",
+      "timesPlayed": 242,
+      "summary": "“Bowlegged Woman” is a song by Calvin Carter, Bobby Rush, covered by Widespread Panic.",
+      "quotes": [],
+      "notes": "A blues cover written by Calvin Carter and Bobby Rush (full title “Bowlegged Woman, Knock-Kneed Man”); also cut by Hot Tuna. Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/BOWLW.asp"
         }
       ],
-      "order": 19,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/BOWLW.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/BOWLW.asp"
+      ]
     },
     {
       "title": "Henry Parsons Died",
       "slug": "henry-parsons-died",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Daniel Hutchens & Eric Carter (Bloodkin)",
-      "firstPlayed": "1/27/89",
-      "album": "Everyday (1993)",
-      "text": "“It's a song about a very, very bad man. What more can you say?... I just like to rock the f*** out of that song, I love it! It just kicks!”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 709 First time played: 1/27/89\nNotes: A Bloodkin song (Daniel Hutchens / Eric Carter); appears on Everyday (1993).",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens, Eric Carter (Bloodkin)",
+      "originalArtist": "Daniel Hutchens, Eric Carter (Bloodkin)",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Everyday",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1989-01-27",
+      "firstPlayedDisplay": "1/27/89",
+      "timesPlayed": 709,
+      "summary": "“Henry Parsons Died” is a song by Daniel Hutchens, Eric Carter (Bloodkin), covered by Widespread Panic. It appears on Everyday (1993).",
+      "quotes": [
+        {
+          "text": "It's a song about a very, very bad man. What more can you say?... I just like to rock the f*** out of that song, I love it! It just kicks!",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A Bloodkin song (Daniel Hutchens / Eric Carter); appears on Everyday (1993).",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp"
         },
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         }
       ],
-      "order": 20,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp"
+      ]
     },
     {
       "title": "Chainsaw City",
       "slug": "chainsaw-city",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Jerry Joseph",
-      "firstPlayed": "6/23/95",
-      "text": "# of times played: 167 First time played: 6/23/95\nNotes: A Jerry Joseph song, originally on his band Little Women's “Pretty Wiped Out” (1990). Source: Everyday Companion.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Jerry Joseph",
+      "originalArtist": "Jerry Joseph",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Pretty Wiped Out (Little Women)",
+          "year": 1990
+        }
+      ],
+      "firstPlayed": "1995-06-23",
+      "firstPlayedDisplay": "6/23/95",
+      "timesPlayed": 167,
+      "summary": "“Chainsaw City” is a song by Jerry Joseph, covered by Widespread Panic. It appears on Pretty Wiped Out (Little Women) (1990).",
+      "quotes": [],
+      "notes": "A Jerry Joseph song, originally on his band Little Women's “Pretty Wiped Out” (1990). Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/CHAINS.asp"
         }
       ],
-      "order": 21,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/CHAINS.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/CHAINS.asp"
+      ]
     },
     {
       "title": "Quarter Tank Of Gasoline",
       "slug": "quarter-tank-of-gasoline",
-      "mode": "new",
       "type": "Cover",
-      "writtenBy": "Daniel Hutchens (Bloodkin)",
-      "firstPlayed": "7/5/99",
-      "text": "# of times played: 33 First time played: 7/5/99\nNotes: A Bloodkin song (Daniel Hutchens), from “Good Luck Charm” (1994). Source: Everyday Companion.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens (Bloodkin)",
+      "originalArtist": "Daniel Hutchens (Bloodkin)",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Good Luck Charm (Bloodkin)",
+          "year": 1994
+        }
+      ],
+      "firstPlayed": "1999-07-05",
+      "firstPlayedDisplay": "7/5/99",
+      "timesPlayed": 33,
+      "summary": "“Quarter Tank Of Gasoline” is a song by Daniel Hutchens (Bloodkin), covered by Widespread Panic. It appears on Good Luck Charm (Bloodkin) (1994).",
+      "quotes": [],
+      "notes": "A Bloodkin song (Daniel Hutchens), from “Good Luck Charm” (1994). Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/QTOGAS.asp"
         }
       ],
-      "order": 22,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/QTOGAS.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/QTOGAS.asp"
+      ]
     },
     {
       "title": "Party At Your Mama's House",
       "slug": "party-at-your-mamas-house",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "5/7/97",
-      "album": "'Til the Medicine Takes (1999)",
-      "text": "# of times played: 227 First time played: 5/7/97\nNotes: A Widespread Panic instrumental, also known as “That Thang.” On 'Til the Medicine Takes (1999). Source: Everyday Companion.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "That Thang"
+      ],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1997-05-07",
+      "firstPlayedDisplay": "5/7/97",
+      "timesPlayed": 227,
+      "summary": "“Party At Your Mama's House” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "A Widespread Panic instrumental, also known as “That Thang.” On 'Til the Medicine Takes (1999). Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Everyday Companion — Song Histories (instrumental; a.k.a. “That Thang”)",
+          "label": "Everyday Companion, Song Histories (instrumental; a.k.a. “That Thang”)",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/PAYMH.asp"
         }
       ],
-      "order": 23,
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/histories/PAYMH.asp",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/PAYMH.asp"
+      ]
     },
     {
       "title": "Little Lilly",
       "slug": "little-lilly",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "11/17/98",
-      "album": "Don't Tell the Band (2001)",
-      "text": "# of times played: 242 First time played: 11/17/98\nNotes: A Widespread Panic original; the opener on Don't Tell the Band (2001), full-titled “Little Lilly (A.K.A. First Snow Or Blue Girl).” Source: Jambands.com; lyric databases.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "First Snow",
+        "Blue Girl"
+      ],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "1998-11-17",
+      "firstPlayedDisplay": "11/17/98",
+      "timesPlayed": 242,
+      "summary": "“Little Lilly” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original; the opener on Don't Tell the Band (2001), full-titled “Little Lilly (A.K.A. First Snow Or Blue Girl).” Source: Jambands.com; lyric databases.",
       "sources": [
         {
           "label": "Don't Tell the Band review (Beatles-lyric wink)",
@@ -523,22 +910,35 @@
         },
         {
           "label": "Full title / alternate names (“First Snow,” “Blue Girl”)",
-          "publisher": "lyric databases; corroborated by fan alias sheets"
+          "publisher": "lyric databases; corroborated by fan alias sheets",
+          "url": null
         }
       ],
-      "order": 24,
-      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
-      "image": ""
+      "sameAs": [
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ]
     },
     {
       "title": "Down",
       "slug": "down",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "4/16/00",
-      "album": "Don't Tell the Band (2001)",
-      "text": "# of times played: 141 First time played: 4/16/00\nNotes: A Widespread Panic original on Don't Tell the Band (2001); the song that marked Todd Nance's emergence as a lead singer. Source: Jambands.com.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "2000-04-16",
+      "firstPlayedDisplay": "4/16/00",
+      "timesPlayed": 141,
+      "summary": "“Down” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original on Don't Tell the Band (2001); the song that marked Todd Nance's emergence as a lead singer. Source: Jambands.com.",
       "sources": [
         {
           "label": "Don't Tell the Band review (Nance's lead-vocal emergence)",
@@ -546,19 +946,31 @@
           "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
         }
       ],
-      "order": 25,
-      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
-      "image": ""
+      "sameAs": [
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ]
     },
     {
       "title": "Give",
       "slug": "give",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "4/7/00",
-      "album": "Don't Tell the Band (2001)",
-      "text": "# of times played: 235 First time played: 4/7/00\nNotes: A Widespread Panic original on Don't Tell the Band (2001), built on one of Michael Houser's most aggressive guitar figures. Source: Jambands.com.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "2000-04-07",
+      "firstPlayedDisplay": "4/7/00",
+      "timesPlayed": 235,
+      "summary": "“Give” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original on Don't Tell the Band (2001), built on one of Michael Houser's most aggressive guitar figures. Source: Jambands.com.",
       "sources": [
         {
           "label": "Don't Tell the Band review",
@@ -566,19 +978,31 @@
           "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
         }
       ],
-      "order": 26,
-      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
-      "image": ""
+      "sameAs": [
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ]
     },
     {
       "title": "Casa Del Grillo",
       "slug": "casa-del-grillo",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "7/16/00",
-      "album": "Don't Tell the Band (2001)",
-      "text": "# of times played: 89 First time played: 7/16/00\nNotes: A Widespread Panic original on Don't Tell the Band (2001) with Spanish lyrics, extending Domingo Ortiz's Latin influence; John Keane added guitar effects. Source: Jambands.com; Wikipedia.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "2000-07-16",
+      "firstPlayedDisplay": "7/16/00",
+      "timesPlayed": 89,
+      "summary": "“Casa Del Grillo” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original on Don't Tell the Band (2001) with Spanish lyrics, extending Domingo Ortiz's Latin influence; John Keane added guitar effects. Source: Jambands.com; Wikipedia.",
       "sources": [
         {
           "label": "Don't Tell the Band review (Spanish lyrics; Ortiz's Latin influence)",
@@ -587,23 +1011,45 @@
         },
         {
           "label": "John Keane guitar effects",
-          "publisher": "Wikipedia — Don't Tell the Band",
+          "publisher": "Wikipedia, Don't Tell the Band",
           "url": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
         }
       ],
-      "order": 27,
-      "sourceUrl": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/",
-      "image": ""
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band",
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ]
     },
     {
       "title": "Sleepy Monkey",
       "slug": "sleepy-monkey",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "2/24/85",
-      "album": "Space Baby 45 (1986)",
-      "text": "“We drove to Atlanta from our King Avenue house to pick up a box of 500 45's from the presser.”\n—John Bell, via JamBase\n\n# of times played: 245 First time played: 2/24/85\nNotes: The band's self-released 1986 debut 45 on their own Space Baby label (500 copies); a shortened “Monkey Image” was the B-side.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Space Baby 45",
+          "year": 1986
+        }
+      ],
+      "firstPlayed": "1985-02-24",
+      "firstPlayedDisplay": "2/24/85",
+      "timesPlayed": 245,
+      "summary": "“Sleepy Monkey” is a Widespread Panic original. It appears on Space Baby 45 (1986).",
+      "quotes": [
+        {
+          "text": "We drove to Atlanta from our King Avenue house to pick up a box of 500 45's from the presser.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "via JamBase",
+          "sourceDate": null,
+          "url": null
+        }
+      ],
+      "notes": "The band's self-released 1986 debut 45 on their own Space Baby label (500 copies); a shortened “Monkey Image” was the B-side.",
       "sources": [
         {
           "label": "Widespread Panic debut-single reissue (Space Baby label, 500 copies, JB's account)",
@@ -611,220 +1057,413 @@
           "url": "https://www.jambase.com/article/widespread-panic-debut-single-reissue"
         },
         {
-          "label": "Everyday Companion — Song Histories",
+          "label": "Everyday Companion, Song Histories",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/histories/MONKEY.asp"
         }
       ],
-      "order": 28,
-      "sourceUrl": "https://www.jambase.com/article/widespread-panic-debut-single-reissue",
-      "image": ""
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/MONKEY.asp",
+        "https://www.jambase.com/article/widespread-panic-debut-single-reissue"
+      ]
     },
     {
       "title": "Wondering",
       "slug": "wondering",
       "type": "Original",
-      "writtenBy": "Michael Houser",
-      "firstPlayed": "2/7/92",
-      "album": "Everyday (1993)",
-      "text": "“‘Wondering’ is a song Mikey wrote. We never really knew what to do with it until the ‘Every Day’ sessions. That song is one of the [few] examples of a song that we just hammered and hammered and hammered in the studio. I think by the end the take that was used on the record was like the forty-eighth take... It's just one of those ‘Hey man, what are you up to?’ kind of songs!”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 666 First time played: 2/7/92\nNotes: Appears on Everyday (1993).",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Everyday",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1992-02-07",
+      "firstPlayedDisplay": "2/7/92",
+      "timesPlayed": 666,
+      "summary": "“Wondering” is a Widespread Panic original. It appears on Everyday (1993).",
+      "quotes": [
+        {
+          "text": "‘Wondering’ is a song Mikey wrote. We never really knew what to do with it until the ‘Every Day’ sessions. That song is one of the [few] examples of a song that we just hammered and hammered and hammered in the studio. I think by the end the take that was used on the record was like the forty-eighth take... It's just one of those ‘Hey man, what are you up to?’ kind of songs!",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "Appears on Everyday (1993).",
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 29,
-      "image": "",
-      "sourceUrl": ""
+      "sameAs": []
     },
     {
       "title": "Pilgrims",
       "slug": "pilgrims",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "9/14/92",
-      "text": "“It's a song about riding from town to town. You're listening to a song on the radio and it fades out, and then another city's radio station fades in over top of it. It's like the same song ’cause we're travelling all the time, and the radio becomes a song in and of itself.”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 575 First time played: 9/14/92",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1992-09-14",
+      "firstPlayedDisplay": "9/14/92",
+      "timesPlayed": 575,
+      "summary": "“Pilgrims” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "It's a song about riding from town to town. You're listening to a song on the radio and it fades out, and then another city's radio station fades in over top of it. It's like the same song ’cause we're travelling all the time, and the radio becomes a song in and of itself.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 30,
-      "image": "",
-      "sourceUrl": ""
+      "sameAs": []
     },
     {
       "title": "Makes Sense To Me",
       "slug": "makes-sense-to-me",
       "type": "Cover",
-      "writtenBy": "Daniel Hutchens (Bloodkin)",
-      "firstPlayed": "4/1/91",
-      "text": "“That's one that Danny Hutchins wrote, for Bloodkin, and actually after they played it he thought to himself that it sounded more like us. So he presented it to us, and we liked it, ’cause we like those guys a whole lot. And it works for us.”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 673 First time played: 4/1/91\nNotes: A Bloodkin (Daniel Hutchens) song. Source: Everyday Companion.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens (Bloodkin)",
+      "originalArtist": "Daniel Hutchens (Bloodkin)",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1991-04-01",
+      "firstPlayedDisplay": "4/1/91",
+      "timesPlayed": 673,
+      "summary": "“Makes Sense To Me” is a song by Daniel Hutchens (Bloodkin), covered by Widespread Panic.",
+      "quotes": [
+        {
+          "text": "That's one that Danny Hutchins wrote, for Bloodkin, and actually after they played it he thought to himself that it sounded more like us. So he presented it to us, and we liked it, ’cause we like those guys a whole lot. And it works for us.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A Bloodkin (Daniel Hutchens) song. Source: Everyday Companion.",
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
-          "label": "Everyday Companion — Covers index",
+          "label": "Everyday Companion, Covers index",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
         }
       ],
-      "mode": "new",
-      "order": 31,
-      "image": "",
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      ]
     },
     {
       "title": "Can't Get High",
       "slug": "cant-get-high",
       "type": "Cover",
-      "writtenBy": "Daniel Hutchens (Bloodkin)",
-      "firstPlayed": "7/9/93",
-      "text": "“Another great Danny song. [It's] about whatever you need to satisfy your soul, not being there. Not being able to feel feelings of elation or euphoria because whatever you need to do that is not there. I.E. a girlfriend, your pet, some sleep, whatever.”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 372 First time played: 7/9/93\nNotes: A Bloodkin (Daniel Hutchens) song; the band's radio single, performed on Late Night with Conan O'Brien (1995).",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens (Bloodkin)",
+      "originalArtist": "Daniel Hutchens (Bloodkin)",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1993-07-09",
+      "firstPlayedDisplay": "7/9/93",
+      "timesPlayed": 372,
+      "summary": "“Can't Get High” is a song by Daniel Hutchens (Bloodkin), covered by Widespread Panic.",
+      "quotes": [
+        {
+          "text": "Another great Danny song. [It's] about whatever you need to satisfy your soul, not being there. Not being able to feel feelings of elation or euphoria because whatever you need to do that is not there. I.E. a girlfriend, your pet, some sleep, whatever.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A Bloodkin (Daniel Hutchens) song; the band's radio single, performed on Late Night with Conan O'Brien (1995).",
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
           "label": "JoJo Hermann interview, 4/15/95 (Conan single)",
-          "publisher": "via Spreadnet"
+          "publisher": "via Spreadnet",
+          "url": null
         },
         {
-          "label": "Everyday Companion — Covers index",
+          "label": "Everyday Companion, Covers index",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
         }
       ],
-      "mode": "new",
-      "order": 32,
-      "image": "",
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      ]
     },
     {
       "title": "Junior",
       "slug": "junior",
       "type": "Cover",
-      "writtenBy": "Junior Kimbrough",
-      "firstPlayed": "4/9/93",
-      "text": "“‘Junior’ is a Junior Kimbrough song. It's actually a medley of two or three Junior Kimbrough songs... plays blues, and uh, it's a great song. It's a great riff... It's just a rocket blues song.”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 454 First time played: 4/9/93\nNotes: A cover of the north Mississippi hill-country bluesman Junior Kimbrough.",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Junior Kimbrough",
+      "originalArtist": "Junior Kimbrough",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1993-04-09",
+      "firstPlayedDisplay": "4/9/93",
+      "timesPlayed": 454,
+      "summary": "“Junior” is a song by Junior Kimbrough, covered by Widespread Panic.",
+      "quotes": [
+        {
+          "text": "‘Junior’ is a Junior Kimbrough song. It's actually a medley of two or three Junior Kimbrough songs... plays blues, and uh, it's a great song. It's a great riff... It's just a rocket blues song.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A cover of the north Mississippi hill-country bluesman Junior Kimbrough.",
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
-          "label": "Everyday Companion — Covers index",
+          "label": "Everyday Companion, Covers index",
           "publisher": "everydaycompanion.com",
           "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
         }
       ],
-      "mode": "new",
-      "order": 33,
-      "image": "",
-      "sourceUrl": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      ]
     },
     {
       "title": "Love Tractor",
       "slug": "love-tractor",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "6/16/89",
-      "text": "“‘Love Tractor,’ musically it's a lick that we used to jam around on... because it sounded so much like the Athens band Love Tractor. Who is a great band and we're all big fans... we were calling it ‘That Love Tractor Thing.’ [So] JB wrote a song about a guy who loves his tractor. Just loves riding around on his tractor!”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 993 First time played: 6/16/89",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1989-06-16",
+      "firstPlayedDisplay": "6/16/89",
+      "timesPlayed": 993,
+      "summary": "“Love Tractor” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "‘Love Tractor,’ musically it's a lick that we used to jam around on... because it sounded so much like the Athens band Love Tractor. Who is a great band and we're all big fans... we were calling it ‘That Love Tractor Thing.’ [So] JB wrote a song about a guy who loves his tractor. Just loves riding around on his tractor!",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 34,
-      "image": "",
-      "sourceUrl": ""
+      "sameAs": []
     },
     {
       "title": "Dream Song",
       "slug": "dream-song",
       "type": "Original",
-      "writtenBy": "Michael Houser",
-      "firstPlayed": "3/13/92",
-      "text": "“‘Dream Song’ was a lullabye that Mike wrote... to his child, Waker, when he was a baby. I'm not even sure if he wrote the words or if JB took an idea, lyrically, that Mike had, and actually wrote the words. It's a beautiful song. It's one I get to play fretless on.”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 204 First time played: 3/13/92",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1992-03-13",
+      "firstPlayedDisplay": "3/13/92",
+      "timesPlayed": 204,
+      "summary": "“Dream Song” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "‘Dream Song’ was a lullabye that Mike wrote... to his child, Waker, when he was a baby. I'm not even sure if he wrote the words or if JB took an idea, lyrically, that Mike had, and actually wrote the words. It's a beautiful song. It's one I get to play fretless on.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 35,
-      "image": "",
-      "sourceUrl": ""
+      "sameAs": []
     },
     {
       "title": "Little Kin",
       "slug": "little-kin",
       "type": "Original",
-      "writtenBy": "John Bell",
-      "firstPlayed": "4/24/93",
-      "text": "“‘Little Kin’ is a... lyrically I can't really go into it too much; it's one of JB's and it seems highly personal... I luuuuv that song!... it's kind of personal to me too because I'm an adopted child... I guess it's about childhood and learning to deal with the things of life. As far as a bass player, I love it cause it's just a slab of greasy, raw funk.”\n—Dave Schools, “Rock & Road” interview, 4/1/95\n\n# of times played: 444 First time played: 4/24/93",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1993-04-24",
+      "firstPlayedDisplay": "4/24/93",
+      "timesPlayed": 444,
+      "summary": "“Little Kin” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "‘Little Kin’ is a... lyrically I can't really go into it too much; it's one of JB's and it seems highly personal... I luuuuv that song!... it's kind of personal to me too because I'm an adopted child... I guess it's about childhood and learning to deal with the things of life. As far as a bass player, I love it cause it's just a slab of greasy, raw funk.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
       "sources": [
         {
-          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list"
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 36,
-      "image": "",
-      "sourceUrl": ""
+      "sameAs": []
     },
     {
       "title": "Vacation",
       "slug": "vacation",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "9/15/86",
-      "text": "“There was one we wanted to put on the record called ‘Vacation’ that we had never recorded before but have been playing live on and off for eight years. We did one take of it, and John Keane comes back on the monitor and says, ‘Well that was nine and a half minutes long.’ So we knew that wasn't really a possibility.”\n—Dave Schools, The Music Monitor #94, May 1997\n\n# of times played: 142 First time played: 9/15/86\nNotes: Nearly recorded for Bombs & Butterflies (1997).",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1986-09-15",
+      "firstPlayedDisplay": "9/15/86",
+      "timesPlayed": 142,
+      "summary": "“Vacation” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "There was one we wanted to put on the record called ‘Vacation’ that we had never recorded before but have been playing live on and off for eight years. We did one take of it, and John Keane comes back on the monitor and says, ‘Well that was nine and a half minutes long.’ So we knew that wasn't really a possibility.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "The Music Monitor #94, May 1997",
+          "sourceDate": "1997",
+          "url": null
+        }
+      ],
+      "notes": "Nearly recorded for Bombs & Butterflies (1997).",
       "sources": [
         {
-          "label": "Dave Schools, The Music Monitor #94 (Pat Lall), May 1997, via Spreadnet"
+          "label": "Dave Schools, The Music Monitor #94 (Pat Lall), May 1997, via Spreadnet",
+          "publisher": null,
+          "url": null
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 37,
-      "image": "",
-      "sourceUrl": ""
+      "sameAs": []
     },
     {
       "title": "Cotton Was King",
       "slug": "cotton-was-king",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "5/5/10",
-      "album": "Dirty Side Down (2010)",
-      "text": "“It's a tribute to New Orleans — past, present, and future. Yeah, that was fun to write... it uses the phrase ‘before the beginning,’ which I actually got from Firesign Theatre... It dates back to the beginning of time that a place like New Orleans was always meant to be created. It was inevitable — a geographic hot spot where things were going to happen no matter what, and New Orleans is what manifested.”\n—John Bell, jambands.com, 4/30/2010\n\n# of times played: 121 First time played: 5/5/10\nNotes: Closing track on Dirty Side Down (2010).",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "2010-05-05",
+      "firstPlayedDisplay": "5/5/10",
+      "timesPlayed": 121,
+      "summary": "“Cotton Was King” is a Widespread Panic original. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "It's a tribute to New Orleans, past, present, and future. Yeah, that was fun to write... it uses the phrase ‘before the beginning,’ which I actually got from Firesign Theatre... It dates back to the beginning of time that a place like New Orleans was always meant to be created. It was inevitable, a geographic hot spot where things were going to happen no matter what, and New Orleans is what manifested.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        }
+      ],
+      "notes": "Closing track on Dirty Side Down (2010).",
       "sources": [
         {
           "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
@@ -833,22 +1472,44 @@
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 38,
-      "image": "",
-      "sourceUrl": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ]
     },
     {
       "title": "St. Louis",
       "slug": "st-louis",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "10/19/07",
-      "album": "Dirty Side Down (2010)",
-      "text": "“We've been playing that on stage as a little bit of a transition piece. It took on a little more solid shape in the studio. There's a free-flowing, open, airy jam there in the middle of it... Oh, let's just stick the ‘St. Louis’ jam in front of that [‘Shut Up and Drive’], and you've got a long intro then.”\n—John Bell, jambands.com, 4/30/2010\n\n# of times played: 71 First time played: 10/19/07\nNotes: Instrumental; on Dirty Side Down (2010).",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "2007-10-19",
+      "firstPlayedDisplay": "10/19/07",
+      "timesPlayed": 71,
+      "summary": "“St. Louis” is a Widespread Panic original. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "We've been playing that on stage as a little bit of a transition piece. It took on a little more solid shape in the studio. There's a free-flowing, open, airy jam there in the middle of it... Oh, let's just stick the ‘St. Louis’ jam in front of that [‘Shut Up and Drive’], and you've got a long intro then.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        }
+      ],
+      "notes": "Instrumental; on Dirty Side Down (2010).",
       "sources": [
         {
           "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
@@ -857,22 +1518,44 @@
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 39,
-      "image": "",
-      "sourceUrl": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ]
     },
     {
       "title": "Shut Up And Drive",
       "slug": "shut-up-and-drive",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "5/8/10",
-      "album": "Dirty Side Down (2010)",
-      "text": "Asked whether “Shut Up and Drive” fulfills the title's potential as a great road tune: “That's what it was meant for.”\n—John Bell, jambands.com, 4/30/2010\n\n# of times played: 110 First time played: 5/8/10\nNotes: On Dirty Side Down (2010); paired with the instrumental “St. Louis” as its intro.",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "2010-05-08",
+      "firstPlayedDisplay": "5/8/10",
+      "timesPlayed": 110,
+      "summary": "“Shut Up And Drive” is a Widespread Panic original. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "Asked whether “Shut Up and Drive” fulfills the title's potential as a great road tune: “That's what it was meant for.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        }
+      ],
+      "notes": "On Dirty Side Down (2010); paired with the instrumental “St. Louis” as its intro.",
       "sources": [
         {
           "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
@@ -881,23 +1564,47 @@
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "mode": "new",
-      "order": 40,
-      "image": "",
-      "sourceUrl": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ]
     },
     {
       "title": "Postcard",
       "slug": "postcard",
-      "mode": "new",
       "type": "Original",
-      "writtenBy": "Widespread Panic",
-      "firstPlayed": "10/6/86",
-      "image": "",
-      "text": "“When the band started we all lived in this little house in Athens, Georgia, called King Avenue, and we had a friend. His name was Tom Gunther. We commonly knew him as Bear. He left town... Some months later we got a postcard. It arrived at the band house. On the front side of it was a skier catching air way up in the mountains. On the back side was a post mark from Telluride, Colorado, and a very simple message on the postcard that said, ‘The air here is great. We're having an ass-kicking time. This town is nuts. My kind of place. I don't ever want to leave.’”\n—Dave Schools, Colorado Music Hall of Fame induction speech\n\n“...we had a buddy that wrote us a postcard and that turned into a song about 7 years ago. He gets little 15 cent royalty checks.”\n—John Bell, KGSR (Austin), 4/12/97\n\n# of times played: 257 First time played: 10/6/86\nNotes: “Bear” is Tom Guenther — the same friend behind “Bear's Gone Fishin'.”",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1986-10-06",
+      "firstPlayedDisplay": "10/6/86",
+      "timesPlayed": 257,
+      "summary": "“Postcard” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "When the band started we all lived in this little house in Athens, Georgia, called King Avenue, and we had a friend. His name was Tom Gunther. We commonly knew him as Bear. He left town... Some months later we got a postcard. It arrived at the band house. On the front side of it was a skier catching air way up in the mountains. On the back side was a post mark from Telluride, Colorado, and a very simple message on the postcard that said, ‘The air here is great. We're having an ass-kicking time. This town is nuts. My kind of place. I don't ever want to leave.’",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "Colorado Music Hall of Fame induction speech",
+          "sourceDate": null,
+          "url": "https://www.instagram.com/reels/DaH3ejWizfL/"
+        },
+        {
+          "text": "...we had a buddy that wrote us a postcard and that turned into a song about 7 years ago. He gets little 15 cent royalty checks.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "KGSR (Austin), 4/12/97",
+          "sourceDate": "4/12/97",
+          "url": null
+        }
+      ],
+      "notes": "“Bear” is Tom Guenther, the same friend behind “Bear's Gone Fishin'.”",
       "sources": [
         {
           "label": "Dave Schools, Colorado Music Hall of Fame induction speech",
@@ -906,15 +1613,22 @@
         },
         {
           "label": "John Bell & Todd Nance, KGSR interview, 4/12/97 (the royalty-check aside)",
-          "publisher": "via Spreadnet"
+          "publisher": "via Spreadnet",
+          "url": null
         },
         {
           "label": "Type & first-played",
-          "publisher": "Everyday Companion / Burnthday catalog"
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
         }
       ],
-      "order": 41,
-      "sourceUrl": "https://www.instagram.com/reels/DaH3ejWizfL/"
+      "sameAs": [
+        "https://www.instagram.com/reels/DaH3ejWizfL/"
+      ]
     }
-  ]
+  ],
+  "schema": {
+    "note": "Structured for SEO: each origin maps to schema.org MusicComposition (composer/lyricist, recordedAs album) with quotes[] as Quotation objects (creator=speaker, citation=source/url) and sameAs authority links. No prose narration; Burnthday is compiler, sources speak for themselves.",
+    "fields": "title, slug, type, isCover, performedBy, composer, originalArtist, aliases[], albums[{name,year}], firstPlayed(ISO), firstPlayedDisplay, timesPlayed, summary, quotes[{text,speaker,speakerRole,source,sourceDate,url}], notes, sources[{label,publisher,url}], sameAs[]"
+  }
 }
