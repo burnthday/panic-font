@@ -126,6 +126,13 @@ async function main() {
   // the Lyrics & Chords hub links EC-only songs and every lyric subpage carries an
   // "Also on Everyday Companion" cross-reference. Absent file → homepage fallback.
   siteData.ecLinksByKey = await loadEcLinks();
+  // Which catalog songs Everyday Companion actually knows: a verified deep link, or
+  // presence in EC's own play-stat exports. Lyric subpages for EXCLUSIVE songs (a
+  // brand-new original EC has no page for) then omit the EC cross-reference instead
+  // of dead-ending at the EC homepage.
+  siteData.ecKnownKeys = buildEcKnownIndex(siteData.ecLinksByKey, source);
+  // Chord content-type index for the Lyrics & Chords hub (LYRICS vs LYRICS + CHORDS).
+  siteData.chordsByKey = buildChordsResourceIndex(archiveEntries);
   await writeBloggerArchive(archiveEntries, siteData);
   await writeModernArchivePages(archiveEntries, siteData);
   await writeShelfInfoPage(siteData, archiveEntries);
@@ -1291,6 +1298,9 @@ function collectLyricRows(data) {
     const internal = data.lyricsResourceByKey?.get(song.key) || "";
     const primaryAlbum = songAlbumsFor(song, data.albums || [])[0] || null;
     const ec = internal ? null : ecLinkFor(song, data);
+    // "Has chords" is only meaningful for songs hosted here — an EC row's chord
+    // status is unknowable, so it stays false and gets no content-type indicator.
+    const hasChords = Boolean(internal) && Boolean(data.chordsByKey?.has?.(song.key));
     return {
       song,
       title: song.title,
@@ -1298,6 +1308,7 @@ function collectLyricRows(data) {
       album: primaryAlbum ? primaryAlbum.title : "",
       total: Number.isFinite(song.total) ? song.total : 0,
       internal,
+      hasChords,
       ecHref: ec ? ec.href : ""
     };
   }).sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
@@ -1541,21 +1552,24 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
   const matched = rowsData.filter((row) => row.internal).length;
   const albums = [...new Set(rowsData.map((row) => row.album).filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
+  const withChords = rowsData.filter((row) => row.hasChords).length;
   const rows = rowsData.map((row) => {
     const plays = row.total > 0 ? `${formatNumber(row.total)}<small>plays</small>` : "";
     const href = row.internal || row.ecHref;
     const ext = !row.internal;
+    // Internal (badged) rows get a mono content-type indicator; EC rows keep the
+    // "Everyday Companion ↗" treatment (their chord status is unknowable).
     const badge = row.internal
-      ? `<span class="lr-badge lr-badge-internal">Burnthday transcription</span>`
+      ? `<span class="lr-badge lr-badge-internal">Burnthday transcription</span><span class="lr-kind">${row.hasChords ? "Lyrics + Chords" : "Lyrics"}</span>`
       : `<span class="lr-badge lr-ext">Everyday Companion<span class="lr-ext-arrow" aria-hidden="true">↗</span></span>`;
     const sub = row.album || row.type || "Lyrics &amp; chords";
-    return `<a class="lyric-row" href="${escapeAttr(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""} data-title="${escapeAttr(row.title.toLowerCase())}" data-transcription="${row.internal ? "yes" : "no"}" data-type="${escapeAttr(row.type.toLowerCase())}" data-album="${escapeAttr(row.album)}">
+    return `<a class="lyric-row" href="${escapeAttr(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""} data-title="${escapeAttr(row.title.toLowerCase())}" data-transcription="${row.internal ? "yes" : "no"}" data-haschords="${row.hasChords ? "yes" : "no"}" data-type="${escapeAttr(row.type.toLowerCase())}" data-album="${escapeAttr(row.album)}">
       <span class="lr-title">${escapeHtml(row.title)}${badge}</span>
       <span class="lr-sub">${escapeHtml(sub)}</span>
       <span class="lr-plays">${plays}</span>
     </a>`;
   }).join("");
-  const count = `${formatNumber(total)} song${total === 1 ? "" : "s"} · ${formatNumber(matched)} with Burnthday transcriptions`;
+  const count = `${formatNumber(total)} song${total === 1 ? "" : "s"} · ${formatNumber(matched)} on Burnthday · ${formatNumber(withChords)} with chords`;
   const albumOptions = albums.map((title) => `<option value="${escapeAttr(title)}">${escapeHtml(title)}</option>`).join("");
   return `<!doctype html>
 <html lang="en">
@@ -1590,7 +1604,8 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
           <button type="button" data-type-filter="original">Originals</button>
           <button type="button" data-type-filter="cover">Covers</button>
         </div>
-        <button type="button" class="index-toggle" data-transcription-filter aria-pressed="false">Has Burnthday transcription</button>
+        <button type="button" class="index-toggle" data-transcription-filter aria-pressed="false">On Burnthday</button>
+        <button type="button" class="index-toggle" data-chords-filter aria-pressed="false">Has chords</button>
         <label class="index-select"><span>Album</span><select data-album-filter aria-label="Filter by album"><option value="">All albums</option>${albumOptions}</select></label>
       </div>
       <div class="song-list lyrics-list" id="lyric-list">${rows}</div>
@@ -1615,26 +1630,30 @@ function renderLyricsSearchScript() {
     const empty = document.getElementById("lyric-empty");
     const total = rows.length;
     const matched = rows.filter((row) => row.dataset.transcription === "yes").length;
+    const chorded = rows.filter((row) => row.dataset.haschords === "yes").length;
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
     const transToggle = document.querySelector("[data-transcription-filter]");
+    const chordsToggle = document.querySelector("[data-chords-filter]");
     const albumSelect = document.querySelector("[data-album-filter]");
     let selectedType = "all";
-    const base = total + " songs · " + matched + " with Burnthday transcriptions";
+    const base = total + " songs · " + matched + " on Burnthday · " + chorded + " with chords";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
       const transOnly = transToggle && transToggle.getAttribute("aria-pressed") === "true";
+      const chordsOnly = chordsToggle && chordsToggle.getAttribute("aria-pressed") === "true";
       const album = albumSelect ? albumSelect.value : "";
       let shown = 0;
       rows.forEach((row) => {
         const hit = (!q || row.dataset.title.includes(q))
           && (selectedType === "all" || row.dataset.type === selectedType)
           && (!transOnly || row.dataset.transcription === "yes")
+          && (!chordsOnly || row.dataset.haschords === "yes")
           && (!album || row.dataset.album === album);
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      const filtered = q || selectedType !== "all" || transOnly || album;
+      const filtered = q || selectedType !== "all" || transOnly || chordsOnly || album;
       count.textContent = filtered ? shown + " of " + total + " songs" : base;
     };
     typeButtons.forEach((btn) => btn.addEventListener("click", () => {
@@ -1644,6 +1663,10 @@ function renderLyricsSearchScript() {
     }));
     if (transToggle) transToggle.addEventListener("click", () => {
       transToggle.setAttribute("aria-pressed", transToggle.getAttribute("aria-pressed") === "true" ? "false" : "true");
+      apply();
+    });
+    if (chordsToggle) chordsToggle.addEventListener("click", () => {
+      chordsToggle.setAttribute("aria-pressed", chordsToggle.getAttribute("aria-pressed") === "true" ? "false" : "true");
       apply();
     });
     if (albumSelect) albumSelect.addEventListener("change", apply);
@@ -2074,8 +2097,14 @@ function renderArchiveHeader(entry, data) {
   const title = cleanArchiveTitle(entry.title);
   const isLanding = section.label.toLowerCase() === title.toLowerCase();
   const trail = [`<a href="/">Home</a>`];
-  if (!isLanding) trail.push(`<a href="${escapeAttr(section.href)}">${escapeHtml(section.label)}</a>`);
-  trail.push(`<span aria-current="page">${escapeHtml(title)}</span>`);
+  // Detail pages show the ancestor trail only — the current page is already the H1
+  // and the categorizing eyebrow, so a self-referential last crumb is dropped. A
+  // landing page (section === title) keeps its single current crumb.
+  if (!isLanding) {
+    trail.push(`<a href="${escapeAttr(section.href)}">${escapeHtml(section.label)}</a>`);
+  } else {
+    trail.push(`<span aria-current="page">${escapeHtml(title)}</span>`);
+  }
   // Lyric/chord pages get a song-specific eyebrow so they read as part of the
   // Lyrics & Chords section rather than an anonymous Blogger post. Framing only —
   // the breadcrumb, title and verbatim body are untouched.
@@ -2101,9 +2130,11 @@ function renderLyricCrosslinks(entry, data) {
   if (origin) links.push(`<a class="origin-xlink" href="/song-origins/${escapeAttr(origin.slug)}/"><span class="oxl-label">Song origin</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
   if (primaryAlbum) links.push(`<a class="origin-xlink" href="/albums/${escapeAttr(primaryAlbum.slug)}/"><span class="oxl-label">Appears on ${escapeHtml(primaryAlbum.title)}</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
   // Small cross-reference to the community canon on Everyday Companion — a verified
-  // deep link when one exists, else the safe EC homepage (never a guessed 404). Our
-  // verbatim transcription above stays the primary content; this is a courtesy exit.
-  if (song) {
+  // deep link when one exists, else the safe EC homepage. Our verbatim transcription
+  // above stays the primary content; this is a courtesy exit. Rendered ONLY when EC
+  // actually knows the song: an exclusive Burnthday page (a brand-new song EC has no
+  // entry for) omits the cross-reference rather than dead-ending at the EC homepage.
+  if (song && ecKnownFor(song, data)) {
     const ec = ecLinkFor(song, data);
     links.push(`<a class="origin-xlink origin-xlink-ext" href="${escapeAttr(ec.href)}" target="_blank" rel="noopener noreferrer"><span class="oxl-label">Also on Everyday Companion</span><span class="oxl-go" aria-hidden="true">↗</span></a>`);
   }
@@ -2941,7 +2972,7 @@ function renderTourInReviewPage(tour, data, prev, next, crosslink) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="tour-in-review-main">
       <header class="tour-hero">
-        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/tour-in-review/">Tour In Review</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(title)}</span></nav>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/tour-in-review/">Tour In Review</a></nav>
         <p class="tour-eyebrow">Tour In Review</p>
         <h1>${escapeHtml(title)}</h1>
         <p class="tour-range">${escapeHtml(dateRange)}</p>
@@ -3179,16 +3210,169 @@ function parseOriginStatsFooter(text) {
   return { analytics, links, picks, notes, strippedText };
 }
 
-// Render the parsed footer as the designed "By the Numbers" data panel: a mono
-// eyebrow, the kept analytics as a definition grid (tabular-nums), his notes
-// verbatim, resource chips (Learn-It styling), and the Picks list. panicstream
-// URLs are never emitted; a pick becomes a live "Listen" link only when its ISO
-// date is in the (dormant-by-default) Relisten cache.
-function renderOriginNumbers(footer, data) {
-  if (!footer || (!footer.analytics.length && !footer.links.length && !footer.picks.length && !footer.notes)) return "";
-  const relistenDates = data.relistenDates || new Set();
+// Pull the songwriter credit and the original-source album out of Alex's verbatim
+// footer notes so they can be surfaced in the hero. Names/albums are kept exactly
+// as he typed them. The "Appears on …" clause is only lifted when a writer credit
+// is present (a cover with an outside origin album); a plain WSP-album note stays
+// in the notes since the stat strip already carries the studio album. Returns the
+// pulled fields plus the remaining notes with the lifted clauses removed.
+function parseOriginCredits(notes) {
+  let remaining = String(notes || "").trim();
+  let writer = "";
+  let appearsOn = "";
+  const writerRe = /\b(?:Author|Written by|Co-written by)\s*:?\s*([^;\n]+)/i;
+  const wm = writerRe.exec(remaining);
+  if (wm) {
+    writer = wm[1].trim().replace(/[;,.\s]+$/, "");
+    remaining = remaining.slice(0, wm.index) + remaining.slice(wm.index + wm[0].length);
+    const appearsRe = /\bAppears on\s+([^;\n]+?)(?=\s*(?:;|Lyrics\s*:|Chords\s*:|Guitar\s*Tab\s*:|Song\s*Credits\s*:|$))/i;
+    const am = appearsRe.exec(remaining);
+    if (am) {
+      appearsOn = am[1].trim().replace(/[;,.\s]+$/, "");
+      remaining = remaining.slice(0, am.index) + remaining.slice(am.index + am[0].length);
+    }
+  }
+  remaining = remaining.replace(/^[\s;,.]+/, "").replace(/[\s;,.]+$/, "").replace(/\s{2,}/g, " ").trim();
+  return { writer, appearsOn, remaining };
+}
 
-  const rows = footer.analytics
+// ---- Computed origin "By the Numbers" ----
+// The 5 stat rows are COMPUTED live from the full ordered performance log
+// (data.setlistShows), replacing Alex's years-old typed snapshot. His verbatim
+// notes / credits / Picks / resource links are never touched — only the numbers.
+// Jam and Drums and Bass are segment pseudo-songs and are excluded from adjacency.
+function isSegmentKey(key) {
+  return key === "jam" || key === "drumsandbass" || key === "drumsbass" || key === "drums";
+}
+
+// MM/DD/YY from an ISO date, matching Alex's drought bracket formatting.
+function shortMdy(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || ""));
+  return m ? `${m[2]}/${m[3]}/${m[1].slice(2)}` : String(iso || "");
+}
+
+// Fold setlist.fm's messy set labels ("Set 1:", "Set One", "Set I", "1", "1st",
+// "Encore 1", "t 1:") into a canonical bucket. Descriptive labels (Acoustic /
+// Electric …) are kept as-is so we never fabricate a set number.
+function canonicalSetLabel(raw, encore) {
+  const value = String(raw || "").trim();
+  if (encore || /^encore/i.test(value)) {
+    const m = /encore\s*(\d+)/i.exec(value);
+    return m ? `Encore ${m[1]}` : "Encore";
+  }
+  const core = value.replace(/:$/, "").replace(/\s*\(.*?\)\s*$/, "").replace(/\s+-\s+.*$/, "").trim();
+  const words = { one: 1, two: 2, three: 3, i: 1, ii: 2, iii: 3 };
+  let m;
+  if ((m = /^set\s+(\d+)/i.exec(core))) return `Set ${m[1]}`;
+  if ((m = /^set\s+(one|two|three|i{1,3})\b/i.exec(core))) return `Set ${words[m[1].toLowerCase()]}`;
+  if ((m = /^t\s+(\d+)/i.exec(core))) return `Set ${m[1]}`;
+  if ((m = /^(\d+)(?:st|nd|rd|th)?$/i.exec(core))) return `Set ${m[1]}`;
+  if (!core) return "Set 1";
+  return /^set\b/i.test(core) ? core.replace(/^set\s*/i, "Set ") : core;
+}
+
+// Compute the 5 By-the-Numbers metrics for an origin's matched catalog song from
+// the ordered show log. Returns an ordered [{label, value}] array; a metric that
+// cannot be computed (e.g. a single-performance song has no drought) is omitted.
+function computeOriginNumbers(origin, data) {
+  const shows = data.setlistShows || [];
+  if (!shows.length) return [];
+  const key = normalizeTitle(origin.title);
+  const song = (data.catalog || []).find((row) => row.key === key) || null;
+  const target = song ? song.key : key;
+  if (!target) return [];
+  const titleFor = (k, fallback) => {
+    const s = (data.catalog || []).find((row) => row.key === k);
+    return s ? s.title : fallback;
+  };
+
+  const playIdx = [];
+  shows.forEach((show, i) => { if (show.songs.some((s) => s.key === target)) playIdx.push(i); });
+  if (!playIdx.length) return [];
+
+  const rows = [];
+  const totalShows = shows.length;
+  const plays = playIdx.length;
+  const first = playIdx[0];
+
+  // Frequency: shows-per-play across the window from this song's debut to the
+  // latest logged show → "1 in every N.N shows".
+  const windowShows = totalShows - first;
+  rows.push({ label: "Frequency", value: `1 in every ${(windowShows / plays).toFixed(1)} shows` });
+
+  // Longest drought: most shows elapsed between two consecutive performances.
+  if (plays >= 2) {
+    let maxGap = 0;
+    let gapA = -1;
+    let gapB = -1;
+    for (let k = 0; k < playIdx.length - 1; k++) {
+      const gap = playIdx[k + 1] - playIdx[k];
+      if (gap > maxGap) { maxGap = gap; gapA = playIdx[k]; gapB = playIdx[k + 1]; }
+    }
+    if (maxGap > 1 && gapA >= 0) {
+      rows.push({ label: "Longest drought", value: `${maxGap} shows (${shortMdy(shows[gapA].date)} > ${shortMdy(shows[gapB].date)})` });
+    }
+  }
+
+  // Lead in / lead out: the immediate non-segment neighbour in each show's flat,
+  // in-order song list.
+  const bump = (map, k, name) => {
+    const existing = map.get(k);
+    if (existing) existing.count++;
+    else map.set(k, { key: k, name, count: 1 });
+  };
+  const leadIn = new Map();
+  const leadOut = new Map();
+  for (const i of playIdx) {
+    const flat = shows[i].songs.filter((s) => !isSegmentKey(s.key));
+    const pos = flat.findIndex((s) => s.key === target);
+    if (pos < 0) continue;
+    if (pos > 0) bump(leadIn, flat[pos - 1].key, flat[pos - 1].name);
+    if (pos < flat.length - 1) bump(leadOut, flat[pos + 1].key, flat[pos + 1].name);
+  }
+  const topOf = (map) => {
+    let best = null;
+    for (const v of map.values()) if (!best || v.count > best.count) best = v;
+    return best;
+  };
+  const li = topOf(leadIn);
+  if (li) rows.push({ label: "Most common lead in", value: `${titleFor(li.key, li.name)} (${li.count} time${li.count === 1 ? "" : "s"})` });
+  const lo = topOf(leadOut);
+  if (lo) rows.push({ label: "Most common lead out", value: `${titleFor(lo.key, lo.name)} (${lo.count} time${lo.count === 1 ? "" : "s"})` });
+
+  // Most common set position: the most frequent (canonical set + index-within-set).
+  const posCount = new Map();
+  for (const i of playIdx) {
+    const seq = new Map();
+    for (const s of shows[i].songs) {
+      const label = canonicalSetLabel(s.set, s.encore);
+      const idx = (seq.get(label) || 0) + 1;
+      seq.set(label, idx);
+      if (s.key === target) {
+        const k = `${label}|${idx}`;
+        posCount.set(k, (posCount.get(k) || 0) + 1);
+      }
+    }
+  }
+  let bestPos = null;
+  for (const [k, count] of posCount) if (!bestPos || count > bestPos.count) bestPos = { k, count };
+  if (bestPos) {
+    const [label, idx] = bestPos.k.split("|");
+    rows.push({ label: "Most common set position", value: `${label}, song ${idx} (${bestPos.count} time${bestPos.count === 1 ? "" : "s"})` });
+  }
+
+  return rows;
+}
+
+// Render the "By the Numbers" data panel: a mono eyebrow, the COMPUTED analytics as
+// a definition grid (tabular-nums), his notes verbatim, resource chips (Learn-It
+// styling), and the Picks list. panicstream URLs are never emitted; picks link
+// straight to Relisten (deterministic per-date URLs for these taped shows).
+function renderOriginNumbers(footer, data, computed = []) {
+  const stats = computed.length ? computed : footer.analytics;
+  if (!footer || (!stats.length && !footer.links.length && !footer.picks.length && !footer.notes)) return "";
+
+  const rows = stats
     .map((a) => `<div class="on-row"><dt>${escapeHtml(a.label)}</dt><dd>${escapeHtml(a.value)}</dd></div>`)
     .join("");
   const grid = rows ? `<dl class="origin-stat-grid">${rows}</dl>` : "";
@@ -3209,7 +3393,10 @@ function renderOriginNumbers(footer, data) {
     const items = footer.picks
       .map((p) => {
         const dateLong = p.iso ? (formatLongDate(p.iso) || p.date) : p.date;
-        const relistenUrl = p.iso && relistenDates.has(p.iso) ? relistenUrlFor(p.iso) : "";
+        // Picks link straight to Relisten: the URL is deterministic from the date
+        // and these curated shows are essentially all taped, so we don't gate on the
+        // (optional) relisten cache the way the per-performance rows do.
+        const relistenUrl = p.iso ? relistenUrlFor(p.iso) : "";
         const listen = relistenUrl
           ? `<a class="origin-pick-listen" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer">Listen ↗</a>`
           : "";
@@ -3225,7 +3412,7 @@ function renderOriginNumbers(footer, data) {
   return `<section class="origin-numbers" aria-labelledby="origin-numbers-h">
           <div class="origin-numbers-head">
             <h2 class="on-eyebrow" id="origin-numbers-h">BY THE NUMBERS</h2>
-            <p class="on-sub">From Burnthday's original post</p>
+            <p class="on-sub">Computed from every logged performance</p>
           </div>
           ${grid}
           ${note}
@@ -3241,8 +3428,20 @@ function renderSongOriginPage(origin, origins, data, albums = []) {
   const next = origins[currentIndex + 1] || null;
   const statsFooter = parseOriginStatsFooter(origin.text);
   const originBody = renderOriginText(statsFooter ? statsFooter.strippedText : origin.text);
-  const numbersPanel = statsFooter ? renderOriginNumbers(statsFooter, data) : "";
+  // The 5 numeric metrics are computed live from the performance log; everything
+  // else in the footer (notes, picks, resource links) stays Alex's verbatim text.
+  const computedNumbers = statsFooter ? computeOriginNumbers(origin, data) : [];
+  // Surface the songwriter credit + original-source album from his notes UP into
+  // the hero (key context: identifies a cover, its writer, its origin album), and
+  // strip them from the bottom notes so they are not duplicated.
+  const credits = statsFooter ? parseOriginCredits(statsFooter.notes) : { writer: "", appearsOn: "", remaining: "" };
+  const panelFooter = statsFooter ? { ...statsFooter, notes: credits.remaining } : null;
+  const numbersPanel = panelFooter ? renderOriginNumbers(panelFooter, data, computedNumbers) : "";
   const hasLiteEmbed = originBody.includes('class="yt-lite"');
+  const heroCredits = [
+    credits.writer ? `<p class="origin-credit">Written by ${escapeHtml(credits.writer)}</p>` : "",
+    credits.appearsOn ? `<p class="origin-credit origin-credit-source">Originally on ${escapeHtml(credits.appearsOn)}</p>` : ""
+  ].filter(Boolean).join("");
 
   // ---- Computed data join (nothing here is authored in Alex's voice) ----
   const { song, slug, onAlbums, lyricsHref } = originDataJoin(origin, data, albums);
@@ -3298,9 +3497,10 @@ function renderSongOriginPage(origin, origins, data, albums = []) {
     <main class="archive-main origins-main">
       <article class="archive-page origin-article">
         <header class="origin-article-head">
-          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/song-origins/">Song Origins</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(origin.title)}</span></nav>
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/song-origins/">Song Origins</a></nav>
           <p class="origin-eyebrow">SONG ORIGIN</p>
           <h1>${escapeHtml(origin.title)}</h1>
+          ${heroCredits}
         </header>
         ${origin.image ? `<figure class="origin-hero-media"><img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" decoding="async"></figure>` : ""}
         ${statStrip}
@@ -3468,6 +3668,26 @@ async function attachSetlistFmPerformances(data) {
   }
   for (const list of byTitle.values()) list.sort((a, b) => b.date.localeCompare(a.date));
   data.performancesByTitle = byTitle;
+
+  // Ordered show log (oldest-first) with each show's flat, in-order song list. This
+  // is what the origin "By the Numbers" panel computes over: frequency, drought,
+  // lead-in/out adjacency and set position all need whole-show ordering, which the
+  // per-title index above deliberately flattens away. Only shows that actually have
+  // a setlist are kept (future/empty shows contribute no data).
+  const orderedShows = (cache.shows || [])
+    .filter((show) => show?.date && Array.isArray(show.songs) && show.songs.length)
+    .map((show) => ({
+      date: show.date,
+      venue: show.venue,
+      songs: show.songs.map((song) => ({
+        key: normalizeTitle(song.name),
+        name: song.name,
+        set: song.set || "",
+        encore: Boolean(song.encore)
+      }))
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  data.setlistShows = orderedShows;
 }
 
 function buildSongSlugMap(catalog) {
@@ -3766,6 +3986,85 @@ function buildLyricsResourceIndex(archiveEntries = []) {
   return result;
 }
 
+// ---- Chord detection (Lyrics & Chords hub content-type indicator) ----
+// Burnthday hosts two kinds of internal transcription page per song: a plain
+// "… Lyrics" page (words only) and, for many songs, a sibling "… Guitar Tab" page
+// that carries the actual chords/tab. detectChords() reads a page's source text
+// and decides — conservatively — whether it contains real chord content, so the
+// hub can badge a song "LYRICS + CHORDS" vs "LYRICS". Nothing is authored; this
+// only classifies Alex's existing pages, never rewrites them.
+const CHORD_TOKEN = /^(?:[A-G](?:#|b|♯|♭)?(?:maj|min|m|sus|add|dim|aug|M)?\d{0,2}(?:sus\d)?(?:\/[A-G](?:#|b)?)?)$/;
+const BRACKET_CHORD = /\[[A-G](?:#|b)?(?:maj|min|m|sus|add|dim|aug)?\d{0,2}(?:\/[A-G](?:#|b)?)?\]/g;
+// A tablature line: a string/note label followed by a run of fret/dash characters.
+const TAB_LINE = /^[\s|]*[eEADGBhH][\s|]{0,3}[-–|][-–x0-9phb\/\\~()\s|]{6,}$/;
+
+function detectChords(html) {
+  const text = String(html || "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(div|p|li|tr|h[1-6])>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"');
+  const lines = text.split(/\n/).map((line) => line.trim());
+  let chordDenseLines = 0;
+  let tabLines = 0;
+  for (const line of lines) {
+    if (!line) continue;
+    if (TAB_LINE.test(line)) { tabLines++; continue; }
+    const tokens = line.split(/\s+/).filter(Boolean);
+    if (tokens.length < 2 || tokens.length > 12) continue;
+    const chords = tokens.filter((token) => CHORD_TOKEN.test(token));
+    // Guard against prose false-positives: a bare "A"/"C" is a common English word,
+    // so a chord-dense line needs a multi-character chord (Am, C#m7, D/F#) or a run
+    // of three-plus chord tokens, AND the line must be MOSTLY chords.
+    const richChords = chords.filter((token) => token.length >= 2 || /[#b]/.test(token));
+    if (chords.length >= 2 && chords.length / tokens.length >= 0.7 && (richChords.length >= 1 || chords.length >= 3)) {
+      chordDenseLines++;
+    }
+  }
+  const brackets = (text.match(BRACKET_CHORD) || []).length;
+  const capo = /\bcapo\s*\d/i.test(text);
+  const tuning = /\b(drop\s*d\b|standard tuning|tuning\s*:)/i.test(text);
+  return (
+    tabLines >= 3 ||
+    brackets >= 3 ||
+    chordDenseLines >= 3 ||
+    (chordDenseLines >= 2 && (capo || tuning || brackets >= 1)) ||
+    (capo && chordDenseLines >= 1) ||
+    (tabLines >= 2 && chordDenseLines >= 1) ||
+    (tabLines >= 1 && (capo || tuning))
+  );
+}
+
+// Reduce a lyric/tab page title to the catalog key so a "… Guitar Tab" page can be
+// joined to the same song as its "… Lyrics" sibling.
+function chordPageSongKey(title) {
+  const name = cleanArchiveTitle(title)
+    .replace(/\b(album\s+)?guitar\s+tab\b/gi, "")
+    .replace(/\btab\b/gi, "")
+    .replace(/\b(album\s+)?lyrics?\b/gi, "")
+    .replace(/\bchords?\b/gi, "")
+    .replace(/[|–—-]\s*burnthday.*$/i, "")
+    .trim();
+  return normalizeTitle(name);
+}
+
+// Set of catalog keys that have real chord content somewhere in the archive (a
+// tab page or a lyrics page that itself carries chords). Conservative: a page only
+// contributes its key when detectChords() is satisfied.
+function buildChordsResourceIndex(archiveEntries = []) {
+  const keys = new Set();
+  for (const entry of archiveEntries) {
+    if (!entry.content) continue;
+    if (!detectChords(entry.content)) continue;
+    const key = chordPageSongKey(entry.title || "");
+    if (key) keys.add(key);
+  }
+  return keys;
+}
+
 // Resolve the Everyday Companion link for a catalog song: the verified deep link
 // from data/source/ec-links.json when it exists, else the safe homepage fallback.
 // We NEVER synthesize a guessed per-song URL that could 404. Shared by the song
@@ -3776,6 +4075,30 @@ function ecLinkFor(song, data) {
   const key = (song && song.key) || normalizeTitle((song && song.title) || "");
   const deep = key ? (data.ecLinksByKey?.[key] || "") : "";
   return { href: deep || "http://everydaycompanion.com/", deep: Boolean(deep) };
+}
+
+// Set of catalog keys Everyday Companion demonstrably knows: any key with a verified
+// deep link, plus every song present in EC's play-stat exports. Used to gate the
+// lyric-subpage "Also on Everyday Companion" cross-reference — exclusive songs (no
+// EC entry at all) get no cross-reference rather than a misleading homepage link.
+function buildEcKnownIndex(ecLinksByKey = {}, source = {}) {
+  const keys = new Set(Object.keys(ecLinksByKey || {}));
+  for (const row of source.playstats?.rows || []) {
+    const key = normalizeTitle(row.title || "");
+    if (key) keys.add(key);
+  }
+  for (const row of source.priorSongStats?.rows || []) {
+    const key = normalizeTitle(row.title || "");
+    if (key) keys.add(key);
+  }
+  return keys;
+}
+
+function ecKnownFor(song, data) {
+  const key = (song && song.key) || normalizeTitle((song && song.title) || "");
+  if (!key) return false;
+  if (data.ecLinksByKey?.[key]) return true;
+  return Boolean(data.ecKnownKeys?.has?.(key));
 }
 
 // The guitarist-facing "Learn It" resource row: internal lyrics (only when a real
@@ -3934,7 +4257,7 @@ function renderSongPage(song, data, albums, slugMap) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main song-main">
       <header class="archive-title">
-        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/songs/">Songs</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(song.title)}</span></nav>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/songs/">Songs</a></nav>
         <p class="song-eyebrow">${escapeHtml(eyebrow)}</p>
         <h1>${escapeHtml(song.title)}</h1>
       </header>
@@ -4174,7 +4497,7 @@ function renderAlbumPage(album, albums, data) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main album-main">
       <header class="archive-title">
-        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/albums/">Albums</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(album.title)}</span></nav>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/albums/">Albums</a></nav>
         <p class="album-eyebrow">Studio Album${year ? ` · ${escapeHtml(year)}` : ""}</p>
         <h1>${escapeHtml(album.title)}</h1>
       </header>
@@ -10257,6 +10580,7 @@ body.stagelight .lr-title { font-family: var(--sl-display); font-size: 15px; fon
 body.stagelight .lr-badge { margin-left: 10px; font-family: var(--sl-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); vertical-align: middle; white-space: nowrap; }
 body.stagelight .lr-badge-internal { border-color: rgba(212,81,79,0.5); color: var(--sl-ink); }
 body.stagelight .lr-ext-arrow { margin-left: 5px; color: var(--sl-faint); }
+body.stagelight .lr-kind { margin-left: 8px; font-family: var(--sl-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); vertical-align: middle; white-space: nowrap; }
 body.stagelight .lr-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.stagelight .lr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
 body.stagelight .lr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
@@ -10452,6 +10776,8 @@ body.stagelight .origin-article { max-width: 860px; }
 body.stagelight .origin-article-head { margin-bottom: 30px; }
 body.stagelight .origin-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 4px 0 12px; }
 body.stagelight .origin-article-head h1 { font-family: var(--sl-display); font-weight: 660; font-size: clamp(32px, 5vw, 52px); letter-spacing: -0.02em; color: var(--sl-ink); margin: 0; line-height: 1.02; }
+body.stagelight .origin-credit { font-family: var(--sl-mono); font-size: 13px; letter-spacing: 0.02em; color: var(--sl-muted); margin: 12px 0 0; }
+body.stagelight .origin-credit-source { color: var(--sl-faint); margin-top: 4px; }
 body.stagelight .origin-hero-media { margin: 0 0 34px; }
 body.stagelight .origin-hero-media img { width: 100%; height: auto; display: block; border-radius: var(--sl-r-lg); border: 1px solid var(--sl-line); box-shadow: var(--sl-shadow-2); }
 body.stagelight .origin-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 0 0 38px; }

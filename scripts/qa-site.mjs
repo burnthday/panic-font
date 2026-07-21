@@ -702,13 +702,26 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
   const cardCount = (indexHtml.match(/class="origin-card"/g) || []).length;
   record("Song Origins index lists every origin", expected > 0 && cardCount === expected, `index has ${cardCount} cards, expected ${expected}`);
 
-  // "By the Numbers" panel: Alex's transcribed FB "by the numbers" footer is
-  // parsed OUT of the verbatim prose and re-laid-out as a designed data panel.
-  // The raw "Label: value" code-dump must be gone from the story body, and the
-  // panel must carry his unique analytics verbatim. The stale duplicates
-  // (# of times played / First time played) are intentionally NOT surfaced.
+  // "By the Numbers" panel: the 5 numeric metrics are now COMPUTED live from the
+  // setlist.fm performance log (replacing Alex's years-old FB snapshot). His notes,
+  // Picks, and resource links stay verbatim. The raw "Label: value" code-dump must
+  // be gone from the story body; the stale duplicates (# of times played / First
+  // time played) are intentionally NOT surfaced.
   const withPanel = originPages.filter((p) => p.html.includes("BY THE NUMBERS"));
-  record("Song Origins render a By the Numbers panel from the FB footer", withPanel.length > 0, `${withPanel.length}/${originPages.length} origins got a panel`);
+  record("Song Origins render a computed By the Numbers panel", withPanel.length > 0, `${withPanel.length}/${originPages.length} origins got a panel`);
+  // The panel is now live, not a snapshot: the "from Burnthday's original post" sub
+  // is gone everywhere it once appeared.
+  const staleSub = withPanel.filter((p) => /from Burnthday'?s original post/i.test(p.html));
+  record("By the Numbers panels no longer say 'from Burnthday's original post'", staleSub.length === 0, staleSub.map((p) => path.relative(root, p.file)).join("; "));
+
+  // Writer/album credit is surfaced UP in the hero for covers (not only at the
+  // bottom notes). Climb To Safety is a Jerry Joseph cover with an Author credit.
+  const climb = originPages.find((p) => p.file.includes(`song-origins${path.sep}climb-to-safety${path.sep}`));
+  if (climb) {
+    const headEnd = climb.html.indexOf('class="origin-body');
+    const hero = headEnd > 0 ? climb.html.slice(0, headEnd) : climb.html;
+    record("A cover origin surfaces the writer credit in the hero", /class="origin-credit"[^>]*>Written by /.test(hero), "writer credit missing from the hero");
+  }
 
   const alg = originPages.find((p) => p.file.includes(`song-origins${path.sep}ain-t-life-grand${path.sep}`));
   record("Ain't Life Grand origin page exists for the By the Numbers check", Boolean(alg), alg ? path.relative(root, alg.file) : "not found");
@@ -718,14 +731,22 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
     const bodyEnd = alg.html.indexOf('class="origin-numbers"');
     const storyBody = bodyStart >= 0 && bodyEnd > bodyStart ? alg.html.slice(bodyStart, bodyEnd) : alg.html;
     record("Ain't Life Grand story body no longer shows the raw stat code-dump", !/# of times played/.test(storyBody) && !/523/.test(storyBody), "raw '# of times played: 523' dump still present in prose");
-    // The panel carries his unique analytics verbatim.
     record("Ain't Life Grand By the Numbers panel is present", alg.html.includes("BY THE NUMBERS"));
-    record("Ain't Life Grand panel shows Frequency and Most common lead in", /<dt>Frequency<\/dt>/.test(alg.html) && /Most common lead in/.test(alg.html), "analytic rows missing");
-    record("Ain't Life Grand panel keeps his lead-in value verbatim", alg.html.includes("West Virginia (44 times)"), "verbatim lead-in value missing");
+    // The 5 metrics are COMPUTED, not his stale snapshot: a computed Frequency
+    // ("1 in every N.N shows", not his 3.27) and a computed West Virginia lead-in
+    // count are present.
+    record("Ain't Life Grand Frequency is computed live", /<dt>Frequency<\/dt><dd>1 in every \d+(?:\.\d+)? shows<\/dd>/.test(alg.html) && !alg.html.includes("1 in every 3.27"), "computed Frequency row missing / still stale");
+    record("Ain't Life Grand lead-in is computed (West Virginia + a count)", /Most common lead in<\/dt><dd>West Virginia \(\d+ times?\)<\/dd>/.test(alg.html), "computed lead-in row missing");
+    record("Ain't Life Grand drought is computed (N shows + date bracket)", /Longest drought<\/dt><dd>\d+ shows \(\d\d\/\d\d\/\d\d &gt; \d\d\/\d\d\/\d\d\)<\/dd>/.test(alg.html), "computed drought row missing");
     // The stale duplicates are dropped (never surfaced in the panel).
     record("Ain't Life Grand panel drops the stale # of times played / First time played", !/# of times played/.test(alg.html) && !alg.html.includes(">First time played<"), "stale duplicate rows leaked into the panel");
     // The computed live strip still shows the accurate plays count.
     record("Ain't Life Grand live strip still shows the computed plays", /<strong>[\d,]+<\/strong><span>lifetime plays/.test(alg.html), "computed lifetime plays tile missing");
+    // Picks link straight to Relisten now (un-gated), and panicstream is still stripped.
+    record("Ain't Life Grand Picks link to Relisten", /origin-pick-listen" href="https:\/\/relisten\.net\/widespread-panic\/\d{4}\/\d\d\/\d\d"/.test(alg.html), "picks do not link to relisten.net");
+    // The breadcrumb trail no longer duplicates the H1 (detail-page crumb dropped).
+    const crumbs = alg.html.match(/<nav class="crumbs"[^>]*>[\s\S]*?<\/nav>/)?.[0] || "";
+    record("Ain't Life Grand breadcrumb trail does not duplicate the H1", crumbs.includes('href="/song-origins/"') && !/aria-current="page"/.test(crumbs), "breadcrumb still carries the self-referential current crumb");
   }
 }
 
@@ -743,7 +764,8 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   // just the ~53 songs with an internal transcription.
   const rowCount = (hub.match(/class="lyric-row"/g) || []).length;
   record("Lyrics & Chords hub lists the full catalog", catalog.length > 0 && rowCount === catalog.length, `${rowCount} lyric rows vs ${catalog.length} catalog songs`);
-  assertIncludes(hub, "with Burnthday transcriptions", "Lyrics & Chords hub reports songs + transcription count");
+  assertIncludes(hub, "on Burnthday · ", "Lyrics & Chords hub reports songs + on-Burnthday count");
+  assertIncludes(hub, " with chords", "Lyrics & Chords hub reports the with-chords count");
 
   // PART 3: the redundant hub eyebrow (duplicate of the H1 + breadcrumb crumb) is
   // gone. It stays on the categorizing lyric SUBPAGES (checked below).
@@ -754,6 +776,13 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   // never a guessed 404). Assert both populations exist and resolve correctly.
   const internalCount = (hub.match(/class="lr-badge lr-badge-internal"/g) || []).length;
   record("Lyrics & Chords hub badges internal transcriptions", internalCount > 0, `${internalCount} Burnthday-transcription rows`);
+  // Content-type indicator: internal rows show LYRICS + CHORDS when a chord/tab page
+  // exists for the song, else LYRICS. Both populations must be present.
+  const chordKind = (hub.match(/class="lr-kind">Lyrics \+ Chords</g) || []).length;
+  const lyricsOnlyKind = (hub.match(/class="lr-kind">Lyrics</g) || []).length;
+  record("Lyrics & Chords hub shows the LYRICS + CHORDS content-type indicator", chordKind > 0, `${chordKind} rows marked Lyrics + Chords`);
+  record("Lyrics & Chords hub shows the LYRICS content-type indicator", lyricsOnlyKind > 0, `${lyricsOnlyKind} rows marked Lyrics-only`);
+  record("Every internal row carries a content-type indicator", chordKind + lyricsOnlyKind === internalCount, `${chordKind + lyricsOnlyKind} indicators vs ${internalCount} internal rows`);
   const internalRows = [...hub.matchAll(/<a class="lyric-row" href="([^"]+)"(?![^>]*target)[^>]*data-transcription="yes"/g)].map((m) => m[1]);
   record("Every badged internal row links a real archive page in dist", internalRows.length > 0 && internalRows.every((href) => files.some((f) => f.endsWith(href.replace(/^\//, "").split("/").join(path.sep)))), `${internalRows.length} internal rows checked`);
   const ecRows = [...hub.matchAll(/<a class="lyric-row" href="([^"]+)"[^>]*target="_blank"[^>]*data-transcription="no"/g)].map((m) => m[1]);
@@ -762,10 +791,14 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   // PART 2: the multi-select filters (Type / Has transcription / Album) compose
   // with the search box; the controls are real and the rows carry the data-*.
   assertIncludes(hub, 'class="index-toolbar"', "Lyrics & Chords hub exposes the filter toolbar");
-  assertIncludes(hub, "data-transcription-filter", "Lyrics & Chords hub offers the transcription filter");
+  assertIncludes(hub, "data-transcription-filter", "Lyrics & Chords hub offers the On Burnthday (source) filter");
+  assertIncludes(hub, ">On Burnthday<", "Lyrics & Chords source filter is relabelled 'On Burnthday'");
+  assertIncludes(hub, "data-chords-filter", "Lyrics & Chords hub offers the Has chords filter");
+  assertIncludes(hub, ">Has chords<", "Lyrics & Chords hub Has-chords filter is labelled");
   assertIncludes(hub, "data-album-filter", "Lyrics & Chords hub offers the album filter");
   for (const type of ["all", "original", "cover"]) assertIncludes(hub, `data-type-filter="${type}"`, `Lyrics & Chords hub offers the ${type} type filter`);
-  record("Lyrics & Chords rows carry the filter data-* attributes", /class="lyric-row"[^>]*data-transcription="(?:yes|no)"[^>]*data-type="[^"]*"[^>]*data-album="[^"]*"/.test(hub), "lyric-row data-transcription/data-type/data-album present");
+  record("Lyrics & Chords rows carry the filter data-* attributes", /class="lyric-row"[^>]*data-transcription="(?:yes|no)"[^>]*data-haschords="(?:yes|no)"[^>]*data-type="[^"]*"[^>]*data-album="[^"]*"/.test(hub), "lyric-row data-transcription/data-haschords/data-type/data-album present");
+  record("Lyrics & Chords hub has internal rows flagged with chords", (hub.match(/data-haschords="yes"/g) || []).length > 0, "no data-haschords=yes rows");
 
   // Known lyric subpages: KEEP the framing eyebrow (categorizes them into the
   // section), carry a computed crosslink to a real /song/ live-history page, add
@@ -792,6 +825,13 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
     assertIncludes(html, known.line, `${known.path} lyric body is unchanged (distinctive line intact)`);
   }
   record("At least one known lyric page was framing-checked", checkedOne, "king-baby / life-as-tree lyric page present in dist");
+
+  // EC cross-reference is gated on EC actually knowing the song. A lyric page for a
+  // song Everyday Companion does not host (exclusive / not in EC's catalog) omits the
+  // "Also on Everyday Companion" cross-reference rather than dead-ending at the EC
+  // homepage. Welcome To My World has an internal lyric page but no EC entry.
+  const exclusive = await readText("dist/2015/09/welcome-to-my-world-lyrics.html").catch(() => "");
+  record("A lyric page EC does not host omits the Everyday Companion cross-reference", exclusive.length > 0 && !exclusive.includes("Also on Everyday Companion"), exclusive.length ? "EC cross-ref correctly omitted" : "welcome-to-my-world lyric page missing");
 }
 
 // PART 3 audit: redundant eyebrows are removed on HUB/INDEX pages where they merely
@@ -863,8 +903,15 @@ async function checkMusicLayer(files, htmlByFile) {
 
   // Feature 3: relisten-dates.json must NOT be committed — Relisten stays dormant.
   record("relisten-dates.json is absent from the repo (dormant by default)", !(await fileExists("data/source/relisten-dates.json")), "data/source/relisten-dates.json should not exist");
-  const relistenOffenders = files.filter((file, index) => /relisten\.net/.test(htmlByFile[index])).map((file) => path.relative(root, file));
-  record("No relisten.net links render anywhere while relisten-dates.json is absent", relistenOffenders.length === 0, relistenOffenders.join("; "));
+  // Origin "Burnthday's Picks" now link to Relisten optimistically (deterministic
+  // per-date URLs for these curated, taped shows) — those are allowed. Everywhere
+  // ELSE (e.g. the per-performance song-history rows) stays gated on the dormant
+  // cache, so no relisten.net link should appear outside a pick's "Listen" control.
+  const relistenOffenders = files.filter((file, index) => {
+    const stripped = htmlByFile[index].replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
+    return /relisten\.net/.test(stripped);
+  }).map((file) => path.relative(root, file));
+  record("No relisten.net links render outside origin Picks while relisten-dates.json is absent", relistenOffenders.length === 0, relistenOffenders.join("; "));
 }
 
 async function fileExists(relPath) {
