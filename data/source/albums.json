@@ -1,5 +1,5 @@
 {
-  "_note": "Full studio discography of Widespread Panic studio albums. FACTUAL fields are from a verified pull; blurb is written in Burnthday's OWN voice (no label boilerplate / press-release / special thanks / copyright). Live stats are computed at build time from the catalog. TODO: paste verified streaming URLs (the pulled Spotify IDs were unverifiable and removed); add cover art for the four newest records.",
+  "_note": "Full studio discography of Widespread Panic studio albums. FACTUAL fields are from a verified pull; blurb is written in Burnthday's OWN voice (no label boilerplate / press-release / special thanks / copyright). Live stats are computed at build time from the catalog. add cover art for the four newest records.",
   "albums": [
     {
       "slug": "hailbound-queen",
@@ -67,8 +67,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/50aYdYuCLWDO9MkowmRJUW",
+        "appleMusic": "https://music.apple.com/us/album/hailbound-queen/1763625370",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -141,8 +141,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/3LmaBynfXZ162UTDLqdFdI",
+        "appleMusic": "https://music.apple.com/us/album/snake-oil-king/1749635627",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -235,8 +235,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/7Gd3DsiqhRjbhJNC1MGzgr",
+        "appleMusic": "https://music.apple.com/us/album/miss-kittys-lounge/1599726225",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -325,8 +325,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/7JR1N3Qe9x7XmmK6UezGCx",
+        "appleMusic": "https://music.apple.com/us/album/street-dogs/1440944154",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -508,8 +508,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/121mmxuTG4EBcJ3jtNaKZs",
+        "appleMusic": "https://music.apple.com/us/album/free-somehow/273132358",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -602,8 +602,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/6AaTsuPTNhLoqEbzkval5t",
+        "appleMusic": "https://music.apple.com/us/album/earth-to-america/1478766946",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -697,8 +697,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/0tnvWsdoW32zaQq2bYTI1W",
+        "appleMusic": "https://music.apple.com/us/album/ball/1474619894",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -790,8 +790,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/7gBbSC0R1SIcXZwA2V9DAm",
+        "appleMusic": "https://music.apple.com/us/album/dont-tell-the-band/1474618808",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -883,8 +883,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/2JaUecwsXmm2x9eLfVLu7Z",
+        "appleMusic": "https://music.apple.com/us/album/til-the-medicine-takes/251769477",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -971,8 +971,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/6iAobGpSnFjwaR8D79yZl4",
+        "appleMusic": "https://music.apple.com/us/album/bombs-and-butterflies/270573059",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -1062,8 +1062,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/1dVzzHkYH4vs1qwtJOk0rU",
+        "appleMusic": "https://music.apple.com/us/album/aint-life-grand/287468528",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -1152,8 +1152,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/1OgEkkTKJpy7yOGfPmSTCY",
+        "appleMusic": "https://music.apple.com/us/album/everyday/401360783",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -1249,8 +1249,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/6saL4k96Bv5MFsvG61x11Q",
+        "appleMusic": "https://music.apple.com/us/album/widespread-panic/308865603",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
@@ -1326,8 +1326,8 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
+        "spotify": "https://open.spotify.com/album/5J44eT4AJ527QfHZbxHFAY",
+        "appleMusic": "https://music.apple.com/us/album/space-wrangler/287466519",
         "bandcamp": "",
         "amazon": "",
         "purchase": ""
