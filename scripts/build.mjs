@@ -2026,7 +2026,7 @@ function renderHtml(data) {
       description
     }).replace(/</g, "\\u003c")}</script>
   </head>
-  <body>
+  <body class="stagelight">
     ${renderSiteHeader()}
 
     <main>
@@ -2982,6 +2982,22 @@ function renderCss() {
 @font-face {
   font-family: "Geist";
   src: url("/assets/geist-latin-wght-normal.woff2") format("woff2-variations");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Bricolage";
+  src: url("/assets/bricolage-grotesque-latin-wght-normal.woff2") format("woff2-variations");
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/assets/geist-mono-latin-wght-normal.woff2") format("woff2-variations");
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
@@ -5920,6 +5936,81 @@ sup {
   .menu-icon i {
     transition: none;
   }
+}
+
+/* ============================================================
+   STAGELIGHT — homepage-scoped dark redesign (body.stagelight)
+   The site is the glass case; the sheet stays paper.
+   ============================================================ */
+body.stagelight {
+  --sl-bg: #0b0b0c;
+  --sl-ink: #f2f2f0;
+  --sl-muted: rgba(242, 242, 240, 0.64);
+  --sl-faint: rgba(242, 242, 240, 0.40);
+  --sl-line: rgba(255, 255, 255, 0.08);
+  --sl-line-strong: rgba(255, 255, 255, 0.16);
+  --sl-display: "Bricolage", "Geist", system-ui, sans-serif;
+  --sl-mono: "Geist Mono", ui-monospace, monospace;
+  --sl-glass: linear-gradient(180deg, rgba(28, 28, 31, 0.52), rgba(18, 18, 21, 0.40));
+  --sl-glass-shadow: 0 24px 60px -28px rgba(0,0,0,0.75), 0 2px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07);
+  --sl-r: 20px;
+  background: var(--sl-bg);
+  color: var(--sl-ink);
+  position: relative;
+}
+body.stagelight::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 1000px at 88% -6%, rgba(40, 110, 158, 0.30), transparent 60%),
+    radial-gradient(1300px 1200px at -18% 34%, rgba(212, 81, 79, 0.20), transparent 62%),
+    radial-gradient(1500px 1300px at 108% 78%, rgba(45, 124, 82, 0.18), transparent 64%);
+}
+body.stagelight > * { position: relative; z-index: 1; }
+
+/* nav + footer as dark frosted glass */
+body.stagelight .site-header {
+  background: linear-gradient(180deg, rgba(16,16,18,0.72), rgba(13,13,15,0.58));
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid var(--sl-line);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+body.stagelight .site-header a,
+body.stagelight .brand,
+body.stagelight .site-nav a { color: var(--sl-ink); }
+body.stagelight .site-nav a { color: var(--sl-muted); }
+body.stagelight .site-nav a:hover,
+body.stagelight .site-nav a[aria-current="page"] { color: var(--sl-ink); }
+body.stagelight .brand { font-family: var(--sl-display); font-weight: 800; letter-spacing: 0.045em; }
+body.stagelight .site-footer {
+  background: linear-gradient(180deg, rgba(18,18,20,0.65), rgba(12,12,14,0.75));
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(24px) saturate(1.4);
+  border-top: 1px solid var(--sl-line);
+  color: var(--sl-muted);
+}
+body.stagelight .site-footer a { color: var(--sl-muted); }
+body.stagelight .site-footer a:hover { color: var(--sl-ink); }
+
+/* section headings pick up the display face + light ink */
+body.stagelight main h2 { font-family: var(--sl-display); color: var(--sl-ink); }
+body.stagelight main { color: var(--sl-ink); }
+
+/* THE GLASS CASE around the real paper sheet — the board itself is untouched */
+body.stagelight .primary-board {
+  position: relative;
+}
+body.stagelight .primary-board::before {
+  content: "";
+  position: absolute;
+  inset: -70px -40px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(60% 52% at 50% 44%, rgba(255, 243, 224, 0.16), rgba(255, 243, 224, 0.05) 55%, transparent 78%);
 }
 `;
 }
