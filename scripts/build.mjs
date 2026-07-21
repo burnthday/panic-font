@@ -1326,6 +1326,12 @@ const ABOUT_FAQ = [
     a: "Widespread Panic rarely repeats a song within a run of shows. After each show, Burnthday crosses off every song played in the last four shows. What is left uncrossed is the pool the band is most likely drawing from tonight. That cross-off sheet is the heart of the site."
   },
   {
+    q: "Did the band really keep a list like this?",
+    a: "Yes. For years the master list lived with Garrie Vereen, the band's longtime crew member. A video shot July 30, 2000 shows him building it by hand: last night's songs crossed off, marker colors for the shows before that, new songs Sharpied in at the bottom. One copy went to the band bus, one to the dressing room. The band picked the first set from it before the show and came back at set break for the second. In Garrie's words, there is a Tuesday song and there is a Thursday song. Garrie passed in 2011, and this site keeps his method rolling on the fan side.",
+    link: "https://www.youtube.com/watch?v=axF3SyExCPo",
+    linkLabel: "Watch Garrie build the list (July 30, 2000)"
+  },
+  {
     q: "What is a bustout?",
     a: "A bustout is a song the band brings back after a long absence. On Burnthday, a song that returns after 200 or more shows counts as a Bustout, and after 1,000 or more shows it is a Mega Bustout. Songs that have gone 200 shows without being played live on The Shelf."
   },
@@ -1451,7 +1457,7 @@ function renderAboutPage(entry, data, cache) {
   ].filter(([value]) => value && value !== "0").map(([value, label]) => `<div class="about-stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
   const faqItems = ABOUT_FAQ.map((item) => `<details class="about-faq-item">
         <summary>${escapeHtml(item.q)}</summary>
-        <p>${escapeHtml(item.a)}</p>
+        <p>${escapeHtml(item.a)}${item.link ? ` <a href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.linkLabel || "Watch")}</a>` : ""}</p>
       </details>`).join("\n      ");
   return `<!doctype html>
 <html lang="en">
