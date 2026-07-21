@@ -39,6 +39,7 @@ async function main() {
   await checkLyricsChords(allHtmlFiles, allHtml, siteData);
   checkEyebrowAudit(allHtmlFiles, allHtml);
   await checkTourInReviewPages();
+  await checkArchiveIndex();
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkLocalAssets(allHtml);
 
@@ -805,8 +806,12 @@ function checkEyebrowAudit(files, htmlByFile) {
   // Removed on hubs/indexes (pure duplicates of title + crumb).
   const lyricsHub = htmlAt("lyrics-chords/index.html");
   const songsIndex = htmlAt("songs/index.html");
+  const tourHubEyebrow = htmlAt("tour-in-review/index.html");
+  const archiveHubEyebrow = htmlAt("archive/index.html");
   record("Lyrics & Chords hub has no duplicate eyebrow", lyricsHub.length > 0 && !lyricsHub.includes('class="archive-eyebrow">LYRICS &amp; CHORDS'), "hub eyebrow removed");
   record("Song Index has no duplicate eyebrow", songsIndex.length > 0 && !/class="[a-z-]*eyebrow"/.test(songsIndex.replace(/class="sc-eyebrow"[^>]*>[^<]*<\/time>/g, "")), "song index carries no page eyebrow");
+  record("Tour In Review hub has no duplicate eyebrow", tourHubEyebrow.length > 0 && !/class="[a-z-]*eyebrow"/.test(tourHubEyebrow), "tour hub carries no page eyebrow");
+  record("Archive index has no duplicate eyebrow", archiveHubEyebrow.length > 0 && !/class="[a-z-]*eyebrow"/.test(archiveHubEyebrow), "archive index carries no page eyebrow");
 
   // Kept on detail pages (they categorize — these add information).
   record("Song detail pages keep the categorizing eyebrow", anyMatch(`${path.sep}song${path.sep}`, /class="song-eyebrow"/), "song-eyebrow present on /song/ pages");
@@ -923,6 +928,35 @@ async function checkTourInReviewPages() {
 
   const hub = await readText("dist/tour-in-review/index.html").catch(() => "");
   record("Tour In Review hub links the year-grouped tour index", hub.includes('class="tour-index"') && hub.includes('href="/tour-in-review/2010-fall-tour/"'));
+
+  // Redesigned hub: a decade-grouped, filterable index unifying every generated
+  // tour with Alex's hand-written reviews (badged, not buried).
+  record("Tour In Review hub groups the tour index by decade with a filter",
+    hub.includes('class="tour-decade"') && hub.includes("data-decade-filter"),
+    "expected decade groups and a decade filter");
+  const tourRowCount = (hub.match(/class="tour-row"/g) || []).length;
+  record("Tour In Review hub lists the full generated tour index (>=90 links)",
+    tourRowCount >= 90, `found ${tourRowCount} tour rows`);
+  const writtenBadgeCount = (hub.match(/class="tr-badge"/g) || []).length;
+  record("Tour In Review hub badges tours that have a written review",
+    writtenBadgeCount > 0 && hub.includes(">Burnthday review</a>"),
+    `found ${writtenBadgeCount} written-review badges`);
+}
+
+async function checkArchiveIndex() {
+  const html = await readText("dist/archive/index.html").catch(() => "");
+  record("Archive index groups posts by year",
+    html.includes('class="archive-year"') && /class="archive-year-head">\d{4}/.test(html),
+    "expected year-headed groups");
+  record("Archive index has a client-side title search box",
+    html.includes('id="archive-search"') && html.includes("archive-row"),
+    "expected an #archive-search input over .archive-row items");
+  const archiveRowCount = (html.match(/class="archive-row"/g) || []).length;
+  record("Archive index lists every preserved post as a scannable row",
+    archiveRowCount > 200, `found ${archiveRowCount} archive rows`);
+  record("Archive index uses a single H1 with no duplicate eyebrow",
+    (html.match(/<h1>/g) || []).length === 1 && !/class="[a-z-]*eyebrow"/.test(html),
+    "expected one H1 and no page eyebrow");
 }
 
 async function listFiles(dir, predicate) {

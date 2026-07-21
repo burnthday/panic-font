@@ -1848,8 +1848,7 @@ async function writeGeneratedTourReviewPages(data) {
 }
 
 async function writeTourReviewHub(data, entries, generatedReviews = [], tourInReviews = []) {
-  const oldEntry = entries.find((entry) => entry.path === "/p/burnthdays-widespread-panic-tours-in.html");
-  await writeStaticPage("/tour-in-review/index.html", renderTourReviewHubPage(data, oldEntry, generatedReviews, tourInReviews));
+  await writeStaticPage("/tour-in-review/index.html", renderTourReviewHubPage(data, entries, generatedReviews, tourInReviews));
 }
 
 async function buildGeneratedTourReview(year, data) {
@@ -2376,24 +2375,100 @@ function renderMovementRow(row) {
   </li>`;
 }
 
-function renderTourReviewHubPage(data, oldEntry, generatedReviews = [], tourInReviews = []) {
-  const description = "Burnthday's preserved and updated Widespread Panic Tour In Review pages.";
-  const byYear = new Map();
-  for (const tour of tourInReviews) {
-    if (!byYear.has(tour.year)) byYear.set(tour.year, []);
-    byYear.get(tour.year).push(tour);
+// Compact date range for a tour row: "Oct 5 – Nov 14, 2010" when both ends share a
+// year, otherwise the full "Dec 30, 2011 – Jan 1, 2012". Used on the hub index.
+function formatTourSpan(first, last) {
+  const a = parseDateKey(first);
+  const b = parseDateKey(last);
+  if (!a || !b) return "";
+  const short = (iso) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d)));
+  };
+  const yearA = a.slice(0, 4);
+  const yearB = b.slice(0, 4);
+  if (a === b) return `${short(a)}, ${yearA}`;
+  if (yearA === yearB) return `${short(a)} – ${short(b)}, ${yearA}`;
+  return `${short(a)}, ${yearA} – ${short(b)}, ${yearB}`;
+}
+
+function decadeLabel(decade) {
+  return `${decade}s`;
+}
+
+function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], tourInReviews = []) {
+  const description = "Burnthday's Widespread Panic Tour In Review: one computed page per tour from setlist.fm, unified with Alex's hand-written reviews.";
+
+  // Sort newest first (by last show date, then first).
+  const sorted = [...tourInReviews].sort((a, b) => (b.last || "").localeCompare(a.last || "") || (b.first || "").localeCompare(a.first || ""));
+
+  // Join each generated tour page to Alex's matching written review, reusing the
+  // same year + season-keyword matcher the detail pages use for their crosslink.
+  const proseByRoute = new Map();
+  for (const tour of sorted) {
+    const prose = findProseReviewForTour(tour, archiveEntries || []);
+    if (prose) proseByRoute.set(tour.route, prose);
   }
-  const years = [...byYear.keys()].sort((a, b) => b - a);
-  const tourIndex = years.length ? `<section class="tour-index" aria-label="Every tour in review">
+  const writtenCount = proseByRoute.size;
+  const yearsAll = sorted.map((tour) => tour.year).filter(Boolean);
+  const minYear = yearsAll.length ? Math.min(...yearsAll) : 0;
+  const maxYear = yearsAll.length ? Math.max(...yearsAll) : 0;
+  const spanLabel = minYear && maxYear ? (minYear === maxYear ? String(minYear) : `${minYear}–${maxYear}`) : "";
+  const countLine = `${formatNumber(sorted.length)} tours · ${spanLabel} · ${formatNumber(writtenCount)} with written reviews`;
+
+  // Group into decades, newest first; each decade keeps its tours newest first.
+  const byDecade = new Map();
+  for (const tour of sorted) {
+    const decade = Math.floor(tour.year / 10) * 10;
+    if (!byDecade.has(decade)) byDecade.set(decade, []);
+    byDecade.get(decade).push(tour);
+  }
+  const decades = [...byDecade.keys()].sort((a, b) => b - a);
+
+  const badge = (route) => {
+    const prose = proseByRoute.get(route);
+    return prose ? `<a class="tr-badge" href="${escapeAttr(publicPath(prose.path))}">Burnthday review</a>` : "";
+  };
+
+  const decadeButtons = [`<button type="button" class="is-active" data-decade-filter="all">All</button>`]
+    .concat(decades.map((decade) => `<button type="button" data-decade-filter="${decade}">${escapeHtml(decadeLabel(decade))}</button>`))
+    .join("");
+
+  const tourIndex = decades.length ? `<section class="tour-index" aria-label="Every tour in review">
           <div class="tour-index-head">
             <h2>Every Tour</h2>
-            <span>${formatNumber(tourInReviews.length)} tours · 1985–present · from setlist.fm</span>
+            <span>${escapeHtml(countLine)}</span>
           </div>
-          ${years.map((year) => `<div class="tour-index-year">
-            <h3>${escapeHtml(String(year))}</h3>
-            <ul>${byYear.get(year).map((tour) => `<li><a href="${escapeAttr(tour.route)}"><span class="ti-name">${escapeHtml(tour.dispName)}</span><span class="ti-meta">${formatNumber(tour.showCount)} ${tour.showCount === 1 ? "show" : "shows"}</span></a></li>`).join("")}</ul>
+          ${decades.map((decade) => `<div class="tour-decade" data-decade="${decade}">
+            <h3 class="tour-decade-head">${escapeHtml(decadeLabel(decade))}<span>${formatNumber(byDecade.get(decade).length)} ${byDecade.get(decade).length === 1 ? "tour" : "tours"}</span></h3>
+            <ul class="tour-rows">${byDecade.get(decade).map((tour) => `<li class="tour-row" data-decade="${decade}" data-review="${proseByRoute.has(tour.route) ? "yes" : "no"}" data-name="${escapeAttr(`${tour.year} ${tour.dispName}`.toLowerCase())}">
+              <a class="tour-row-link" href="${escapeAttr(tour.route)}">
+                <span class="tr-name">${escapeHtml(`${tour.year} ${tour.dispName}`)}</span>
+                <span class="tr-span">${escapeHtml(formatTourSpan(tour.first, tour.last))}</span>
+                <span class="tr-shows">${formatNumber(tour.showCount)} ${tour.showCount === 1 ? "show" : "shows"}</span>
+              </a>
+              ${badge(tour.route)}
+            </li>`).join("")}</ul>
           </div>`).join("")}
         </section>` : "";
+
+  const featured = writtenCount ? `<section class="tour-featured" aria-label="Tours Alex reviewed by hand">
+          <div class="tour-index-head">
+            <h2>Written Reviews</h2>
+            <span>${formatNumber(writtenCount)} tours reviewed by hand</span>
+          </div>
+          <ul class="tour-featured-grid">
+            ${sorted.filter((tour) => proseByRoute.has(tour.route)).map((tour) => {
+              const prose = proseByRoute.get(tour.route);
+              return `<li><a href="${escapeAttr(publicPath(prose.path))}"><span class="tfc-year">${escapeHtml(String(tour.year))}</span><span class="tfc-name">${escapeHtml(tour.dispName)}</span><span class="tfc-tag">Burnthday review →</span></a></li>`;
+            }).join("")}
+          </ul>
+        </section>` : "";
+
+  const yearSummary = generatedReviews.length ? `<section class="tour-year-summary" aria-label="Year summaries">
+          ${generatedReviews.map((review) => `<a href="${escapeAttr(publicPath(review.path))}"><span>Year in review</span><strong>${escapeHtml(String(review.year || 2025))} Tour</strong></a>`).join("")}
+        </section>` : "";
+
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -2407,23 +2482,87 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = [], tourInRe
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Tour In Review", "https://burnthday.com/tour-in-review/"]
+    ])}</script>
   </head>
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
-    <main class="archive-main">
-      <article class="archive-page tour-review-hub">
-        ${renderPageGraphicTitle("Tour In Review", "BTD-1_zps89a85566.png")}
-        ${tourIndex}
-        ${generatedReviews.length ? `<section class="archive-content current-review-link">
-          ${generatedReviews.map((review) => `<div><b>${escapeHtml(String(review.year || 2025))}:</b><br><br><a href="${escapeAttr(publicPath(review.path))}">${escapeHtml(String(review.year || 2025))} Tour</a></div>`).join("")}
-        </section>` : ""}
-        ${oldEntry?.content ? `<div class="archive-content">${removeFirstArchiveGraphic(oldEntry.content, "BTD-1_zps89a85566.png")}</div>` : ""}
-      </article>
+    <main class="archive-main songs-main">
+      <header class="archive-title tour-hub-title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Tour In Review</span></nav>
+        <h1>Tour In Review</h1>
+        <p class="tour-hub-deck">Burnthday's Widespread Panic Tour In Review pages — one page per tour, computed from setlist.fm and unified with Alex's hand-written reviews. <b>${escapeHtml(countLine)}.</b></p>
+      </header>
+      ${featured}
+      <div class="song-search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="search" id="tour-search" placeholder="Search ${formatNumber(sorted.length)} tours…" autocomplete="off" aria-label="Search tours">
+        <span class="song-count" id="tour-count">${escapeHtml(countLine)}</span>
+      </div>
+      <div class="index-toolbar" role="group" aria-label="Filter tours">
+        <div class="type-filter" role="group" aria-label="Filter tours by decade">
+          ${decadeButtons}
+        </div>
+        <button type="button" class="index-toggle" data-review-filter aria-pressed="false">Written reviews only</button>
+      </div>
+      ${tourIndex}
+      <p class="song-empty" id="tour-empty" hidden>No tours match those filters.</p>
+      ${yearSummary}
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
+    <script>${renderTourHubScript()}</script>
   </body>
 </html>
 `;
+}
+
+// Client-side search + decade filter + "written reviews only" toggle for the Tour
+// In Review hub. Modeled on renderLyricsSearchScript: reads data-* on each .tour-row,
+// hides non-matching rows, and collapses any decade group with no visible rows.
+function renderTourHubScript() {
+  return `(() => {
+    const input = document.getElementById("tour-search");
+    const rows = [...document.querySelectorAll(".tour-row")];
+    const decades = [...document.querySelectorAll(".tour-decade")];
+    const count = document.getElementById("tour-count");
+    const empty = document.getElementById("tour-empty");
+    const total = rows.length;
+    const base = count.textContent;
+    const decadeButtons = [...document.querySelectorAll(".index-toolbar [data-decade-filter]")];
+    const reviewToggle = document.querySelector("[data-review-filter]");
+    let selectedDecade = "all";
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      const reviewOnly = reviewToggle && reviewToggle.getAttribute("aria-pressed") === "true";
+      let shown = 0;
+      rows.forEach((row) => {
+        const hit = (!q || row.dataset.name.includes(q))
+          && (selectedDecade === "all" || row.dataset.decade === selectedDecade)
+          && (!reviewOnly || row.dataset.review === "yes");
+        row.hidden = !hit;
+        if (hit) shown++;
+      });
+      decades.forEach((group) => {
+        const anyVisible = [...group.querySelectorAll(".tour-row")].some((row) => !row.hidden);
+        group.hidden = !anyVisible;
+      });
+      empty.hidden = shown !== 0;
+      const filtered = q || selectedDecade !== "all" || reviewOnly;
+      count.textContent = filtered ? shown + " of " + total + " tours" : base;
+    };
+    decadeButtons.forEach((btn) => btn.addEventListener("click", () => {
+      selectedDecade = btn.dataset.decadeFilter;
+      decadeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+      apply();
+    }));
+    if (reviewToggle) reviewToggle.addEventListener("click", () => {
+      reviewToggle.setAttribute("aria-pressed", reviewToggle.getAttribute("aria-pressed") === "true" ? "false" : "true");
+      apply();
+    });
+    input.addEventListener("input", apply);
+  })();`;
 }
 
 function renderGeneratedTourReviewPage(review, data) {
@@ -4064,14 +4203,101 @@ function renderAlbumPage(album, albums, data) {
 `;
 }
 
+// The archive index is a utility/findability page: every preserved Blogger post
+// and page, grouped by year (newest first) into scannable tokenized rows, with a
+// client-side title search. Clean and fast — no laminate, no heavy design.
 function renderArchiveIndex(entries, data) {
-  return renderArchiveListPage({
-    title: "Burnthday Archive",
-    deck: `${entries.length} preserved Blogger posts and pages from the Takeout export.`,
-    canonicalPath: "/archive/",
-    entries,
-    data
+  const deck = `${formatNumber(entries.length)} preserved Blogger posts and pages from the Takeout export — grouped by year and searchable by title.`;
+  // Entries arrive newest-first. Group by published year; anything undated falls
+  // into a trailing "Undated" bucket so nothing is dropped.
+  const byYear = new Map();
+  for (const entry of entries) {
+    const year = (entry.published || "").slice(0, 4) || "Undated";
+    if (!byYear.has(year)) byYear.set(year, []);
+    byYear.get(year).push(entry);
+  }
+  const years = [...byYear.keys()].sort((a, b) => {
+    if (a === "Undated") return 1;
+    if (b === "Undated") return -1;
+    return b.localeCompare(a);
   });
+
+  const groups = years.map((year) => `<section class="archive-year" data-year="${escapeAttr(year)}">
+          <h2 class="archive-year-head">${escapeHtml(year)}<span>${formatNumber(byYear.get(year).length)} ${byYear.get(year).length === 1 ? "post" : "posts"}</span></h2>
+          <ul class="archive-rows">${byYear.get(year).map((entry) => `<li class="archive-row" data-title="${escapeAttr((entry.title || "").toLowerCase())}">
+            <a href="${escapeAttr(canonicalPathFor(entry.path))}"><span class="ar-title">${escapeHtml(entry.title)}</span><span class="ar-date">${escapeHtml(formatArchiveDate(entry.published))}</span></a>
+          </li>`).join("")}</ul>
+        </section>`).join("");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Burnthday Archive | Widespread Panic Blog</title>
+    <meta name="description" content="${escapeAttr(deck)}">
+    <link rel="canonical" href="https://burnthday.com/archive/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Archive", "https://burnthday.com/archive/"]
+    ])}</script>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main songs-main">
+      <header class="archive-title archive-hub-title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Archive</span></nav>
+        <h1>Archive</h1>
+        <p class="archive-hub-deck">${escapeHtml(deck)}</p>
+      </header>
+      <div class="song-search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="search" id="archive-search" placeholder="Search ${formatNumber(entries.length)} posts…" autocomplete="off" aria-label="Search archive by title">
+        <span class="song-count" id="archive-count">${formatNumber(entries.length)} posts</span>
+      </div>
+      <div class="archive-groups">${groups}</div>
+      <p class="song-empty" id="archive-empty" hidden>No posts match your search.</p>
+    </main>
+    ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } }, { stagelight: true })}
+    <script>${renderArchiveSearchScript()}</script>
+  </body>
+</html>
+`;
+}
+
+// Client-side title search for the Archive index. Hides non-matching rows and
+// collapses any year group left with no visible posts. Modeled on the Lyrics &
+// Chords / Tour hub search scripts.
+function renderArchiveSearchScript() {
+  return `(() => {
+    const input = document.getElementById("archive-search");
+    const rows = [...document.querySelectorAll(".archive-row")];
+    const groups = [...document.querySelectorAll(".archive-year")];
+    const count = document.getElementById("archive-count");
+    const empty = document.getElementById("archive-empty");
+    const total = rows.length;
+    const base = count.textContent;
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+      rows.forEach((row) => {
+        const hit = !q || row.dataset.title.includes(q);
+        row.hidden = !hit;
+        if (hit) shown++;
+      });
+      groups.forEach((group) => {
+        group.hidden = ![...group.querySelectorAll(".archive-row")].some((row) => !row.hidden);
+      });
+      empty.hidden = shown !== 0;
+      count.textContent = q ? shown + " of " + total + " posts" : base;
+    };
+    input.addEventListener("input", apply);
+  })();`;
 }
 
 function renderPagesIndex(entries, data) {
@@ -9788,6 +10014,29 @@ body.stagelight .archive-list a { font-size: 17px; font-weight: 540; color: var(
 body.stagelight .archive-list a:hover { color: #fff; }
 body.stagelight .archive-list span { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
 body.stagelight .archive-list em { grid-column: 1 / -1; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); font-style: normal; }
+
+/* ---- ARCHIVE INDEX: grouped-by-year, searchable utility list ---- */
+body.stagelight .archive-hub-title { border-bottom: 0; margin-bottom: 20px; padding-bottom: 0; }
+body.stagelight .archive-hub-deck, body.stagelight .archive-title p.archive-hub-deck {
+  font-family: var(--sl-display); font-size: 17px; line-height: 1.55; letter-spacing: -0.01em;
+  text-transform: none; color: var(--sl-muted); margin: 14px 0 0; max-width: 66ch;
+}
+body.stagelight .archive-groups { display: grid; gap: 8px; }
+body.stagelight .archive-year { padding: 6px 0; }
+body.stagelight .archive-year[hidden] { display: none; }
+body.stagelight .archive-year-head { display: flex; align-items: baseline; gap: 12px; margin: 20px 0 8px; font-family: var(--sl-mono); font-size: 15px; letter-spacing: 0.04em; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .archive-year-head span { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .archive-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+body.stagelight .archive-row[hidden] { display: none; }
+body.stagelight .archive-row a { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: baseline; gap: 6px 18px; padding: 12px 6px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .archive-row a:hover { background: rgba(255,255,255,0.03); }
+body.stagelight .ar-title { font-size: 16px; font-weight: 540; color: var(--sl-ink); overflow: hidden; text-overflow: ellipsis; }
+body.stagelight .archive-row a:hover .ar-title { color: #fff; }
+body.stagelight .ar-date { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) {
+  body.stagelight .archive-row a { grid-template-columns: 1fr; gap: 3px; }
+}
+
 body.stagelight .current-review-link { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 30px; }
 body.stagelight .current-review-link div { padding: 18px 22px; border-radius: var(--sl-r-md); background: var(--sl-glass); border: 1px solid var(--sl-line); }
 body.stagelight .current-review-link a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -10298,6 +10547,57 @@ body.stagelight .ti-name { font-family: var(--sl-display); font-size: 15px; font
 body.stagelight .ti-meta { flex: none; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
 @media (max-width: 640px) {
   body.stagelight .tour-index-year { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* ---- TOUR IN REVIEW HUB: landing (hero deck, featured written reviews,
+        decade-grouped searchable index of every generated tour) ---- */
+body.stagelight .tour-hub-title { border-bottom: 0; margin-bottom: 20px; padding-bottom: 0; }
+body.stagelight .tour-hub-deck, body.stagelight .archive-title p.tour-hub-deck {
+  font-family: var(--sl-display); font-size: 17px; line-height: 1.55; letter-spacing: -0.01em;
+  text-transform: none; color: var(--sl-muted); margin: 14px 0 0; max-width: 66ch;
+}
+body.stagelight .tour-hub-deck b { color: var(--sl-ink); font-weight: 600; }
+body.stagelight .tour-featured { margin: 0 0 40px; }
+body.stagelight .tour-featured-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+body.stagelight .tour-featured-grid a {
+  display: grid; grid-template-columns: auto minmax(0,1fr); align-items: baseline; gap: 4px 12px;
+  padding: 14px 16px; border-radius: var(--sl-r-md); background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+body.stagelight .tour-featured-grid a:hover { transform: translateY(-2px); border-color: var(--sl-line-strong); }
+body.stagelight .tfc-year { font-family: var(--sl-mono); font-size: 13px; color: var(--sl-faint); font-variant-numeric: tabular-nums; }
+body.stagelight .tfc-name { font-family: var(--sl-display); font-size: 16px; font-weight: 580; letter-spacing: -0.01em; color: var(--sl-ink); }
+body.stagelight .tfc-tag { grid-column: 2; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .tour-featured-grid a:hover .tfc-tag { color: var(--sl-ink); }
+body.stagelight .tour-decade { padding: 8px 0 4px; }
+body.stagelight .tour-decade[hidden] { display: none; }
+body.stagelight .tour-decade-head { display: flex; align-items: baseline; gap: 12px; margin: 18px 0 10px; font-family: var(--sl-mono); font-size: 15px; letter-spacing: 0.04em; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .tour-decade-head span { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .tour-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+body.stagelight .tour-row[hidden] { display: none; }
+body.stagelight .tour-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 4px 16px; padding: 12px 6px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .tour-row-link { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: baseline; gap: 4px 16px; min-width: 0; }
+body.stagelight .tour-row:hover { background: rgba(255,255,255,0.03); }
+body.stagelight .tr-name { font-family: var(--sl-display); font-size: 16px; font-weight: 560; letter-spacing: -0.01em; color: var(--sl-ink); }
+body.stagelight .tour-row:hover .tr-name { color: #fff; }
+body.stagelight .tr-span { grid-column: 1; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
+body.stagelight .tr-shows { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+body.stagelight .tr-badge {
+  justify-self: end; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--sl-ink); padding: 5px 11px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04); white-space: nowrap;
+}
+body.stagelight .tr-badge:hover { background: var(--sl-ink); color: #111; border-color: var(--sl-ink); }
+body.stagelight .tour-year-summary { display: flex; flex-wrap: wrap; gap: 12px; margin: 36px 0 0; }
+body.stagelight .tour-year-summary a {
+  display: grid; gap: 4px; padding: 16px 20px; border-radius: var(--sl-r-md); border: 1px solid var(--sl-line); background: rgba(255,255,255,0.03);
+}
+body.stagelight .tour-year-summary a:hover { border-color: var(--sl-line-strong); }
+body.stagelight .tour-year-summary span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .tour-year-summary strong { font-family: var(--sl-display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; color: var(--sl-ink); }
+@media (max-width: 640px) {
+  body.stagelight .tour-index-year { grid-template-columns: 1fr; gap: 8px; }
+  body.stagelight .tour-row-link { grid-template-columns: minmax(0,1fr); }
+  body.stagelight .tr-shows { grid-column: 1; grid-row: auto; }
 }
 
 @media (max-width: 760px) {
