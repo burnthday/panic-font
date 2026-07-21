@@ -338,7 +338,7 @@
       "releaseDate": "2010-05-25",
       "cover": "/assets/archive-media/dirty-side-down-cover.jpg",
       "blurb": "This 2010 effort emphasizes the group's songwriting depth, balancing aggressive rock textures with acoustic nuance. It includes a tribute to the late Vic Chesnutt.",
-      "label": "Widespread Records / ATO",
+      "label": "ATO / Widespread Records",
       "recordedAt": [
         "John Keane Studios, Athens GA"
       ],
@@ -419,9 +419,9 @@
         }
       ],
       "links": {
-        "spotify": "",
-        "appleMusic": "",
-        "bandcamp": "",
+        "spotify": "https://open.spotify.com/album/2E00mN6SKtSNslnuDobBuF",
+        "appleMusic": "https://music.apple.com/us/album/dirty-side-down/432827597",
+        "bandcamp": "https://widespreadpanic.bandcamp.com/album/dirty-side-down",
         "amazon": "",
         "purchase": ""
       }
