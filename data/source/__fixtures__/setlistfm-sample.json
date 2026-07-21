@@ -1,0 +1,46 @@
+{
+  "type": "setlists",
+  "itemsPerPage": 20,
+  "page": 1,
+  "total": 3,
+  "setlist": [
+    {
+      "id": "3bd1f0a1",
+      "eventDate": "11-07-2026",
+      "artist": { "name": "Widespread Panic", "mbid": "2ceff551-9975-4f39-a380-a3d1d148ffb9" },
+      "venue": {
+        "name": "Red Rocks Amphitheatre",
+        "city": { "name": "Morrison", "stateCode": "CO", "state": "Colorado", "country": { "name": "United States", "code": "US" } }
+      },
+      "tour": { "name": "Summer Tour 2026" },
+      "sets": {
+        "set": [
+          { "song": [ { "name": "Chilly Water" }, { "name": "Climb to Safety", "cover": { "name": "Jerry Joseph" } }, { "name": "Ain't Life Grand" } ] },
+          { "encore": 1, "song": [ { "name": "Fishwater", "with": { "name": "Jerry Joseph" } }, { "name": "Nights in White Satin", "cover": { "name": "The Moody Blues" }, "tape": true } ] }
+        ]
+      },
+      "url": "https://www.setlist.fm/setlist/widespread-panic/2026/red-rocks-amphitheatre-morrison-co-3bd1f0a1.html"
+    },
+    {
+      "id": "7ca92e40",
+      "eventDate": "10-07-2026",
+      "artist": { "name": "Widespread Panic" },
+      "venue": {
+        "name": "The Fox Theatre",
+        "city": { "name": "Atlanta", "stateCode": "GA", "state": "Georgia", "country": { "name": "United States", "code": "US" } }
+      },
+      "sets": {
+        "set": [ { "song": [ { "name": "Space Wrangler" }, { "name": "Climb to Safety", "cover": { "name": "Jerry Joseph" } } ] } ]
+      },
+      "url": "https://www.setlist.fm/setlist/widespread-panic/2026/the-fox-theatre-atlanta-ga-7ca92e40.html"
+    },
+    {
+      "id": "not-panic",
+      "eventDate": "09-07-2026",
+      "artist": { "name": "Some Other Band" },
+      "venue": { "name": "Wrong Venue", "city": { "name": "Nowhere", "stateCode": "NA", "country": { "code": "US" } } },
+      "sets": { "set": [ { "song": [ { "name": "Should Be Filtered Out" } ] } ] },
+      "url": "https://www.setlist.fm/setlist/some-other-band/2026/wrong.html"
+    }
+  ]
+}

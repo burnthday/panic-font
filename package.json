@@ -10,6 +10,7 @@
     "import:playstats": "node scripts/import-everyday-companion-playstats.mjs",
     "import:ec-prior-stats": "node scripts/import-everyday-companion-prior-song-stats.mjs",
     "import:official-setlists": "node scripts/import-official-setlists.mjs",
+  "import:setlistfm": "node scripts/import-setlistfm.mjs",
     "enrich:setlist-transitions": "node scripts/enrich-setlist-transitions.mjs",
     "import:song-origins": "node scripts/import-song-origins.mjs",
     "validate:playstats": "node scripts/validate-playstats-match.mjs",
