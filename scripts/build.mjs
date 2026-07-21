@@ -1339,12 +1339,20 @@ function renderNotFoundPage(data) {
   </head>
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
-    <main class="archive-main">
-      <article class="archive-page">
-        <header class="archive-title"><p>404</p><h1>Page Not Found</h1></header>
-        <p>The page may have moved when Burnthday left Blogger.</p>
-        <p><a href="/">Current Song List</a> <span>|</span> <a href="/archive/">Burnthday Archive</a></p>
-      </article>
+    <main class="archive-main nf-main">
+      <p class="nf-eyebrow">404 · Lost at the show</p>
+      <h1 class="nf-title">You wandered off during Drums.</h1>
+      <figure class="nf-gif">
+        <img src="/assets/archive-media/15.gif" alt="A man raving blissfully in the dark with glow sticks" width="480" height="266">
+        <figcaption>Live look at you, trying to find this page.</figcaption>
+      </figure>
+      <p class="nf-copy">Whatever you were after either got shelved, never made the sheet, or stayed behind when Burnthday left Blogger. The band plays on:</p>
+      <nav class="nf-links" aria-label="Find your way back">
+        <a href="/">Song Possibilities</a>
+        <a href="/songs/">Song Index</a>
+        <a href="/#setlists">Setlists</a>
+        <a href="/archive/">The Archive</a>
+      </nav>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
   </body>
@@ -8536,6 +8544,18 @@ body.stagelight .perf-more a:hover { color: var(--sl-ink); }
 body.stagelight .song-resources { margin-top: 22px; }
 body.stagelight .song-resources a { display: inline-flex; align-items: center; gap: 7px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--sl-muted); border-bottom: 1px solid var(--sl-line); padding-bottom: 3px; }
 body.stagelight .song-resources a:hover { color: var(--sl-ink); border-color: rgba(255,255,255,0.28); }
+/* 404 — lost at the show */
+body.stagelight .nf-main { max-width: 620px; text-align: center; padding: 40px 0 60px; }
+body.stagelight .nf-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 14px; }
+body.stagelight .nf-title { font-family: var(--sl-display); font-size: clamp(30px, 5vw, 44px); font-weight: 660; letter-spacing: -0.02em; margin-bottom: 30px; }
+body.stagelight .nf-gif { margin: 0 auto 26px; max-width: 480px; }
+body.stagelight .nf-gif img { width: 100%; height: auto; border-radius: var(--sl-r, 18px); border: 1px solid var(--sl-line); box-shadow: 0 24px 60px rgba(0,0,0,0.55); }
+body.stagelight .nf-gif figcaption { margin-top: 12px; font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .nf-copy { font-size: 15.5px; line-height: 1.65; color: var(--sl-muted); margin: 0 auto 26px; max-width: 460px; }
+body.stagelight .nf-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+body.stagelight .nf-links a { padding: 10px 18px; border-radius: 999px; background: var(--sl-glass); border: 1px solid var(--sl-line); color: var(--sl-ink); font-size: 14px; font-weight: 540; transition: border-color 0.16s ease, transform 0.16s ease; }
+body.stagelight .nf-links a:hover { border-color: rgba(255,255,255,0.26); transform: translateY(-2px); }
+
 body.stagelight .song-back { margin-top: 34px; }
 body.stagelight .song-back a { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .song-back a:hover { color: var(--sl-ink); }
