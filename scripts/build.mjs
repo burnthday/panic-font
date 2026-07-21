@@ -2072,11 +2072,14 @@ function computeTourReview(meta, showData, playIndices, catalogByKey) {
     if (show.state) stateShows.set(show.state, (stateShows.get(show.state) || 0) + 1);
   }
 
-  const played = [...counts.entries()]
+  // Alex's convention: instrumental segments stay on the sheet and in the
+  // totals, but never rank in "Most Played" (his 2010 review hand-omits Drums).
+  const rankable = [...counts.entries()]
+    .filter(([key]) => key !== "drums")
     .map(([key, count]) => ({ key, count, title: displayFor(key) }))
     .sort((a, b) => b.count - a.count || a.title.localeCompare(b.title));
-  const topCount = played.length ? played[0].count : 0;
-  const mostPlayed = played.slice(0, 10);
+  const topCount = rankable.length ? rankable[0].count : 0;
+  const mostPlayed = rankable.slice(0, 10);
 
   const bustouts = [];
   const debuts = [];
