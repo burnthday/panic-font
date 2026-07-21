@@ -4405,7 +4405,7 @@ main {
   padding: 42px 34px 34px;
   margin: 0 auto 34px;
   background: #ffffff;
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: "Geist", system-ui, sans-serif;
 }
 
 .header-row {
@@ -4461,7 +4461,7 @@ main {
 .board-title p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: "Geist", system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.2;
   letter-spacing: 0;
@@ -4484,7 +4484,7 @@ main {
 }
 
 .stat strong {
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: "Geist", system-ui, sans-serif;
   font-size: 34px;
   line-height: 1;
   font-weight: 400;
@@ -4528,7 +4528,7 @@ main {
 
 .sheet-key h2 {
   margin: 0 0 18px;
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: "Geist", system-ui, sans-serif;
   font-size: 28px;
   line-height: 1;
   font-weight: 400;
@@ -4549,7 +4549,7 @@ main {
 .key-block h3,
 .key-points strong,
 .key-other-sheets dt {
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: "Geist", system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.05;
   font-weight: 400;
@@ -4795,7 +4795,7 @@ sup {
 
 .add-on-date {
   margin-left: 5px;
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: "Geist", system-ui, sans-serif;
   font-size: 0.72em;
   line-height: 1;
   vertical-align: 0.03em;
@@ -7859,8 +7859,10 @@ body.stagelight .laminate::after {
 }
 
 /* ---- DRY-ERASE STRIKES: SVG marker swipes over played songs ---- */
-.marker-swipe { display: block; width: 100%; height: 100%; overflow: visible; opacity: 0.82; mix-blend-mode: multiply; }
-.marker-swipe path { fill: none; stroke-width: 8px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.marker-swipe { display: block; width: 100%; height: 100%; overflow: visible; opacity: 0.8; mix-blend-mode: multiply; }
+/* stroke-width in viewBox units so the swipe scales to the FULL text height —
+   the marker covers the whole song, like the real sheet */
+.marker-swipe path { fill: none; stroke-width: 10.5; stroke-linecap: round; }
 /* draw-in when the board scrolls into view */
 .can-strike .marker-swipe path { stroke-dasharray: 1; stroke-dashoffset: 1; }
 .can-strike .marker-mask.draw .marker-swipe path { animation: strike-swipe 0.3s ease-out forwards; animation-delay: var(--sd, 0s); }
