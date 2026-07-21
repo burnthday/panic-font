@@ -5845,10 +5845,11 @@ sup {
 
 .archive-title h1 {
   margin: 0;
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
   font-size: var(--type-archive-title);
-  line-height: 1;
-  font-weight: 400;
+  line-height: 1.04;
+  font-weight: 640;
+  letter-spacing: -0.02em;
 }
 
 .archive-title p {
@@ -5876,10 +5877,11 @@ sup {
 
 .page-graphic-title h1 {
   margin: 0;
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
   font-size: var(--type-archive-title);
-  line-height: 1;
-  font-weight: 400;
+  line-height: 1.04;
+  font-weight: 640;
+  letter-spacing: -0.02em;
 }
 
 .archive-tags {
@@ -6030,10 +6032,11 @@ sup {
 .shelf-movement h2,
 .legacy-shelf-notes h2 {
   margin: 0 0 14px;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 30px;
-  line-height: 1;
-  font-weight: 400;
+  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-size: 26px;
+  line-height: 1.05;
+  font-weight: 640;
+  letter-spacing: -0.02em;
 }
 
 .movement-block {
@@ -6042,10 +6045,11 @@ sup {
 
 .movement-block h3 {
   margin: 0 0 8px;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 22px;
-  line-height: 1;
-  font-weight: 400;
+  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-size: 19px;
+  line-height: 1.1;
+  font-weight: 620;
+  letter-spacing: -0.01em;
 }
 
 .movement-list {
@@ -6085,8 +6089,8 @@ sup {
 }
 
 .review-top-songs strong {
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-weight: 400;
+  font-family: "Geist", system-ui, sans-serif;
+  font-weight: 600;
 }
 
 .review-top-songs span {
@@ -6095,10 +6099,10 @@ sup {
 }
 
 .movement-list strong {
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 22px;
-  line-height: 1;
-  font-weight: 400;
+  font-family: "Geist", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 600;
 }
 
 .movement-list span {
@@ -6164,16 +6168,19 @@ sup {
 .origin-title p {
   margin: 0 0 7px;
   color: var(--muted);
-  font-family: "MilkRun", system-ui, sans-serif;
+  font-family: var(--sl-mono, "Geist Mono", ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .origin-hero h1 {
   margin: 0;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 56px;
-  line-height: 0.95;
-  font-weight: 400;
+  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-size: 46px;
+  line-height: 1;
+  font-weight: 660;
+  letter-spacing: -0.02em;
 }
 
 .origin-hero span {
@@ -6215,10 +6222,11 @@ sup {
 }
 
 .origin-card strong {
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 24px;
-  line-height: 1;
-  font-weight: 400;
+  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-size: 19px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .origin-back {
@@ -6269,9 +6277,9 @@ sup {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   padding: 12px 0;
-  font-family: "MilkRun", system-ui, sans-serif;
-  font-size: 16px;
-  line-height: 1.55;
+  font-family: var(--sl-mono, "Geist Mono", ui-monospace, monospace);
+  font-size: 13px;
+  line-height: 1.7;
 }
 
 .origin-source {
