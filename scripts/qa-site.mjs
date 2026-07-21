@@ -903,17 +903,25 @@ async function checkMusicLayer(files, htmlByFile) {
   const watchOffenders = files.filter((file, index) => /class="song-watch"|id="song-watch-h"/.test(htmlByFile[index])).map((file) => path.relative(root, file));
   record("No WATCH section renders anywhere while song-videos.json is absent", watchOffenders.length === 0, watchOffenders.join("; "));
 
-  // Feature 3: relisten-dates.json must NOT be committed — Relisten stays dormant.
-  record("relisten-dates.json is absent from the repo (dormant by default)", !(await fileExists("data/source/relisten-dates.json")), "data/source/relisten-dates.json should not exist");
-  // Origin "Burnthday's Picks" now link to Relisten optimistically (deterministic
-  // per-date URLs for these curated, taped shows) — those are allowed. Everywhere
-  // ELSE (e.g. the per-performance song-history rows) stays gated on the dormant
-  // cache, so no relisten.net link should appear outside a pick's "Listen" control.
+  // Feature 3: relisten-dates.json IS committed (activated 2026-07-21) — the
+  // Relisten layer is live. Assert the cache is valid and the gated links render.
+  record("relisten-dates.json is committed and Relisten is active", await fileExists("data/source/relisten-dates.json"), "data/source/relisten-dates.json should exist");
+  let relistenDates = [];
+  try { relistenDates = JSON.parse(await readFile(path.join(root, "data/source/relisten-dates.json"), "utf8")); } catch { /* recorded below */ }
+  record("relisten-dates.json is a non-empty array of ISO dates", Array.isArray(relistenDates) && relistenDates.length > 1000 && relistenDates.every((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)), `${Array.isArray(relistenDates) ? relistenDates.length : "invalid"} dates`);
+  // Per-performance song-history rows are gated on the cache: with 2000+ dates
+  // committed, matching rows must render the perf-relisten Listen link, and every
+  // relisten.net link outside origin Picks must be one of those gated links.
+  const perfRelistenPages = files.filter((file, index) => /class="perf-relisten"/.test(htmlByFile[index])).length;
+  record("Song-history rows render gated Relisten Listen links", perfRelistenPages >= 1, `${perfRelistenPages} pages with perf-relisten links`);
   const relistenOffenders = files.filter((file, index) => {
-    const stripped = htmlByFile[index].replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
+    const stripped = htmlByFile[index]
+      .replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      .replace(/<a class="perf-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
     return /relisten\.net/.test(stripped);
   }).map((file) => path.relative(root, file));
-  record("No relisten.net links render outside origin Picks while relisten-dates.json is absent", relistenOffenders.length === 0, relistenOffenders.join("; "));
+  record("relisten.net links render only through the gated Pick, performance-row, and show-card controls", relistenOffenders.length === 0, relistenOffenders.join("; "));
 }
 
 async function fileExists(relPath) {
