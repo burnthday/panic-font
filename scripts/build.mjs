@@ -2427,7 +2427,6 @@ function renderRumorsPage(data, oldRumorsEntry) {
       <article class="archive-page rumors-page">
         ${renderPageGraphicTitle("Rumors", "crystalball.png")}
         ${renderCurrentRumors(data)}
-        <div class="archive-content prose-plate">${removeFirstArchiveGraphic(oldRumorsEntry?.content || "", "crystalball.png")}</div>
       </article>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
@@ -2468,6 +2467,7 @@ function renderCurrentRumors(data) {
         <span class="rumor-flag">${escapeHtml(rumor.heat)}</span>
       </article>`).join("")}
     </div>
+    <p class="rumor-foot">Don't go booking flights until dates are announced 'cause the above is 100% pure speculation. Check <a href="https://widespreadpanic.com/tour" target="_blank" rel="noopener">WidespreadPanic.com/Tour</a> for official dates and call before you haul!</p>
     <p class="rumor-foot">Heard something with a date, venue, and city? Pass it along to <a href="https://www.facebook.com/burnthday">Burnthday on Facebook</a>. Only rumors with real details get posted.</p>
   </section>`;
 }

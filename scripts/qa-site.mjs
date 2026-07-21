@@ -590,7 +590,7 @@ async function checkLegacyPages(siteData) {
   const shelfText = normalizeText(stripTags(shelf));
   const privacyText = normalizeText(stripTags(privacy));
 
-  record("Rumors page uses imported legacy copy", /2025 Rumors:/.test(rumorsText) && /100% pure speculation/.test(rumorsText));
+  record("Rumors page keeps Alex's real disclaimer copy (not invented)", /100% pure speculation/.test(rumorsText) && /call before you haul/i.test(rumorsText));
   record("Rumors page does not use invented placeholder copy", !/I am not trying to become a rumor mill/i.test(rumorsText));
   record("Rumors page surfaces the current NOLAween and Charlotte rumors", /NOLAween/.test(rumorsText) && /New Orleans, LA/.test(rumorsText) && /Charlotte, NC/.test(rumorsText) && /Heavily rumored/.test(rumorsText));
   record("Rumors page does not copy the AI overview wording verbatim", !/Speculation remains mixed on the band's Halloween plans/i.test(rumorsText));
