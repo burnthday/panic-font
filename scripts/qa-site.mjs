@@ -32,6 +32,7 @@ async function main() {
   checkNavigation(homeHtml, siteData);
   await checkSongPages(siteData);
   await checkLegacyPages(siteData);
+  await checkTourInReviewPages();
   await checkLocalAssets(allHtml);
 
   const failed = checks.filter((check) => !check.passed);
@@ -561,6 +562,31 @@ async function checkLocalAssets(htmlByFile) {
     }
   }
   record("All generated local asset references exist", missing.length === 0, missing.slice(0, 20).join("\n"));
+}
+
+async function checkTourInReviewPages() {
+  const dir = path.join(distDir, "tour-in-review");
+  const entries = await readdir(dir, { withFileTypes: true });
+  const tourDirs = entries.filter((entry) => entry.isDirectory());
+  record("Generated tour-in-review pages cover the band's history", tourDirs.length > 90, `found ${tourDirs.length} tour pages`);
+
+  const fallHtml = await readText("dist/tour-in-review/2010-fall-tour/index.html").catch(() => "");
+  record("2010 Fall Tour review page exists", fallHtml.length > 0);
+  record("2010 Fall review has a Welcome Back bustout section", fallHtml.includes("Welcome Back"));
+  record("2010 Fall review shows an LTP gap label", /LTP\s+\d+/.test(fallHtml));
+  record("2010 Fall review has a Most Played heading with a top count", /Most Played \(\d+\)/.test(fallHtml));
+  record("2010 Fall review carries the setlist.fm attribution link", fallHtml.includes('href="https://www.setlist.fm/"'));
+  const hasLaminate = fallHtml.includes('class="laminate primary-board tour-review-sheet"');
+  const hasCountedRow = /class="rotation-song[^"]*has-count/.test(fallHtml);
+  const hasHandWriteIn = fallHtml.includes("is-hand-addon");
+  record("2010 Fall review renders a laminate sheet with a counted rotation row", hasLaminate && hasCountedRow);
+  record("2010 Fall review shows at least one PanicHand hand write-in", hasHandWriteIn);
+
+  const sitemap = await readText("dist/sitemap.xml").catch(() => "");
+  record("Sitemap lists data-driven tour-in-review URLs", sitemap.includes("https://burnthday.com/tour-in-review/2010-fall-tour/"));
+
+  const hub = await readText("dist/tour-in-review/index.html").catch(() => "");
+  record("Tour In Review hub links the year-grouped tour index", hub.includes('class="tour-index"') && hub.includes('href="/tour-in-review/2010-fall-tour/"'));
 }
 
 async function listFiles(dir, predicate) {

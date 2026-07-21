@@ -116,7 +116,8 @@ async function main() {
   await attachSetlistFmPerformances(siteData);
   await writeSongPages(siteData, albums);
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
-  await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews);
+  const tourInReviews = await writeTourInReviewPages(siteData, archiveEntries);
+  await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews, tourInReviews);
   await writeFile(path.join(dist, "index.html"), finalizeHtml(renderHtml(siteData)), "utf8");
   await writeStaticPage("/404.html", renderNotFoundPage(siteData));
   await writeFile(path.join(dist, "styles.css"), renderCss(), "utf8");
@@ -126,7 +127,7 @@ async function main() {
   await writeFile(path.join(dist, "_headers"), renderHeaders(), "utf8");
   await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries, generatedTourReviews), "utf8");
   await writeFile(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: https://burnthday.com/sitemap.xml\n", "utf8");
-  await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins, generatedTourReviews), "utf8");
+  await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins, generatedTourReviews, tourInReviews), "utf8");
 
   console.log(`Built ${siteData.site.title}: ${siteData.boards.rotationOriginals.length} originals, ${siteData.boards.rotationCovers.length} covers, ${siteData.setlists.length} setlists, ${archiveEntries.length} archive pages, ${songOrigins.length} song origins.`);
 }
@@ -1419,9 +1420,9 @@ async function writeGeneratedTourReviewPages(data) {
   return reviews;
 }
 
-async function writeTourReviewHub(data, entries, generatedReviews = []) {
+async function writeTourReviewHub(data, entries, generatedReviews = [], tourInReviews = []) {
   const oldEntry = entries.find((entry) => entry.path === "/p/burnthdays-widespread-panic-tours-in.html");
-  await writeStaticPage("/tour-in-review/index.html", renderTourReviewHubPage(data, oldEntry, generatedReviews));
+  await writeStaticPage("/tour-in-review/index.html", renderTourReviewHubPage(data, oldEntry, generatedReviews, tourInReviews));
 }
 
 async function buildGeneratedTourReview(year, data) {
@@ -1808,8 +1809,24 @@ function renderMovementRow(row) {
   </li>`;
 }
 
-function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
+function renderTourReviewHubPage(data, oldEntry, generatedReviews = [], tourInReviews = []) {
   const description = "Burnthday's preserved and updated Widespread Panic Tour In Review pages.";
+  const byYear = new Map();
+  for (const tour of tourInReviews) {
+    if (!byYear.has(tour.year)) byYear.set(tour.year, []);
+    byYear.get(tour.year).push(tour);
+  }
+  const years = [...byYear.keys()].sort((a, b) => b - a);
+  const tourIndex = years.length ? `<section class="tour-index" aria-label="Every tour in review">
+          <div class="tour-index-head">
+            <h2>Every Tour</h2>
+            <span>${formatNumber(tourInReviews.length)} tours · 1985–present · from setlist.fm</span>
+          </div>
+          ${years.map((year) => `<div class="tour-index-year">
+            <h3>${escapeHtml(String(year))}</h3>
+            <ul>${byYear.get(year).map((tour) => `<li><a href="${escapeAttr(tour.route)}"><span class="ti-name">${escapeHtml(tour.dispName)}</span><span class="ti-meta">${formatNumber(tour.showCount)} ${tour.showCount === 1 ? "show" : "shows"}</span></a></li>`).join("")}</ul>
+          </div>`).join("")}
+        </section>` : "";
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -1829,6 +1846,7 @@ function renderTourReviewHubPage(data, oldEntry, generatedReviews = []) {
     <main class="archive-main">
       <article class="archive-page tour-review-hub">
         ${renderPageGraphicTitle("Tour In Review", "BTD-1_zps89a85566.png")}
+        ${tourIndex}
         ${generatedReviews.length ? `<section class="archive-content current-review-link">
           ${generatedReviews.map((review) => `<div><b>${escapeHtml(String(review.year || 2025))}:</b><br><br><a href="${escapeAttr(publicPath(review.path))}">${escapeHtml(String(review.year || 2025))} Tour</a></div>`).join("")}
         </section>` : ""}
@@ -1879,6 +1897,383 @@ function renderGeneratedTourReviewPage(review, data) {
       </section>
     </main>
     ${renderSiteFooter(data)}
+    <script>
+      ${renderFitScriptBody()}
+      ${renderStrikeScriptBody()}
+    </script>
+  </body>
+</html>
+`;
+}
+
+/* ============================================================
+   DATA-DRIVEN "TOUR IN REVIEW" — one page per tour, built from
+   the setlist.fm cache. A tour is a run of shows split wherever
+   the gap between consecutive shows exceeds 21 days. Mirrors
+   Alex's own hand-written reviews and reuses the laminate sheet
+   components (renderSongPanel / renderSong).
+   ============================================================ */
+
+const TOUR_GAP_DAYS = 21;
+const TOUR_BUSTOUT_MIN = 50; // "Welcome Back" cutoff, in shows since last play
+const TOUR_ROTATION_PRIOR = 200; // shows before a tour that define its rotation
+const TOUR_DEBUT_LIST_CAP = 30;
+const TOUR_IGNORE_KEYS = new Set(["jam", "drumsandbass"]); // segment labels, not songs
+const FULL_MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+
+function daysBetweenIso(a, b) {
+  if (!a || !b) return 0;
+  return (Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000;
+}
+
+function tourSeasonName(leg) {
+  const first = leg[0];
+  const month = Number(first.date.slice(5, 7));
+  const hasOct31 = leg.some((s) => s.date.slice(5) === "10-31");
+  const hasNewYear = leg.some((s) => { const md = s.date.slice(5); return md >= "12-29" && md <= "12-31"; });
+  if (leg.length <= 6 && hasOct31) return "Halloween Run";
+  if (hasNewYear) return "New Year's Run";
+  if (leg.length < 5) return `${FULL_MONTH_NAMES[month - 1]} Run`;
+  if (month <= 2) return "Winter Tour";
+  if (month <= 5) return "Spring Tour";
+  if (month <= 8) return "Summer Tour";
+  return "Fall Tour";
+}
+
+function tourNameSlug(name) {
+  return slugify(name.replace(/['’]/g, ""));
+}
+
+async function writeTourInReviewPages(data, archiveEntries = []) {
+  const cache = await loadSetlistFmCache();
+  if (!cache) return [];
+  const reviews = buildTourInReviews(data, cache);
+  for (let i = 0; i < reviews.length; i += 1) {
+    const prev = reviews[i - 1] || null;
+    const next = reviews[i + 1] || null;
+    const crosslink = findProseReviewForTour(reviews[i], archiveEntries);
+    await writeStaticPage(reviews[i].path, renderTourInReviewPage(reviews[i], data, prev, next, crosslink));
+  }
+  return reviews;
+}
+
+function buildTourInReviews(data, cache) {
+  const catalogByKey = new Map((data.catalog || []).map((row) => [normalizeTitle(row.title), row]));
+  const shows = [...(cache.shows || [])]
+    .filter((show) => show && /^\d{4}-\d{2}-\d{2}$/.test(show.date || ""))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  // Per-show deduped song keys (segment labels excluded) plus display names.
+  const showData = shows.map((show) => {
+    const keys = new Set();
+    const names = new Map();
+    for (const song of show.songs || []) {
+      const key = normalizeTitle(song.name);
+      if (!key || TOUR_IGNORE_KEYS.has(key)) continue;
+      if (!names.has(key)) names.set(key, song.name);
+      keys.add(key);
+    }
+    return { date: show.date, city: clean(show.city), state: clean(show.state), country: clean(show.country), keys, names };
+  });
+
+  // Global play indices per song key (ascending), for LTP-gap and debut math.
+  const playIndices = new Map();
+  showData.forEach((sd, index) => {
+    for (const key of sd.keys) {
+      if (!playIndices.has(key)) playIndices.set(key, []);
+      playIndices.get(key).push(index);
+    }
+  });
+
+  // Split into legs on >21-day gaps.
+  const legs = [];
+  let current = [];
+  for (let i = 0; i < showData.length; i += 1) {
+    if (current.length && daysBetweenIso(showData[current[current.length - 1]].date, showData[i].date) > TOUR_GAP_DAYS) {
+      legs.push(current);
+      current = [];
+    }
+    current.push(i);
+  }
+  if (current.length) legs.push(current);
+
+  const newestDate = showData.length ? showData[showData.length - 1].date : "";
+  const meta = legs.map((idxs) => {
+    const legShows = idxs.map((i) => showData[i]);
+    return {
+      idxs,
+      year: Number(legShows[0].date.slice(0, 4)),
+      name: tourSeasonName(legShows),
+      first: legShows[0].date,
+      last: legShows[legShows.length - 1].date
+    };
+  });
+
+  // Disambiguate same-named legs within a year: "Spring Tour", "Spring Tour II".
+  const byYearName = new Map();
+  for (const m of meta) {
+    const groupKey = `${m.year}|${m.name}`;
+    if (!byYearName.has(groupKey)) byYearName.set(groupKey, []);
+    byYearName.get(groupKey).push(m);
+  }
+  for (const group of byYearName.values()) {
+    if (group.length > 1) group.forEach((m, i) => { m.dispName = i === 0 ? m.name : `${m.name} ${romanNumeral(i + 1)}`; });
+  }
+  for (const m of meta) {
+    m.dispName = m.dispName || m.name;
+    m.slug = `${m.year}-${tourNameSlug(m.dispName)}`;
+    m.inProgress = daysBetweenIso(m.last, newestDate) <= TOUR_GAP_DAYS;
+  }
+
+  const reviews = [];
+  for (const m of meta) {
+    if (m.inProgress) continue; // exclude the currently-running tour
+    const review = computeTourReview(m, showData, playIndices, catalogByKey);
+    if (review) reviews.push(review);
+  }
+  return reviews;
+}
+
+function computeTourReview(meta, showData, playIndices, catalogByKey) {
+  const { idxs } = meta;
+  const tourShows = idxs.map((i) => showData[i]);
+  const showCount = tourShows.length;
+
+  const counts = new Map();
+  const firstTourIdxByKey = new Map();
+  for (const gi of idxs) {
+    for (const key of showData[gi].keys) {
+      counts.set(key, (counts.get(key) || 0) + 1);
+      if (!firstTourIdxByKey.has(key)) firstTourIdxByKey.set(key, gi);
+    }
+  }
+  if (counts.size === 0) return null; // nothing to render (e.g. a lone data-less show)
+
+  const displayFor = (key) => {
+    const cat = catalogByKey.get(key);
+    if (cat) return cat.title;
+    const gi = firstTourIdxByKey.get(key);
+    const raw = gi != null ? showData[gi].names.get(key) : "";
+    return titleCase(raw || key);
+  };
+  const isOriginal = (key) => catalogByKey.get(key)?.type === "Original"; // unmatched -> covers panel
+
+  const totalPlays = sum([...counts.values()]);
+  const uniqueSongs = counts.size;
+  const avg = showCount ? (totalPlays / showCount).toFixed(1) : "0.0";
+
+  const cities = new Set();
+  const stateShows = new Map();
+  for (const show of tourShows) {
+    if (show.city) cities.add(`${show.city.toLowerCase()}|${show.state.toLowerCase()}`);
+    if (show.state) stateShows.set(show.state, (stateShows.get(show.state) || 0) + 1);
+  }
+
+  const played = [...counts.entries()]
+    .map(([key, count]) => ({ key, count, title: displayFor(key) }))
+    .sort((a, b) => b.count - a.count || a.title.localeCompare(b.title));
+  const topCount = played.length ? played[0].count : 0;
+  const mostPlayed = played.slice(0, 10);
+
+  const bustouts = [];
+  const debuts = [];
+  for (const [key] of counts) {
+    const firstIdx = firstTourIdxByKey.get(key);
+    const indices = playIndices.get(key) || [];
+    let prevIdx = -1;
+    for (let j = indices.length - 1; j >= 0; j -= 1) {
+      if (indices[j] < firstIdx) { prevIdx = indices[j]; break; }
+    }
+    if (prevIdx === -1) {
+      const show = showData[firstIdx];
+      debuts.push({ key, title: displayFor(key), date: show.date, city: show.city, state: show.state, gi: firstIdx });
+    } else {
+      const gap = firstIdx - prevIdx;
+      if (gap >= TOUR_BUSTOUT_MIN) bustouts.push({ key, title: displayFor(key), gap });
+    }
+  }
+  bustouts.sort((a, b) => b.gap - a.gap || a.title.localeCompare(b.title));
+  debuts.sort((a, b) => a.gi - b.gi || a.title.localeCompare(b.title));
+  const biggestGap = bustouts.length ? bustouts[0].gap : 0;
+
+  // Rotation as of the tour's first show: distinct songs from the prior 200
+  // shows (fewer if fewer exist; the tour's own songs for the very first tour).
+  const firstGlobal = idxs[0];
+  const rotationKeys = new Set();
+  if (firstGlobal === 0) {
+    for (const key of counts.keys()) rotationKeys.add(key);
+  } else {
+    for (let gi = Math.max(0, firstGlobal - TOUR_ROTATION_PRIOR); gi < firstGlobal; gi += 1) {
+      for (const key of showData[gi].keys) rotationKeys.add(key);
+    }
+  }
+
+  const rotationRow = (key) => ({ title: displayFor(key), key, tourCount: counts.get(key) || 0, stripeAsset: "", isAddOn: false });
+  const rotationRows = [...rotationKeys].map(rotationRow);
+  const handRow = (key) => ({
+    title: displayFor(key),
+    key,
+    tourCount: counts.get(key) || 0,
+    stripeAsset: "",
+    isAddOn: true,
+    addOnDate: isoToShortDate(showData[firstTourIdxByKey.get(key)].date)
+  });
+  const handRows = [...counts.keys()].filter((key) => !rotationKeys.has(key)).map(handRow);
+
+  const sheetOriginals = [
+    ...rotationRows.filter((row) => isOriginal(row.key)).sort(byTitle),
+    ...handRows.filter((row) => isOriginal(row.key)).sort(byTitle)
+  ];
+  const sheetCovers = [
+    ...rotationRows.filter((row) => !isOriginal(row.key)).sort(byTitle),
+    ...handRows.filter((row) => !isOriginal(row.key)).sort(byTitle)
+  ];
+
+  return {
+    year: meta.year,
+    name: meta.name,
+    dispName: meta.dispName,
+    slug: meta.slug,
+    path: `/tour-in-review/${meta.slug}/index.html`,
+    route: `/tour-in-review/${meta.slug}/`,
+    first: meta.first,
+    last: meta.last,
+    showCount,
+    cityCount: cities.size,
+    stateCount: stateShows.size,
+    uniqueSongs,
+    totalPlays,
+    avg,
+    debutCount: debuts.length,
+    biggestGap,
+    stateLine: [...stateShows.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])),
+    mostPlayed,
+    topCount,
+    bustouts,
+    debuts,
+    sheet: { originals: sheetOriginals, covers: sheetCovers },
+    handWriteInCount: handRows.length
+  };
+}
+
+function tourReviewKeywords(tour) {
+  const keywords = [];
+  if (/Winter/.test(tour.name)) keywords.push("winter");
+  else if (/Spring/.test(tour.name)) keywords.push("spring");
+  else if (/Summer/.test(tour.name)) keywords.push("summer");
+  else if (/Fall/.test(tour.name) || tour.name === "Halloween Run") keywords.push("fall");
+  if (tour.name === "New Year's Run") keywords.push("new year", "nye");
+  if (tour.name === "Halloween Run") keywords.push("halloween");
+  return keywords;
+}
+
+function findProseReviewForTour(tour, archiveEntries = []) {
+  const keywords = tourReviewKeywords(tour);
+  if (!keywords.length) return null;
+  const year = String(tour.year);
+  return (archiveEntries || []).find((entry) => {
+    const title = (entry.title || "").toLowerCase();
+    return entry.isReview && title.includes(year) && /review/.test(title) && keywords.some((keyword) => title.includes(keyword));
+  }) || null;
+}
+
+function renderTourInReviewPage(tour, data, prev, next, crosslink) {
+  const title = `${tour.year} ${tour.dispName}`;
+  const dateRange = `${formatLongDate(tour.first)} – ${formatLongDate(tour.last)}`;
+  const countLine = `${formatNumber(tour.showCount)} shows · ${formatNumber(tour.cityCount)} cities · ${formatNumber(tour.stateCount)} states`;
+  const description = fitMetaText(`${title}: ${tour.showCount} shows, ${tour.uniqueSongs} unique songs, ${tour.debutCount} debuts. A data-driven Widespread Panic tour in review from Burnthday.`, 155);
+  const stateLine = tour.stateLine.map(([state, n]) => `${escapeHtml(state)} ×${n}`).join(" · ");
+
+  const tile = (value, label, sub = "") => `<div class="song-stat"><strong>${escapeHtml(String(value))}</strong><span>${escapeHtml(label)}</span>${sub ? `<small>${escapeHtml(sub)}</small>` : ""}</div>`;
+  const tiles = [
+    tile(formatNumber(tour.uniqueSongs), "unique songs"),
+    tile(tour.avg, "songs per show"),
+    tile(formatNumber(tour.debutCount), tour.debutCount === 1 ? "debut" : "debuts"),
+    tile(formatNumber(tour.biggestGap), "biggest LTP gap bridged", tour.biggestGap ? "shows" : "none")
+  ];
+
+  const debutShown = tour.debuts.slice(0, TOUR_DEBUT_LIST_CAP);
+  const debutMore = tour.debuts.length - debutShown.length;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(`${title} — Tour In Review | Burnthday`)}</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com${escapeAttr(tour.route)}">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Tour In Review", "https://burnthday.com/tour-in-review/"],
+      [title, `https://burnthday.com${tour.route}`]
+    ])}</script>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="tour-in-review-main">
+      <header class="tour-hero">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/tour-in-review/">Tour In Review</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(title)}</span></nav>
+        <p class="tour-eyebrow">Tour In Review</p>
+        <h1>${escapeHtml(title)}</h1>
+        <p class="tour-range">${escapeHtml(dateRange)}</p>
+        <p class="tour-countline">${escapeHtml(countLine)}</p>
+        <p class="tour-attr">Compiled from <a href="https://www.setlist.fm/" rel="noopener noreferrer">setlist.fm</a> · ${formatNumber(tour.showCount)} shows</p>
+      </header>
+
+      <div class="song-stat-grid">${tiles.join("")}</div>
+
+      ${stateLine ? `<section class="tour-block">
+        <h2 class="tour-h2">Shows By State</h2>
+        <p class="tour-state-line">${stateLine}</p>
+      </section>` : ""}
+
+      <section class="tour-block">
+        <h2 class="tour-h2">Most Played (${tour.topCount})</h2>
+        <ol class="tour-toplist">
+          ${tour.mostPlayed.map((row) => `<li><span class="tt-song">${escapeHtml(row.title)}</span><span class="tt-count">${row.count}</span></li>`).join("")}
+        </ol>
+      </section>
+
+      ${tour.bustouts.length ? `<section class="tour-block">
+        <h2 class="tour-h2">Welcome Back</h2>
+        <ul class="tour-ltp-list">
+          ${tour.bustouts.map((row) => `<li><span class="tl-song">${escapeHtml(row.title)}</span><span class="tl-ltp">LTP ${row.gap}</span></li>`).join("")}
+        </ul>
+      </section>` : ""}
+
+      ${tour.debuts.length ? `<section class="tour-block">
+        <h2 class="tour-h2">Nice To Meet You (FTP)</h2>
+        <ul class="tour-ftp-list">
+          ${debutShown.map((row) => `<li><span class="tf-song">${escapeHtml(row.title)}</span><span class="tf-meta">${escapeHtml(isoToShortDate(row.date))}${row.city ? ` · ${escapeHtml([row.city, row.state].filter(Boolean).join(", "))}` : ""}</span></li>`).join("")}
+        </ul>
+        ${debutMore > 0 ? `<p class="tour-more">+${formatNumber(debutMore)} more</p>` : ""}
+      </section>` : ""}
+
+      <section class="laminate primary-board tour-review-sheet" id="the-sheet">
+        ${renderBoardHeader("THE SHEET", `Rotation as of ${formatLongDate(tour.first)}`)}
+        ${renderSongPanel(`sheet-${tour.slug}-originals`, "ORIGINALS", tour.sheet.originals)}
+        ${renderSongPanel(`sheet-${tour.slug}-covers`, "COVERS", tour.sheet.covers)}
+      </section>
+
+      ${crosslink ? `<nav class="archive-crosslink" aria-label="Related">
+        <a href="${escapeAttr(publicPath(crosslink.path))}"><span class="xl-eyebrow">Burnthday Review</span><span class="xl-title">Read Burnthday's written review</span><span class="xl-go" aria-hidden="true">→</span></a>
+      </nav>` : ""}
+
+      <nav class="album-nav" aria-label="More tours">
+        ${prev ? `<a href="${escapeAttr(prev.route)}"><span>Earlier</span><strong>${escapeHtml(`${prev.year} ${prev.dispName}`)}</strong></a>` : "<span></span>"}
+        ${next ? `<a class="is-next" href="${escapeAttr(next.route)}"><span>Later</span><strong>${escapeHtml(`${next.year} ${next.dispName}`)}</strong></a>` : "<span></span>"}
+      </nav>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
     <script>
       ${renderFitScriptBody()}
       ${renderStrikeScriptBody()}
@@ -7825,44 +8220,36 @@ body.stagelight .laminate {
     0 0 0 1px rgba(255, 255, 255, 0.06),
     0 30px 80px rgba(0, 0, 0, 0.55);
 }
-/* the clear plastic rim sealed past the paper edge */
+/* the clear plastic rim sealed past the paper edge — thin, and it shares its
+   exact geometry with the glare overlay below so the two always line up */
 body.stagelight .laminate::before {
   content: "";
   position: absolute;
-  inset: -18px;
+  inset: -10px;
   z-index: -1;
-  border-radius: 16px;
+  border-radius: 10px;
   background: linear-gradient(118deg,
-    rgba(255, 255, 255, 0.30) 0%,
-    rgba(255, 255, 255, 0.10) 20%,
-    rgba(255, 255, 255, 0.22) 44%,
-    rgba(255, 255, 255, 0.07) 66%,
-    rgba(255, 255, 255, 0.26) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+    rgba(255, 255, 255, 0.20) 0%,
+    rgba(255, 255, 255, 0.07) 24%,
+    rgba(255, 255, 255, 0.15) 48%,
+    rgba(255, 255, 255, 0.05) 70%,
+    rgba(255, 255, 255, 0.18) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   box-shadow:
-    inset 0 2px 3px rgba(255, 255, 255, 0.5),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
-    inset 0 0 22px rgba(255, 255, 255, 0.12),
-    0 30px 80px rgba(0, 0, 0, 0.65);
+    inset 0 1px 2px rgba(255, 255, 255, 0.45),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.3),
+    0 24px 60px rgba(0, 0, 0, 0.55);
 }
-/* specular glare band across the plastic face: washes the paper slightly,
-   like light hitting the pouch */
+/* specular glare: a single px-bounded radial anchored top-left that fades out
+   naturally — no background-size cutoff, no seam to mismatch the rim */
 body.stagelight .laminate::after {
   content: "";
   position: absolute;
-  inset: -18px;
+  inset: -10px;
   z-index: 6;
-  border-radius: 16px;
+  border-radius: 10px;
   pointer-events: none;
-  background:
-    linear-gradient(112deg,
-      transparent 32%,
-      rgba(255, 255, 255, 0.30) 41%,
-      rgba(255, 255, 255, 0.08) 47%,
-      transparent 54%),
-    radial-gradient(120% 50% at 6% -2%, rgba(255, 255, 255, 0.28), transparent 40%);
-  background-repeat: no-repeat;
-  background-size: 130% 720px, 100% 900px;
+  background: radial-gradient(1200px 420px at 8% -80px, rgba(255, 255, 255, 0.17), transparent 62%);
 }
 
 /* ---- DRY-ERASE STRIKES: SVG marker swipes over played songs ---- */
@@ -8220,6 +8607,48 @@ body.stagelight .setlist-card h3, body.stagelight .setlist-feature h3 { font-fam
 body.stagelight .setlist-card p { color: var(--sl-muted); font-size: 14px; }
 body.stagelight .setlist-card a { color: var(--sl-ink); }
 
+/* data-driven Tour In Review page */
+body.stagelight .tour-in-review-main { width: min(1180px, calc(100% - 48px)); margin: 48px auto 0; }
+body.stagelight .tour-in-review-main > * { margin-top: 48px; }
+body.stagelight .tour-in-review-main > .tour-hero { margin-top: 0; }
+body.stagelight .tour-hero { padding-bottom: 26px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .tour-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 4px 0 12px; }
+body.stagelight .tour-hero h1 { font-family: var(--sl-display); font-weight: 660; font-size: clamp(32px, 5vw, 52px); letter-spacing: -0.02em; color: var(--sl-ink); margin: 0; }
+body.stagelight .tour-range { font-family: var(--sl-display); font-size: 17px; color: var(--sl-muted); margin: 14px 0 0; }
+body.stagelight .tour-countline { font-family: var(--sl-mono); font-size: 13px; letter-spacing: 0.05em; color: var(--sl-ink); margin: 8px 0 0; font-variant-numeric: tabular-nums; }
+body.stagelight .tour-attr { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); margin: 14px 0 0; }
+body.stagelight .tour-attr a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
+body.stagelight .tour-attr a:hover { color: var(--sl-ink); }
+body.stagelight .tour-h2 { font-family: var(--sl-display); font-size: 24px; font-weight: 640; letter-spacing: -0.01em; color: var(--sl-ink); margin: 0 0 18px; }
+body.stagelight .tour-state-line { font-family: var(--sl-mono); font-size: 14px; line-height: 1.9; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .tour-toplist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0 32px; }
+body.stagelight .tour-toplist li { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 11px 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+body.stagelight .tt-song { font-family: var(--sl-display); font-size: 16px; font-weight: 540; color: var(--sl-ink); }
+body.stagelight .tt-count { font-family: var(--sl-mono); font-size: 15px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+body.stagelight .tour-ltp-list, body.stagelight .tour-ftp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0 32px; }
+body.stagelight .tour-ltp-list li, body.stagelight .tour-ftp-list li { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 11px 4px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+body.stagelight .tl-song, body.stagelight .tf-song { font-family: var(--sl-display); font-size: 16px; font-weight: 540; color: var(--sl-ink); }
+body.stagelight .tl-ltp { flex: none; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-ink); border: 1px solid rgba(212,81,79,0.5); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+body.stagelight .tf-meta { flex: none; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; text-align: right; }
+body.stagelight .tour-more { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 14px 0 0; }
+body.stagelight .tour-review-sheet { margin-left: auto; margin-right: auto; }
+
+/* Tour In Review hub: year-grouped index */
+body.stagelight .tour-index { margin: 8px 0 44px; }
+body.stagelight .tour-index-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; padding-bottom: 14px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .tour-index-head h2 { font-family: var(--sl-display); font-size: 26px; font-weight: 640; letter-spacing: -0.01em; color: var(--sl-ink); }
+body.stagelight .tour-index-head span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .tour-index-year { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px 20px; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+body.stagelight .tour-index-year h3 { font-family: var(--sl-mono); font-size: 18px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .tour-index-year ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 16px; }
+body.stagelight .tour-index-year a { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: var(--sl-ink); }
+body.stagelight .tour-index-year a:hover .ti-name { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+body.stagelight .ti-name { font-family: var(--sl-display); font-size: 16px; font-weight: 560; letter-spacing: -0.01em; }
+body.stagelight .ti-meta { flex: none; font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
+@media (max-width: 640px) {
+  body.stagelight .tour-index-year { grid-template-columns: 1fr; gap: 8px; }
+}
+
 @media (max-width: 760px) {
   body.stagelight .origin-layout { grid-template-columns: 1fr; gap: 22px; }
   body.stagelight .origin-hero { flex-direction: column; align-items: flex-start; gap: 18px; }
@@ -8289,7 +8718,7 @@ function renderRedirects(archiveEntries = [], generatedReviews = []) {
   return `${lines.join("\n")}\n`;
 }
 
-function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedReviews = []) {
+function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedReviews = [], tourInReviews = []) {
   const updated = data.site.latestShow?.isoDate || data.generatedAt.slice(0, 10);
   const redirectedArchivePaths = new Set([
     "/2025/02/widespread-panic-2025-tour",
@@ -8335,6 +8764,10 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
   <url>
     <loc>https://burnthday.com/tour-in-review/</loc>
   </url>
+  ${tourInReviews.map((tour) => `<url>
+    <loc>https://burnthday.com${escapeHtml(tour.route)}</loc>
+    <lastmod>${escapeHtml(tour.last)}</lastmod>
+  </url>`).join("\n  ")}
   <url>
     <loc>https://burnthday.com/shelf/</loc>
   </url>
@@ -8552,11 +8985,20 @@ function rowBelongsToYear(row, year) {
 const NORMALIZED_TITLE_ALIASES = {
   bowleggedwomanknockkneedman: "bowleggedwoman",
   conradthecaterpillar: "conrad",
+  fixintodieblues: "fixintodie",
+  goodmorningschoolgirl: "goodmorninglittleschoolgirl",
   heroesdavidbowie: "heroesdb",
+  imjustanoldchunkofcoalbutimgonnabeadiamondsomeday: "chunkofcoal",
   jamaisvutheworldhaschanged: "jamaisvu",
+  juncopartnerworthlessman: "juncopartner",
   knockinaroundthezoo: "knockingroundthezoo",
+  knockinroundthezoo: "knockingroundthezoo",
   nobodysfault: "nobodysfaultbutmine",
   runnindownadream: "runningdownadream",
+  seethatmygraveiskeptclean: "onekindfavor",
+  shecaughtthekatyandleftmeamuletoride: "shecaughtthekaty",
+  theheathen: "heathen",
+  thelowsparkofhighheeledboys: "lowsparkofhighheeledboys",
   thismustbetheplacenavemelody: "thismustbetheplacenaivemelody",
   wrm: "wurm"
 };
