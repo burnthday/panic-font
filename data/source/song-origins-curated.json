@@ -1,0 +1,4920 @@
+{
+  "description": "Hand-curated Widespread Panic song origins written in Burnthday's own voice, facts extracted from fan newsletters (Moon Times / The Panicle), band interviews, and the web, then paraphrased into original prose with sources cited. This is facts-into-original-prose, NOT republication. It is a supplement to the Facebook-sourced song-origins.json: entries with mode 'new' are songs not yet in that set; mode 'augment' entries add or correct facts on an existing origin without duplicating what is already there. The build merges these by slug.",
+  "conventions": {
+    "mode": "'new' = a song not in song-origins.json; 'augment' = adds/corrects facts on an existing entry",
+    "sources": "Every factual claim is traceable to a listed source. Unverifiable claims are omitted (evidence discipline).",
+    "attribution": "Moon Times = official WSP newsletter (Internet Archive); The Panicle = fan transcription (widespread-panic.blogspot.com); interviews credited to outlet + date."
+  },
+  "origins": [
+    {
+      "title": "North",
+      "slug": "north",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Jerry Joseph",
+      "originalArtist": "Jerry Joseph",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "1999-09-25",
+      "firstPlayedDisplay": "9/25/99",
+      "timesPlayed": 287,
+      "summary": "“North” is a song by Jerry Joseph, covered by Widespread Panic. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "The song was written by Jerry Joseph a long time ago, probably when we first met him, around 16 years ago.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "text": "A lot of that I wrote in Nicaragua... I still had this kinda idealic vision of the Northwest. [laughing] Burns out really quickly. As soon as you're there for three days in the rain you're like, ‘what the fuck was I thinking.’",
+          "speaker": "Jerry Joseph",
+          "speakerRole": "songwriter",
+          "source": "“Passion and Pain” interview",
+          "sourceDate": null,
+          "url": null
+        }
+      ],
+      "notes": "A Jerry Joseph cover; one of two covers on Dirty Side Down (2010). Warren Haynes sat in on it at Wanee, 2010.",
+      "sources": [
+        {
+          "label": "Jerry Joseph, “Passion and Pain” interview (Part I)",
+          "publisher": "JamBase",
+          "url": null
+        },
+        {
+          "label": "First-played date",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        },
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        }
+      ],
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Jerry Joseph",
+          "slug": "jerry-joseph-songs"
+        },
+        {
+          "type": "album",
+          "label": "Dirty Side Down",
+          "slug": "album-dirty-side-down"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dirty-side-down-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “North”?",
+          "a": "“North” was written by Jerry Joseph, and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “North” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Jerry Joseph."
+        },
+        {
+          "q": "What album is “North” on?",
+          "a": "It appears on Dirty Side Down (2010)."
+        },
+        {
+          "q": "When did Widespread Panic first play “North”?",
+          "a": "Its live debut was 9/25/99."
+        },
+        {
+          "q": "How many times has Widespread Panic played “North”?",
+          "a": "About 287 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "chainsaw-city",
+          "title": "Chainsaw City",
+          "why": "Jerry Joseph"
+        },
+        {
+          "slug": "time-zones",
+          "title": "Time Zones",
+          "why": "Jerry Joseph"
+        },
+        {
+          "slug": "cotton-was-king",
+          "title": "Cotton Was King",
+          "why": "Dirty Side Down"
+        },
+        {
+          "slug": "shut-up-and-drive",
+          "title": "Shut Up And Drive",
+          "why": "Dirty Side Down"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Time Zones",
+      "slug": "time-zones",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Earth to America",
+          "year": 2005
+        }
+      ],
+      "firstPlayed": "2005-04-30",
+      "firstPlayedDisplay": "4/30/05",
+      "timesPlayed": 126,
+      "summary": "“Time Zones” is a Widespread Panic original. It appears on Earth to America (2005).",
+      "quotes": [
+        {
+          "text": "It's funny because when we were writing them, Jerry and I thought ‘Time Zones’ would be the big new Panic anthem and ‘Second Skin’ would be this Massive Attack-style jam, but once they were played live, they kind of flipped roles.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "American Songwriter, 2006",
+          "sourceDate": "2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        },
+        {
+          "text": "With ‘Time Zones,’ which I thought was real hip, there were references to To Kill a Mockingbird. So I went to the library and got the Cliff Notes and the book...",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "American Songwriter, 2006",
+          "sourceDate": "2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        }
+      ],
+      "notes": "Written by Schools & Jerry Joseph in the same session as “Second Skin.” On Earth to America (2005).",
+      "sources": [
+        {
+          "label": "Dave Schools & John Bell, “New Frontiers” by Andy Tennille",
+          "publisher": "American Songwriter, July 2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        }
+      ],
+      "sameAs": [
+        "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Jerry Joseph",
+          "slug": "jerry-joseph-songs"
+        },
+        {
+          "type": "album",
+          "label": "Earth to America",
+          "slug": "album-earth-to-america"
+        }
+      ],
+      "albumArt": "/assets/archive-media/earth-to-america-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Time Zones”?",
+          "a": "“Time Zones” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Time Zones” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Time Zones” on?",
+          "a": "It appears on Earth to America (2005)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Time Zones”?",
+          "a": "Its live debut was 4/30/05."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Time Zones”?",
+          "a": "About 126 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "chainsaw-city",
+          "title": "Chainsaw City",
+          "why": "Jerry Joseph"
+        },
+        {
+          "slug": "north",
+          "title": "North",
+          "why": "Jerry Joseph"
+        },
+        {
+          "slug": "from-the-cradle",
+          "title": "From The Cradle",
+          "why": "Earth to America"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Her Dance Needs No Body",
+      "slug": "her-dance-needs-no-body",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "2008-04-01",
+      "firstPlayedDisplay": "4/1/08",
+      "timesPlayed": 40,
+      "summary": "“Her Dance Needs No Body” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "This song is more deserving of just verse chorus, verse chorus, bridge and solo and out kind of thing... the musical beginnings of ‘Three Candles’ and ‘Her Dance’... coming from Jimmy [Herring].",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "“Tickle the Truth” (Glide), 2008",
+          "sourceDate": "2008",
+          "url": "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+        }
+      ],
+      "notes": null,
+      "sources": [
+        {
+          "label": "John Bell, “Tickle the Truth” interview",
+          "publisher": "Glide Magazine, 2008",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "theme",
+          "label": "The Jimmy Herring era",
+          "slug": "herring-era"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Her Dance Needs No Body”?",
+          "a": "“Her Dance Needs No Body” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Her Dance Needs No Body” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Her Dance Needs No Body”?",
+          "a": "Its live debut was 4/1/08."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Her Dance Needs No Body”?",
+          "a": "About 40 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "cotton-was-king",
+          "title": "Cotton Was King",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "shut-up-and-drive",
+          "title": "Shut Up And Drive",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "st-louis",
+          "title": "St. Louis",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "three-candles",
+          "title": "Three Candles",
+          "why": "The Jimmy Herring era"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Raise The Roof",
+      "slug": "raise-the-roof",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ain't Life Grand",
+          "year": 1994
+        }
+      ],
+      "firstPlayed": "1994-01-27",
+      "firstPlayedDisplay": "1/27/94",
+      "timesPlayed": 45,
+      "summary": "“Raise The Roof” is a Widespread Panic original. It appears on Ain't Life Grand (1994).",
+      "quotes": [
+        {
+          "text": "The song came from Mikey's direction and we all just hauntingly followed along during the demo sessions, and cleaned up the vocals on the demos, and left it like that... There's no place really to go except maybe put some more guitars on, add a third vocal part... In essence, it had what it had, you know?",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Rock & Road interview, Atlanta, 12/15/94",
+          "sourceDate": "12/15/94",
+          "url": null
+        }
+      ],
+      "notes": "On Ain't Life Grand (1994); mostly retired after 2001 (last on 6/22/01).",
+      "sources": [
+        {
+          "label": "John Bell, R&R interview, Grady's Restaurant, Atlanta",
+          "publisher": "12/15/94",
+          "url": null
+        },
+        {
+          "label": "Play counts",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ain't Life Grand",
+          "slug": "album-ain-t-life-grand"
+        }
+      ],
+      "albumArt": "/assets/archive-media/aint-life-grand-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Raise The Roof”?",
+          "a": "“Raise The Roof” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Raise The Roof” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Raise The Roof” on?",
+          "a": "It appears on Ain't Life Grand (1994)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Raise The Roof”?",
+          "a": "Its live debut was 1/27/94."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Raise The Roof”?",
+          "a": "About 45 times (per Everyday Companion)."
+        }
+      ],
+      "related": [],
+      "kind": "story"
+    },
+    {
+      "title": "Three Candles",
+      "slug": "three-candles",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "2008-04-01",
+      "firstPlayedDisplay": "4/1/08",
+      "timesPlayed": 33,
+      "summary": "“Three Candles” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "The musical beginnings of ‘Three Candles’ and ‘Her Dance’... coming from Jimmy [Herring]. He had a bunch of great ideas that had already been cooking.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "“Tickle the Truth” (Glide), 2008",
+          "sourceDate": "2008",
+          "url": "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+        }
+      ],
+      "notes": null,
+      "sources": [
+        {
+          "label": "John Bell, “Tickle the Truth” interview",
+          "publisher": "Glide Magazine, 2008",
+          "url": null
+        },
+        {
+          "label": "Play counts",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "http://www.glidemagazine.com/articles/53122/widespread-panic-tickling-the-truth-with-jb.html"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "theme",
+          "label": "The Jimmy Herring era",
+          "slug": "herring-era"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Three Candles”?",
+          "a": "“Three Candles” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Three Candles” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Three Candles”?",
+          "a": "Its live debut was 4/1/08."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Three Candles”?",
+          "a": "About 33 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "cotton-was-king",
+          "title": "Cotton Was King",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "her-dance-needs-no-body",
+          "title": "Her Dance Needs No Body",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "shut-up-and-drive",
+          "title": "Shut Up And Drive",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "st-louis",
+          "title": "St. Louis",
+          "why": "The Jimmy Herring era"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "From The Cradle",
+      "slug": "from-the-cradle",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Earth to America",
+          "year": 2005
+        }
+      ],
+      "firstPlayed": "2006-04-22",
+      "firstPlayedDisplay": "4/22/06",
+      "timesPlayed": 125,
+      "summary": "“From The Cradle” is a Widespread Panic original. It appears on Earth to America (2005).",
+      "quotes": [],
+      "notes": "A Todd Nance song. Per American Songwriter (2006), its imagery evokes the aftermath of Hurricane Katrina, though Nance wrote it before the storm. On Earth to America (2005).",
+      "sources": [
+        {
+          "label": "Andy Tennille, “New Frontiers”",
+          "publisher": "American Songwriter, July 2006",
+          "url": "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+        },
+        {
+          "label": "First-played date",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "http://www.americansongwriter.com/2006/07/widespread-panic-new-frontiers/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Todd Nance",
+          "slug": "todd-nance-songs"
+        },
+        {
+          "type": "album",
+          "label": "Earth to America",
+          "slug": "album-earth-to-america"
+        }
+      ],
+      "albumArt": "/assets/archive-media/earth-to-america-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “From The Cradle”?",
+          "a": "“From The Cradle” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “From The Cradle” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “From The Cradle” on?",
+          "a": "It appears on Earth to America (2005)."
+        },
+        {
+          "q": "When did Widespread Panic first play “From The Cradle”?",
+          "a": "Its live debut was 4/22/06."
+        },
+        {
+          "q": "How many times has Widespread Panic played “From The Cradle”?",
+          "a": "About 125 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "time-zones",
+          "title": "Time Zones",
+          "why": "Earth to America"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Gomero Blanco",
+      "slug": "gomero-blanco",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": null,
+      "firstPlayedDisplay": null,
+      "timesPlayed": null,
+      "summary": "“Gomero Blanco” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "Gomero Blanco: First recorded during the May 1987 sessions at John Keene's Studio in Athens for the initial release of ‘Space Wrangler.’ While this song is not played live, several shows at the Uptown Lounge featured similar sounding jams.",
+          "speaker": "The Panicle",
+          "speakerRole": "fan newsletter",
+          "source": "Vol. 1 #5, July 1992",
+          "sourceDate": "1992",
+          "url": null
+        }
+      ],
+      "notes": "A studio-era track; not a live staple.",
+      "sources": [
+        {
+          "label": "The Panicle, Vol. 1 #5 (July 1992)",
+          "publisher": "fan transcription, widespread-panic.blogspot.com",
+          "url": "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html"
+        }
+      ],
+      "sameAs": [
+        "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "theme",
+          "label": "The instrumentals",
+          "slug": "instrumentals"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Gomero Blanco”?",
+          "a": "“Gomero Blanco” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Gomero Blanco” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        }
+      ],
+      "related": [
+        {
+          "slug": "party-at-your-mamas-house",
+          "title": "Party At Your Mama's House",
+          "why": "The instrumentals"
+        },
+        {
+          "slug": "st-louis",
+          "title": "St. Louis",
+          "why": "The instrumentals"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Driving Song",
+      "slug": "driving-song",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Space Wrangler",
+          "year": 1988
+        }
+      ],
+      "firstPlayed": "1986-04-07",
+      "firstPlayedDisplay": "4/7/86",
+      "timesPlayed": 831,
+      "summary": "“Driving Song” is a Widespread Panic original. It appears on Space Wrangler (1988).",
+      "quotes": [],
+      "notes": "A Widespread Panic original; biographically a John Bell / Michael Houser co-write from their UGA-roommate days. On Space Wrangler (1988). Source: Everyday Companion; The Ticket Blog.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/DRIVIN.asp"
+        },
+        {
+          "label": "Bell/Houser roommate co-write history",
+          "publisher": "The Ticket Blog",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/DRIVIN.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser & John Bell",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "Space Wrangler",
+          "slug": "album-space-wrangler"
+        },
+        {
+          "type": "theme",
+          "label": "Early Athens (1985 to 1989)",
+          "slug": "early-athens"
+        }
+      ],
+      "albumArt": "/assets/archive-media/space-wrangler-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Driving Song”?",
+          "a": "“Driving Song” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Driving Song” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Driving Song” on?",
+          "a": "It appears on Space Wrangler (1988)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Driving Song”?",
+          "a": "Its live debut was 4/7/86."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Driving Song”?",
+          "a": "About 831 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "love-tractor",
+          "title": "Love Tractor",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "postcard",
+          "title": "Postcard",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "rock",
+          "title": "Rock",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "sleepy-monkey",
+          "title": "Sleepy Monkey",
+          "why": "Early Athens (1985 to 1989)"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Rock",
+      "slug": "rock",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "Brass Shoes, Walking Blues"
+      ],
+      "albums": [
+        {
+          "name": "Widespread Panic (Mom's Kitchen)",
+          "year": 1991
+        }
+      ],
+      "firstPlayed": "1989-10-04",
+      "firstPlayedDisplay": "10/4/89",
+      "timesPlayed": 734,
+      "summary": "“Rock” is a Widespread Panic original. It appears on Widespread Panic (Mom's Kitchen) (1991).",
+      "quotes": [],
+      "notes": "A Widespread Panic original, also titled “Brass Shoes, Walking Blues.” On the 1991 self-titled album (“Mom's Kitchen”). Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/ROCK.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/ROCK.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Widespread Panic (Mom's Kitchen)",
+          "slug": "album-widespread-panic-mom-s-kitchen"
+        },
+        {
+          "type": "theme",
+          "label": "Early Athens (1985 to 1989)",
+          "slug": "early-athens"
+        }
+      ],
+      "albumArt": "/assets/archive-media/widespread-panic-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Rock”?",
+          "a": "“Rock” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Rock” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Rock” on?",
+          "a": "It appears on Widespread Panic (Mom's Kitchen) (1991)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Rock”?",
+          "a": "Its live debut was 10/4/89."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Rock”?",
+          "a": "About 734 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "love-tractor",
+          "title": "Love Tractor",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "postcard",
+          "title": "Postcard",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "sleepy-monkey",
+          "title": "Sleepy Monkey",
+          "why": "Early Athens (1985 to 1989)"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Tall Boy",
+      "slug": "tall-boy",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "Naked In The Mud"
+      ],
+      "albums": [
+        {
+          "name": "Bombs & Butterflies",
+          "year": 1997
+        }
+      ],
+      "firstPlayed": "1995-08-03",
+      "firstPlayedDisplay": "8/3/95",
+      "timesPlayed": 512,
+      "summary": "“Tall Boy” is a Widespread Panic original. It appears on Bombs & Butterflies (1997).",
+      "quotes": [],
+      "notes": "A Widespread Panic original, also titled “Naked In The Mud.” On Bombs & Butterflies (1997). Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories & Originals index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/TALBOY.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/TALBOY.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Bombs & Butterflies",
+          "slug": "album-bombs-butterflies"
+        },
+        {
+          "type": "theme",
+          "label": "The Mississippi songs",
+          "slug": "mississippi-songs"
+        }
+      ],
+      "albumArt": "/assets/archive-media/bombs-and-butterflies-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Tall Boy”?",
+          "a": "“Tall Boy” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Tall Boy” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Tall Boy” on?",
+          "a": "It appears on Bombs & Butterflies (1997)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Tall Boy”?",
+          "a": "Its live debut was 8/3/95."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Tall Boy”?",
+          "a": "About 512 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "junior",
+          "title": "Junior",
+          "why": "The Mississippi songs"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "The Mississippi songs"
+        },
+        {
+          "slug": "aunt-avis",
+          "title": "Aunt Avis",
+          "why": "Bombs & Butterflies"
+        },
+        {
+          "slug": "you-got-yours",
+          "title": "You Got Yours",
+          "why": "Bombs & Butterflies"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Better Off",
+      "slug": "better-off",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Everyday",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1992-02-07",
+      "firstPlayedDisplay": "2/7/92",
+      "timesPlayed": 340,
+      "summary": "“Better Off” is a Widespread Panic original. It appears on Everyday (1993).",
+      "quotes": [],
+      "notes": "A Widespread Panic original co-credited to T Lavitz, the Dixie Dregs keyboardist who played with the band in 1991. On Everyday (1993). Source: Everyday Companion; Wikipedia.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/BETOFF.asp"
+        },
+        {
+          "label": "T Lavitz / Widespread Panic 1991",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/T_Lavitz"
+        }
+      ],
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/T_Lavitz",
+        "https://www.everydaycompanion.com/spreadsheet/histories/BETOFF.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Everyday",
+          "slug": "album-everyday"
+        }
+      ],
+      "albumArt": "/assets/archive-media/everyday-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Better Off”?",
+          "a": "“Better Off” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Better Off” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Better Off” on?",
+          "a": "It appears on Everyday (1993)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Better Off”?",
+          "a": "Its live debut was 2/7/92."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Better Off”?",
+          "a": "About 340 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "henry-parsons-died",
+          "title": "Henry Parsons Died",
+          "why": "Everyday"
+        },
+        {
+          "slug": "wondering",
+          "title": "Wondering",
+          "why": "Everyday"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Bear's Gone Fishin'",
+      "slug": "bears-gone-fishin",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1997-07-01",
+      "firstPlayedDisplay": "7/1/97",
+      "timesPlayed": 248,
+      "summary": "“Bear's Gone Fishin'” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "Debuted as an instrumental in July 1997; lyrics added ~two years later. Named for the band's Colorado friend Thomas “Bear” Guenther (d. 2019), the same “Bear” behind “Postcard.” On 'Til the Medicine Takes (1999). Source: JamBase; Dave Schools, Colorado Music Hall of Fame induction speech.",
+      "sources": [
+        {
+          "label": "Widespread Panic at Red Rocks feature (Bear Guenther, instrumental-to-lyrics timeline)",
+          "publisher": "JamBase",
+          "url": "https://www.jambase.com/article/widespread-panic-bears-gone-fishing-happy-rebirtha-red-rocks-2016"
+        },
+        {
+          "label": "Dave Schools, Colorado Music Hall of Fame induction speech",
+          "publisher": "via Instagram (reel DaH3ejWizfL)",
+          "url": "https://www.instagram.com/reels/DaH3ejWizfL/"
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/reels/DaH3ejWizfL/",
+        "https://www.jambase.com/article/widespread-panic-bears-gone-fishing-happy-rebirtha-red-rocks-2016"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "'Til the Medicine Takes",
+          "slug": "album-til-the-medicine-takes"
+        },
+        {
+          "type": "theme",
+          "label": "The Colorado songs",
+          "slug": "colorado-songs"
+        }
+      ],
+      "albumArt": "/assets/archive-media/til-the-medicine-takes-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Bear's Gone Fishin'”?",
+          "a": "“Bear's Gone Fishin'” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Bear's Gone Fishin'” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Bear's Gone Fishin'” on?",
+          "a": "It appears on 'Til the Medicine Takes (1999)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Bear's Gone Fishin'”?",
+          "a": "Its live debut was 7/1/97."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Bear's Gone Fishin'”?",
+          "a": "About 248 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "postcard",
+          "title": "Postcard",
+          "why": "same friend, Tom 'Bear' Guenther"
+        },
+        {
+          "slug": "surprise-valley",
+          "title": "Surprise Valley",
+          "why": "The Colorado songs"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "'Til the Medicine Takes"
+        },
+        {
+          "slug": "party-at-your-mamas-house",
+          "title": "Party At Your Mama's House",
+          "why": "'Til the Medicine Takes"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Surprise Valley",
+      "slug": "surprise-valley",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1999-06-27",
+      "firstPlayedDisplay": "6/27/99",
+      "timesPlayed": 390,
+      "summary": "“Surprise Valley” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "A Widespread Panic original, one of Michael Houser's signature pieces, tied to the band's Colorado connection. On 'Til the Medicine Takes (1999). Source: Lockn' Festival.",
+      "sources": [
+        {
+          "label": "“7 Widespread Panic Stories Told By the Band” (Houser signature song; Colorado connection)",
+          "publisher": "Lockn' Festival",
+          "url": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+        }
+      ],
+      "sameAs": [
+        "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "'Til the Medicine Takes",
+          "slug": "album-til-the-medicine-takes"
+        },
+        {
+          "type": "theme",
+          "label": "The Colorado songs",
+          "slug": "colorado-songs"
+        }
+      ],
+      "albumArt": "/assets/archive-media/til-the-medicine-takes-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Surprise Valley”?",
+          "a": "“Surprise Valley” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Surprise Valley” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Surprise Valley” on?",
+          "a": "It appears on 'Til the Medicine Takes (1999)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Surprise Valley”?",
+          "a": "Its live debut was 6/27/99."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Surprise Valley”?",
+          "a": "About 390 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "bears-gone-fishin",
+          "title": "Bear's Gone Fishin'",
+          "why": "The Colorado songs"
+        },
+        {
+          "slug": "postcard",
+          "title": "Postcard",
+          "why": "The Colorado songs"
+        },
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Big Wooly Mammoth",
+      "slug": "big-wooly-mammoth",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "1995-10-10",
+      "firstPlayedDisplay": "10/10/95",
+      "timesPlayed": 275,
+      "summary": "“Big Wooly Mammoth” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original sung by JoJo Hermann; a long-time live favorite finally cut for Don't Tell the Band (2001). Source: Wikipedia.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band (JoJo Hermann vocal; long-time crowd favorite)",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
+        }
+      ],
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Don't Tell the Band",
+          "slug": "album-don-t-tell-the-band"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dont-tell-the-band-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Big Wooly Mammoth”?",
+          "a": "“Big Wooly Mammoth” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Big Wooly Mammoth” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Big Wooly Mammoth” on?",
+          "a": "It appears on Don't Tell the Band (2001)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Big Wooly Mammoth”?",
+          "a": "Its live debut was 10/10/95."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Big Wooly Mammoth”?",
+          "a": "About 275 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "casa-del-grillo",
+          "title": "Casa Del Grillo",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "down",
+          "title": "Down",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "give",
+          "title": "Give",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "little-lilly",
+          "title": "Little Lilly",
+          "why": "Don't Tell the Band"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Blue Indian",
+      "slug": "blue-indian",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1998-10-06",
+      "firstPlayedDisplay": "10/6/98",
+      "timesPlayed": 311,
+      "summary": "“Blue Indian” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "A Widespread Panic original (counted among Michael Houser's songs). The album title 'Til the Medicine Takes is drawn from a line in its chorus. Source: Wikipedia; Lockn' Festival.",
+      "sources": [
+        {
+          "label": "'Til the Medicine Takes (album title drawn from the chorus)",
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/%27Til_the_Medicine_Takes"
+        },
+        {
+          "label": "Houser songwriting attribution",
+          "publisher": "Lockn' Festival",
+          "url": "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+        }
+      ],
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/%27Til_the_Medicine_Takes",
+        "https://locknfestival.com/news/7-of-the-greatest-widespread-panic-stories-told-by-the-band"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "'Til the Medicine Takes",
+          "slug": "album-til-the-medicine-takes"
+        }
+      ],
+      "albumArt": "/assets/archive-media/til-the-medicine-takes-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Blue Indian”?",
+          "a": "“Blue Indian” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Blue Indian” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Blue Indian” on?",
+          "a": "It appears on 'Til the Medicine Takes (1999)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Blue Indian”?",
+          "a": "Its live debut was 10/6/98."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Blue Indian”?",
+          "a": "About 311 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Michael Houser"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Send Your Mind",
+      "slug": "send-your-mind",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Van Morrison",
+      "originalArtist": "Van Morrison",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Widespread Panic (Mom's Kitchen)",
+          "year": 1991
+        }
+      ],
+      "firstPlayed": "1991-04-02",
+      "firstPlayedDisplay": "4/2/91",
+      "timesPlayed": 342,
+      "summary": "“Send Your Mind” is a song by Van Morrison, covered by Widespread Panic. It appears on Widespread Panic (Mom's Kitchen) (1991).",
+      "quotes": [],
+      "notes": "A Van Morrison cover (from his late-'60s Bang Records sides). On the 1991 self-titled album (“Mom's Kitchen”). Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/SENDYM.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/SENDYM.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "album",
+          "label": "Widespread Panic (Mom's Kitchen)",
+          "slug": "album-widespread-panic-mom-s-kitchen"
+        }
+      ],
+      "albumArt": "/assets/archive-media/widespread-panic-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Send Your Mind”?",
+          "a": "“Send Your Mind” was written by Van Morrison, and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Send Your Mind” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Van Morrison."
+        },
+        {
+          "q": "What album is “Send Your Mind” on?",
+          "a": "It appears on Widespread Panic (Mom's Kitchen) (1991)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Send Your Mind”?",
+          "a": "Its live debut was 4/2/91."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Send Your Mind”?",
+          "a": "About 342 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "rock",
+          "title": "Rock",
+          "why": "Widespread Panic (Mom's Kitchen)"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Sleeping Man",
+      "slug": "sleeping-man",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Vic Chesnutt",
+      "originalArtist": "Vic Chesnutt",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Drunk (Vic Chesnutt)",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1995-03-21",
+      "firstPlayedDisplay": "3/21/95",
+      "timesPlayed": 246,
+      "summary": "“Sleeping Man” is a song by Vic Chesnutt, covered by Widespread Panic. It appears on Drunk (Vic Chesnutt) (1993).",
+      "quotes": [],
+      "notes": "A Vic Chesnutt cover (from his 1993 album Drunk). Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/WTSMAN.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/WTSMAN.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Vic Chesnutt",
+          "slug": "vic-chesnutt-songs"
+        },
+        {
+          "type": "album",
+          "label": "Drunk (Vic Chesnutt)",
+          "slug": "album-drunk-vic-chesnutt"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Sleeping Man”?",
+          "a": "“Sleeping Man” was written by Vic Chesnutt, and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Sleeping Man” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Vic Chesnutt."
+        },
+        {
+          "q": "What album is “Sleeping Man” on?",
+          "a": "It appears on Drunk (Vic Chesnutt) (1993)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Sleeping Man”?",
+          "a": "Its live debut was 3/21/95."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Sleeping Man”?",
+          "a": "About 246 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "aunt-avis",
+          "title": "Aunt Avis",
+          "why": "Vic Chesnutt"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Aunt Avis",
+      "slug": "aunt-avis",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Vic Chesnutt",
+      "originalArtist": "Vic Chesnutt",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Bombs & Butterflies",
+          "year": 1997
+        }
+      ],
+      "firstPlayed": "1995-09-09",
+      "firstPlayedDisplay": "9/9/95",
+      "timesPlayed": 268,
+      "summary": "“Aunt Avis” is a song by Vic Chesnutt, covered by Widespread Panic. It appears on Bombs & Butterflies (1997).",
+      "quotes": [
+        {
+          "text": "Vic Chestnutt deserves to win Grammy after Grammy. He's the Bob Dylan of the ’90s. We just made a video with Billy Bob. He directed the video for the song ‘Aunt Avis.’ Laura Dern is in it. Vic is in it. It was filmed in Arkansas.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "Centerstage, 5/4/01",
+          "sourceDate": "5/4/01",
+          "url": null
+        }
+      ],
+      "notes": "A Vic Chesnutt song; on Bombs & Butterflies (1997). Thornton also directed a 1991 WSP documentary.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/AUNTAV.asp"
+        },
+        {
+          "label": "Debut date & Billy Bob Thornton-directed video",
+          "publisher": "JamBase",
+          "url": "https://www.jambase.com/article/widespread-panic-performs-aunt-avis-late-night-conan-obrien-date-1997"
+        },
+        {
+          "label": "Billy Bob Thornton video details (Laura Dern; Arkansas; 1991 WSP documentary)",
+          "publisher": "Centerstage (2001) & South Bend Tribune (1997), via Spreadnet",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/AUNTAV.asp",
+        "https://www.jambase.com/article/widespread-panic-performs-aunt-avis-late-night-conan-obrien-date-1997"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Vic Chesnutt",
+          "slug": "vic-chesnutt-songs"
+        },
+        {
+          "type": "album",
+          "label": "Bombs & Butterflies",
+          "slug": "album-bombs-butterflies"
+        }
+      ],
+      "albumArt": "/assets/archive-media/bombs-and-butterflies-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Aunt Avis”?",
+          "a": "“Aunt Avis” was written by Vic Chesnutt, and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Aunt Avis” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Vic Chesnutt."
+        },
+        {
+          "q": "What album is “Aunt Avis” on?",
+          "a": "It appears on Bombs & Butterflies (1997)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Aunt Avis”?",
+          "a": "Its live debut was 9/9/95."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Aunt Avis”?",
+          "a": "About 268 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "sleeping-man",
+          "title": "Sleeping Man",
+          "why": "Vic Chesnutt"
+        },
+        {
+          "slug": "tall-boy",
+          "title": "Tall Boy",
+          "why": "Bombs & Butterflies"
+        },
+        {
+          "slug": "you-got-yours",
+          "title": "You Got Yours",
+          "why": "Bombs & Butterflies"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Bowlegged Woman",
+      "slug": "bowlegged-woman",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Calvin Carter, Bobby Rush",
+      "originalArtist": "Calvin Carter, Bobby Rush",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1987-02-02",
+      "firstPlayedDisplay": "2/2/87",
+      "timesPlayed": 242,
+      "summary": "“Bowlegged Woman” is a song by Calvin Carter, Bobby Rush, covered by Widespread Panic.",
+      "quotes": [],
+      "notes": "A blues cover written by Calvin Carter and Bobby Rush (also styled “Bowlegged Woman / Knock-Kneed Man”); also cut by Hot Tuna. Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/BOWLW.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/BOWLW.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Bowlegged Woman”?",
+          "a": "“Bowlegged Woman” was written by Calvin Carter, Bobby Rush, and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Bowlegged Woman” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Calvin Carter, Bobby Rush."
+        },
+        {
+          "q": "When did Widespread Panic first play “Bowlegged Woman”?",
+          "a": "Its live debut was 2/2/87."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Bowlegged Woman”?",
+          "a": "About 242 times (per Everyday Companion)."
+        }
+      ],
+      "related": [],
+      "kind": "fact"
+    },
+    {
+      "title": "Henry Parsons Died",
+      "slug": "henry-parsons-died",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens, Eric Carter (Bloodkin)",
+      "originalArtist": "Daniel Hutchens, Eric Carter (Bloodkin)",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Everyday",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1989-01-27",
+      "firstPlayedDisplay": "1/27/89",
+      "timesPlayed": 709,
+      "summary": "“Henry Parsons Died” is a song by Daniel Hutchens, Eric Carter (Bloodkin), covered by Widespread Panic. It appears on Everyday (1993).",
+      "quotes": [
+        {
+          "text": "It's a song about a very, very bad man. What more can you say?... I just like to rock the f*** out of that song, I love it! It just kicks!",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A Bloodkin song (Daniel Hutchens / Eric Carter); appears on Everyday (1993).",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp"
+        },
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/PARSON.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Bloodkin",
+          "slug": "bloodkin-songs"
+        },
+        {
+          "type": "album",
+          "label": "Everyday",
+          "slug": "album-everyday"
+        }
+      ],
+      "albumArt": "/assets/archive-media/everyday-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Henry Parsons Died”?",
+          "a": "“Henry Parsons Died” was written by Daniel Hutchens, Eric Carter (Bloodkin), and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Henry Parsons Died” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Daniel Hutchens, Eric Carter (Bloodkin)."
+        },
+        {
+          "q": "What album is “Henry Parsons Died” on?",
+          "a": "It appears on Everyday (1993)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Henry Parsons Died”?",
+          "a": "Its live debut was 1/27/89."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Henry Parsons Died”?",
+          "a": "About 709 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "cant-get-high",
+          "title": "Can't Get High",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "makes-sense-to-me",
+          "title": "Makes Sense To Me",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "quarter-tank-of-gasoline",
+          "title": "Quarter Tank Of Gasoline",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "better-off",
+          "title": "Better Off",
+          "why": "Everyday"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Chainsaw City",
+      "slug": "chainsaw-city",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Jerry Joseph",
+      "originalArtist": "Jerry Joseph",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Pretty Wiped Out (Little Women)",
+          "year": 1990
+        }
+      ],
+      "firstPlayed": "1995-06-23",
+      "firstPlayedDisplay": "6/23/95",
+      "timesPlayed": 167,
+      "summary": "“Chainsaw City” is a song by Jerry Joseph, covered by Widespread Panic. It appears on Pretty Wiped Out (Little Women) (1990).",
+      "quotes": [],
+      "notes": "A Jerry Joseph song, originally on his band Little Women's “Pretty Wiped Out” (1990). Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/CHAINS.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/CHAINS.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Jerry Joseph",
+          "slug": "jerry-joseph-songs"
+        },
+        {
+          "type": "album",
+          "label": "Pretty Wiped Out (Little Women)",
+          "slug": "album-pretty-wiped-out-little-women"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Chainsaw City”?",
+          "a": "“Chainsaw City” was written by Jerry Joseph, and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Chainsaw City” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Jerry Joseph."
+        },
+        {
+          "q": "What album is “Chainsaw City” on?",
+          "a": "It appears on Pretty Wiped Out (Little Women) (1990)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Chainsaw City”?",
+          "a": "Its live debut was 6/23/95."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Chainsaw City”?",
+          "a": "About 167 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "north",
+          "title": "North",
+          "why": "Jerry Joseph"
+        },
+        {
+          "slug": "time-zones",
+          "title": "Time Zones",
+          "why": "Jerry Joseph"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Quarter Tank Of Gasoline",
+      "slug": "quarter-tank-of-gasoline",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens (Bloodkin)",
+      "originalArtist": "Daniel Hutchens (Bloodkin)",
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Good Luck Charm (Bloodkin)",
+          "year": 1994
+        }
+      ],
+      "firstPlayed": "1999-07-05",
+      "firstPlayedDisplay": "7/5/99",
+      "timesPlayed": 33,
+      "summary": "“Quarter Tank Of Gasoline” is a song by Daniel Hutchens (Bloodkin), covered by Widespread Panic. It appears on Good Luck Charm (Bloodkin) (1994).",
+      "quotes": [],
+      "notes": "A Bloodkin song (Daniel Hutchens), from “Good Luck Charm” (1994). Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/QTOGAS.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/QTOGAS.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Bloodkin",
+          "slug": "bloodkin-songs"
+        },
+        {
+          "type": "album",
+          "label": "Good Luck Charm (Bloodkin)",
+          "slug": "album-good-luck-charm-bloodkin"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Quarter Tank Of Gasoline”?",
+          "a": "“Quarter Tank Of Gasoline” was written by Daniel Hutchens (Bloodkin), and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Quarter Tank Of Gasoline” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Daniel Hutchens (Bloodkin)."
+        },
+        {
+          "q": "What album is “Quarter Tank Of Gasoline” on?",
+          "a": "It appears on Good Luck Charm (Bloodkin) (1994)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Quarter Tank Of Gasoline”?",
+          "a": "Its live debut was 7/5/99."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Quarter Tank Of Gasoline”?",
+          "a": "About 33 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "cant-get-high",
+          "title": "Can't Get High",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "henry-parsons-died",
+          "title": "Henry Parsons Died",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "makes-sense-to-me",
+          "title": "Makes Sense To Me",
+          "why": "Bloodkin"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Party At Your Mama's House",
+      "slug": "party-at-your-mamas-house",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "That Thang"
+      ],
+      "albums": [
+        {
+          "name": "'Til the Medicine Takes",
+          "year": 1999
+        }
+      ],
+      "firstPlayed": "1997-05-07",
+      "firstPlayedDisplay": "5/7/97",
+      "timesPlayed": 227,
+      "summary": "“Party At Your Mama's House” is a Widespread Panic original. It appears on 'Til the Medicine Takes (1999).",
+      "quotes": [],
+      "notes": "A Widespread Panic instrumental, also known as “That Thang.” On 'Til the Medicine Takes (1999). Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Everyday Companion, Song Histories (instrumental; a.k.a. “That Thang”)",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/PAYMH.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/PAYMH.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "'Til the Medicine Takes",
+          "slug": "album-til-the-medicine-takes"
+        },
+        {
+          "type": "theme",
+          "label": "The instrumentals",
+          "slug": "instrumentals"
+        }
+      ],
+      "albumArt": "/assets/archive-media/til-the-medicine-takes-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Party At Your Mama's House”?",
+          "a": "“Party At Your Mama's House” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Party At Your Mama's House” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Party At Your Mama's House” on?",
+          "a": "It appears on 'Til the Medicine Takes (1999)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Party At Your Mama's House”?",
+          "a": "Its live debut was 5/7/97."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Party At Your Mama's House”?",
+          "a": "About 227 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "gomero-blanco",
+          "title": "Gomero Blanco",
+          "why": "The instrumentals"
+        },
+        {
+          "slug": "st-louis",
+          "title": "St. Louis",
+          "why": "The instrumentals"
+        },
+        {
+          "slug": "bears-gone-fishin",
+          "title": "Bear's Gone Fishin'",
+          "why": "'Til the Medicine Takes"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "'Til the Medicine Takes"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Little Lilly",
+      "slug": "little-lilly",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [
+        "First Snow",
+        "Blue Girl"
+      ],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "1998-11-17",
+      "firstPlayedDisplay": "11/17/98",
+      "timesPlayed": 242,
+      "summary": "“Little Lilly” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original; the opener on Don't Tell the Band (2001), full-titled “Little Lilly (A.K.A. First Snow Or Blue Girl).” Source: Jambands.com; lyric databases.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review (Beatles-lyric wink)",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        },
+        {
+          "label": "Full title / alternate names (“First Snow,” “Blue Girl”)",
+          "publisher": "lyric databases; corroborated by fan alias sheets",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Don't Tell the Band",
+          "slug": "album-don-t-tell-the-band"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dont-tell-the-band-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Little Lilly”?",
+          "a": "“Little Lilly” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Little Lilly” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Little Lilly” on?",
+          "a": "It appears on Don't Tell the Band (2001)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Little Lilly”?",
+          "a": "Its live debut was 11/17/98."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Little Lilly”?",
+          "a": "About 242 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "big-wooly-mammoth",
+          "title": "Big Wooly Mammoth",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "casa-del-grillo",
+          "title": "Casa Del Grillo",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "down",
+          "title": "Down",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "give",
+          "title": "Give",
+          "why": "Don't Tell the Band"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Down",
+      "slug": "down",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "2000-04-16",
+      "firstPlayedDisplay": "4/16/00",
+      "timesPlayed": 141,
+      "summary": "“Down” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original on Don't Tell the Band (2001); the song that marked Todd Nance's emergence as a lead singer. Source: Jambands.com.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review (Nance's lead-vocal emergence)",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        }
+      ],
+      "sameAs": [
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Don't Tell the Band",
+          "slug": "album-don-t-tell-the-band"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dont-tell-the-band-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Down”?",
+          "a": "“Down” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Down” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Down” on?",
+          "a": "It appears on Don't Tell the Band (2001)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Down”?",
+          "a": "Its live debut was 4/16/00."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Down”?",
+          "a": "About 141 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "big-wooly-mammoth",
+          "title": "Big Wooly Mammoth",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "casa-del-grillo",
+          "title": "Casa Del Grillo",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "give",
+          "title": "Give",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "little-lilly",
+          "title": "Little Lilly",
+          "why": "Don't Tell the Band"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Give",
+      "slug": "give",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "2000-04-07",
+      "firstPlayedDisplay": "4/7/00",
+      "timesPlayed": 235,
+      "summary": "“Give” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original on Don't Tell the Band (2001), built on one of Michael Houser's most aggressive guitar figures. Source: Jambands.com.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        }
+      ],
+      "sameAs": [
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Don't Tell the Band",
+          "slug": "album-don-t-tell-the-band"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dont-tell-the-band-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Give”?",
+          "a": "“Give” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Give” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Give” on?",
+          "a": "It appears on Don't Tell the Band (2001)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Give”?",
+          "a": "Its live debut was 4/7/00."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Give”?",
+          "a": "About 235 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "big-wooly-mammoth",
+          "title": "Big Wooly Mammoth",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "casa-del-grillo",
+          "title": "Casa Del Grillo",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "down",
+          "title": "Down",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "little-lilly",
+          "title": "Little Lilly",
+          "why": "Don't Tell the Band"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Casa Del Grillo",
+      "slug": "casa-del-grillo",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Don't Tell the Band",
+          "year": 2001
+        }
+      ],
+      "firstPlayed": "2000-07-16",
+      "firstPlayedDisplay": "7/16/00",
+      "timesPlayed": 89,
+      "summary": "“Casa Del Grillo” is a Widespread Panic original. It appears on Don't Tell the Band (2001).",
+      "quotes": [],
+      "notes": "A Widespread Panic original on Don't Tell the Band (2001) with Spanish lyrics, extending Domingo Ortiz's Latin influence; John Keane added guitar effects. Source: Jambands.com; Wikipedia.",
+      "sources": [
+        {
+          "label": "Don't Tell the Band review (Spanish lyrics; Ortiz's Latin influence)",
+          "publisher": "Jambands.com, 2001",
+          "url": "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+        },
+        {
+          "label": "John Keane guitar effects",
+          "publisher": "Wikipedia, Don't Tell the Band",
+          "url": "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band"
+        }
+      ],
+      "sameAs": [
+        "https://en.wikipedia.org/wiki/Don%27t_Tell_the_Band",
+        "https://jambands.com/reviews/cds/2001/07/17/don-t-tell-the-band-widespread-panic/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Don't Tell the Band",
+          "slug": "album-don-t-tell-the-band"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dont-tell-the-band-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Casa Del Grillo”?",
+          "a": "“Casa Del Grillo” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Casa Del Grillo” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Casa Del Grillo” on?",
+          "a": "It appears on Don't Tell the Band (2001)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Casa Del Grillo”?",
+          "a": "Its live debut was 7/16/00."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Casa Del Grillo”?",
+          "a": "About 89 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "big-wooly-mammoth",
+          "title": "Big Wooly Mammoth",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "down",
+          "title": "Down",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "give",
+          "title": "Give",
+          "why": "Don't Tell the Band"
+        },
+        {
+          "slug": "little-lilly",
+          "title": "Little Lilly",
+          "why": "Don't Tell the Band"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Sleepy Monkey",
+      "slug": "sleepy-monkey",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Space Baby 45",
+          "year": 1986
+        }
+      ],
+      "firstPlayed": "1985-02-24",
+      "firstPlayedDisplay": "2/24/85",
+      "timesPlayed": 245,
+      "summary": "“Sleepy Monkey” is a Widespread Panic original. It appears on Space Baby 45 (1986).",
+      "quotes": [
+        {
+          "text": "We drove to Atlanta from our King Avenue house to pick up a box of 500 45's from the presser.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "via JamBase",
+          "sourceDate": null,
+          "url": null
+        }
+      ],
+      "notes": "The band's self-released 1986 debut 45 on their own Space Baby label (500 copies); a shortened “Monkey Image” was the B-side.",
+      "sources": [
+        {
+          "label": "Widespread Panic debut-single reissue (Space Baby label, 500 copies, JB's account)",
+          "publisher": "JamBase",
+          "url": "https://www.jambase.com/article/widespread-panic-debut-single-reissue"
+        },
+        {
+          "label": "Everyday Companion, Song Histories",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/MONKEY.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/histories/MONKEY.asp",
+        "https://www.jambase.com/article/widespread-panic-debut-single-reissue"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Space Baby 45",
+          "slug": "album-space-baby-45"
+        },
+        {
+          "type": "theme",
+          "label": "Early Athens (1985 to 1989)",
+          "slug": "early-athens"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Sleepy Monkey”?",
+          "a": "“Sleepy Monkey” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Sleepy Monkey” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Sleepy Monkey” on?",
+          "a": "It appears on Space Baby 45 (1986)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Sleepy Monkey”?",
+          "a": "Its live debut was 2/24/85."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Sleepy Monkey”?",
+          "a": "About 245 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "love-tractor",
+          "title": "Love Tractor",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "postcard",
+          "title": "Postcard",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "rock",
+          "title": "Rock",
+          "why": "Early Athens (1985 to 1989)"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Wondering",
+      "slug": "wondering",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Everyday",
+          "year": 1993
+        }
+      ],
+      "firstPlayed": "1992-02-07",
+      "firstPlayedDisplay": "2/7/92",
+      "timesPlayed": 666,
+      "summary": "“Wondering” is a Widespread Panic original. It appears on Everyday (1993).",
+      "quotes": [
+        {
+          "text": "‘Wondering’ is a song Mikey wrote. We never really knew what to do with it until the ‘Every Day’ sessions. That song is one of the [few] examples of a song that we just hammered and hammered and hammered in the studio. I think by the end the take that was used on the record was like the forty-eighth take... It's just one of those ‘Hey man, what are you up to?’ kind of songs!",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "Appears on Everyday (1993).",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "Everyday",
+          "slug": "album-everyday"
+        }
+      ],
+      "albumArt": "/assets/archive-media/everyday-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Wondering”?",
+          "a": "“Wondering” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Wondering” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Wondering” on?",
+          "a": "It appears on Everyday (1993)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Wondering”?",
+          "a": "Its live debut was 2/7/92."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Wondering”?",
+          "a": "About 666 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Pilgrims",
+      "slug": "pilgrims",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1992-09-14",
+      "firstPlayedDisplay": "9/14/92",
+      "timesPlayed": 575,
+      "summary": "“Pilgrims” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "It's a song about riding from town to town. You're listening to a song on the radio and it fades out, and then another city's radio station fades in over top of it. It's like the same song ’cause we're travelling all the time, and the radio becomes a song in and of itself.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Pilgrims”?",
+          "a": "“Pilgrims” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Pilgrims” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Pilgrims”?",
+          "a": "Its live debut was 9/14/92."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Pilgrims”?",
+          "a": "About 575 times (per Everyday Companion)."
+        }
+      ],
+      "related": [],
+      "kind": "story"
+    },
+    {
+      "title": "Makes Sense To Me",
+      "slug": "makes-sense-to-me",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens (Bloodkin)",
+      "originalArtist": "Daniel Hutchens (Bloodkin)",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1991-04-01",
+      "firstPlayedDisplay": "4/1/91",
+      "timesPlayed": 673,
+      "summary": "“Makes Sense To Me” is a song by Daniel Hutchens (Bloodkin), covered by Widespread Panic.",
+      "quotes": [
+        {
+          "text": "That's one that Danny Hutchins wrote, for Bloodkin, and actually after they played it he thought to himself that it sounded more like us. So he presented it to us, and we liked it, ’cause we like those guys a whole lot. And it works for us.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A Bloodkin (Daniel Hutchens) song. Source: Everyday Companion.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Everyday Companion, Covers index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Bloodkin",
+          "slug": "bloodkin-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Makes Sense To Me”?",
+          "a": "“Makes Sense To Me” was written by Daniel Hutchens (Bloodkin), and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Makes Sense To Me” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Daniel Hutchens (Bloodkin)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Makes Sense To Me”?",
+          "a": "Its live debut was 4/1/91."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Makes Sense To Me”?",
+          "a": "About 673 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "cant-get-high",
+          "title": "Can't Get High",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "henry-parsons-died",
+          "title": "Henry Parsons Died",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "quarter-tank-of-gasoline",
+          "title": "Quarter Tank Of Gasoline",
+          "why": "Bloodkin"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Can't Get High",
+      "slug": "cant-get-high",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Daniel Hutchens (Bloodkin)",
+      "originalArtist": "Daniel Hutchens (Bloodkin)",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1993-07-09",
+      "firstPlayedDisplay": "7/9/93",
+      "timesPlayed": 372,
+      "summary": "“Can't Get High” is a song by Daniel Hutchens (Bloodkin), covered by Widespread Panic.",
+      "quotes": [
+        {
+          "text": "Another great Danny song. [It's] about whatever you need to satisfy your soul, not being there. Not being able to feel feelings of elation or euphoria because whatever you need to do that is not there. I.E. a girlfriend, your pet, some sleep, whatever.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A Bloodkin (Daniel Hutchens) song; the band's radio single, performed on Late Night with Conan O'Brien (1995).",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "JoJo Hermann interview, 4/15/95 (Conan single)",
+          "publisher": "via Spreadnet",
+          "url": null
+        },
+        {
+          "label": "Everyday Companion, Covers index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Bloodkin",
+          "slug": "bloodkin-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Can't Get High”?",
+          "a": "“Can't Get High” was written by Daniel Hutchens (Bloodkin), and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Can't Get High” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Daniel Hutchens (Bloodkin)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Can't Get High”?",
+          "a": "Its live debut was 7/9/93."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Can't Get High”?",
+          "a": "About 372 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "henry-parsons-died",
+          "title": "Henry Parsons Died",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "makes-sense-to-me",
+          "title": "Makes Sense To Me",
+          "why": "Bloodkin"
+        },
+        {
+          "slug": "quarter-tank-of-gasoline",
+          "title": "Quarter Tank Of Gasoline",
+          "why": "Bloodkin"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Junior",
+      "slug": "junior",
+      "type": "Cover",
+      "isCover": true,
+      "performedBy": "Widespread Panic",
+      "composer": "Junior Kimbrough",
+      "originalArtist": "Junior Kimbrough",
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1993-04-09",
+      "firstPlayedDisplay": "4/9/93",
+      "timesPlayed": 454,
+      "summary": "“Junior” is a song by Junior Kimbrough, covered by Widespread Panic.",
+      "quotes": [
+        {
+          "text": "‘Junior’ is a Junior Kimbrough song. It's actually a medley of two or three Junior Kimbrough songs... plays blues, and uh, it's a great song. It's a great riff... It's just a rocket blues song.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": "A cover of the north Mississippi hill-country bluesman Junior Kimbrough.",
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Everyday Companion, Covers index",
+          "publisher": "everydaycompanion.com",
+          "url": "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+        }
+      ],
+      "sameAs": [
+        "https://www.everydaycompanion.com/spreadsheet/covers.asp"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Covers and where they came from",
+          "slug": "covers"
+        },
+        {
+          "type": "writer",
+          "label": "Junior Kimbrough",
+          "slug": "junior-kimbrough-songs"
+        },
+        {
+          "type": "theme",
+          "label": "The Mississippi songs",
+          "slug": "mississippi-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Junior”?",
+          "a": "“Junior” was written by Junior Kimbrough, and is covered by Widespread Panic."
+        },
+        {
+          "q": "Is “Junior” a Widespread Panic original or a cover?",
+          "a": "It is a cover of a song by Junior Kimbrough."
+        },
+        {
+          "q": "When did Widespread Panic first play “Junior”?",
+          "a": "Its live debut was 4/9/93."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Junior”?",
+          "a": "About 454 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "The Mississippi songs"
+        },
+        {
+          "slug": "tall-boy",
+          "title": "Tall Boy",
+          "why": "The Mississippi songs"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Love Tractor",
+      "slug": "love-tractor",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1989-06-16",
+      "firstPlayedDisplay": "6/16/89",
+      "timesPlayed": 993,
+      "summary": "“Love Tractor” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "‘Love Tractor,’ musically it's a lick that we used to jam around on... because it sounded so much like the Athens band Love Tractor. Who is a great band and we're all big fans... we were calling it ‘That Love Tractor Thing.’ [So] JB wrote a song about a guy who loves his tractor. Just loves riding around on his tractor!",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "theme",
+          "label": "Early Athens (1985 to 1989)",
+          "slug": "early-athens"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Love Tractor”?",
+          "a": "“Love Tractor” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Love Tractor” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Love Tractor”?",
+          "a": "Its live debut was 6/16/89."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Love Tractor”?",
+          "a": "About 993 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "postcard",
+          "title": "Postcard",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "rock",
+          "title": "Rock",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "sleepy-monkey",
+          "title": "Sleepy Monkey",
+          "why": "Early Athens (1985 to 1989)"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Dream Song",
+      "slug": "dream-song",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1992-03-13",
+      "firstPlayedDisplay": "3/13/92",
+      "timesPlayed": 204,
+      "summary": "“Dream Song” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "‘Dream Song’ was a lullabye that Mike wrote... to his child, Waker, when he was a baby. I'm not even sure if he wrote the words or if JB took an idea, lyrically, that Mike had, and actually wrote the words. It's a beautiful song. It's one I get to play fretless on.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Dream Song”?",
+          "a": "“Dream Song” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Dream Song” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Dream Song”?",
+          "a": "Its live debut was 3/13/92."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Dream Song”?",
+          "a": "About 204 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Michael Houser"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Little Kin",
+      "slug": "little-kin",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1993-04-24",
+      "firstPlayedDisplay": "4/24/93",
+      "timesPlayed": 444,
+      "summary": "“Little Kin” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "‘Little Kin’ is a... lyrically I can't really go into it too much; it's one of JB's and it seems highly personal... I luuuuv that song!... it's kind of personal to me too because I'm an adopted child... I guess it's about childhood and learning to deal with the things of life. As far as a bass player, I love it cause it's just a slab of greasy, raw funk.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "“Rock & Road” interview, 4/1/95",
+          "sourceDate": "4/1/95",
+          "url": null
+        }
+      ],
+      "notes": null,
+      "sources": [
+        {
+          "label": "Dave Schools, \"Rock & Road\" interview at O.B. & Jack's House (4/1/95), via the Spreadnet mailing list",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Little Kin”?",
+          "a": "“Little Kin” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Little Kin” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Little Kin”?",
+          "a": "Its live debut was 4/24/93."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Little Kin”?",
+          "a": "About 444 times (per Everyday Companion)."
+        }
+      ],
+      "related": [],
+      "kind": "story"
+    },
+    {
+      "title": "Vacation",
+      "slug": "vacation",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1986-09-15",
+      "firstPlayedDisplay": "9/15/86",
+      "timesPlayed": 142,
+      "summary": "“Vacation” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "There was one we wanted to put on the record called ‘Vacation’ that we had never recorded before but have been playing live on and off for eight years. We did one take of it, and John Keane comes back on the monitor and says, ‘Well that was nine and a half minutes long.’ So we knew that wasn't really a possibility.",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "The Music Monitor #94, May 1997",
+          "sourceDate": "1997",
+          "url": null
+        }
+      ],
+      "notes": "Nearly recorded for Bombs & Butterflies (1997).",
+      "sources": [
+        {
+          "label": "Dave Schools, The Music Monitor #94 (Pat Lall), May 1997, via Spreadnet",
+          "publisher": null,
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "theme",
+          "label": "Early Athens (1985 to 1989)",
+          "slug": "early-athens"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Vacation”?",
+          "a": "“Vacation” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Vacation” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Vacation”?",
+          "a": "Its live debut was 9/15/86."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Vacation”?",
+          "a": "About 142 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "love-tractor",
+          "title": "Love Tractor",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "postcard",
+          "title": "Postcard",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "rock",
+          "title": "Rock",
+          "why": "Early Athens (1985 to 1989)"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Cotton Was King",
+      "slug": "cotton-was-king",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "2010-05-05",
+      "firstPlayedDisplay": "5/5/10",
+      "timesPlayed": 121,
+      "summary": "“Cotton Was King” is a Widespread Panic original. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "It's a tribute to New Orleans, past, present, and future. Yeah, that was fun to write... it uses the phrase ‘before the beginning,’ which I actually got from Firesign Theatre... It dates back to the beginning of time that a place like New Orleans was always meant to be created. It was inevitable, a geographic hot spot where things were going to happen no matter what, and New Orleans is what manifested.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        }
+      ],
+      "notes": "Closing track on Dirty Side Down (2010).",
+      "sources": [
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Dirty Side Down",
+          "slug": "album-dirty-side-down"
+        },
+        {
+          "type": "theme",
+          "label": "The New Orleans songs",
+          "slug": "new-orleans-songs"
+        },
+        {
+          "type": "theme",
+          "label": "The Jimmy Herring era",
+          "slug": "herring-era"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dirty-side-down-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Cotton Was King”?",
+          "a": "“Cotton Was King” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Cotton Was King” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Cotton Was King” on?",
+          "a": "It appears on Dirty Side Down (2010)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Cotton Was King”?",
+          "a": "Its live debut was 5/5/10."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Cotton Was King”?",
+          "a": "About 121 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "her-dance-needs-no-body",
+          "title": "Her Dance Needs No Body",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "shut-up-and-drive",
+          "title": "Shut Up And Drive",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "st-louis",
+          "title": "St. Louis",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "three-candles",
+          "title": "Three Candles",
+          "why": "The Jimmy Herring era"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "St. Louis",
+      "slug": "st-louis",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "2007-10-19",
+      "firstPlayedDisplay": "10/19/07",
+      "timesPlayed": 71,
+      "summary": "“St. Louis” is a Widespread Panic original. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "We've been playing that on stage as a little bit of a transition piece. It took on a little more solid shape in the studio. There's a free-flowing, open, airy jam there in the middle of it... Oh, let's just stick the ‘St. Louis’ jam in front of that [‘Shut Up and Drive’], and you've got a long intro then.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        }
+      ],
+      "notes": "Instrumental; on Dirty Side Down (2010).",
+      "sources": [
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Dirty Side Down",
+          "slug": "album-dirty-side-down"
+        },
+        {
+          "type": "theme",
+          "label": "The Jimmy Herring era",
+          "slug": "herring-era"
+        },
+        {
+          "type": "theme",
+          "label": "The instrumentals",
+          "slug": "instrumentals"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dirty-side-down-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “St. Louis”?",
+          "a": "“St. Louis” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “St. Louis” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “St. Louis” on?",
+          "a": "It appears on Dirty Side Down (2010)."
+        },
+        {
+          "q": "When did Widespread Panic first play “St. Louis”?",
+          "a": "Its live debut was 10/19/07."
+        },
+        {
+          "q": "How many times has Widespread Panic played “St. Louis”?",
+          "a": "About 71 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "shut-up-and-drive",
+          "title": "Shut Up And Drive",
+          "why": "its studio intro"
+        },
+        {
+          "slug": "cotton-was-king",
+          "title": "Cotton Was King",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "gomero-blanco",
+          "title": "Gomero Blanco",
+          "why": "The instrumentals"
+        },
+        {
+          "slug": "her-dance-needs-no-body",
+          "title": "Her Dance Needs No Body",
+          "why": "The Jimmy Herring era"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Shut Up And Drive",
+      "slug": "shut-up-and-drive",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Dirty Side Down",
+          "year": 2010
+        }
+      ],
+      "firstPlayed": "2010-05-08",
+      "firstPlayedDisplay": "5/8/10",
+      "timesPlayed": 110,
+      "summary": "“Shut Up And Drive” is a Widespread Panic original. It appears on Dirty Side Down (2010).",
+      "quotes": [
+        {
+          "text": "Asked whether “Shut Up and Drive” fulfills the title's potential as a great road tune: “That's what it was meant for.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "jambands.com, 4/30/2010",
+          "sourceDate": "4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        }
+      ],
+      "notes": "On Dirty Side Down (2010); paired with the instrumental “St. Louis” as its intro.",
+      "sources": [
+        {
+          "label": "John Bell, \"True to Our Nature\" interview by Randy Ray",
+          "publisher": "jambands.com, 4/30/2010",
+          "url": "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://jambands.com/features/2010/04/30/true-to-our-nature-with-john-bell/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Dirty Side Down",
+          "slug": "album-dirty-side-down"
+        },
+        {
+          "type": "theme",
+          "label": "The Jimmy Herring era",
+          "slug": "herring-era"
+        }
+      ],
+      "albumArt": "/assets/archive-media/dirty-side-down-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Shut Up And Drive”?",
+          "a": "“Shut Up And Drive” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Shut Up And Drive” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Shut Up And Drive” on?",
+          "a": "It appears on Dirty Side Down (2010)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Shut Up And Drive”?",
+          "a": "Its live debut was 5/8/10."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Shut Up And Drive”?",
+          "a": "About 110 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "st-louis",
+          "title": "St. Louis",
+          "why": "paired instrumental"
+        },
+        {
+          "slug": "cotton-was-king",
+          "title": "Cotton Was King",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "her-dance-needs-no-body",
+          "title": "Her Dance Needs No Body",
+          "why": "The Jimmy Herring era"
+        },
+        {
+          "slug": "three-candles",
+          "title": "Three Candles",
+          "why": "The Jimmy Herring era"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Postcard",
+      "slug": "postcard",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1986-10-06",
+      "firstPlayedDisplay": "10/6/86",
+      "timesPlayed": 257,
+      "summary": "“Postcard” is a Widespread Panic original.",
+      "quotes": [
+        {
+          "text": "When the band started we all lived in this little house in Athens, Georgia, called King Avenue, and we had a friend. His name was Tom Gunther. We commonly knew him as Bear. He left town... Some months later we got a postcard. It arrived at the band house. On the front side of it was a skier catching air way up in the mountains. On the back side was a post mark from Telluride, Colorado, and a very simple message on the postcard that said, ‘The air here is great. We're having an ass-kicking time. This town is nuts. My kind of place. I don't ever want to leave.’",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "Colorado Music Hall of Fame induction speech",
+          "sourceDate": null,
+          "url": "https://www.instagram.com/reels/DaH3ejWizfL/"
+        },
+        {
+          "text": "...we had a buddy that wrote us a postcard and that turned into a song about 7 years ago. He gets little 15 cent royalty checks.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "KGSR (Austin), 4/12/97",
+          "sourceDate": "4/12/97",
+          "url": null
+        }
+      ],
+      "notes": "“Bear” is Tom Guenther, the same friend behind “Bear's Gone Fishin'.”",
+      "sources": [
+        {
+          "label": "Dave Schools, Colorado Music Hall of Fame induction speech",
+          "publisher": "via Instagram (reel DaH3ejWizfL)",
+          "url": "https://www.instagram.com/reels/DaH3ejWizfL/"
+        },
+        {
+          "label": "John Bell & Todd Nance, KGSR interview, 4/12/97 (the royalty-check aside)",
+          "publisher": "via Spreadnet",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [
+        "https://www.instagram.com/reels/DaH3ejWizfL/"
+      ],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "theme",
+          "label": "The Colorado songs",
+          "slug": "colorado-songs"
+        },
+        {
+          "type": "theme",
+          "label": "Early Athens (1985 to 1989)",
+          "slug": "early-athens"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Postcard”?",
+          "a": "“Postcard” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Postcard” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Postcard”?",
+          "a": "Its live debut was 10/6/86."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Postcard”?",
+          "a": "About 257 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "bears-gone-fishin",
+          "title": "Bear's Gone Fishin'",
+          "why": "same friend, Tom 'Bear' Guenther"
+        },
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "love-tractor",
+          "title": "Love Tractor",
+          "why": "Early Athens (1985 to 1989)"
+        },
+        {
+          "slug": "rock",
+          "title": "Rock",
+          "why": "Early Athens (1985 to 1989)"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Fishing",
+      "slug": "fishing",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-16",
+      "firstPlayedDisplay": "4/16/03",
+      "timesPlayed": 62,
+      "summary": "“Fishing” is a Widespread Panic original and the opening track of Ball (2003).",
+      "quotes": [
+        {
+          "text": "The song ‘Fishing,’ the first song on the record, started with Todd and I going in and just jamming on... bass and drums, just fooling around. We went back and made a loop out of it. John [Keane] copied the loop and started fooling around with some guitar, came up with a little flamenco riff, and JB had been sitting there in the control room on the sofa. All of a sudden he starts flipping through his notebook and says ‘Can I cut some vocals? I’ve got something that I wrote a while ago.’",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "The opening track on Ball, and the first song written for it after Michael Houser's death.",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Fishing”?",
+          "a": "“Fishing” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Fishing” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Fishing” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Fishing”?",
+          "a": "Its live debut was 4/16/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Fishing”?",
+          "a": "About 62 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Papa Johnny Road",
+      "slug": "papa-johnny-road",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "John Hermann, John Bell",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-15",
+      "firstPlayedDisplay": "4/15/03",
+      "timesPlayed": 124,
+      "summary": "“Papa Johnny Road” is a Widespread Panic song written by John Hermann and John Bell, on Ball (2003).",
+      "quotes": [
+        {
+          "text": "JoJo and I wrote that. That was his initial inspiration. Most of the music was from JoJo’s magic brain. Then he and I did the red wine and napkin thing and came up with the lyrics.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        },
+        {
+          "text": "Is Papa Johnny Road a real place? Yeah, in Mississippi.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "Papa Johnny Road is a real place in Mississippi. On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "John Hermann & John Bell",
+          "slug": "jojo-hermann-songs"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "The Mississippi songs",
+          "slug": "mississippi-songs"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Papa Johnny Road”?",
+          "a": "“Papa Johnny Road” was written by John Hermann, John Bell."
+        },
+        {
+          "q": "Is “Papa Johnny Road” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Papa Johnny Road” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Papa Johnny Road”?",
+          "a": "Its live debut was 4/15/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Papa Johnny Road”?",
+          "a": "About 124 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "junior",
+          "title": "Junior",
+          "why": "The Mississippi songs"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Nebulous",
+      "slug": "nebulous",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-17",
+      "firstPlayedDisplay": "4/17/03",
+      "timesPlayed": 46,
+      "summary": "“Nebulous” is a Widespread Panic original from Ball (2003), shaped by George McConnell and JoJo Hermann.",
+      "quotes": [
+        {
+          "text": "For ‘Nebulous,’ George and I messed with some of the words and patterns so they would fit in... George would come up with some of the notes and we got together and found the flow. He had like three pages of notes and he kind of consolidated them.",
+          "speaker": "JoJo Hermann",
+          "speakerRole": "keyboardist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "An early George McConnell co-write. On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "George McConnell",
+          "slug": "george-mcconnell-songs"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Nebulous”?",
+          "a": "“Nebulous” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Nebulous” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Nebulous” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Nebulous”?",
+          "a": "Its live debut was 4/17/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Nebulous”?",
+          "a": "About 46 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ],
+      "kind": "story"
+    },
+    {
+      "title": "Travelin' Man",
+      "slug": "travelin-man",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-05-02",
+      "firstPlayedDisplay": "5/2/03",
+      "timesPlayed": 92,
+      "summary": "“Travelin’ Man” is a Michael Houser song, among the last he brought to Widespread Panic.",
+      "quotes": [
+        {
+          "text": "The most recent one was when we played ‘Traveling Man’ live, it was just killing me. He showed us that song almost a year ago. I’ll always think about him when we’re playing that song.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "One of the last songs Michael Houser showed the band before his death in 2002.",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Travelin' Man”?",
+          "a": "“Travelin' Man” was written by Michael Houser."
+        },
+        {
+          "q": "Is “Travelin' Man” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Travelin' Man” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Travelin' Man”?",
+          "a": "Its live debut was 5/2/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Travelin' Man”?",
+          "a": "About 92 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Tortured Artist",
+      "slug": "tortured-artist",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-11",
+      "firstPlayedDisplay": "4/11/03",
+      "timesPlayed": 87,
+      "summary": "“Tortured Artist” is a Widespread Panic original from Ball (2003).",
+      "quotes": [
+        {
+          "text": "‘Thin Air,’ we kind of came up with that off the cuff, and ‘Tortured Artist.’",
+          "speaker": "George McConnell",
+          "speakerRole": "guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "Came together off the cuff in the studio. On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Tortured Artist”?",
+          "a": "“Tortured Artist” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Tortured Artist” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Tortured Artist” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Tortured Artist”?",
+          "a": "Its live debut was 4/11/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Tortured Artist”?",
+          "a": "About 87 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        }
+      ],
+      "kind": "trivia"
+    },
+    {
+      "title": "Meeting Of The Waters",
+      "slug": "meeting-of-the-waters",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-18",
+      "firstPlayedDisplay": "4/18/03",
+      "timesPlayed": 13,
+      "summary": "“Meeting of the Waters” is a Widespread Panic original from Ball (2003).",
+      "quotes": [
+        {
+          "text": "JB did a lot of the slide work on the record, like on ‘Meeting of the Waters.’",
+          "speaker": "George McConnell",
+          "speakerRole": "guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "Features John Bell's slide guitar. On Ball (2003). One of the band's rarer live songs.",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Meeting Of The Waters”?",
+          "a": "“Meeting Of The Waters” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Meeting Of The Waters” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Meeting Of The Waters” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Meeting Of The Waters”?",
+          "a": "Its live debut was 4/18/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Meeting Of The Waters”?",
+          "a": "About 13 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ],
+      "kind": "trivia"
+    },
+    {
+      "title": "Counting Train Cars",
+      "slug": "counting-train-cars",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-15",
+      "firstPlayedDisplay": "4/15/03",
+      "timesPlayed": 36,
+      "summary": "“Counting Train Cars” is a Widespread Panic original from Ball (2003).",
+      "quotes": [],
+      "notes": "Relix opened its 2003 Ball feature by pairing this song's line , “Is this the place they call paradise?” , which JB sang at the first Bonnaroo, against Joni Mitchell's “Woodstock.” On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Counting Train Cars”?",
+          "a": "“Counting Train Cars” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Counting Train Cars” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Counting Train Cars” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Counting Train Cars”?",
+          "a": "Its live debut was 4/15/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Counting Train Cars”?",
+          "a": "About 36 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ],
+      "kind": "trivia"
+    },
+    {
+      "title": "Burned Faceless",
+      "slug": "burned-faceless",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": null,
+      "firstPlayedDisplay": null,
+      "timesPlayed": null,
+      "summary": "“Burned Faceless” is an unreleased Michael Houser song, discussed in a 1997 interview but never a live staple.",
+      "quotes": [
+        {
+          "text": "Well, that’s a song that I wrote. I guess we didn’t play it on our last tour. We’re not really comfortable with it right now. We haven’t really found the heart of it yet. It may sit for a couple of years before we ever do anything about it. We write songs all the time. Most of them get to your ears, but some of them don’t. ‘Burned Faceless’ could have used a little more work on our part before we brought it forth. I think you’ll see it reappear, I just don’t know where. I like it; I wrote it.",
+          "speaker": "Michael Houser",
+          "speakerRole": "guitarist",
+          "source": "Interview by Todd A. Prusin, conducted 8/22/1997 (Relix, Oct/Nov 2003)",
+          "sourceDate": "1997-08-22",
+          "url": null
+        }
+      ],
+      "notes": "A Michael Houser composition the band shelved; not on any album and not a documented live song. One of the deep unreleased cuts Houser mentioned before his death in 2002.",
+      "sources": [
+        {
+          "label": "Michael Houser interview by Todd A. Prusin (conducted 8/22/1997), published posthumously in Relix, Oct/Nov 2003",
+          "publisher": "Relix",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Burned Faceless”?",
+          "a": "“Burned Faceless” was written by Michael Houser."
+        },
+        {
+          "q": "Is “Burned Faceless” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        }
+      ],
+      "related": [
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Michael Houser"
+        }
+      ],
+      "kind": "trivia"
+    },
+    {
+      "title": "You Got Yours",
+      "slug": "you-got-yours",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Bombs & Butterflies",
+          "year": 1997
+        }
+      ],
+      "firstPlayed": "1995-09-16",
+      "firstPlayedDisplay": "9/16/95",
+      "timesPlayed": 267,
+      "summary": "“You Got Yours” is a Michael Houser song, and one of the handful he sang lead on. It appears on Bombs & Butterflies (1997).",
+      "quotes": [
+        {
+          "text": "No. I never wanted to be a singer. One day I had a song... for a long time I’d write a song and give it to JB and say, ‘You sing it.’",
+          "speaker": "Michael Houser",
+          "speakerRole": "guitarist",
+          "source": "Interview by Todd A. Prusin, conducted 8/22/1997 (Relix, Oct/Nov 2003)",
+          "sourceDate": "1997-08-22",
+          "url": null
+        }
+      ],
+      "notes": "Among the few songs Michael Houser sang lead on (with “Ain’t Life Grand” and “Airplane”). On Bombs & Butterflies (1997).",
+      "sources": [
+        {
+          "label": "Michael Houser interview by Todd A. Prusin (conducted 8/22/1997), published posthumously in Relix, Oct/Nov 2003",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "Bombs & Butterflies",
+          "slug": "album-bombs-butterflies"
+        }
+      ],
+      "albumArt": "/assets/archive-media/bombs-and-butterflies-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “You Got Yours”?",
+          "a": "“You Got Yours” was written by Michael Houser."
+        },
+        {
+          "q": "Is “You Got Yours” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “You Got Yours” on?",
+          "a": "It appears on Bombs & Butterflies (1997)."
+        },
+        {
+          "q": "When did Widespread Panic first play “You Got Yours”?",
+          "a": "Its live debut was 9/16/95."
+        },
+        {
+          "q": "How many times has Widespread Panic played “You Got Yours”?",
+          "a": "About 267 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "airplane",
+          "title": "Airplane",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        }
+      ],
+      "kind": "fact"
+    },
+    {
+      "title": "Airplane",
+      "slug": "airplane",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [],
+      "firstPlayed": "1994-03-02",
+      "firstPlayedDisplay": "3/2/94",
+      "timesPlayed": 358,
+      "summary": "“Airplane” is a Michael Houser song, and one of the few he sang lead on himself.",
+      "quotes": [],
+      "notes": "One of the handful of songs Michael Houser sang lead on rather than handing to John Bell (per his 1997 Relix interview). Debuted 3/2/94.",
+      "sources": [
+        {
+          "label": "Michael Houser interview by Todd A. Prusin (conducted 8/22/1997), published posthumously in Relix, Oct/Nov 2003",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        }
+      ],
+      "albumArt": null,
+      "faq": [
+        {
+          "q": "Who wrote “Airplane”?",
+          "a": "“Airplane” was written by Michael Houser."
+        },
+        {
+          "q": "Is “Airplane” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "When did Widespread Panic first play “Airplane”?",
+          "a": "Its live debut was 3/2/94."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Airplane”?",
+          "a": "About 358 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "blue-indian",
+          "title": "Blue Indian",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "burned-faceless",
+          "title": "Burned Faceless",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "dream-song",
+          "title": "Dream Song",
+          "why": "Michael Houser"
+        },
+        {
+          "slug": "driving-song",
+          "title": "Driving Song",
+          "why": "Michael Houser"
+        }
+      ],
+      "kind": "trivia"
+    }
+  ],
+  "schema": {
+    "note": "Structured for SEO: each origin maps to schema.org MusicComposition (composer/lyricist, recordedAs album) with quotes[] as Quotation objects (creator=speaker, citation=source/url) and sameAs authority links. No prose narration; Burnthday is compiler, sources speak for themselves.",
+    "fields": "title, slug, type, isCover, performedBy, composer, originalArtist, aliases[], albums[{name,year}], firstPlayed(ISO), firstPlayedDisplay, timesPlayed, summary, quotes[{text,speaker,speakerRole,source,sourceDate,url}], notes, sources[{label,publisher,url}], sameAs[]",
+    "enrichment": "Each origin also carries: clusters[] (type/writer/album/theme pillar-cluster tags), related[] (sibling origins with a why), albumArt (cover asset path when a WSP release), and faq[] (pre-computed Q&A for FAQPage JSON-LD). Songs cross-link to their on-site song page (lyrics/chords/tabs/live-history) by matching title/slug.",
+    "kind": "Each origin carries kind: 'story' (leads with a real narrative), 'fact' (a sourced writer/album/context note), or 'trivia' (a deep-cut confirmation, e.g. an unreleased song). Render stories full; render facts/trivia as compact cards."
+  },
+  "acknowledgments": [
+    {
+      "name": "Ethan Ice",
+      "for": "providing scans of the Relix (Oct/Nov 2003) issue — the \"Southeast of Eden\" Ball feature and the posthumous 8/22/1997 Michael Houser interview — which sourced the Ball-era origins and the Houser songs (including the unreleased \"Burned Faceless\")"
+    }
+  ]
+}

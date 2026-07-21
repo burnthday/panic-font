@@ -750,6 +750,40 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
     const crumbs = alg.html.match(/<nav class="crumbs"[^>]*>[\s\S]*?<\/nav>/)?.[0] || "";
     record("Ain't Life Grand breadcrumb trail does not duplicate the H1", crumbs.includes('href="/song-origins/"') && !/aria-current="page"/.test(crumbs), "breadcrumb still carries the self-referential current crumb");
   }
+
+  // Curated origins (the structured interview/newsletter supplement merged in from
+  // branch claude/affectionate-blackwell-b25e75): each renders the enrichment mesh
+  // (filed-under cluster chips, Related origins, FAQ) plus FAQPage + MusicComposition
+  // JSON-LD, on top of the shared article chrome the universal checks above enforce.
+  const clusterPages = originPages.filter((p) => /class="origin-clusters"/.test(p.html));
+  record("Curated Song Origins render the enrichment mesh (cluster chips)", clusterPages.length > 0, `${clusterPages.length} origins carry filed-under cluster chips`);
+  const relatedPages = originPages.filter((p) => /class="origin-related"/.test(p.html));
+  record("Curated Song Origins render a Related origins section", relatedPages.length > 0, `${relatedPages.length} origins carry a related-origins section`);
+  const faqSectionPages = originPages.filter((p) => /class="origin-faq"/.test(p.html));
+  record("Curated Song Origins render an on-page FAQ section", faqSectionPages.length > 0, `${faqSectionPages.length} origins carry an FAQ section`);
+
+  const north = originPages.find((p) => p.file.includes(`song-origins${path.sep}north${path.sep}`));
+  record("A curated origin (North) is generated", Boolean(north), north ? path.relative(root, north.file) : "not found");
+  if (north) {
+    record("The curated North origin renders clusters, related, and FAQ together", /class="origin-clusters"/.test(north.html) && /class="origin-related"/.test(north.html) && /class="origin-faq"/.test(north.html), "one of clusters/related/FAQ missing");
+    // Every Related target must resolve to a real origin page in dist (no dead mesh links).
+    const relatedHrefs = [...north.html.matchAll(/class="origin-related-list"[\s\S]*?<\/ul>/g)].flatMap((m) => [...m[0].matchAll(/href="(\/song-origins\/[^"]+\/)"/g)].map((h) => h[1]));
+    const deadRelated = relatedHrefs.filter((href) => !files.some((f) => f.endsWith(path.join(href.replace(/^\//, ""), "index.html"))));
+    record("Curated Related origin links resolve to real pages in dist", relatedHrefs.length > 0 && deadRelated.length === 0, deadRelated.join("; ") || `${relatedHrefs.length} related links verified`);
+    // FAQPage JSON-LD is present and structurally valid (mainEntity of Question/Answer pairs).
+    const ldBlocks = [...north.html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => { try { return JSON.parse(m[1]); } catch { return null; } });
+    const faqLd = ldBlocks.find((b) => b && b["@type"] === "FAQPage");
+    const faqValid = Boolean(faqLd) && Array.isArray(faqLd.mainEntity) && faqLd.mainEntity.length > 0 && faqLd.mainEntity.every((q) => q["@type"] === "Question" && q.name && q.acceptedAnswer && q.acceptedAnswer.text);
+    record("A curated origin emits valid FAQPage JSON-LD", faqValid, faqLd ? "mainEntity malformed" : "no FAQPage JSON-LD block");
+    // Exactly one FAQPage per page (no duplicate/conflicting schema of the same type).
+    const faqCount = ldBlocks.filter((b) => b && b["@type"] === "FAQPage").length;
+    record("A curated origin carries exactly one FAQPage schema block", faqCount === 1, `${faqCount} FAQPage blocks`);
+    // MusicComposition JSON-LD is present and valid (the SEO win the handoff targets).
+    const musicLd = ldBlocks.find((b) => b && b["@type"] === "MusicComposition");
+    record("A curated origin emits valid MusicComposition JSON-LD", Boolean(musicLd) && Boolean(musicLd.name), musicLd ? "name missing" : "no MusicComposition JSON-LD block");
+    // The verbatim compiler body carries attributed quotes with a citation.
+    record("A curated origin renders attributed source quotes", /class="origin-quote"[\s\S]*?<cite>/.test(north.html), "no attributed quote with a citation");
+  }
 }
 
 // Lyrics & Chords: the hub is a searchable, designed index (not a raw link list)

@@ -337,10 +337,38 @@ async function loadPriorSongStats() {
 }
 
 async function loadSongOrigins() {
+  const facebook = await (async () => {
+    try {
+      const raw = await readFile(path.join(root, "data", "source", "song-origins.json"), "utf8");
+      const payload = JSON.parse(raw);
+      return (payload.origins || []).filter((origin) => origin.title && origin.slug);
+    } catch {
+      return [];
+    }
+  })();
+  // Curated supplement (data/source/song-origins-curated.json): net-new, structured
+  // origins compiled from interviews/newsletters — a separate shape (quotes[],
+  // clusters[], related[], faq[]) rendered by renderCuratedOriginPage. All entries
+  // are net-new and de-duplicated by slug against the Facebook-sourced set. Handoff
+  // from branch claude/affectionate-blackwell-b25e75 (see SONG-ORIGINS-SPEC.md).
+  const curated = await loadCuratedSongOrigins();
+  const seen = new Set(facebook.map((origin) => origin.slug));
+  const merged = [...facebook];
+  for (const entry of curated) {
+    if (seen.has(entry.slug)) continue;
+    seen.add(entry.slug);
+    merged.push(entry);
+  }
+  return merged;
+}
+
+async function loadCuratedSongOrigins() {
   try {
-    const raw = await readFile(path.join(root, "data", "source", "song-origins.json"), "utf8");
+    const raw = await readFile(path.join(root, "data", "source", "song-origins-curated.json"), "utf8");
     const payload = JSON.parse(raw);
-    return (payload.origins || []).filter((origin) => origin.title && origin.slug);
+    return (payload.origins || [])
+      .filter((origin) => origin.title && origin.slug)
+      .map((origin) => ({ ...origin, curated: true }));
   } catch {
     return [];
   }
@@ -3227,10 +3255,13 @@ function renderSongOriginCard(origin, data, albums = []) {
   const { song, onAlbums } = data ? originDataJoin(origin, data, albums) : { song: null, onAlbums: [] };
   const bits = [];
   if (song && Number.isFinite(song.total) && song.total > 0) bits.push(`${formatNumber(song.total)} plays`);
+  else if (Number.isFinite(origin.timesPlayed) && origin.timesPlayed > 0) bits.push(`${formatNumber(origin.timesPlayed)} plays`);
   if (onAlbums[0]) bits.push(escapeHtml(onAlbums[0].title));
+  else if (origin.albums?.[0]?.name) bits.push(escapeHtml(origin.albums[0].name));
   const meta = bits.length ? `<small class="origin-card-meta">${bits.join('<span class="ocm-sep" aria-hidden="true">·</span>')}</small>` : "";
+  const cardImage = origin.image || origin.albumArt || "";
   return `<a class="origin-card" href="/song-origins/${escapeAttr(origin.slug)}/">
-    ${origin.image ? `<img src="${escapeAttr(origin.image)}" alt="${escapeAttr(`${origin.title} song origin`)}" loading="lazy" decoding="async">` : ""}
+    ${cardImage ? `<img src="${escapeAttr(cardImage)}" alt="${escapeAttr(`${origin.title} song origin`)}" loading="lazy" decoding="async">` : ""}
     <span>Song Origins</span>
     <strong>${escapeHtml(origin.title)}</strong>
     ${meta}
@@ -3568,6 +3599,9 @@ function renderOriginNumbers(footer, data, computed = []) {
 }
 
 function renderSongOriginPage(origin, origins, data, albums = []) {
+  // Curated origins carry a structured shape (quotes[]/clusters[]/related[]/faq[]),
+  // not the Facebook prose body, so they render through a dedicated path.
+  if (origin.curated) return renderCuratedOriginPage(origin, origins, data, albums);
   const description = clean(origin.text).slice(0, 180) || `Burnthday Song Origins: ${origin.title}`;
   const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
   const previous = origins[currentIndex - 1] || null;
@@ -3667,6 +3701,191 @@ function renderSongOriginPage(origin, origins, data, albums = []) {
   </body>
 </html>
 `;
+}
+
+// Curated Song Origin page. Renders the structured, sourced supplement (interviews
+// + newsletters) rather than a Facebook prose post: an attributed-quotes body, the
+// live catalog stat strip, and the enrichment mesh (clusters / related origins /
+// FAQ) with MusicComposition + FAQPage JSON-LD. Data + schema handoff from branch
+// claude/affectionate-blackwell-b25e75 (data/source/SONG-ORIGINS-SPEC.md).
+function renderCuratedOriginPage(origin, origins, data, albums = []) {
+  const description = clean(origin.summary).slice(0, 180) || `Burnthday Song Origins: ${origin.title}`;
+  const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
+  const previous = origins[currentIndex - 1] || null;
+  const next = origins[currentIndex + 1] || null;
+
+  // Hero credits: identify a cover + its writer/original artist up front.
+  const heroCredits = [
+    origin.isCover && origin.originalArtist ? `<p class="origin-credit">Cover of a ${escapeHtml(origin.originalArtist)} song</p>` : "",
+    origin.composer && origin.composer !== origin.performedBy ? `<p class="origin-credit origin-credit-source">Written by ${escapeHtml(origin.composer)}</p>` : ""
+  ].filter(Boolean).join("");
+
+  // Live catalog join — identical to the Facebook path: the stat strip is computed
+  // from the catalog, nothing here is authored.
+  const { song, slug, onAlbums, lyricsHref } = originDataJoin(origin, data, albums);
+  const firstLong = song ? (formatLongDate(parseDateKey(song.first) || song.first) || song.first) : "";
+  const lastIso = song ? (song.effectiveLastIso || parseDateKey(song.last)) : null;
+  const lastLong = song ? (lastIso ? formatLongDate(lastIso) : song.lastDisplay || "") : "";
+  const primaryAlbum = onAlbums[0] || null;
+  const statTiles = [];
+  if (song) {
+    if (Number.isFinite(song.total) && song.total > 0) statTiles.push(`<div class="song-stat"><strong>${formatNumber(song.total)}</strong><span>lifetime plays</span><small>live performances</small></div>`);
+    if (firstLong) statTiles.push(`<div class="song-stat"><strong class="song-stat-date">${escapeHtml(firstLong)}</strong><span>first played</span></div>`);
+    if (lastLong) statTiles.push(`<div class="song-stat"><strong class="song-stat-date">${escapeHtml(lastLong)}</strong><span>last played</span></div>`);
+    if (primaryAlbum) statTiles.push(`<div class="song-stat"><strong class="song-stat-album">${escapeHtml(primaryAlbum.title)}</strong><span>appears on</span>${albumYear(primaryAlbum) ? `<small>${escapeHtml(albumYear(primaryAlbum))}</small>` : ""}</div>`);
+  } else if (Number.isFinite(origin.timesPlayed) && origin.timesPlayed > 0) {
+    // Fall back to the curated play count when the title has no live-catalog join.
+    statTiles.push(`<div class="song-stat"><strong>${formatNumber(origin.timesPlayed)}</strong><span>times played</span><small>per Everyday Companion</small></div>`);
+    if (origin.firstPlayedDisplay) statTiles.push(`<div class="song-stat"><strong class="song-stat-date">${escapeHtml(origin.firstPlayedDisplay)}</strong><span>first played</span></div>`);
+    if (origin.albums?.[0]) statTiles.push(`<div class="song-stat"><strong class="song-stat-album">${escapeHtml(origin.albums[0].name)}</strong><span>appears on</span>${origin.albums[0].year ? `<small>${escapeHtml(String(origin.albums[0].year))}</small>` : ""}</div>`);
+  }
+  const statStrip = statTiles.length
+    ? `<div class="origin-strip" aria-label="Live history for ${escapeAttr(origin.title)}">${statTiles.join("")}</div>`
+    : "";
+
+  // Body: plain-language summary lede, then verbatim attributed quotes, then notes.
+  // Burnthday is the compiler here; the sources speak in their own words.
+  const linkUrl = (url) => (url && !isBlockedExternalUrl(url) ? url : "");
+  const quotesHtml = (origin.quotes || []).map((quote) => {
+    const attribParts = [quote.speaker, quote.speakerRole].filter(Boolean).map(escapeHtml).join(", ");
+    const url = linkUrl(quote.url);
+    const src = quote.source
+      ? (url
+        ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(quote.source)}</a>`
+        : escapeHtml(quote.source))
+      : "";
+    const cite = [attribParts, src].filter(Boolean).join(" &middot; ");
+    return `<blockquote class="origin-quote"><p>${escapeHtml(quote.text)}</p>${cite ? `<cite>${cite}</cite>` : ""}</blockquote>`;
+  }).join("");
+  const bodyBlocks = [
+    origin.summary ? `<p class="origin-summary">${escapeHtml(origin.summary)}</p>` : "",
+    quotesHtml,
+    origin.notes ? `<p class="origin-note">${escapeHtml(origin.notes)}</p>` : ""
+  ].filter(Boolean).join("\n          ");
+
+  // Sources block replaces the Facebook "Original post" link.
+  const sourcesHtml = (origin.sources || []).length
+    ? `<div class="origin-sources"><span class="origin-sources-label">Sources</span><ul>${(origin.sources || []).map((s) => {
+        const url = linkUrl(s.url);
+        const label = [s.label, s.publisher].filter(Boolean).map(escapeHtml).join(" &middot; ");
+        return `<li>${url ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${label}</a>` : label}</li>`;
+      }).join("")}</ul></div>`
+    : "";
+
+  // Enrichment mesh: filed-under cluster chips, related origins, FAQ. Cluster pages
+  // are not yet built, so chips are non-linked labels (no dead links); related
+  // targets all resolve to real curated origin pages.
+  const clustersHtml = (origin.clusters || []).length
+    ? `<nav class="origin-clusters" aria-label="Filed under"><span class="origin-clusters-label">Filed under</span>${(origin.clusters || []).map((c) => `<span class="origin-cluster-chip" data-cluster-type="${escapeAttr(c.type)}">${escapeHtml(c.label)}</span>`).join("")}</nav>`
+    : "";
+  const relatedHtml = (origin.related || []).length
+    ? `<section class="origin-related" aria-label="Related origins"><h2>Related origins</h2><ul class="origin-related-list">${(origin.related || []).map((r) => `<li><a href="/song-origins/${escapeAttr(r.slug)}/"><span class="orl-title">${escapeHtml(r.title)}</span>${r.why ? `<span class="orl-why">${escapeHtml(r.why)}</span>` : ""}<span class="orl-go" aria-hidden="true">&rarr;</span></a></li>`).join("")}</ul></section>`
+    : "";
+  const faqHtml = (origin.faq || []).length
+    ? `<section class="origin-faq" aria-label="Frequently asked questions"><h2>Frequently asked</h2><dl>${(origin.faq || []).map((f) => `<div class="origin-faq-item"><dt>${escapeHtml(f.q)}</dt><dd>${escapeHtml(f.a)}</dd></div>`).join("")}</dl></section>`
+    : "";
+
+  // Cross-links (article footer) — computed from the join, same controls as the
+  // Facebook path.
+  const links = [];
+  if (song && slug) links.push(`<a class="origin-xlink" href="/song/${escapeAttr(slug)}/"><span class="oxl-label">Full live history</span><span class="oxl-go" aria-hidden="true">&rarr;</span></a>`);
+  if (lyricsHref) links.push(`<a class="origin-xlink" href="${escapeAttr(lyricsHref)}"><span class="oxl-label">Lyrics &amp; chords</span><span class="oxl-go" aria-hidden="true">&rarr;</span></a>`);
+  if (primaryAlbum) links.push(`<a class="origin-xlink" href="/albums/${escapeAttr(primaryAlbum.slug)}/"><span class="oxl-label">Appears on ${escapeHtml(primaryAlbum.title)}</span><span class="oxl-go" aria-hidden="true">&rarr;</span></a>`);
+  const crosslinks = links.length
+    ? `<nav class="origin-crosslinks" aria-label="Related pages">${links.join("")}</nav>`
+    : "";
+
+  const heroMedia = origin.albumArt
+    ? `<figure class="origin-hero-media origin-hero-art"><img src="${escapeAttr(origin.albumArt)}" alt="${escapeAttr(origin.summary || `${origin.title} album art`)}" decoding="async"></figure>`
+    : "";
+
+  const jsonLdBlocks = [
+    renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["Song Origins", "https://burnthday.com/song-origins/"],
+      [origin.title, `https://burnthday.com/song-origins/${origin.slug}/`]
+    ]),
+    renderMusicCompositionJsonLd(origin),
+    renderOriginFaqJsonLd(origin)
+  ].filter(Boolean).map((block) => `<script type="application/ld+json">${block}</script>`).join("\n    ");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(origin.title)} Song Origin | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com/song-origins/${escapeAttr(origin.slug)}/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    ${jsonLdBlocks}
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main origins-main">
+      <article class="archive-page origin-article">
+        <header class="origin-article-head">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">&rsaquo;</span><a href="/song-origins/">Song Origins</a></nav>
+          <p class="origin-eyebrow">SONG ORIGIN</p>
+          <h1>${escapeHtml(origin.title)}</h1>
+          ${heroCredits}
+        </header>
+        ${heroMedia}
+        ${statStrip}
+        <div class="origin-body prose-plate">
+          ${bodyBlocks}
+          ${sourcesHtml}
+        </div>
+        ${clustersHtml}
+        ${relatedHtml}
+        ${faqHtml}
+        ${crosslinks}
+        <nav class="origin-nav" aria-label="Song origin navigation">
+          ${previous ? `<a class="origin-nav-prev" href="/song-origins/${escapeAttr(previous.slug)}/"><span class="onav-dir">&larr; Previous origin</span><span class="onav-title">${escapeHtml(previous.title)}</span></a>` : "<span></span>"}
+          ${next ? `<a class="origin-nav-next" href="/song-origins/${escapeAttr(next.slug)}/"><span class="onav-dir">Next origin &rarr;</span><span class="onav-title">${escapeHtml(next.title)}</span></a>` : "<span></span>"}
+        </nav>
+      </article>
+    </main>
+    ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } }, { stagelight: true })}
+  </body>
+</html>
+`;
+}
+
+// MusicComposition JSON-LD for a curated origin (composer / byArtist for covers,
+// sameAs authority links). See SONG-ORIGINS-SPEC.md.
+function renderMusicCompositionJsonLd(origin) {
+  const node = {
+    "@context": "https://schema.org",
+    "@type": "MusicComposition",
+    name: origin.title
+  };
+  if (origin.composer) node.composer = { "@type": "Person", name: origin.composer };
+  if (origin.isCover && origin.originalArtist) node.firstPerformer = { "@type": "MusicGroup", name: origin.originalArtist };
+  const album = origin.albums?.[0];
+  if (album?.name) node.recordedAs = { "@type": "MusicRecording", name: origin.title, inAlbum: { "@type": "MusicAlbum", name: album.name } };
+  const sameAs = (origin.sameAs || []).filter((url) => url && !isBlockedExternalUrl(url));
+  if (sameAs.length) node.sameAs = sameAs;
+  return JSON.stringify(node).replace(/</g, "\\u003c");
+}
+
+// FAQPage JSON-LD straight from the curated faq[] (verbatim Q&A). See spec.
+function renderOriginFaqJsonLd(origin) {
+  const faqs = (origin.faq || []).filter((f) => f.q && f.a);
+  if (!faqs.length) return "";
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a }
+    }))
+  }).replace(/</g, "\\u003c");
 }
 
 function renderOriginText(text) {
@@ -11028,6 +11247,44 @@ body.stagelight .origin-xlink .oxl-go { color: var(--sl-faint); transition: colo
 body.stagelight .origin-xlink:hover .oxl-go { color: var(--sl-ink); }
 body.stagelight .origin-xlink-ext { background: transparent; border-style: dashed; }
 body.stagelight .origin-xlink-ext .oxl-label { color: var(--sl-muted); }
+/* Curated origins: attributed-quote body, sources, and the enrichment mesh
+   (filed-under cluster chips, related origins, FAQ). */
+body.stagelight .origin-summary { font-size: 18px; line-height: 1.6; color: var(--sl-ink); margin: 0 0 1.3em; }
+body.stagelight .origin-quote { margin: 0 0 1.5em; padding: 2px 0 2px 20px; border-left: 3px solid var(--sl-line-strong); }
+body.stagelight .origin-quote p { font-size: 17px; line-height: 1.62; color: var(--sl-ink); margin: 0 0 10px; }
+body.stagelight .origin-quote cite { display: block; font-family: var(--sl-mono); font-style: normal; font-size: 12.5px; letter-spacing: 0.02em; color: var(--sl-muted); }
+body.stagelight .origin-quote cite a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--sl-line-strong); }
+body.stagelight .origin-quote cite a:hover { color: #fff; }
+body.stagelight .origin-note { font-size: 15px; line-height: 1.65; color: var(--sl-muted); margin: 0 0 1.2em; }
+body.stagelight .origin-sources { margin: 1.4em 0 0; padding-top: 18px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-sources-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .origin-sources ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+body.stagelight .origin-sources li { font-size: 13.5px; line-height: 1.5; color: var(--sl-muted); }
+body.stagelight .origin-sources a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: var(--sl-line-strong); }
+body.stagelight .origin-sources a:hover { color: #fff; }
+body.stagelight .origin-clusters { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin: 34px 0 0; padding-top: 28px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-clusters-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin-right: 4px; }
+body.stagelight .origin-cluster-chip { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.02em; color: var(--sl-ink); padding: 6px 13px; border-radius: var(--sl-r-pill); background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); }
+body.stagelight .origin-cluster-chip[data-cluster-type="writer"] { border-color: rgba(45,124,82,0.5); color: #8fd6ab; }
+body.stagelight .origin-cluster-chip[data-cluster-type="album"] { border-color: rgba(40,110,158,0.5); color: #8ec2e6; }
+body.stagelight .origin-cluster-chip[data-cluster-type="theme"] { border-color: rgba(212,81,79,0.5); color: #e79b9a; }
+body.stagelight .origin-related { margin: 40px 0 0; padding-top: 30px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-related h2 { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 16px; }
+body.stagelight .origin-related-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+body.stagelight .origin-related-list a { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-radius: var(--sl-r-card, 12px); background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); color: var(--sl-ink); transition: transform 0.18s ease, border-color 0.18s ease; }
+body.stagelight .origin-related-list a:hover { transform: translateY(-2px); border-color: var(--sl-line-strong); }
+body.stagelight .origin-related-list .orl-title { font-family: var(--sl-display); font-size: 16px; font-weight: 560; }
+body.stagelight .origin-related-list .orl-why { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.02em; color: var(--sl-faint); margin-left: auto; text-align: right; }
+body.stagelight .origin-related-list .orl-go { color: var(--sl-faint); }
+body.stagelight .origin-related-list a:hover .orl-go { color: var(--sl-ink); }
+body.stagelight .origin-faq { margin: 40px 0 0; padding-top: 30px; border-top: 1px solid var(--sl-line); }
+body.stagelight .origin-faq h2 { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 18px; }
+body.stagelight .origin-faq dl { margin: 0; }
+body.stagelight .origin-faq-item { padding: 0 0 16px; margin: 0 0 16px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .origin-faq-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+body.stagelight .origin-faq dt { font-family: var(--sl-display); font-size: 16px; font-weight: 600; color: var(--sl-ink); margin: 0 0 7px; }
+body.stagelight .origin-faq dd { font-size: 15px; line-height: 1.6; color: var(--sl-muted); margin: 0; }
+body.stagelight .origin-hero-art img { max-width: 320px; border-radius: var(--sl-r-card, 12px); }
 body.stagelight .origin-nav { display: flex; justify-content: space-between; gap: 16px; margin-top: 44px; padding-top: 22px; border-top: 1px solid var(--sl-line); }
 body.stagelight .origin-nav a { display: flex; flex-direction: column; gap: 5px; font-size: 15px; color: var(--sl-muted); max-width: 48%; }
 body.stagelight .origin-nav .origin-nav-next { text-align: right; margin-left: auto; align-items: flex-end; }
