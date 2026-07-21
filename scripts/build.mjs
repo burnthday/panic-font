@@ -159,6 +159,7 @@ async function main() {
   await writeFile(path.join(dist, "_headers"), renderHeaders(), "utf8");
   await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries, generatedTourReviews), "utf8");
   await writeFile(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: https://burnthday.com/sitemap.xml\n", "utf8");
+  await writeFile(path.join(dist, "llms.txt"), renderLlmsTxt(siteData), "utf8");
   await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins, generatedTourReviews, tourInReviews), "utf8");
 
   console.log(`Built ${siteData.site.title}: ${siteData.boards.rotationOriginals.length} originals, ${siteData.boards.rotationCovers.length} covers, ${siteData.setlists.length} setlists, ${archiveEntries.length} archive pages, ${songOrigins.length} song origins.`);
@@ -1312,6 +1313,46 @@ function collectLyricRows(data) {
       ecHref: ec ? ec.href : ""
     };
   }).sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
+}
+
+// llms.txt — the /llms.txt convention for AI crawlers and agents: what this
+// site is, who runs it, and where the canonical pages and machine-readable
+// data live. Counts are computed from live site data so the file never goes
+// stale. Attribution terms mirror the footer.
+function renderLlmsTxt(data) {
+  const year = data?.site?.year || new Date().getFullYear();
+  const catalog = Array.isArray(data.catalog) ? data.catalog.length : 0;
+  return `# Burnthday
+
+> Burnthday's Widespread Panic Spread Sheet: the working Widespread Panic song
+> list, setlists, tour stats, albums, lyrics, and song origins. Independent fan
+> site run by Alex Moura since July 27, 2007. The same song list the band uses
+> to make setlists, with ${year} tour data. Not affiliated with the band.
+
+## Key pages
+
+- [Song Possibilities (the working list)](https://burnthday.com/)
+- [Song Index — every song with live history](https://burnthday.com/songs/)
+- [Setlists](https://burnthday.com/#setlists)
+- [Tour Stats](https://burnthday.com/#tour-stats)
+- [Albums](https://burnthday.com/albums/)
+- [Song Origins — researched song stories](https://burnthday.com/song-origins/)
+- [Lyrics & Chords](https://burnthday.com/lyrics-chords/)
+- [About Alex Moura and the site](https://burnthday.com/about/)
+
+## Data
+
+- [Freshness report (JSON)](https://burnthday.com/data/freshness.json): when the
+  data was last generated, the active tour, and the latest show.
+- Catalog: ${formatNumber(catalog)} songs with play counts, rarity tiers, and
+  last-played dates, rendered across the pages above.
+
+## Citation
+
+Cite as "Burnthday (burnthday.com)". Setlist data via setlist.fm and
+widespreadpanic.com; song history via Everyday Companion. Please keep those
+attributions when quoting performance data.
+`;
 }
 
 // ---- ABOUT PAGE (E-E-A-T authority anchor) ----
