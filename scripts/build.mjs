@@ -1422,7 +1422,7 @@ function renderAboutPage(entry, data, cache) {
   const title = "About Alex Moura, Creator of Burnthday | Widespread Panic";
   const description = "Alex Moura, creator of Burnthday, the Widespread Panic tour song list and data spreadsheet. Running since June 2007. TRI Studios, Hard Working Americans, JoJo Hermann, Jerry Joseph, Trondossa.";
   const credits = [
-    ["Hard Working Americans", "Head of Digital Strategy and Creative Direction, 2013–2018, out of Bob Weir's TRI Studios. Dave Schools' other band."],
+    ["Hard Working Americans", "Head of Digital Strategy and Creative Direction, 2013–2018, out of Bob Weir's TRI Studios. No ad budget. Sold-out shows and a number one debut on the iTunes rock chart."],
     ["Dave Schools", "Runs Dave's Facebook page and worked the digital side of the KIMOCK record."],
     ["JoJo Hermann", "Producer and creative director of the Shut Up and Play livestream. It charted on Billboard and helped launch JoJo's solo run."],
     ["Jerry Joseph", "Strategic digital marketing across multiple records."],
@@ -1495,7 +1495,7 @@ function renderAboutPage(entry, data, cache) {
         <div class="archive-content prose-plate">
           <img class="about-portrait" src="/assets/archive-media/Alex-1_zps04c65eda.png" alt="Alex Moura">
           <p class="about-lede">Hi! Alex Moura here. Thanks for stopping in. I launched Burnthday's (“burn-the-day”) Widespread Panic Spread Sheet in June of 2007, as a place for us die-hard fans to stay informed. After each show, songs from the last four setlists are crossed off the master list in Photoshop, from either the comfort of my home in Charlotte, or a hotel room on the road.</p>
-          <p>A little about me: born in Chapel Hill, NC, lived at the beach in Wilmington, NC for ten years, and moved to the Bay Area in 2012. That is where this site changed my life. The spreadsheet put me in Dave Schools' orbit, and Dave's orbit landed me a job with his other band, Hard Working Americans, out of Bob Weir's TRI Studios. I ran digital strategy and creative direction for that band from 2013 to 2018.</p>
+          <p>A little about me: born in Chapel Hill, NC, lived at the beach in Wilmington, NC for ten years, and moved to the Bay Area in 2012. That is where this site changed my life. A tweet got me invited up to Bob Weir's TRI Studios, and when I introduced myself, Dave Schools already knew me from this site. He introduced me to Weir as Widespread Panic's statistician. That turned into running digital strategy and creative direction for Hard Working Americans from 2013 to 2018, and marketing work on many of the albums Dave produced at the studio.</p>
           <p>The email that means the most came in June 2014. I was leaving for Europe and warned Dave the song list would be out of commission for a few weeks. His reply: “I guess I'll have go back to ‘traditional’ list crafting methods.” That is the whole point of this site in one sentence: the working song list, kept honestly enough that the band itself can lean on it.</p>
           <p>In 2014 my wife Katherine and I founded <a href="https://www.digitalstarmarketing.com/" rel="me">Digital Star Marketing</a>. The music work never stopped: JoJo Hermann, Steve Kimock, Jerry Joseph, Todd Snider, Daniel Hutchens, Band of Heathens, and the band's own Trondossa Music Festival in Charleston. Some of that work has been featured in Rolling Stone, People, Variety, and Grammy.com. Everyday Companion, the longtime keeper of Panic history, links here too.</p>
           <h2 class="about-h2">By the numbers</h2>
