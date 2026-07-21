@@ -2153,7 +2153,7 @@ function renderFitScriptBody() {
             const rightSelected = right.classList.contains("is-selected-show") ? 1 : 0;
             return rightSelected - leftSelected || Number(right.dataset.count) - Number(left.dataset.count) || left.dataset.title.localeCompare(right.dataset.title);
           }).forEach((row) => body.appendChild(row));
-          if (status) status.textContent = selectedShow ? selectedCount + " songs played at selected show" : selectedType === "all" ? "All tour songs" : selectedType === "original" ? "Originals only" : "Covers only";
+          if (status) status.textContent = selectedShow ? selectedCount + " songs played at selected show" : selectedType === "all" ? "" : selectedType === "original" ? "Originals only" : "Covers only";
         };
 
         showFilter?.addEventListener("change", () => {
@@ -2207,6 +2207,8 @@ function renderSiteHeader() {
   <div class="masthead-row">
     <a class="brand" href="/" aria-label="Burnthday">
       <img class="brand-logo" src="/assets/burnthday-logo.png" alt="Burnthday">
+      <img class="brand-logo-sl" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true">
+      <span class="brand-wordmark" aria-hidden="true">BURNTHDAY</span>
     </a>
     <nav class="header-social" aria-label="Burnthday social links">
       <a class="social-dot facebook" href="https://www.facebook.com/burnthday" aria-label="burnthday on Facebook">f</a>
@@ -2312,7 +2314,7 @@ function renderTourStats(data) {
       <button type="button" data-type-filter="cover">Covers</button>
     </div>
     <label class="mobile-sort"><span>Sort by</span><select data-mobile-sort><option value="count">Most played</option><option value="rarity">Rarest</option><option value="heat">Longest wait</option><option value="title">Song name</option></select></label>
-    <span class="show-filter-status" aria-live="polite">All tour songs</span>
+    <span class="show-filter-status" aria-live="polite"></span>
   </div>
   <div class="tour-table-wrap">
     <table class="tour-table">
@@ -2401,17 +2403,33 @@ function calculateRotationHeat(song, shows) {
   return { expectedGap, score, label };
 }
 
+function renderSheetDrawer(key, label, count, desc, boardHtml) {
+  return `<details class="sheet-drawer sheet-drawer-${key}">
+    <summary class="sheet-drawer-summary">
+      <span class="sd-name">${escapeHtml(label)}</span>
+      <span class="sd-count">${formatNumber(count)} songs</span>
+      <span class="sd-desc">${escapeHtml(desc)}</span>
+      <span class="sd-open" aria-hidden="true"></span>
+    </summary>
+    <div class="sheet-drawer-body">${boardHtml}</div>
+  </details>`;
+}
+
 function renderShelfBoard(data) {
-  return `<section class="laminate shelf-board" id="shelf">
+  const shelfCount = (data.boards.shelfOriginals?.length || 0) + (data.boards.shelfCovers?.length || 0);
+  const purgCount = (data.boards.purgatoryOriginals?.length || 0) + (data.boards.purgatoryCovers?.length || 0);
+  const shelf = `<section class="laminate shelf-board" id="shelf">
   ${renderBoardHeader("THE SHELF")}
   ${renderSongPanel("shelf-originals", "ORIGINALS", data.boards.shelfOriginals, { shelfMode: true, columns: 3 })}
   ${renderSongPanel("shelf-covers", "COVERS", data.boards.shelfCovers, { shelfMode: true, columns: 3 })}
-</section>
-<section class="laminate purgatory-board" id="purgatory">
+</section>`;
+  const purgatory = `<section class="laminate purgatory-board" id="purgatory">
   ${renderBoardHeader("PURGATORY")}
   ${renderSongPanel("purgatory-originals", "ORIGINALS", data.boards.purgatoryOriginals, { shelfMode: true, columns: 3 })}
   ${renderSongPanel("purgatory-covers", "COVERS", data.boards.purgatoryCovers, { shelfMode: true, columns: 3 })}
 </section>`;
+  return renderSheetDrawer("shelf", "The Shelf", shelfCount, "Not played in 200 shows — off the sheet, not forgotten.", shelf)
+    + renderSheetDrawer("purgatory", "Purgatory", purgCount, "Played once, ever — waiting on a second life.", purgatory);
 }
 
 function renderShelfWatch(data) {
@@ -2439,12 +2457,14 @@ function renderShelfWatch(data) {
 }
 
 function renderWoodshedBoard(data) {
-  return `<section class="laminate woodshed-board" id="woodshed">
+  const woodCount = (data.boards.woodshedOriginals?.length || 0) + (data.boards.woodshedCovers?.length || 0);
+  const wood = `<section class="laminate woodshed-board" id="woodshed">
   ${renderBoardHeader("THE WOODSHED")}
   ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
-</section>
-${renderNickJohnsonFeature(data)}`;
+</section>`;
+  return renderSheetDrawer("woodshed", "The Woodshed", woodCount, "On the current sheet, not yet played with Nick.", wood)
+    + renderNickJohnsonFeature(data);
 }
 
 function renderNickJohnsonFeature(data) {
@@ -2700,7 +2720,7 @@ function renderSetlistText(show, options = {}) {
   ].filter(Boolean).join("");
   return `<div class="setlist-text">
     ${options.hideHeading ? "" : renderFeaturedShowHeading(show)}
-    <div class="setlist-sets">${(show.sets || []).map((set) => `<p><strong>${escapeHtml(formatSetLabel(set.label))}:</strong> ${renderSetSongs(set, annotations)}</p>`).join("")}</div>
+    <div class="setlist-sets">${(show.sets || []).filter((set) => (set.songTitles && set.songTitles.length) || clean(set.songs)).map((set) => `<p><strong>${escapeHtml(formatSetLabel(set.label))}:</strong> ${renderSetSongs(set, annotations)}</p>`).join("")}</div>
     ${(annotations.guestNotes.length || annotations.bracketNotes.length) ? `<div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}${renderSetlistNotes(annotations)}</div>` : ""}
     ${links && !options.hideLinks ? `<p class="setlist-links">${links}</p>` : ""}
   </div>`;
@@ -5940,7 +5960,7 @@ sup {
 
 /* ============================================================
    STAGELIGHT — homepage-scoped dark redesign (body.stagelight)
-   The site is the glass case; the sheet stays paper.
+   The site is the glass case; the sheets stay paper.
    ============================================================ */
 body.stagelight {
   --sl-bg: #0b0b0c;
@@ -5951,7 +5971,7 @@ body.stagelight {
   --sl-line-strong: rgba(255, 255, 255, 0.16);
   --sl-display: "Bricolage", "Geist", system-ui, sans-serif;
   --sl-mono: "Geist Mono", ui-monospace, monospace;
-  --sl-glass: linear-gradient(180deg, rgba(28, 28, 31, 0.52), rgba(18, 18, 21, 0.40));
+  --sl-glass: linear-gradient(180deg, rgba(28,28,31,0.55), rgba(18,18,21,0.42));
   --sl-glass-shadow: 0 24px 60px -28px rgba(0,0,0,0.75), 0 2px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.07);
   --sl-r: 20px;
   background: var(--sl-bg);
@@ -5960,58 +5980,242 @@ body.stagelight {
 }
 body.stagelight::before {
   content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(1200px 1000px at 88% -6%, rgba(40, 110, 158, 0.30), transparent 60%),
-    radial-gradient(1300px 1200px at -18% 34%, rgba(212, 81, 79, 0.20), transparent 62%),
-    radial-gradient(1500px 1300px at 108% 78%, rgba(45, 124, 82, 0.18), transparent 64%);
+    radial-gradient(1200px 1000px at 88% -6%, rgba(40,110,158,0.30), transparent 60%),
+    radial-gradient(1300px 1200px at -18% 32%, rgba(212,81,79,0.19), transparent 62%),
+    radial-gradient(1500px 1300px at 108% 76%, rgba(45,124,82,0.17), transparent 64%);
 }
 body.stagelight > * { position: relative; z-index: 1; }
+body.stagelight ::selection { background: rgba(212,81,79,0.45); color: #fff; }
 
-/* nav + footer as dark frosted glass */
-body.stagelight .site-header {
-  background: linear-gradient(180deg, rgba(16,16,18,0.72), rgba(13,13,15,0.58));
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  backdrop-filter: blur(24px) saturate(1.4);
-  border-bottom: 1px solid var(--sl-line);
+/* glass utility */
+.sl-glass {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+}
+
+/* ---- NAV ---- */
+body.stagelight .site-head {
+  background: linear-gradient(180deg, rgba(16,16,18,0.78), rgba(13,13,15,0.6));
+  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  border-bottom: 1px solid var(--sl-line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+body.stagelight .masthead-row { align-items: center; }
+body.stagelight .brand-logo { display: none; }
+body.stagelight .brand { display: inline-flex; align-items: center; gap: 12px; }
+body.stagelight .brand-logo-sl { display: block; height: 40px; width: auto; }
+body.stagelight .brand-wordmark {
+  display: inline-block; font-family: var(--sl-display); font-weight: 800;
+  font-size: 20px; letter-spacing: 0.05em; color: var(--sl-ink);
+}
+body.stagelight .header-social .social-dot {
+  background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted);
+}
+body.stagelight .header-social .social-dot:hover { color: var(--sl-ink); border-color: var(--sl-line-strong); }
+body.stagelight .jump-links { border-top: 1px solid var(--sl-line); }
+body.stagelight .jump-links a { color: var(--sl-muted); }
+body.stagelight .jump-links a:hover, body.stagelight .jump-links a[aria-current="page"] { color: var(--sl-ink); }
+body.stagelight .jump-links a[aria-current="page"] { border-color: var(--sl-ink); }
+body.stagelight .mobile-nav summary { color: var(--sl-muted); border-color: var(--sl-line-strong); }
+body.stagelight .mobile-nav-links { background: rgba(20,20,23,0.96); border: 1px solid var(--sl-line); }
+body.stagelight .mobile-nav-links a { color: var(--sl-muted); }
+body.stagelight .menu-icon i { background: var(--sl-muted); }
+
+/* ---- MASTHEAD TITLE + TRAIL ---- */
+body.stagelight main { color: var(--sl-ink); }
+body.stagelight main h1 { font-family: var(--sl-display); color: var(--sl-ink); letter-spacing: -0.02em; }
+body.stagelight .home-trail, body.stagelight .home-trail a { color: var(--sl-faint); }
+body.stagelight .home-trail a:hover { color: var(--sl-ink); }
+
+/* ---- SECTION HEADINGS ---- */
+body.stagelight .section-heading h2 { font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; letter-spacing: -0.01em; }
+body.stagelight .section-heading span { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ---- HERO / FEATURED SHOW ---- */
+body.stagelight .latest-setlist .setlist-feature {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+  overflow: hidden;
+}
+body.stagelight .setlist-feature .setlist-image img { border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); }
+body.stagelight .show-heading time { font-family: var(--sl-mono); color: var(--sl-muted); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; }
+body.stagelight .show-heading h3 { font-family: var(--sl-display); color: var(--sl-ink); font-weight: 720; letter-spacing: -0.015em; }
+body.stagelight .show-heading p { color: var(--sl-muted); }
+body.stagelight .setlist-sets p { color: var(--sl-ink); }
+body.stagelight .setlist-sets strong { color: var(--sl-faint); font-family: var(--sl-mono); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; font-size: 12px; }
+body.stagelight .setlist-links a, body.stagelight .setlist-text a { color: var(--sl-ink); border-color: var(--sl-line-strong); }
+body.stagelight .setlist-annotations { color: var(--sl-faint); }
+
+/* ---- DATA METRICS (stat tiles) ---- */
+body.stagelight .data-metrics .nick-stat {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); border-radius: 16px;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
 }
-body.stagelight .site-header a,
-body.stagelight .brand,
-body.stagelight .site-nav a { color: var(--sl-ink); }
-body.stagelight .site-nav a { color: var(--sl-muted); }
-body.stagelight .site-nav a:hover,
-body.stagelight .site-nav a[aria-current="page"] { color: var(--sl-ink); }
-body.stagelight .brand { font-family: var(--sl-display); font-weight: 800; letter-spacing: 0.045em; }
-body.stagelight .site-footer {
-  background: linear-gradient(180deg, rgba(18,18,20,0.65), rgba(12,12,14,0.75));
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
-  backdrop-filter: blur(24px) saturate(1.4);
-  border-top: 1px solid var(--sl-line);
-  color: var(--sl-muted);
-}
-body.stagelight .site-footer a { color: var(--sl-muted); }
-body.stagelight .site-footer a:hover { color: var(--sl-ink); }
+body.stagelight .data-metrics .nick-stat strong { font-family: var(--sl-mono); color: var(--sl-ink); }
+body.stagelight .data-metrics .nick-stat span { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.12em; }
 
-/* section headings pick up the display face + light ink */
-body.stagelight main h2 { font-family: var(--sl-display); color: var(--sl-ink); }
-body.stagelight main { color: var(--sl-ink); }
+/* ---- TOOLBAR CONTROLS ---- */
+body.stagelight .data-toolbar { color: var(--sl-muted); }
+body.stagelight .data-toolbar .show-filter span { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.12em; }
+body.stagelight .data-toolbar select {
+  background: rgba(255,255,255,0.05); color: var(--sl-ink); border: 1px solid var(--sl-line-strong); border-radius: 999px;
+}
+body.stagelight .data-toolbar select option { color: #111; }
+body.stagelight .type-filter { border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04); border-radius: 999px; }
+body.stagelight .type-filter button { color: var(--sl-muted); }
+body.stagelight .type-filter button[aria-pressed="true"], body.stagelight .type-filter button.is-active { background: var(--sl-ink); color: #111; }
 
-/* THE GLASS CASE around the real paper sheet — the board itself is untouched */
-body.stagelight .primary-board {
-  position: relative;
+/* ---- DATA TABLES (tour stats, shelf watch) ---- */
+body.stagelight .tour-stats, body.stagelight .shelf-watch {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
 }
-body.stagelight .primary-board::before {
-  content: "";
-  position: absolute;
-  inset: -70px -40px;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(60% 52% at 50% 44%, rgba(255, 243, 224, 0.16), rgba(255, 243, 224, 0.05) 55%, transparent 78%);
+body.stagelight .data-table, body.stagelight .tour-table { color: var(--sl-ink); }
+body.stagelight .tour-table thead th { background: rgba(17,17,20,0.94); }
+body.stagelight .data-table th, body.stagelight .tour-table th[scope="col"], body.stagelight .data-table thead th {
+  font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--sl-line);
 }
+body.stagelight .data-table td, body.stagelight .tour-table td { border-bottom: 1px solid rgba(255,255,255,0.05); }
+body.stagelight .data-table tbody tr:hover, body.stagelight .tour-table tbody tr:hover { background: rgba(255,255,255,0.035); }
+body.stagelight .data-table th[scope="row"], body.stagelight .tour-table th[scope="row"] { color: var(--sl-ink); }
+body.stagelight .data-table td, body.stagelight .data-table strong { color: var(--sl-ink); }
+body.stagelight .tour-table .tc-num, body.stagelight .data-table .mono, body.stagelight .slp { font-family: var(--sl-mono); }
+body.stagelight .tour-table button { color: var(--sl-muted); font-family: var(--sl-mono); }
+body.stagelight .tour-table button:hover, body.stagelight .tour-table button[aria-sort] { color: var(--sl-ink); }
+body.stagelight .slp-progress { background: rgba(255,255,255,0.1); }
+body.stagelight .slp-progress i { background: var(--red); }
+
+/* ---- TOUR DATES ---- */
+body.stagelight .tour-date-section {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+}
+body.stagelight .tour-dates li { border-bottom: 1px solid rgba(255,255,255,0.05); }
+body.stagelight .tour-dates li time { font-family: var(--sl-mono); color: var(--sl-muted); }
+body.stagelight .tour-dates li strong { color: var(--sl-ink); }
+body.stagelight .tour-dates li span { color: var(--sl-muted); }
+body.stagelight .tour-dates li em { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.12em; font-style: normal; }
+body.stagelight .tour-dates li.is-upcoming { background: rgba(255,255,255,0.02); }
+
+/* ---- SHEET KEY ---- */
+body.stagelight .sheet-key {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+}
+body.stagelight .sheet-key, body.stagelight .sheet-key h2, body.stagelight .sheet-key h3 { color: var(--sl-ink); }
+body.stagelight .sheet-key p, body.stagelight .marker-legend em { color: var(--sl-muted); }
+body.stagelight .marker-legend strong { color: var(--sl-ink); }
+body.stagelight .key-block { border-color: var(--sl-line); }
+
+/* ---- NICK FEATURE ---- */
+body.stagelight .nick-feature {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow); color: var(--sl-ink);
+}
+body.stagelight .nick-feature h2, body.stagelight .nick-feature h3 { color: var(--sl-ink); font-family: var(--sl-display); }
+body.stagelight .nick-feature p, body.stagelight .nick-ranking span { color: var(--sl-muted); }
+body.stagelight .nick-summary .nick-stat { background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); border-radius: 16px; }
+body.stagelight .nick-summary .nick-stat strong { font-family: var(--sl-mono); color: var(--sl-ink); }
+body.stagelight .nick-progress i { background: var(--green); }
+
+/* ---- COMMUNITY LINKS ---- */
+body.stagelight .ticket-link {
+  background: var(--sl-ink); color: #111; border: 0; border-radius: 999px; font-weight: 650;
+  box-shadow: 0 8px 24px -8px rgba(242,242,240,0.35), inset 0 1px 0 rgba(255,255,255,0.9);
+}
+body.stagelight .ticket-link:hover { background: #fff; }
+body.stagelight .posse-link { opacity: 0.9; border-radius: 12px; overflow: hidden; }
+body.stagelight .posse-link:hover { opacity: 1; }
+
+/* ---- RARITY SYMBOLS: light ink shapes on dark (silver/gold kept) ---- */
+body.stagelight .rarity-symbol [fill="#111111"] { fill: #f2f2f0; }
+body.stagelight .rarity-symbol [stroke="#111111"] { stroke: #f2f2f0; }
+
+/* ---- OLD-SETLIST ROWS: brighten actions + row text ---- */
+body.stagelight .setlist-row summary { color: var(--sl-ink); }
+body.stagelight .setlist-row time { font-family: var(--sl-mono); color: var(--sl-muted); }
+body.stagelight .show-place strong { color: var(--sl-ink); }
+body.stagelight .show-place small { color: var(--sl-muted); }
+body.stagelight .show-action { color: var(--sl-muted); border-color: var(--sl-line-strong); }
+body.stagelight .show-action:hover { color: var(--sl-ink); }
+body.stagelight .play-action { border: 1px solid var(--sl-line-strong); }
+body.stagelight .row-toggle { color: var(--sl-faint); }
+body.stagelight .setlist-row[open] .row-toggle { color: var(--sl-ink); }
+body.stagelight .setlist-row { border-bottom: 1px solid var(--sl-line); }
+body.stagelight .setlist-section .setlist-text, body.stagelight .setlist-row-body { color: var(--sl-ink); }
+
+/* ---- FOOTER ---- */
+body.stagelight .site-foot {
+  background: linear-gradient(180deg, rgba(18,18,20,0.65), rgba(12,12,14,0.78));
+  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  border-top: 1px solid var(--sl-line); color: var(--sl-muted);
+}
+body.stagelight .footer-brand { font-family: var(--sl-display); color: var(--sl-ink); font-weight: 800; letter-spacing: 0.045em; }
+body.stagelight .footer-lead p { color: var(--sl-muted); }
+body.stagelight .footer-links strong, body.stagelight .social-links strong { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; }
+body.stagelight .footer-links a, body.stagelight .social-links a { color: var(--sl-muted); }
+body.stagelight .footer-links a:hover, body.stagelight .social-links a:hover { color: var(--sl-ink); }
+body.stagelight .social-mark { background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); }
+
+/* ---- BENTO DRAWERS: Shelf / Purgatory / Woodshed ---- */
+.sheet-drawer { display: block; }
+.sheet-drawer summary { list-style: none; cursor: pointer; }
+.sheet-drawer summary::-webkit-details-marker { display: none; }
+body.stagelight .sheet-drawer {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+  overflow: hidden; margin: 16px 0;
+}
+body.stagelight .sheet-drawer-summary {
+  display: grid; grid-template-columns: max-content max-content 1fr max-content;
+  gap: 8px 20px; align-items: baseline; padding: 22px 28px;
+}
+body.stagelight .sd-name { font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; color: var(--sl-ink); }
+body.stagelight .sd-count { font-family: var(--sl-mono); font-size: 13px; color: var(--sl-muted); }
+body.stagelight .sd-desc { font-size: 13.5px; color: var(--sl-faint); }
+body.stagelight .sd-open { justify-self: end; align-self: center; width: 13px; height: 13px; position: relative; }
+body.stagelight .sd-open::before, body.stagelight .sd-open::after {
+  content: ""; position: absolute; background: var(--sl-muted); transition: transform 0.2s ease;
+}
+body.stagelight .sd-open::before { top: 6px; left: 0; width: 13px; height: 1.5px; }
+body.stagelight .sd-open::after { left: 6px; top: 0; width: 1.5px; height: 13px; }
+body.stagelight .sheet-drawer[open] .sd-open::after { transform: scaleY(0); }
+body.stagelight .sheet-drawer[open] { border-color: var(--sl-line-strong); }
+body.stagelight .sheet-drawer-shelf[open] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(212,81,79,0.38); }
+body.stagelight .sheet-drawer-purgatory[open] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(40,110,158,0.42); }
+body.stagelight .sheet-drawer-woodshed[open] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(45,124,82,0.42); }
+body.stagelight .sheet-drawer-body { padding: 0 22px 24px; }
+body.stagelight .sheet-drawer-body .laminate { margin: 6px 0 0; }
+@media (max-width: 640px) {
+  body.stagelight .sheet-drawer-summary { grid-template-columns: 1fr max-content; gap: 4px 16px; }
+  body.stagelight .sd-desc { grid-column: 1 / -1; }
+  body.stagelight .sd-open { grid-row: 1; }
+}
+
+/* ---- THE PAPER SHEETS: keep white, add the spotlight case ---- */
+/* the sheets are paper artifacts — undo the dark-page text/heading cascade */
+body.stagelight .laminate { position: relative; color: #111; }
+body.stagelight .laminate h1,
+body.stagelight .laminate h2,
+body.stagelight .laminate h3,
+body.stagelight .board-title h1 { font-family: revert; color: revert; letter-spacing: revert; }
+body.stagelight .primary-board::before,
+body.stagelight .shelf-board::before,
+body.stagelight .woodshed-board::before,
+body.stagelight .purgatory-board::before {
+  content: ""; position: absolute; inset: -60px -30px; z-index: -1; pointer-events: none;
+  background: radial-gradient(58% 50% at 50% 44%, rgba(255,243,224,0.14), rgba(255,243,224,0.045) 55%, transparent 78%);
+}
+
 `;
 }
 

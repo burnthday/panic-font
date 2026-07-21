@@ -342,7 +342,7 @@ async function checkLatestSetlist(html, siteData) {
   if (siteData.site?.isShowDayPreview) {
     record("Show-day setlists have no redundant section label or black rule", !featured.includes("CURRENT TOUR STOP") && !featured.includes('class="section-heading"'));
     assertIncludes(featured, `datetime="${featuredShow?.isoDate || ""}"`, "Tonight's blank setlist is featured first");
-    record("Preview setlist provides blank Set 1, Set 2, and Encore lines", arraysEqual(renderedLabels, ["Set 1", "Set 2", "Encore"]), renderedLabels.join(", "));
+    record("Preview setlist omits empty Set 1/2/Encore lines until songs post", renderedLabels.length === 0, renderedLabels.join(", "));
     record("Preview setlist contains no song copy", [...featuredCard.matchAll(/<p><strong>[^<]+:<\/strong>([\s\S]*?)<\/p>/g)].every((match) => !decodeHtml(match[1]).trim()));
     assertIncludes(featuredCard, ">Show Details</a>", "Tonight links to show details");
     record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));
