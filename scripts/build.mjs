@@ -70,17 +70,25 @@ const navSubLinks = {
   ]
 };
 
-const footerNavItems = [
-  ["Song List", "/"],
-  ["Song Index", "/songs/"],
-  ["Albums", "/albums/"],
-  ["The Shelf", "/shelf/"],
-  ["Tour In Review", "/tour-in-review/"],
-  ["Song Origins", "/song-origins/"],
-  ["Lyrics & Chords", "/lyrics-chords/"],
-  ["Rumors", "/rumors/"],
-  ["About", "/about/"],
-  ["Privacy", "/privacy/"]
+// Grouped footer link columns — each column has a small mono label header.
+// Privacy lives in the bottom bar, not a column.
+const footerColumns = [
+  ["Live", [
+    ["Setlists", "/#setlists"],
+    ["Tour In Review", "/tour-in-review/"],
+    ["Rumors", "/rumors/"]
+  ]],
+  ["Songbook", [
+    ["Song Index", "/songs/"],
+    ["Albums", "/albums/"],
+    ["Lyrics & Chords", "/lyrics-chords/"],
+    ["Song Origins", "/song-origins/"]
+  ]],
+  ["The Sheet", [
+    ["Song List", "/"],
+    ["The Shelf", "/shelf/"],
+    ["About", "/about/"]
+  ]]
 ];
 
 const legacyCoreRoutes = new Map([
@@ -3661,11 +3669,11 @@ function renderStagelightHeader(data) {
       <p class="mega-label">Follow</p>
       <p class="mega-blurb">The working Widespread Panic song list, setlists, and tour data.</p>
       <nav class="mega-social" aria-label="Burnthday social links">
-        <a href="https://www.facebook.com/burnthday">Facebook</a>
-        <a href="https://twitter.com/burnthday">X</a>
-        <a href="https://www.instagram.com/burnthday/">Instagram</a>
+        <a href="https://www.facebook.com/burnthday" aria-label="Burnthday on Facebook"><span class="social-mark facebook" aria-hidden="true">f</span></a>
+        <a href="https://twitter.com/burnthday" aria-label="Burnthday on X"><span class="social-mark x" aria-hidden="true">X</span></a>
+        <a href="https://www.instagram.com/burnthday/" aria-label="Burnthday on Instagram"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span></a>
       </nav>
-      <a class="mega-more" href="https://widespreadpanic.com/tour">Get Tickets</a>
+      <a class="mega-cta" href="https://widespreadpanic.com/tour">Get Tickets</a>
     </div>
   </div>
 </div>
@@ -3725,6 +3733,33 @@ function renderNavigationScriptBody() {
   })();`;
 }
 
+function renderFooterSocialRow() {
+  return `<nav class="social-links" aria-label="Follow Burnthday">
+      <a href="https://www.facebook.com/burnthday" aria-label="Burnthday on Facebook"><span class="social-mark facebook" aria-hidden="true">f</span><span>Facebook</span></a>
+      <a href="https://twitter.com/burnthday" aria-label="Burnthday on X"><span class="social-mark x" aria-hidden="true">X</span><span>X</span></a>
+      <a href="https://www.instagram.com/burnthday/" aria-label="Burnthday on Instagram"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span><span>Instagram</span></a>
+    </nav>`;
+}
+
+function renderFooterColumns() {
+  return footerColumns.map(([label, links]) => `<nav class="footer-links" aria-label="${escapeAttr(label)}">
+      <strong>${escapeHtml(label)}</strong>
+      ${links.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join("")}
+    </nav>`).join("\n    ");
+}
+
+function renderFooterBottom(year) {
+  return `<div class="footer-bottom">
+      <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
+      <p class="footer-sources">Setlist data via <a href="https://www.setlist.fm/" rel="noopener">setlist.fm</a> and <a href="https://widespreadpanic.com/" rel="noopener">widespreadpanic.com</a> · Song history from <a href="http://everydaycompanion.com/" rel="noopener">Everyday Companion</a></p>
+      <div class="footer-bottom-links">
+        <a class="footer-privacy" href="/privacy/">Privacy</a>
+        <a class="site-credit" href="https://gnarlywhal.com">Site by Gnarlywhal</a>
+        <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+      </div>
+    </div>`;
+}
+
 function renderSiteFooter(data, options = {}) {
   const year = data?.site?.year || new Date().getFullYear();
   if (options.stagelight) {
@@ -3733,25 +3768,10 @@ function renderSiteFooter(data, options = {}) {
     <div class="footer-lead">
       <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true"><span>Burnthday</span></a>
       <p>The working Widespread Panic song list, setlists, and tour data.</p>
+      ${renderFooterSocialRow()}
     </div>
-    <nav class="footer-links" aria-label="Explore Burnthday">
-      <strong>EXPLORE</strong>
-      ${footerNavItems.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join("")}
-    </nav>
-    <nav class="social-links" aria-label="Follow Burnthday">
-      <strong>FOLLOW</strong>
-      <a href="https://www.facebook.com/burnthday"><span class="social-mark facebook" aria-hidden="true">f</span><span>Facebook</span></a>
-      <a href="https://twitter.com/burnthday"><span class="social-mark x" aria-hidden="true">X</span><span>X</span></a>
-      <a href="https://www.instagram.com/burnthday/"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span><span>Instagram</span></a>
-    </nav>
-    <div class="footer-bottom">
-      <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
-      <p class="footer-sources">Setlist data via <a href="https://www.setlist.fm/" rel="noopener">setlist.fm</a> and <a href="https://widespreadpanic.com/" rel="noopener">widespreadpanic.com</a>. Song history from <a href="http://everydaycompanion.com/" rel="noopener">Everyday Companion</a>.</p>
-      <div class="footer-bottom-links">
-        <a class="site-credit" href="https://gnarlywhal.com">Site by Gnarlywhal</a>
-        <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
-      </div>
-    </div>
+    ${renderFooterColumns()}
+    ${renderFooterBottom(year)}
   </div>
 </footer>`;
   }
@@ -3760,18 +3780,10 @@ function renderSiteFooter(data, options = {}) {
     <div class="footer-lead">
       <a class="footer-brand" href="/">BURNTHDAY</a>
       <p>The working Widespread Panic song list, setlists, and tour data.</p>
+      ${renderFooterSocialRow()}
     </div>
-    <nav class="footer-links" aria-label="Explore Burnthday">
-      <strong>EXPLORE</strong>
-      ${footerNavItems.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join("")}
-    </nav>
-    <nav class="social-links" aria-label="Follow Burnthday">
-      <strong>FOLLOW</strong>
-      <a href="https://www.facebook.com/burnthday"><span class="social-mark facebook" aria-hidden="true">f</span><span>Facebook</span></a>
-      <a href="https://twitter.com/burnthday"><span class="social-mark x" aria-hidden="true">X</span><span>X</span></a>
-      <a href="https://www.instagram.com/burnthday/"><span class="social-mark instagram" aria-hidden="true"></span><span>Instagram</span></a>
-    </nav>
-    <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
+    ${renderFooterColumns()}
+    ${renderFooterBottom(year)}
   </div>
 </footer>`;
 }
@@ -7073,8 +7085,8 @@ sup {
   width: min(1380px, 100%);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(280px, 1.35fr) minmax(300px, 1fr) minmax(180px, 0.6fr);
-  gap: 48px;
+  grid-template-columns: minmax(260px, 1.5fr) repeat(3, minmax(120px, 1fr));
+  gap: 40px 48px;
   align-items: start;
 }
 
@@ -7103,17 +7115,14 @@ sup {
   line-height: 1.5;
 }
 
-.footer-links,
-.social-links {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 22px;
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.footer-links > strong,
-.social-links > strong {
-  grid-column: 1 / -1;
-  margin-bottom: 3px;
+.footer-links > strong {
+  margin-bottom: 6px;
   color: var(--muted);
   font-size: 11px;
   line-height: 1;
@@ -7128,22 +7137,34 @@ sup {
 }
 
 .footer-links a:hover,
-.footer-links a:focus-visible,
-.social-links a:hover span:last-child,
-.social-links a:focus-visible span:last-child {
+.footer-links a:focus-visible {
   text-decoration: underline;
 }
 
 .social-links {
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .social-links a {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  width: max-content;
-  font-size: 14px;
+}
+
+/* Icon-only social row: keep labels for a11y + QA, hide visually. */
+.social-links a > span:last-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .social-mark {
@@ -7181,14 +7202,43 @@ sup {
   background: #ffffff;
 }
 
-.footer-legal {
+.footer-bottom {
   grid-column: 1 / -1;
   display: flex;
-  gap: 8px;
-  margin: 8px 0 0;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  margin-top: 12px;
   border-top: 1px solid var(--line);
   padding-top: 18px;
   color: var(--muted);
+  font-size: 12px;
+}
+
+.footer-legal {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.footer-sources {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.footer-sources a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-bottom-links {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  margin-left: auto;
   font-size: 12px;
 }
 
@@ -7884,23 +7934,22 @@ sup {
   }
 
   .site-foot-inner {
-    grid-template-columns: 1fr;
-    gap: 30px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px 24px;
   }
 
   .footer-lead,
-  .footer-legal {
-    grid-column: 1;
-  }
-
-  .footer-links {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 11px 18px;
+  .footer-bottom {
+    grid-column: 1 / -1;
   }
 
   .footer-legal {
     flex-wrap: wrap;
     gap: 4px 7px;
+  }
+
+  .footer-bottom-links {
+    margin-left: 0;
   }
 }
 
@@ -8113,9 +8162,17 @@ body.stagelight .mega-next-line { margin-top: 12px; display: flex; flex-directio
 body.stagelight .mega-next-line strong { font-size: 17px; font-weight: 620; color: var(--sl-ink); }
 body.stagelight .mega-next-line span { font-size: 13.5px; color: var(--sl-muted); }
 body.stagelight .mega-blurb { margin-top: 26px; font-size: 15px; line-height: 1.6; color: var(--sl-muted); max-width: 260px; }
-body.stagelight .mega-social { display: flex; flex-direction: column; gap: 2px; margin: 22px 0 30px; }
-body.stagelight .mega-social a { padding: 6px 0; font-size: 15px; color: var(--sl-muted); transition: color 0.15s ease, transform 0.18s ease; }
-body.stagelight .mega-social a:hover { color: var(--sl-ink); transform: translateX(4px); }
+body.stagelight .mega-social { display: flex; align-items: center; gap: 12px; margin: 22px 0 28px; }
+body.stagelight .mega-social a { display: inline-flex; }
+body.stagelight .mega-social .social-mark { width: 38px; height: 38px; flex: 0 0 38px; font-size: 16px; background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, transform 0.18s ease; }
+body.stagelight .mega-social a:hover .social-mark { color: var(--sl-ink); border-color: var(--sl-ink); background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+body.stagelight .mega-cta {
+  display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border-radius: var(--sl-r-pill);
+  font-size: 13.5px; font-weight: 580; color: var(--sl-ink);
+  background: rgba(255,255,255,0.055); border: 1px solid var(--sl-line-strong);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+body.stagelight .mega-cta:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
 @media (max-width: 900px) {
   body.stagelight .mega-menu { padding-top: 100px; }
   body.stagelight .mega-inner { grid-template-columns: 1fr; gap: 44px; }
@@ -8342,31 +8399,44 @@ body.stagelight .site-foot::before {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
 }
 body.stagelight .site-foot-inner {
-  display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 24px 56px;
+  display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 20px 48px;
   padding: 64px 0 32px; align-items: start;
 }
+body.stagelight .footer-lead { max-width: 340px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
 body.stagelight .footer-mark { height: 34px; width: auto; }
 body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 14px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }
-body.stagelight .footer-links strong, body.stagelight .social-links strong { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; }
-body.stagelight .footer-links a, body.stagelight .social-links a { color: var(--sl-muted); transition: color 0.15s ease, transform 0.15s ease; }
-body.stagelight .footer-links a:hover, body.stagelight .social-links a:hover { color: var(--sl-ink); transform: translateX(2px); }
-body.stagelight .social-mark { background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); }
+body.stagelight .footer-links { gap: 9px; }
+body.stagelight .footer-links strong { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 8px; }
+body.stagelight .footer-links a { color: var(--sl-muted); font-size: 13.5px; transition: color 0.15s ease, transform 0.15s ease; }
+body.stagelight .footer-links a:hover { color: var(--sl-ink); transform: translateX(2px); }
+body.stagelight .social-links { display: flex; flex-direction: row; align-items: center; gap: 12px; margin-top: 22px; }
+body.stagelight .social-links a { display: inline-flex; }
+body.stagelight .social-links a > span:last-child { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+body.stagelight .social-links .social-mark { width: 36px; height: 36px; flex: 0 0 36px; display: inline-grid; place-items: center; border-radius: 50%; font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 700; }
+body.stagelight .social-links a:hover .social-mark { color: var(--sl-ink); border-color: var(--sl-ink); background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+body.stagelight .social-mark { background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, transform 0.18s ease; }
 body.stagelight .footer-bottom {
-  grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--sl-line);
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px 24px; flex-wrap: wrap;
+  margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--sl-line);
 }
-body.stagelight .footer-legal { order: 1; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 0; }
+body.stagelight .footer-legal { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 0; }
 body.stagelight .footer-legal span { margin: 0 8px; }
-body.stagelight .footer-bottom-links { order: 2; }
-body.stagelight .footer-sources { order: 3; flex-basis: 100%; margin: 4px 0 0; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.03em; color: var(--sl-faint); }
+body.stagelight .footer-sources { margin: 0; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.03em; color: var(--sl-faint); }
 body.stagelight .footer-sources a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
 body.stagelight .footer-sources a:hover { color: var(--sl-ink); }
+body.stagelight .footer-bottom-links { display: flex; align-items: baseline; gap: 24px; margin-left: auto; }
+body.stagelight .footer-privacy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .footer-privacy:hover { color: var(--sl-ink); }
 body.stagelight .back-top { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .back-top:hover { color: var(--sl-ink); }
-@media (max-width: 760px) {
-  body.stagelight .site-foot-inner { grid-template-columns: 1fr 1fr; padding: 48px 0 28px; gap: 32px 24px; }
-  body.stagelight .footer-lead { grid-column: 1 / -1; }
+@media (max-width: 900px) {
+  body.stagelight .site-foot-inner { grid-template-columns: 1fr 1fr 1fr; padding: 48px 0 28px; gap: 30px 24px; }
+  body.stagelight .footer-lead { grid-column: 1 / -1; max-width: 420px; }
+  body.stagelight .footer-bottom-links { margin-left: 0; }
+}
+@media (max-width: 540px) {
+  body.stagelight .site-foot-inner { grid-template-columns: 1fr 1fr; }
 }
 
 /* ---- BENTO CARDS: Sheet Key / Shelf / Purgatory / Woodshed ---- */
@@ -8524,7 +8594,6 @@ body.stagelight .stats-disclosure[open] > summary .sc-chev { transform: rotate(1
 body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin-bottom: 0; }
 
 /* ---- FOOTER CREDIT ---- */
-body.stagelight .footer-bottom-links { display: flex; align-items: baseline; gap: 28px; }
 body.stagelight .site-credit { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .site-credit:hover { color: var(--sl-ink); }
 

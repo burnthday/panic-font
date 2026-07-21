@@ -531,17 +531,32 @@ async function checkSongLearnBlock(siteData) {
 
 function checkNavigation(html, siteData) {
   const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", "Setlists", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
-  const expectedFooter = ["Song List", "Song Index", "Albums", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About", "Privacy"];
+  // Footer is now grouped into three labeled columns; every legacy destination
+  // remains present (Privacy moved to the bottom bar, asserted separately).
+  const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
+  const expectedFooter = ["Setlists", "Tour In Review", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "Song List", "The Shelf", "About"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
-  const footerNav = linkTexts(sectionByClass(html, "footer-links"));
+  const footerColumns = sectionsByClass(html, "footer-links");
+  const footerNav = footerColumns.flatMap((column) => linkTexts(column));
+  const footerColumnLabels = footerColumns.map((column) => {
+    const match = column.match(/<strong>([\s\S]*?)<\/strong>/);
+    return match ? normalizeText(stripTags(match[1])) : "";
+  });
   record("Mega menu covers every Burnthday destination plus the homepage sections", arraysEqual(megaNav, expectedMega), megaNav.join(" | "));
   assertIncludes(html, 'aria-controls="mega-menu"', "Homepage menu toggle is wired to the mega menu");
   record("One mega menu serves desktop and mobile", html.includes('id="mega-menu"') && !html.includes('<details class="mobile-nav">'));
   record("Homepage omits the redundant On This Page jump row", !html.includes('class="home-sections"') && !html.includes("ON THIS PAGE"));
   record("Footer navigation is organized around current site destinations", arraysEqual(footerNav, expectedFooter), footerNav.join(" | "));
+  record("Footer groups links into exactly three labeled columns", footerColumns.length === 3 && footerColumnLabels.every(Boolean) && arraysEqual(footerColumnLabels, expectedColumnLabels), footerColumnLabels.join(" | "));
   assertIncludes(html, "The working Widespread Panic song list, setlists, and tour data.", "Footer explains what Burnthday is");
   for (const network of ["facebook", "x", "instagram"]) assertIncludes(html, `social-mark ${network}`, `Footer restores the ${network} social mark`);
   for (const network of ["Facebook", "X", "Instagram"]) assertIncludes(sectionByClass(html, "social-links"), `<span>${network}</span>`, `Footer labels the ${network} link`);
+  const footerBottom = sectionByClass2(html, "footer-bottom");
+  record("Footer keeps the Privacy link in the bottom bar", /href="\/privacy\/"/.test(footerBottom) && /Privacy/.test(stripTags(footerBottom)), footerBottom ? "present" : "no footer-bottom");
+  for (const [label, href] of [["setlist.fm", "https://www.setlist.fm/"], ["widespreadpanic.com", "https://widespreadpanic.com/"], ["Everyday Companion", "http://everydaycompanion.com/"]]) {
+    assertIncludes(footerBottom, `href="${href}"`, `Footer sources attribution keeps the ${label} link`);
+  }
+  assertIncludes(footerBottom, 'href="https://gnarlywhal.com"', "Footer keeps the Gnarlywhal site credit");
   assertIncludes(html, `© ${siteData.site.year} Burnthday. All rights reserved.`, "Footer keeps the modern Burnthday rights line");
   assertIncludes(html, "The Widespread Panic Spread Sheet", "Footer keeps Spread Sheet title");
 }
@@ -826,6 +841,38 @@ function sectionByClass(html, className) {
   if (start < 0) return "";
   const end = html.indexOf("</nav>", start);
   return end > start ? html.slice(start, end + "</nav>".length) : "";
+}
+
+function sectionsByClass(html, className) {
+  const open = `<nav class="${className}"`;
+  const out = [];
+  let index = html.indexOf(open);
+  while (index >= 0) {
+    const end = html.indexOf("</nav>", index);
+    if (end < 0) break;
+    out.push(html.slice(index, end + "</nav>".length));
+    index = html.indexOf(open, end + 1);
+  }
+  return out;
+}
+
+// Grab a <div class="X">…</div> by shallow brace-free tag matching for footer bars.
+function sectionByClass2(html, className) {
+  const start = html.indexOf(`<div class="${className}"`);
+  if (start < 0) return "";
+  let depth = 0;
+  const tag = /<\/?div\b[^>]*>/g;
+  tag.lastIndex = start;
+  let match;
+  while ((match = tag.exec(html))) {
+    if (match[0].startsWith("</")) {
+      depth -= 1;
+      if (depth === 0) return html.slice(start, match.index + match[0].length);
+    } else {
+      depth += 1;
+    }
+  }
+  return html.slice(start);
 }
 
 function linkTexts(html) {
