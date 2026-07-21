@@ -1,0 +1,533 @@
+{
+  "importedAt": "2026-07-21T23:06:36.337Z",
+  "description": "Widespread Panic tour prints (one commissioned poster per tour), harvested from the band's official poster archive sitemap. Not per-show gig posters. Each entry: year, tour, artist credit, image URL, and a link back to the official page. Attribution required: credit the poster artist; link back; do not present the art as your own.",
+  "source": {
+    "publisher": "widespreadpanic.com/posters (official)",
+    "note": "Poster art © the credited artists. Display with credit + link-back."
+  },
+  "count": 58,
+  "posters": [
+    {
+      "year": "1993",
+      "tour": "1993 HORDE Tour",
+      "tourSort": "1993-0",
+      "season": null,
+      "artist": null,
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1993-WP-HORDE-Festival-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1993-horde-tour/"
+    },
+    {
+      "year": "1997",
+      "tour": "1997 Spring Tour",
+      "tourSort": "1997-1",
+      "season": "Spring",
+      "artist": "Joel Elrod",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1997-03-26-27-28-29-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1997-spring-tour-joel-elrod/"
+    },
+    {
+      "year": "1998",
+      "tour": "1998 Summer Tour",
+      "tourSort": "1998-2",
+      "season": "Summer",
+      "artist": "Randel Chaves",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1998-05-29-Summer-Tour-Randel-Chaves.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1998-summer-tour-randel-chaves/"
+    },
+    {
+      "year": "1999",
+      "tour": "1999 Germany Tour",
+      "tourSort": "1999-0",
+      "season": null,
+      "artist": null,
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1999-WP-Summer-European-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1999-germany-tour/"
+    },
+    {
+      "year": "1999",
+      "tour": "1999 Spring Tour",
+      "tourSort": "1999-1",
+      "season": "Spring",
+      "artist": "J.T. Lucchesi",
+      "image": null,
+      "sourceUrl": "https://widespreadpanic.com/posters/1999-spring-tour-j-t-lucchesi/"
+    },
+    {
+      "year": "1999",
+      "tour": "1999 Spring Tour",
+      "tourSort": "1999-1",
+      "season": "Spring",
+      "artist": "Dave Huckins",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1999-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1999-spring-tour-dave-huckins/"
+    },
+    {
+      "year": "1999",
+      "tour": "1999 Summer Tour",
+      "tourSort": "1999-2",
+      "season": "Summer",
+      "artist": null,
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1999-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1999-summer-tour-generic/"
+    },
+    {
+      "year": "1999",
+      "tour": "1999 Fall Tour",
+      "tourSort": "1999-3",
+      "season": "Fall",
+      "artist": null,
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1999-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1999-fall-tour/"
+    },
+    {
+      "year": "1999",
+      "tour": "1999 Fall Tour",
+      "tourSort": "1999-3",
+      "season": "Fall",
+      "artist": "Dave Huckins",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/1999-WP-Fall-Tour-Huckins.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/1999-fall-tour-dave-huckins/"
+    },
+    {
+      "year": "2000",
+      "tour": "2000 Tour",
+      "tourSort": "2000-0",
+      "season": null,
+      "artist": "Kellie Berns",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2000-WP-Tour-Generic.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2000-generic-kellie-berns/"
+    },
+    {
+      "year": "2000",
+      "tour": "2000 Carolinas Invasion Tour",
+      "tourSort": "2000-0",
+      "season": null,
+      "artist": null,
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2000-WP-Fall-Tour-Carolinas-Invasion.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2000-carolinas-invasion-tour/"
+    },
+    {
+      "year": "2000",
+      "tour": "2000 Spring Tour",
+      "tourSort": "2000-1",
+      "season": "Spring",
+      "artist": "Ronnie O.",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2000-WP-Spring-Tour-Ronnie-O.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2000-spring-tour-ronnie-o/"
+    },
+    {
+      "year": "2000",
+      "tour": "2000 Spring Tour",
+      "tourSort": "2000-1",
+      "season": "Spring",
+      "artist": null,
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2000-WP-Spring-Tour-Generic-2.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2000-spring-tour-generic/"
+    },
+    {
+      "year": "2000",
+      "tour": "2000 Summer Tour",
+      "tourSort": "2000-2",
+      "season": "Summer",
+      "artist": "J. Clements",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2000-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2000-summer-tour-j-clements/"
+    },
+    {
+      "year": "2000",
+      "tour": "2000 Fall Tour",
+      "tourSort": "2000-3",
+      "season": "Fall",
+      "artist": "Taylor Little",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2000-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2000-fall-tour-taylor-little/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Spring Tour",
+      "tourSort": "2001-1",
+      "season": "Spring",
+      "artist": null,
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-Spring-Tour-Generic.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-spring-tour/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Spring Tour",
+      "tourSort": "2001-1",
+      "season": "Spring",
+      "artist": "Jason Clements",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-04-20-04-28-WP-Knoxville-Murfreesboro-TN.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-spring-tour-jason-clements-01/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Spring Tour",
+      "tourSort": "2001-1",
+      "season": "Spring",
+      "artist": "J.T. Lucchesi",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-04-21-04-9-WP-Raleigh-Charlotte.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-spring-tour-j-t-lucchesi-01/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Spring Tour",
+      "tourSort": "2001-1",
+      "season": "Spring",
+      "artist": "Jason Clements",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-04-22-24-Macon-Coliseum-SavannahCC-GA.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-spring-tour-jason-clements-02/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Spring Tour",
+      "tourSort": "2001-1",
+      "season": "Spring",
+      "artist": "J.T. Lucchesi",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-04-27-05-01-WP-Von-Braun-Garret-Coliseum-AL.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-spring-tour-j-t-lucchesi-02/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Summer Tour",
+      "tourSort": "2001-2",
+      "season": "Summer",
+      "artist": "Flournoy Holmes",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-WP-Summer-Tour-Looking.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-summer-tour-flournoy-holmes/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Summer Tour",
+      "tourSort": "2001-2",
+      "season": "Summer",
+      "artist": "J.T. Lucchesi",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-06-15-16-17-WP-Los-Angeles-CA-The-Wiltern.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-summer-tour-j-t-lucchesi/"
+    },
+    {
+      "year": "2001",
+      "tour": "2001 Fall Tour",
+      "tourSort": "2001-3",
+      "season": "Fall",
+      "artist": "Taylor Little",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2001-WP-Fall-Tour-Generic.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2001-fall-generic-taylor-little/"
+    },
+    {
+      "year": "2002",
+      "tour": "2002 Wood Tour",
+      "tourSort": "2002-0",
+      "season": null,
+      "artist": "Hatch Show Print",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2012-WP-Winter-Wood-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2002-wood-tour-hatch-show-print/"
+    },
+    {
+      "year": "2002",
+      "tour": "2002 Wood Tour",
+      "tourSort": "2002-2",
+      "season": "Summer",
+      "artist": "Haywood Thomas",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2002-WP-Summer-Tour-Thomas.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2002-summer-tour-haywood-thomas/"
+    },
+    {
+      "year": "2002",
+      "tour": "2002 Wood Tour",
+      "tourSort": "2002-2",
+      "season": "Summer",
+      "artist": "W. Ralph Walters Jeff",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2002-Summer-Tour-WRWalters-JWood.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2002-summer-tour-w-ralph-walters-jeff-wood/"
+    },
+    {
+      "year": "2002",
+      "tour": "2002 Summer Tour",
+      "tourSort": "2002-2",
+      "season": "Summer",
+      "artist": "Duncan Haden",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2003-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2002-summer-tour-duncan-haden/"
+    },
+    {
+      "year": "2002",
+      "tour": "2002 Wood Tour",
+      "tourSort": "2002-3",
+      "season": "Fall",
+      "artist": "Jeff Brian Woodruff",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2002-WP-Fall-Tour-JWood-BWoodruff.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2002-fall-tour-jeff-wood-brian-woodruff/"
+    },
+    {
+      "year": "2003",
+      "tour": "2003 Spring Tour",
+      "tourSort": "2003-1",
+      "season": "Spring",
+      "artist": "Smay Vision",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2003-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2003-spring-tour-smay-vision/"
+    },
+    {
+      "year": "2003",
+      "tour": "2003 Fall Tour",
+      "tourSort": "2003-3",
+      "season": "Fall",
+      "artist": "J. U. Rizzi",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2003-WP-Fall-Tour-2003.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2003-fall-tour-j-u-rizzi/"
+    },
+    {
+      "year": "2005",
+      "tour": "2005 Spring Tour",
+      "tourSort": "2005-1",
+      "season": "Spring",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2005-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2005-spring-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2005",
+      "tour": "2005 Summer Tour",
+      "tourSort": "2005-2",
+      "season": "Summer",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2005-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2005-summer-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2005",
+      "tour": "2005 Fall Tour",
+      "tourSort": "2005-3",
+      "season": "Fall",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2005-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2005-fall-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2006",
+      "tour": "2006 Summer Tour",
+      "tourSort": "2006-2",
+      "season": "Summer",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2006-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2006-summer-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2006",
+      "tour": "2006 Fall Tour",
+      "tourSort": "2006-3",
+      "season": "Fall",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2006-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2006-fall-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2007",
+      "tour": "2007 Summer Tour",
+      "tourSort": "2007-2",
+      "season": "Summer",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2007-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2007-summer-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2007",
+      "tour": "2007 Summer Tour",
+      "tourSort": "2007-2",
+      "season": "Summer",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2007-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2007-summer-tour-chris-bilheimer-2/"
+    },
+    {
+      "year": "2007",
+      "tour": "2007 Fall Tour",
+      "tourSort": "2007-3",
+      "season": "Fall",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2007-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2007-fall-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2008",
+      "tour": "2008 Spring Tour",
+      "tourSort": "2008-1",
+      "season": "Spring",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2008-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2008-spring-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2008",
+      "tour": "2008 Summer Tour",
+      "tourSort": "2008-2",
+      "season": "Summer",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2008-WP-Summer-2008.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2008-summer-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2008",
+      "tour": "2008 Fall Tour",
+      "tourSort": "2008-3",
+      "season": "Fall",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2008-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2008-fall-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2009",
+      "tour": "2009 Wood Tour",
+      "tourSort": "2009-0",
+      "season": null,
+      "artist": "Jeff",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2009-WP-Spring-Summer-Allman-Bros-Co-Bill.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2009-allman-bros-cobill-tour-jeff-wood/"
+    },
+    {
+      "year": "2009",
+      "tour": "2009 Fall Tour",
+      "tourSort": "2009-3",
+      "season": "Fall",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2009-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2009-fall-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2010",
+      "tour": "2010 Spring Tour",
+      "tourSort": "2010-1",
+      "season": "Spring",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2010-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2010-spring-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2010",
+      "tour": "2010 Summer Tour",
+      "tourSort": "2010-2",
+      "season": "Summer",
+      "artist": "Marq Spusta",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2010-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2010-summer-tour-marq-spusta/"
+    },
+    {
+      "year": "2011",
+      "tour": "2011 Spring Tour",
+      "tourSort": "2011-1",
+      "season": "Spring",
+      "artist": "Chuck Sperry",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2011-WP-Spring-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2011-spring-tour-chuck-sperry/"
+    },
+    {
+      "year": "2011",
+      "tour": "2011 Fall Tour",
+      "tourSort": "2011-3",
+      "season": "Fall",
+      "artist": "Chuck Sperry",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2011-WP-Fall-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2011-fall-tour-chuck-sperry/"
+    },
+    {
+      "year": "2012",
+      "tour": "2012 Wood Tour",
+      "tourSort": "2012-0",
+      "season": null,
+      "artist": "Chuck Sperry",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2012-WP-Winter-Wood-Tour-Hatch.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2012-wood-tour-chuck-sperry/"
+    },
+    {
+      "year": "2013",
+      "tour": "2013 Spring Tour",
+      "tourSort": "2013-1",
+      "season": "Spring",
+      "artist": "Chuck Sperry",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2013-WP-Spring-Tour-Sperry.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2013-spring-tour-chuck-sperry/"
+    },
+    {
+      "year": "2013",
+      "tour": "2013 Summer Tour",
+      "tourSort": "2013-2",
+      "season": "Summer",
+      "artist": "Marq Spusta",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/01/2013-WP-Summer-Tour.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2013-summer-tour-marq-spusta/"
+    },
+    {
+      "year": "2014",
+      "tour": "2014 Spring Tour",
+      "tourSort": "2014-1",
+      "season": "Spring",
+      "artist": "David Welker",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/spring-tour-14-welker-FB.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2014-spring-tour-david-welker/"
+    },
+    {
+      "year": "2014",
+      "tour": "2014 Summer Tour",
+      "tourSort": "2014-2",
+      "season": "Summer",
+      "artist": "2014 Nate Duval",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/WP-SU14-tour-Duval.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2014-summer-tour-2014-nate-duval/"
+    },
+    {
+      "year": "2015",
+      "tour": "2015 Wood Tour",
+      "tourSort": "2015-2",
+      "season": "Summer",
+      "artist": "Jeff",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/SU-15-TOUR-WOOD-fb.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2015-summer-tour-jeff-wood/"
+    },
+    {
+      "year": "2016",
+      "tour": "2016 Wood Tour",
+      "tourSort": "2016-1",
+      "season": "Spring",
+      "artist": "Haywood Thomas",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/2016-SP-TOUR-HAYWOOD-fb.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2016-spring-tour-haywood-thomas/"
+    },
+    {
+      "year": "2016",
+      "tour": "2016 Summer Tour",
+      "tourSort": "2016-2",
+      "season": "Summer",
+      "artist": "Chris Bilheimer",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/2016-SU-TOUR-BILHEIMER-fb-2.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2016-summer-tour-chris-bilheimer/"
+    },
+    {
+      "year": "2016",
+      "tour": "2016 Fall Tour",
+      "tourSort": "2016-3",
+      "season": "Fall",
+      "artist": "The Half Half",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/2016-FA-TOUR-HALF-AND-HALF-2-fb.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2016-fall-tour-the-half-half/"
+    },
+    {
+      "year": "2016",
+      "tour": "2016 Fall Tour",
+      "tourSort": "2016-3",
+      "season": "Fall",
+      "artist": "The Half Half",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/2016-FA-TOUR-HALFANDHALF-fb.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2016-fall-tour-the-half-half-02/"
+    },
+    {
+      "year": "2016",
+      "tour": "2016 Winter Tour",
+      "tourSort": "2016-4",
+      "season": "Winter",
+      "artist": "Mollie Tuggle",
+      "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2019/02/2016-WI-TOUR-Tuggle-fb.jpg",
+      "sourceUrl": "https://widespreadpanic.com/posters/2016-winter-tour-mollie-tuggle/"
+    }
+  ]
+}

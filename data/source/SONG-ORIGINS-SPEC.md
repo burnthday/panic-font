@@ -76,3 +76,7 @@ The file carries an `acknowledgments[]` field. Ethan Ice contributed the Relix (
 ## Porch Songs (Mikey-era tour context)
 
 `data/source/porch-songs.json` (run `npm run import:porch-songs`) is the band's own "Porch Songs" archival-release series — 27 specific historic shows, mostly 1991–2002, 13 of them with real highlight notes ("first ever 'Bear's Gone Fishin'," "the very first 'Don't Tell the Band,' sit-ins by the Dickinson brothers…"). Each entry: title, volume, year, date (ISO where known), venue, `highlights`, `sourceUrl` (links back to the official band page), and a `listen` link (Relisten / archive.org). Use it to **decorate Tour-in-Review**, especially the sparse pre-2002 years: show the band's highlight note + a listen link, and cross-link to origins for songs that debuted that show. Curation + attribution, not republication — full text stays on the band's site.
+
+## Tour posters
+
+`data/source/tour-posters.json` (run `npm run import:tour-posters`) is one commissioned print per tour (58 of them, 1993 onward, ~28 Mikey-era), harvested from the band's official poster archive sitemap. NOT the per-show gig posters (there are ~780 of those). Each entry: `year`, `tour`, `season`, `artist`, `image` (the band's S3 URL), `sourceUrl`. Use one per tour on Tour-in-Review. IMPORTANT: poster art is © the credited artists (Chris Bilheimer, Chuck Sperry, Jeff Wood, JT Lucchesi, Marq Spusta, David Welker, Nate Duval, …) — always display with the artist credit and a link back to the official page; never present the art as unattributed.
