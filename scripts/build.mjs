@@ -150,6 +150,8 @@ async function main() {
   const generatedTourReviews = await writeGeneratedTourReviewPages(siteData);
   const tourInReviews = await writeTourInReviewPages(siteData, archiveEntries);
   await writeTourReviewHub(siteData, archiveEntries, generatedTourReviews, tourInReviews);
+  const searchIndex = buildSearchIndex(siteData, archiveEntries, songOrigins, tourInReviews);
+  await writeFile(path.join(dist, "data", "search-index.json"), JSON.stringify(searchIndex), "utf8");
   await writeFile(path.join(dist, "index.html"), finalizeHtml(renderHtml(siteData)), "utf8");
   await writeStaticPage("/404.html", renderNotFoundPage(siteData));
   await writeFile(path.join(dist, "styles.css"), renderCss(), "utf8");
@@ -1341,6 +1343,187 @@ function collectLyricRows(data) {
       ecHref: ec ? ec.href : ""
     };
   }).sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
+}
+
+// ── Global command-palette search index (⌘K) ────────────────────────────────
+// One compact record per searchable entity, emitted to /data/search-index.json
+// and loaded lazily on first palette open. Keys are terse to keep the payload
+// lean: t (title), u (url), k (kind), plus per-kind extras. Teaser lyric lines
+// (tz) are VERBATIM first lines from content we own — a Best Guess transcription
+// or an internal lyric page — and are never authored here; songs with no owned
+// lyric content simply carry no teaser.
+function buildSearchIndex(data, archiveEntries, songOrigins, tourInReviews) {
+  const records = [];
+  const catalog = data.catalog || [];
+  const slugMap = data.songSlugMap || new Map();
+  const relistenDates = data.relistenDates || new Set();
+  const lyricsByKey = data.lyricsResourceByKey || new Map();
+  const lyricPages = buildLyricPageIndex(archiveEntries, catalog); // key -> {href, content, title}
+
+  for (const song of catalog) {
+    const key = song.key;
+    const rarity = calculateRarity(song);
+    const origin = data.originsByTitle?.get(key) || null;
+    const lyricsHref = lyricsByKey.get(key) || "";
+    const bestGuess = data.bestGuessByKey?.get(key) || null;
+    const rec = {
+      t: song.title,
+      u: `/song/${slugMap.get(key)}/`,
+      k: "song",
+      ty: song.type,
+      pl: song.total || 0,
+      ra: rarity.label
+    };
+    if (song.playedThisTour) rec.tt = 1;
+    if (bestGuess) rec.bg = 1;
+    if (lyricsHref) rec.ly = lyricsHref;
+    if (origin) rec.og = `/song-origins/${origin.slug}/`;
+    const listen = mostRecentRelistenUrl(data.performancesByTitle?.get(key), relistenDates);
+    if (listen) rec.li = listen;
+    const lastIso = song.effectiveLastIso || parseDateKey(song.last);
+    if (lastIso) rec.lp = lastIso;
+    // Teaser: the internal lyric page's first true lyric line is preferred (Alex's
+    // transcription, no editorial preamble); the Best Guess transcription is the
+    // fallback. Only where we own the content — otherwise no teaser.
+    const teaser = (lyricsHref ? teaserFromLyricHtml(lyricPages.get(key)?.content) : "")
+      || (bestGuess ? teaserFromBestGuess(bestGuess) : "");
+    if (teaser) rec.tz = teaser;
+    records.push(rec);
+  }
+
+  for (const album of data.albums || []) {
+    const rec = { t: album.title, u: `/albums/${album.slug}/`, k: "album" };
+    const yr = albumYear(album);
+    if (yr) rec.yr = yr;
+    if (album.cover) rec.cv = album.cover;
+    records.push(rec);
+  }
+
+  for (const tour of tourInReviews || []) {
+    records.push({ t: `${tour.year} ${tour.dispName}`, u: tour.route, k: "tour", yr: tour.year, sh: tour.showCount });
+  }
+
+  for (const origin of songOrigins || []) {
+    records.push({ t: origin.title, u: `/song-origins/${origin.slug}/`, k: "origin" });
+  }
+
+  // Internal lyric pages (deduped per song key — mirrors lyricsResourceByKey).
+  for (const entry of lyricPages.values()) {
+    records.push({ t: entry.title, u: entry.href, k: "lyrics" });
+  }
+
+  // Archive posts — excluding lyric-section pages, which are already indexed as
+  // kind=lyrics above (no duplicate URLs across kinds).
+  for (const entry of archiveEntries) {
+    if (!entry.path || isLyricArchivePage(entry)) continue;
+    records.push({ t: cleanArchiveTitle(entry.title) || entry.title, u: entry.path, k: "archive" });
+  }
+
+  return records;
+}
+
+// Deduped index of internal lyric pages: key -> { href, content, title }. Uses
+// the SAME "prefer the shortest/most-specific page per song" rule as
+// buildLyricsResourceIndex, so its keys match hasLyrics exactly; additionally
+// carries the raw page content (for teaser extraction) and a clean title.
+function buildLyricPageIndex(archiveEntries = [], catalog = []) {
+  const titleByKey = new Map(catalog.map((song) => [song.key || normalizeTitle(song.title), song.title]));
+  const byKey = new Map();
+  for (const entry of archiveEntries) {
+    if (!isLyricArchivePage(entry) || !entry.path) continue;
+    const name = lyricSongName(entry);
+    const key = normalizeTitle(name);
+    if (!key) continue;
+    const contentLen = String(entry.content || "").length;
+    const existing = byKey.get(key);
+    if (!existing || contentLen < existing.contentLen) {
+      byKey.set(key, { href: entry.path, contentLen, content: entry.content || "", title: titleByKey.get(key) || cleanArchiveTitle(name) || name });
+    }
+  }
+  return byKey;
+}
+
+// Most-recent RECORDED performance's Relisten URL for a song, gated by the
+// committed relisten-dates.json set (data.relistenDates). performancesByTitle is
+// sorted newest-first, so the first date that is in the set is the pick. Empty
+// string when the song has no recorded, streamable performance.
+function mostRecentRelistenUrl(performances, relistenDates) {
+  if (!performances || !performances.length || !relistenDates || !relistenDates.size) return "";
+  for (const perf of performances) {
+    if (perf?.date && relistenDates.has(perf.date)) return relistenUrlFor(perf.date);
+  }
+  return "";
+}
+
+// First lyric line of a Best Guess transcription (the first stanza's first line),
+// clamped to a short verbatim teaser.
+function teaserFromBestGuess(entry) {
+  const html = entry?.transcriptionHtml || "";
+  const blocks = [...html.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)];
+  for (const block of blocks) {
+    const blockText = clean(decodeXml(stripTags(block[1])));
+    // Skip an editorial preamble block (Alex sometimes opens with a note).
+    if (/\bEDIT\b|seems like it|see the notes/i.test(blockText)) continue;
+    const firstLine = clampTeaser(decodeXml(stripTags(block[1].split(/<br\s*\/?>/i)[0])));
+    if (firstLine && !isLyricNonContentLine(firstLine)) return firstLine;
+  }
+  return "";
+}
+
+const LYRIC_CREDIT_RE = /\b(?:transcrib|transcription|co-?writ|written by|words? (?:and|&) music|lyrics? (?:and|&) music|music (?:and|&) lyrics|arranged by|performed by|(?:backing|backup) vocals|on (?:fiddle|pedal steel|guitar|drums|bass|keys|keyboards|vocals|backing|backup|trumpet|flugelhorn|sax|saxophone|trombone|horns?|violin|cello|mandolin|banjo|harmonica|percussion|organ|piano))/i;
+
+// First real lyric line of an internal lyric page, skipping credit/session lines
+// ("Transcribed by:", "co-written by", "with X on fiddle"), bare contributor
+// names, and section markers. Returns a short VERBATIM teaser, or "" if none.
+function teaserFromLyricHtml(rawHtml) {
+  if (!rawHtml) return "";
+  const text = decodeXml(String(rawHtml)
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|h[1-6]|tr)>/gi, "\n")
+    .replace(/<[^>]+>/g, ""));
+  const lines = text.split(/\n/).map((line) => clean(line)).filter(Boolean);
+  for (const line of lines) {
+    if (isLyricNonContentLine(line)) continue;
+    return clampTeaser(line);
+  }
+  return "";
+}
+
+function isLyricNonContentLine(line) {
+  const t = clean(line);
+  if (!t) return true;
+  if (LYRIC_CREDIT_RE.test(t)) return true;
+  if (/^\(.*\)$/.test(t)) return true;                 // bare parenthetical, e.g. (Widespread Panic)
+  if (/^\[.*\]$/.test(t)) return true;                 // [Verse], [Chorus]
+  if (/^(?:verse|chorus|bridge|intro|outro|refrain|pre-?chorus)\b[:]?\s*\d*$/i.test(t)) return true;
+  if (/^with\b[\s\S]*\bon\b/i.test(t)) return true;    // "with Bruce Hoffman on fiddle"
+  // Session/horn-section credits: "with The Compass Point Horns".
+  if (/^with\s+(?:the\s+)?[A-Z][\s\S]*\b(?:horns?|section|singers?|choir|band|players?|ensemble|orchestra|strings?|quartet|group)\b/i.test(t)) return true;
+  // A short credit/section header ending in a colon ("The Compass Point Horns:").
+  if (/:$/.test(t) && t.split(/\s+/).length <= 6) return true;
+  // Session-player roster line: "<Name> on <Instrument>" (incl. a modifier, e.g.
+  // "on Valve Trombone"). Restricted to horn/orchestral instruments so ordinary
+  // lyrics that merely mention a guitar or drums are not mistaken for credits.
+  if (/\bon\b[\s\S]*\b(?:trumpet|trombone|flugelhorn|saxophone|sax|fiddle|violin|cello|mandolin|banjo|harmonica|clarinet|flute|tuba|pedal steel|lap steel|french horn)\b/i.test(t)) return true;
+  // A bare contributor name in the credit preamble: a short all-Capitalized line
+  // with no lowercase-led word (e.g. "Scott Holcomb", "Jeff Friedman"). Real lyric
+  // lines almost always carry a lowercase connective ("to", "and", "the").
+  const tokens = t.split(/\s+/);
+  if (tokens.length <= 4 && tokens.every((tok) => /^[&,.]$/.test(tok) || /^[A-Z][A-Za-z.'’-]*[.,]?$/.test(tok))) return true;
+  return false;
+}
+
+// Clamp a raw line to a tidy ~60-char verbatim teaser: strip a leading section
+// marker, collapse whitespace, and cut on a word boundary with an ellipsis.
+function clampTeaser(value) {
+  let v = clean(String(value || "")).replace(/^\[[^\]]*\]\s*/, "").replace(/\s+/g, " ").trim();
+  v = v.replace(/^["'“”‘’]+/, "").trim();
+  if (!v) return "";
+  const MAX = 60;
+  if (v.length <= MAX) return v;
+  const cut = v.slice(0, MAX);
+  const sp = cut.lastIndexOf(" ");
+  return `${(sp > 30 ? cut.slice(0, sp) : cut).replace(/[\s,.;:—–-]+$/, "")}…`;
 }
 
 // llms.txt — the /llms.txt convention for AI crawlers and agents: what this
@@ -4579,10 +4762,11 @@ async function loadRelistenDates() {
   }
 }
 
-// relisten.net organizes Widespread Panic streams by /YYYY/MM/DD.
+// relisten.net organizes Widespread Panic streams under the artist slug "wsp",
+// by /wsp/YYYY/MM/DD (e.g. https://relisten.net/wsp/2026/05/08).
 function relistenUrlFor(isoDate) {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(isoDate || ""));
-  return match ? `https://relisten.net/widespread-panic/${match[1]}/${match[2]}/${match[3]}` : "";
+  return match ? `https://relisten.net/wsp/${match[1]}/${match[2]}/${match[3]}` : "";
 }
 
 // The WATCH section (Feature 2): a single lite embed of the "definitive" official
@@ -5434,6 +5618,11 @@ function renderStagelightHeader(data) {
     <span class="brand-wordmark" aria-hidden="true">Burnthday</span>
   </a>
   <div class="head-actions">
+    <button type="button" class="head-search" data-search-open aria-haspopup="dialog" aria-controls="site-search" aria-keyshortcuts="Meta+K Control+K" aria-label="Search Burnthday">
+      <svg class="head-search-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="head-search-label">Search</span>
+      <kbd class="head-search-kbd" aria-hidden="true"><span class="head-search-cmd">⌘</span>K</kbd>
+    </button>
     <a class="head-cta" href="https://widespreadpanic.com/tour">Get Tickets</a>
     <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="mega-menu" aria-label="Open menu">
       <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
@@ -5459,7 +5648,240 @@ function renderStagelightHeader(data) {
     </div>
   </div>
 </div>
-<script>${renderStagelightHeaderScriptBody()}</script>`;
+${renderCommandPalette()}
+<script>${renderStagelightHeaderScriptBody()}</script>
+<script>${renderCommandPaletteScriptBody()}</script>`;
+}
+
+// Global command-palette (⌘K) markup. Rendered once per page (the stagelight
+// header is on every page) so the search dialog + trigger are ubiquitous. The
+// results list is populated client-side from /data/search-index.json, fetched
+// lazily on first open. role=dialog + aria wiring for accessibility; the whole
+// thing is inert (hidden) until opened.
+function renderCommandPalette() {
+  return `<div class="cmdk" id="site-search" hidden>
+  <div class="cmdk-backdrop" data-search-close></div>
+  <div class="cmdk-panel" role="dialog" aria-modal="true" aria-labelledby="cmdk-label">
+    <h2 class="cmdk-label" id="cmdk-label">Search Burnthday</h2>
+    <div class="cmdk-bar">
+      <svg class="cmdk-bar-icon" width="18" height="18" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <input type="search" class="cmdk-input" id="cmdk-input" placeholder="Search songs, albums, tours, origins…" autocomplete="off" autocorrect="off" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="cmdk-results" aria-label="Search the Burnthday catalog">
+      <button type="button" class="cmdk-close" data-search-close aria-label="Close search"><kbd>Esc</kbd></button>
+    </div>
+    <div class="cmdk-results" id="cmdk-results" role="listbox" aria-label="Search results" tabindex="-1"></div>
+    <p class="cmdk-hint" id="cmdk-hint">Type to search ${"the whole catalog"} — songs, albums, tours, and song origins.</p>
+    <div class="cmdk-foot" aria-hidden="true">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+    </div>
+  </div>
+</div>`;
+}
+
+// Client behavior for the command palette. Zero dependencies: lazy-fetches
+// /data/search-index.json once, does title-substring + word-prefix scoring,
+// groups results by kind, renders rich song rows, and wires full keyboard
+// navigation + a focus trap. Written in plain concatenated strings (no browser
+// template literals) so it drops cleanly inside this Node template.
+function renderCommandPaletteScriptBody() {
+  return `(function () {
+  var root = document.getElementById("site-search");
+  if (!root || root.dataset.wired) return;
+  root.dataset.wired = "1";
+  var input = document.getElementById("cmdk-input");
+  var results = document.getElementById("cmdk-results");
+  var hint = document.getElementById("cmdk-hint");
+  var panel = root.querySelector(".cmdk-panel");
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var KIND_ORDER = ["song", "album", "tour", "origin", "lyrics", "archive"];
+  var KIND_LABEL = { song: "Songs", album: "Albums", tour: "Tours", origin: "Song Origins", lyrics: "Lyrics", archive: "Archive" };
+  var PER_GROUP = 8;
+  var index = null, loading = null, lastReturn = null, options = [], active = -1, seq = 0;
+
+  function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\\"/g, "&quot;"); }
+  function fmt(n) { try { return Number(n || 0).toLocaleString("en-US"); } catch (e) { return String(n || 0); } }
+  function norm(s) { return String(s || "").toLowerCase(); }
+
+  function loadIndex() {
+    if (index) return Promise.resolve(index);
+    if (loading) return loading;
+    loading = fetch("/data/search-index.json").then(function (r) { return r.ok ? r.json() : []; }).then(function (d) { index = Array.isArray(d) ? d : []; return index; }).catch(function () { index = []; return index; });
+    return loading;
+  }
+
+  function score(rec, q, terms) {
+    if (!q) return 0;
+    var t = norm(rec.t), s = 0;
+    if (t === q) s += 1000;
+    else if (t.indexOf(q) === 0) s += 500;
+    else {
+      var words = t.split(/[^a-z0-9]+/), pref = false;
+      for (var i = 0; i < words.length; i++) { if (words[i] && words[i].indexOf(q) === 0) { pref = true; break; } }
+      if (pref) s += 300;
+      else if (t.indexOf(q) !== -1) s += 150;
+    }
+    if (s === 0 && terms.length > 1) {
+      var all = true;
+      for (var j = 0; j < terms.length; j++) { if (t.indexOf(terms[j]) === -1) { all = false; break; } }
+      if (all) s += 90;
+    }
+    if (s === 0 && rec.tz && norm(rec.tz).indexOf(q) !== -1) s += 40;
+    if (s > 0 && rec.k === "song" && rec.pl) s += Math.min(rec.pl / 2000, 25);
+    return s;
+  }
+
+  function badge(cls, text) { return "<span class='cmdk-badge " + cls + "'>" + esc(text) + "</span>"; }
+
+  function songRow(rec) {
+    var meta = "<span class='cmdk-meta'>";
+    meta += badge("cmdk-type", rec.ty || "");
+    if (rec.pl != null) meta += "<span class='cmdk-plays'>" + fmt(rec.pl) + "<small>plays</small></span>";
+    if (rec.ra) meta += "<span class='cmdk-rarity'>" + esc(rec.ra) + "</span>";
+    if (rec.tt) meta += badge("cmdk-tour", "this tour");
+    if (rec.bg) meta += badge("cmdk-bg", "Best Guess");
+    meta += "</span>";
+    var body = "<span class='cmdk-line'><span class='cmdk-title'>" + esc(rec.t) + "</span>" + meta + "</span>";
+    if (rec.tz) body += "<span class='cmdk-teaser'>" + esc(rec.tz) + "</span>";
+    var acts = "";
+    if (rec.ly) acts += "<a class='cmdk-action' href='" + esc(rec.ly) + "' data-stop>Lyrics</a>";
+    if (rec.og) acts += "<a class='cmdk-action' href='" + esc(rec.og) + "' data-stop>Origin</a>";
+    if (rec.li) acts += "<a class='cmdk-action cmdk-listen' href='" + esc(rec.li) + "' target='_blank' rel='noopener noreferrer' data-stop>Listen <span aria-hidden='true'>\\u2197</span></a>";
+    if (acts) body += "<span class='cmdk-actions'>" + acts + "</span>";
+    return body;
+  }
+
+  function subRow(rec) {
+    var sub = "";
+    if (rec.k === "album") sub = "Album" + (rec.yr ? " \\u00b7 " + esc(rec.yr) : "");
+    else if (rec.k === "tour") sub = (rec.yr ? esc(rec.yr) + " \\u00b7 " : "") + fmt(rec.sh || 0) + " shows";
+    else if (rec.k === "origin") sub = "Song origin";
+    else if (rec.k === "lyrics") sub = "Lyrics";
+    else sub = "Archive";
+    var thumb = "";
+    if (rec.k === "album") thumb = "<span class='cmdk-thumb'>" + (rec.cv ? "<img src='" + esc(rec.cv) + "' alt='' loading='lazy'>" : "") + "</span>";
+    return thumb + "<span class='cmdk-line'><span class='cmdk-title'>" + esc(rec.t) + "</span><span class='cmdk-sub'>" + sub + "</span></span>";
+  }
+
+  function render(q) {
+    var terms = q.split(/\\s+/).filter(Boolean);
+    var scored = [];
+    if (q && index) {
+      for (var i = 0; i < index.length; i++) {
+        var sc = score(index[i], q, terms);
+        if (sc > 0) scored.push({ r: index[i], s: sc });
+      }
+    }
+    results.innerHTML = "";
+    options = [];
+    active = -1;
+    if (!q) {
+      hint.hidden = false;
+      hint.textContent = index ? "Type to search the whole catalog \\u2014 songs, albums, tours, and song origins." : "Loading the catalog\\u2026";
+      input.removeAttribute("aria-activedescendant");
+      return;
+    }
+    var groups = {};
+    for (var k = 0; k < scored.length; k++) { var kind = scored[k].r.k; (groups[kind] = groups[kind] || []).push(scored[k]); }
+    var total = 0, frag = document.createDocumentFragment();
+    for (var g = 0; g < KIND_ORDER.length; g++) {
+      var kind2 = KIND_ORDER[g], list = groups[kind2];
+      if (!list || !list.length) continue;
+      list.sort(function (a, b) { return b.s - a.s || (b.r.pl || 0) - (a.r.pl || 0) || String(a.r.t).localeCompare(String(b.r.t)); });
+      var section = document.createElement("div");
+      section.className = "cmdk-group";
+      var shown = list.slice(0, PER_GROUP), extra = list.length - shown.length;
+      var head = "<div class='cmdk-group-head'>" + esc(KIND_LABEL[kind2]) + "<span class='cmdk-count'>" + list.length + "</span></div>";
+      var rowsHtml = "";
+      for (var s2 = 0; s2 < shown.length; s2++) {
+        var rec = shown[s2].r, id = "cmdk-opt-" + (seq++) ;
+        var cls = "cmdk-row cmdk-" + kind2;
+        rowsHtml += "<div class='" + cls + "' id='" + id + "' role='option' aria-selected='false' data-url='" + esc(rec.u) + "'>" + (kind2 === "song" ? songRow(rec) : subRow(rec)) + "</div>";
+      }
+      if (extra > 0) rowsHtml += "<div class='cmdk-more'>+" + extra + " more " + esc(KIND_LABEL[kind2].toLowerCase()) + "</div>";
+      section.innerHTML = head + rowsHtml;
+      frag.appendChild(section);
+      total += shown.length;
+    }
+    results.appendChild(frag);
+    options = [].slice.call(results.querySelectorAll(".cmdk-row"));
+    hint.hidden = total > 0;
+    if (!total) { hint.hidden = false; hint.textContent = "No matches for \\u201c" + q + "\\u201d."; }
+    options.forEach(function (el, i) {
+      el.addEventListener("mousemove", function () { setActive(i); });
+      el.addEventListener("click", function (ev) { var a = ev.target.closest("[data-stop]"); if (a) { ev.stopPropagation(); return; } go(el); });
+    });
+    if (options.length) setActive(0);
+    else input.removeAttribute("aria-activedescendant");
+  }
+
+  function setActive(i) {
+    if (active === i) return;
+    if (options[active]) { options[active].classList.remove("is-active"); options[active].setAttribute("aria-selected", "false"); }
+    active = i;
+    var el = options[active];
+    if (el) { el.classList.add("is-active"); el.setAttribute("aria-selected", "true"); input.setAttribute("aria-activedescendant", el.id); el.scrollIntoView({ block: "nearest" }); }
+  }
+
+  function go(el) { var url = el && el.getAttribute("data-url"); if (url) window.location.href = url; }
+
+  var runTimer = null;
+  function run(q) { render((q || "").trim().toLowerCase()); }
+  function onInput() { render(input.value.trim().toLowerCase()); }
+
+  function open() {
+    if (!root.hidden) return;
+    lastReturn = document.activeElement;
+    root.hidden = false;
+    document.body.classList.add("cmdk-lock");
+    if (!reduce) root.classList.add("is-anim");
+    requestAnimationFrame(function () { root.classList.add("is-open"); input.focus(); input.select(); });
+    document.querySelectorAll("[data-search-open]").forEach(function (b) { b.setAttribute("aria-expanded", "true"); });
+    loadIndex().then(function () { if (!root.hidden) render(input.value.trim().toLowerCase()); });
+  }
+  function close() {
+    if (root.hidden) return;
+    root.classList.remove("is-open");
+    document.querySelectorAll("[data-search-open]").forEach(function (b) { b.setAttribute("aria-expanded", "false"); });
+    var done = function () { root.hidden = true; root.classList.remove("is-anim"); document.body.classList.remove("cmdk-lock"); };
+    if (reduce) done(); else window.setTimeout(done, 190);
+    if (lastReturn && lastReturn.focus) lastReturn.focus();
+  }
+
+  document.querySelectorAll("[data-search-open]").forEach(function (b) { b.addEventListener("click", function (e) { e.preventDefault(); open(); }); });
+  root.querySelectorAll("[data-search-close]").forEach(function (b) { b.addEventListener("click", function (e) { e.preventDefault(); close(); }); });
+  input.addEventListener("input", onInput);
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowDown") { e.preventDefault(); if (options.length) setActive((active + 1) % options.length); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); if (options.length) setActive((active - 1 + options.length) % options.length); }
+    else if (e.key === "Enter") { e.preventDefault(); if (options[active]) go(options[active]); }
+    else if (e.key === "Home") { if (options.length) { e.preventDefault(); setActive(0); } }
+    else if (e.key === "End") { if (options.length) { e.preventDefault(); setActive(options.length - 1); } }
+  });
+
+  root.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { e.preventDefault(); close(); return; }
+    if (e.key === "Tab") {
+      var f = panel.querySelectorAll("input, button, a[href]");
+      f = [].slice.call(f).filter(function (el) { return !el.disabled && el.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    var mod = e.metaKey || e.ctrlKey;
+    if (mod && (e.key === "k" || e.key === "K")) { e.preventDefault(); root.hidden ? open() : close(); return; }
+    if (e.key === "/" && !mod && root.hidden) {
+      var t = e.target, tag = t && t.tagName ? t.tagName.toLowerCase() : "";
+      if (tag === "input" || tag === "textarea" || tag === "select" || (t && t.isContentEditable)) return;
+      e.preventDefault(); open();
+    }
+  });
+})();`;
 }
 
 function renderStagelightHeaderScriptBody() {
@@ -9900,6 +10322,135 @@ body.stagelight .menu-toggle .menu-icon i:last-child { top: 8.4px; }
 body.stagelight .menu-open .menu-toggle .menu-icon i:first-child { top: 4.2px; transform: rotate(45deg); }
 body.stagelight .menu-open .menu-toggle .menu-icon i:last-child { top: 4.2px; transform: rotate(-45deg); }
 
+/* ---- COMMAND PALETTE TRIGGER (⌘K) ---- */
+body.stagelight .head-search {
+  display: inline-flex; align-items: center; gap: 9px; height: 40px; padding: 0 10px 0 13px;
+  border-radius: var(--sl-r-pill); color: var(--sl-muted);
+  background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line);
+  font-size: 13px; cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+body.stagelight .head-search:hover { background: rgba(255,255,255,0.07); color: var(--sl-ink); border-color: var(--sl-line-strong); }
+body.stagelight .head-search-icon { flex: none; opacity: 0.85; }
+body.stagelight .head-search-label { font-weight: 500; letter-spacing: 0.005em; }
+body.stagelight .head-search-kbd {
+  display: inline-flex; align-items: center; gap: 1px; font-family: var(--sl-mono); font-size: 11px;
+  padding: 2px 6px; border-radius: var(--sl-r-sm); color: var(--sl-faint);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--sl-line);
+}
+body.stagelight .head-search-cmd { font-size: 12px; line-height: 1; }
+@media (max-width: 720px) {
+  body.stagelight .head-search { padding: 0; width: 40px; justify-content: center; gap: 0; }
+  body.stagelight .head-search-label, body.stagelight .head-search-kbd { display: none; }
+}
+
+/* ---- COMMAND PALETTE (⌘K) OVERLAY ---- */
+body.cmdk-lock { overflow: hidden; }
+body.stagelight .cmdk { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: center; align-items: flex-start; }
+body.stagelight .cmdk[hidden] { display: none; }
+body.stagelight .cmdk-backdrop {
+  position: absolute; inset: 0; background: rgba(6,6,8,0.62);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1); backdrop-filter: blur(8px) saturate(1.1);
+  opacity: 0; transition: opacity 0.2s ease;
+}
+body.stagelight .cmdk.is-open .cmdk-backdrop { opacity: 1; }
+body.stagelight .cmdk-panel {
+  position: relative; z-index: 1; width: min(640px, calc(100vw - 32px)); margin-top: min(12vh, 108px);
+  max-height: min(72vh, 640px); display: flex; flex-direction: column; overflow: hidden;
+  background: linear-gradient(180deg, rgba(30,30,34,0.86), rgba(18,18,21,0.82));
+  -webkit-backdrop-filter: blur(30px) saturate(1.5); backdrop-filter: blur(30px) saturate(1.5);
+  border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-lg); box-shadow: var(--sl-shadow-3);
+  opacity: 0; transform: translateY(-8px) scale(0.985); transition: opacity 0.2s ease, transform 0.2s ease;
+}
+body.stagelight .cmdk.is-open .cmdk-panel { opacity: 1; transform: none; }
+body.stagelight .cmdk-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body.stagelight .cmdk-bar { display: flex; align-items: center; gap: 12px; padding: 15px 16px; border-bottom: 1px solid var(--sl-line); }
+body.stagelight .cmdk-bar-icon { flex: none; color: var(--sl-faint); }
+body.stagelight .cmdk-input {
+  flex: 1 1 auto; min-width: 0; background: transparent; border: 0; outline: none; color: var(--sl-ink);
+  font-family: var(--sl-display); font-size: 18px; letter-spacing: -0.01em; padding: 2px 0;
+}
+body.stagelight .cmdk-input::placeholder { color: var(--sl-faint); }
+body.stagelight .cmdk-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+body.stagelight .cmdk-close {
+  flex: none; display: inline-flex; align-items: center; padding: 4px 8px; border-radius: var(--sl-r-sm);
+  background: rgba(255,255,255,0.04); border: 1px solid var(--sl-line); cursor: pointer;
+}
+body.stagelight .cmdk-close kbd { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
+body.stagelight .cmdk-close:hover { background: rgba(255,255,255,0.09); }
+body.stagelight .cmdk-results { overflow-y: auto; overscroll-behavior: contain; padding: 6px; flex: 1 1 auto; }
+body.stagelight .cmdk-group { animation: cmdk-group-in 0.22s ease both; }
+body.stagelight .cmdk-group:nth-child(2) { animation-delay: 0.03s; }
+body.stagelight .cmdk-group:nth-child(3) { animation-delay: 0.06s; }
+body.stagelight .cmdk-group:nth-child(4) { animation-delay: 0.09s; }
+body.stagelight .cmdk-group:nth-child(n+5) { animation-delay: 0.12s; }
+@keyframes cmdk-group-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+body.stagelight .cmdk-group-head {
+  display: flex; align-items: center; gap: 8px; padding: 12px 12px 6px;
+  font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint);
+}
+body.stagelight .cmdk-count { font-size: 10.5px; color: var(--sl-faint); background: rgba(255,255,255,0.05); border-radius: var(--sl-r-pill); padding: 1px 7px; }
+body.stagelight .cmdk-row {
+  display: flex; flex-direction: column; gap: 5px; padding: 9px 12px; border-radius: var(--sl-r-md);
+  cursor: pointer; border: 1px solid transparent; scroll-margin: 12px;
+}
+body.stagelight .cmdk-row.is-active { background: rgba(255,255,255,0.07); border-color: var(--sl-line-strong); }
+body.stagelight .cmdk-row.cmdk-album, body.stagelight .cmdk-row.cmdk-tour, body.stagelight .cmdk-row.cmdk-origin,
+body.stagelight .cmdk-row.cmdk-lyrics, body.stagelight .cmdk-row.cmdk-archive { flex-direction: row; align-items: center; gap: 12px; }
+body.stagelight .cmdk-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; min-width: 0; }
+body.stagelight .cmdk-row.cmdk-album .cmdk-line, body.stagelight .cmdk-row.cmdk-tour .cmdk-line,
+body.stagelight .cmdk-row.cmdk-origin .cmdk-line, body.stagelight .cmdk-row.cmdk-lyrics .cmdk-line,
+body.stagelight .cmdk-row.cmdk-archive .cmdk-line { flex-direction: column; gap: 2px; }
+body.stagelight .cmdk-title { font-family: var(--sl-display); font-size: 15.5px; font-weight: 560; color: var(--sl-ink); letter-spacing: -0.01em; }
+body.stagelight .cmdk-sub { font-family: var(--sl-mono); font-size: 11.5px; color: var(--sl-faint); letter-spacing: 0.02em; }
+body.stagelight .cmdk-meta { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+body.stagelight .cmdk-badge {
+  font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.03em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: var(--sl-r-pill); color: var(--sl-muted);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--sl-line);
+}
+body.stagelight .cmdk-badge.cmdk-tour { color: #ffe9c2; background: rgba(255,206,120,0.12); border-color: rgba(255,206,120,0.28); }
+body.stagelight .cmdk-badge.cmdk-bg { color: #cfe6ff; background: rgba(130,190,255,0.12); border-color: rgba(130,190,255,0.28); }
+body.stagelight .cmdk-plays { font-family: var(--sl-mono); font-size: 12px; font-variant-numeric: tabular-nums; color: var(--sl-muted); }
+body.stagelight .cmdk-plays small { font-size: 10px; color: var(--sl-faint); margin-left: 3px; }
+body.stagelight .cmdk-rarity { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); letter-spacing: 0.02em; }
+body.stagelight .cmdk-teaser {
+  font-size: 13px; color: var(--sl-muted); font-style: italic; opacity: 0.85;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+}
+body.stagelight .cmdk-actions { display: inline-flex; gap: 8px; flex-wrap: wrap; margin-top: 1px; }
+body.stagelight .cmdk-action {
+  font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.02em; color: var(--sl-muted);
+  padding: 3px 9px; border-radius: var(--sl-r-pill); background: rgba(255,255,255,0.04); border: 1px solid var(--sl-line);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+body.stagelight .cmdk-action:hover { background: rgba(255,255,255,0.1); color: var(--sl-ink); }
+body.stagelight .cmdk-thumb {
+  flex: none; width: 40px; height: 40px; border-radius: var(--sl-r-sm); overflow: hidden;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--sl-line);
+}
+body.stagelight .cmdk-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+body.stagelight .cmdk-more { padding: 7px 12px 10px; font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); letter-spacing: 0.02em; }
+body.stagelight .cmdk-hint { padding: 26px 18px; text-align: center; color: var(--sl-faint); font-size: 13.5px; }
+body.stagelight .cmdk-hint[hidden] { display: none; }
+body.stagelight .cmdk-foot {
+  display: flex; gap: 18px; padding: 10px 16px; border-top: 1px solid var(--sl-line);
+  font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); letter-spacing: 0.02em;
+}
+body.stagelight .cmdk-foot kbd {
+  font-family: var(--sl-mono); font-size: 10.5px; padding: 1px 5px; margin: 0 1px; border-radius: 4px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--sl-line); color: var(--sl-muted);
+}
+@media (max-width: 560px) {
+  body.stagelight .cmdk-panel {
+    width: 100vw; height: 100vh; max-height: 100vh; margin-top: 0; border-radius: 0; border: 0;
+  }
+  body.stagelight .cmdk-foot { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .cmdk-backdrop, body.stagelight .cmdk-panel, body.stagelight .cmdk-group { transition: none; animation: none; }
+}
+
 /* ---- MEGA MENU ---- */
 body.stagelight .mega-menu {
   position: fixed; inset: 0; z-index: 55; overflow-y: auto;
@@ -10493,7 +11044,8 @@ body.stagelight .laminate::before {
   box-shadow:
     inset 0 1px 2px rgba(255, 255, 255, 0.45),
     inset 0 -1px 2px rgba(0, 0, 0, 0.3),
-    0 24px 60px rgba(0, 0, 0, 0.55);
+    0 24px 60px rgba(0, 0, 0, 0.55),
+    0 -20px 90px 12px rgba(255, 243, 224, 0.09);
 }
 /* specular glare: a single px-bounded radial anchored top-left that fades out
    naturally — no background-size cutoff, no seam to mismatch the rim */
@@ -10531,13 +11083,6 @@ body.stagelight .laminate::after {
 @keyframes strike-wipe { to { transform: scaleX(1); } }
 @media (prefers-reduced-motion: reduce) {
   .can-strike .marker-ink { transform: scaleX(1); animation: none !important; }
-}
-body.stagelight .primary-board::before,
-body.stagelight .shelf-board::before,
-body.stagelight .woodshed-board::before,
-body.stagelight .purgatory-board::before {
-  content: ""; position: absolute; inset: -60px -30px; z-index: -1; pointer-events: none;
-  background: radial-gradient(58% 50% at 50% 44%, rgba(255,243,224,0.14), rgba(255,243,224,0.045) 55%, transparent 78%);
 }
 
 /* ============================================================

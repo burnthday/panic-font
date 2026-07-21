@@ -42,6 +42,8 @@ async function main() {
   await checkTourInReviewPages();
   await checkArchiveIndex();
   await checkMusicLayer(allHtmlFiles, allHtml);
+  await checkCommandPalette(allHtmlFiles, allHtml, siteData);
+  await checkLaminateRim();
   await checkSocialCard(homeHtml);
   await checkLocalAssets(allHtml);
   await checkStylesheetCacheBusting(allHtmlFiles, allHtml);
@@ -745,7 +747,7 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
     // The computed live strip still shows the accurate plays count.
     record("Ain't Life Grand live strip still shows the computed plays", /<strong>[\d,]+<\/strong><span>lifetime plays/.test(alg.html), "computed lifetime plays tile missing");
     // Picks link straight to Relisten now (un-gated), and panicstream is still stripped.
-    record("Ain't Life Grand Picks link to Relisten", /origin-pick-listen" href="https:\/\/relisten\.net\/widespread-panic\/\d{4}\/\d\d\/\d\d"/.test(alg.html), "picks do not link to relisten.net");
+    record("Ain't Life Grand Picks link to Relisten", /origin-pick-listen" href="https:\/\/relisten\.net\/wsp\/\d{4}\/\d\d\/\d\d"/.test(alg.html), "picks do not link to relisten.net");
     // The breadcrumb trail no longer duplicates the H1 (detail-page crumb dropped).
     const crumbs = alg.html.match(/<nav class="crumbs"[^>]*>[\s\S]*?<\/nav>/)?.[0] || "";
     record("Ain't Life Grand breadcrumb trail does not duplicate the H1", crumbs.includes('href="/song-origins/"') && !/aria-current="page"/.test(crumbs), "breadcrumb still carries the self-referential current crumb");
@@ -956,6 +958,122 @@ async function checkMusicLayer(files, htmlByFile) {
     return /relisten\.net/.test(stripped);
   }).map((file) => path.relative(root, file));
   record("relisten.net links render only through the gated Pick, performance-row, and show-card controls", relistenOffenders.length === 0, relistenOffenders.join("; "));
+}
+
+// Global command-palette (⌘K) search. Verifies: the trigger + dialog are on
+// every page, the emitted search index is valid/complete/lean, teasers only ride
+// on owned song content, and the palette's Relisten "Listen" action stays gated
+// to the committed relisten-dates set (extends the Relisten whitelist without
+// weakening the existing static-HTML guard, which is unchanged above).
+async function checkCommandPalette(files, htmlByFile, siteData) {
+  // 1. Trigger + dialog present on EVERY rendered page.
+  const missingTrigger = [];
+  const missingDialog = [];
+  const missingKbd = [];
+  for (let i = 0; i < files.length; i += 1) {
+    const html = htmlByFile[i];
+    if (/name="robots" content="noindex"/i.test(html) && !/class="cmdk"/.test(html)) {
+      // 404/noindex pages still carry the standard header; only skip if header absent.
+    }
+    if (!/data-search-open/.test(html) || !/class="head-search"/.test(html)) missingTrigger.push(path.relative(root, files[i]));
+    if (!/id="site-search"/.test(html) || !/role="dialog"/.test(html) || !/id="cmdk-input"/.test(html)) missingDialog.push(path.relative(root, files[i]));
+    if (!/aria-keyshortcuts="Meta\+K Control\+K"/.test(html) || !/role="listbox"/.test(html) || !/role="combobox"/.test(html)) missingKbd.push(path.relative(root, files[i]));
+  }
+  record("Command palette trigger present on every page", missingTrigger.length === 0, `${missingTrigger.length} pages missing trigger: ${missingTrigger.slice(0, 3).join(", ")}`);
+  record("Command palette dialog (role=dialog + input) present on every page", missingDialog.length === 0, `${missingDialog.length} pages missing dialog: ${missingDialog.slice(0, 3).join(", ")}`);
+  record("Command palette keyboard/ARIA affordances present on every page", missingKbd.length === 0, `${missingKbd.length} pages missing keyboard attrs: ${missingKbd.slice(0, 3).join(", ")}`);
+
+  // 2. search-index.json exists and is valid JSON.
+  const exists = await fileExists("dist/data/search-index.json");
+  record("search-index.json is emitted", exists, "dist/data/search-index.json should exist");
+  if (!exists) return;
+  let index = null;
+  try { index = JSON.parse(await readFile(path.join(root, "dist/data/search-index.json"), "utf8")); } catch { /* below */ }
+  record("search-index.json is a valid non-empty array", Array.isArray(index) && index.length > 0, `parsed: ${Array.isArray(index) ? index.length : "invalid"}`);
+  if (!Array.isArray(index)) return;
+
+  // Every record carries the shared shape.
+  const malformed = index.filter((r) => !r || typeof r.t !== "string" || typeof r.u !== "string" || typeof r.k !== "string");
+  record("Every search record has title (t), url (u), and kind (k)", malformed.length === 0, `${malformed.length} malformed records`);
+
+  const byKind = {};
+  for (const r of index) byKind[r.k] = (byKind[r.k] || 0) + 1;
+
+  // 3. Completeness: song/album/tour/origin record counts equal the live page
+  // counts (one record per built page); lyrics + archive present and non-empty.
+  const dirCount = async (rel) => {
+    try { return (await readdir(path.join(distDir, rel), { withFileTypes: true })).filter((e) => e.isDirectory()).length; }
+    catch { return 0; }
+  };
+  const songDirs = await dirCount("song");
+  const albumDirs = await dirCount("albums");
+  const tourDirs = await dirCount("tour-in-review");
+  const originDirs = await dirCount("song-origins");
+  record("Search index covers every song page", byKind.song === songDirs && songDirs > 0, `${byKind.song} records vs ${songDirs} /song/ pages`);
+  record("Search index covers every album page", byKind.album === albumDirs && albumDirs > 0, `${byKind.album} records vs ${albumDirs} /albums/ pages`);
+  record("Search index covers every tour-in-review page", byKind.tour === tourDirs && tourDirs > 0, `${byKind.tour} records vs ${tourDirs} /tour-in-review/ pages`);
+  record("Search index covers every song-origin page", byKind.origin === originDirs && originDirs > 0, `${byKind.origin} records vs ${originDirs} /song-origins/ pages`);
+  record("Search index includes lyrics and archive records", (byKind.lyrics || 0) > 0 && (byKind.archive || 0) > 0, `lyrics ${byKind.lyrics || 0}, archive ${byKind.archive || 0}`);
+
+  // Overall record count = sum of all six kinds (no stray kinds).
+  const expectedTotal = (byKind.song || 0) + (byKind.album || 0) + (byKind.tour || 0) + (byKind.origin || 0) + (byKind.lyrics || 0) + (byKind.archive || 0);
+  record("Search index record count equals songs+albums+tours+origins+lyrics+archive", index.length === expectedTotal, `${index.length} total vs ${expectedTotal} summed across kinds`);
+
+  // Payload stays lean.
+  const bytes = (await stat(path.join(root, "dist/data/search-index.json"))).size;
+  record("search-index.json payload stays lean (< 250KB)", bytes < 250 * 1024, `${(bytes / 1024).toFixed(1)} KB`);
+
+  // 4. Teasers ride only on song records that own lyric content (Best Guess or
+  // an internal lyric page).
+  const teaseredNonSong = index.filter((r) => r.tz && r.k !== "song");
+  record("Teaser lines appear only on song records", teaseredNonSong.length === 0, `${teaseredNonSong.length} non-song records carry a teaser`);
+  const teaseredUnowned = index.filter((r) => r.k === "song" && r.tz && !r.bg && !r.ly);
+  record("Teaser lines appear only where we own the content (Best Guess or lyric page)", teaseredUnowned.length === 0, `${teaseredUnowned.length} songs teasered without owned content`);
+  record("Teaser lines are short (<= 64 chars)", index.every((r) => !r.tz || r.tz.length <= 64), "a teaser exceeds the clamp");
+
+  // 5. Relisten "Listen" quick-action gate: every song li is a well-formed
+  // Relisten URL whose date is in the committed relisten-dates.json set. This is
+  // the palette's extension of the Relisten whitelist — it must stay gated.
+  let relistenDates = new Set();
+  try {
+    const parsed = JSON.parse(await readFile(path.join(root, "data/source/relisten-dates.json"), "utf8"));
+    const list = Array.isArray(parsed) ? parsed : (parsed?.dates || []);
+    relistenDates = new Set(list);
+  } catch { /* recorded via emptiness below */ }
+  const listenRecs = index.filter((r) => r.li);
+  const RELISTEN_RE = /^https:\/\/relisten\.net\/wsp\/(\d{4})\/(\d{2})\/(\d{2})$/;
+  const badListen = listenRecs.filter((r) => {
+    const m = RELISTEN_RE.exec(r.li);
+    if (!m || r.k !== "song") return true;
+    const iso = `${m[1]}-${m[2]}-${m[3]}`;
+    return !relistenDates.has(iso);
+  });
+  record("Palette Listen actions are gated Relisten links (song-only, date in relisten-dates.json)", listenRecs.length > 0 && badListen.length === 0, `${listenRecs.length} listen links, ${badListen.length} ungated`);
+
+  // The palette must not smuggle a raw relisten.net literal into static page
+  // HTML (its Listen hrefs live in the JSON index and are injected at runtime).
+  const staticLeak = files.filter((file, i) => {
+    const stripped = htmlByFile[i]
+      .replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      .replace(/<a class="perf-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
+    return /relisten\.net/.test(stripped);
+  });
+  record("Command palette introduces no un-gated static relisten.net link", staticLeak.length === 0, staticLeak.map((f) => path.relative(root, f)).join("; "));
+}
+
+// The laminated-board rim (.laminate::before) and the warm stage-light halo must
+// live on ONE pseudo-element. Regression guard for the fixed rim/glow collision:
+// the halo shadow now rides the rim's box-shadow, and the old colliding rule with
+// its giant `inset: -60px -30px` geometry must be gone.
+async function checkLaminateRim() {
+  const css = await readText("dist/stagelight.css").catch(() => "");
+  record("Laminate rim carries the warm stage-light halo shadow",
+    css.includes("rgba(255, 243, 224, 0.09)"),
+    "expected the halo box-shadow on .laminate::before");
+  record("Colliding board-glow pseudo-element (inset: -60px -30px) is removed",
+    !css.includes("inset: -60px -30px"),
+    "the rim/glow ::before collision has returned");
 }
 
 async function fileExists(relPath) {
