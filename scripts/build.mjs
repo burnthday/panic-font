@@ -49,16 +49,29 @@ const config = {
 
 const primaryNavItems = [
   ["Home", "/"],
+  ["Albums", "/albums/"],
   ["Rumors", "/rumors/"],
-  ["Lyrics & Chords", "/lyrics-chords/"],
-  ["Song Origins", "/song-origins/"],
   ["Tour In Review", "/tour-in-review/"],
   ["The Shelf", "/shelf/"],
   ["About", "/about/"]
 ];
 
+// Mega-menu sub-links shown beneath a parent (matches the Home pattern).
+const navSubLinks = {
+  "Home": [
+    ["Song Possibilities", "/#song-list"],
+    ["Tour Stats", "/#tour-stats"],
+    ["Setlists", "/#setlists"]
+  ],
+  "Albums": [
+    ["Lyrics & Chords", "/lyrics-chords/"],
+    ["Song Origins", "/song-origins/"]
+  ]
+};
+
 const footerNavItems = [
   ["Song List", "/"],
+  ["Albums", "/albums/"],
   ["The Shelf", "/shelf/"],
   ["Tour In Review", "/tour-in-review/"],
   ["Song Origins", "/song-origins/"],
@@ -2031,6 +2044,15 @@ async function writeAlbumPages(data, albums) {
   }
 }
 
+// Intentional placeholder until real cover art is added — branded, not broken.
+function renderAlbumCoverFallback(album) {
+  return `<span class="album-cover-fallback">
+    <img class="acf-mark" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true">
+    <span class="acf-title">${escapeHtml(album.title)}</span>
+    <span class="acf-note">Artwork coming soon</span>
+  </span>`;
+}
+
 function albumYear(album) {
   const match = String(album.releaseDate || "").match(/^(\d{4})/);
   return match ? match[1] : "";
@@ -2081,7 +2103,7 @@ function renderAlbumsIndex(albums, data) {
       </header>
       <div class="album-grid">
         ${albums.map((album) => `<a class="album-tile" href="/albums/${escapeAttr(album.slug)}/">
-          <span class="album-cover${album.cover ? "" : " is-empty"}">${album.cover ? `<img src="${escapeAttr(album.cover)}" alt="${escapeAttr(`${album.title} cover`)}" loading="lazy" decoding="async">` : `<span class="album-cover-fallback">${escapeHtml(album.title)}</span>`}</span>
+          <span class="album-cover${album.cover ? "" : " is-empty"}">${album.cover ? `<img src="${escapeAttr(album.cover)}" alt="${escapeAttr(`${album.title} cover`)}" loading="lazy" decoding="async">` : renderAlbumCoverFallback(album)}</span>
           <span class="album-tile-title">${escapeHtml(album.title)}</span>
           <span class="album-tile-year">${escapeHtml(albumYear(album))}</span>
         </a>`).join("")}
@@ -2151,7 +2173,7 @@ function renderAlbumPage(album, albums, data) {
 
       <div class="album-layout">
         <div class="album-aside">
-          <figure class="album-cover-lg${album.cover ? "" : " is-empty"}">${album.cover ? `<img src="${escapeAttr(album.cover)}" alt="${escapeAttr(`${album.title} cover`)}" decoding="async">` : `<span class="album-cover-fallback">${escapeHtml(album.title)}</span>`}</figure>
+          <figure class="album-cover-lg${album.cover ? "" : " is-empty"}">${album.cover ? `<img src="${escapeAttr(album.cover)}" alt="${escapeAttr(`${album.title} cover`)}" decoding="async">` : renderAlbumCoverFallback(album)}</figure>
           ${longDate ? `<div class="album-meta"><p class="album-meta-label">Released</p><p class="album-meta-value">${escapeHtml(longDate)}</p></div>` : ""}
           ${album.label ? `<div class="album-meta"><p class="album-meta-label">Label</p><p class="album-meta-value">${escapeHtml(album.label)}</p></div>` : ""}
           ${streamLinks.length ? `<div class="album-listen"><p class="album-meta-label">Listen</p><div class="album-listen-links">${streamLinks.map(([key, url]) => `<a class="sc-chip sc-chip-glass" href="${escapeAttr(url)}">${escapeHtml(streamLabels[key] || key)}</a>`).join("")}</div></div>` : ""}
@@ -2526,15 +2548,11 @@ function renderSiteHeader(options = {}) {
 function renderStagelightHeader(data) {
   const featured = data?.setlists?.[0] || null;
   const nextShow = (data?.tourDates || []).find((entry) => !entry.isPosted && (!featured || entry.isoDate > featured.isoDate)) || null;
-  const homeSubs = [
-    ["Song Possibilities", "/#song-list"],
-    ["Tour Stats", "/#tour-stats"],
-    ["Setlists", "/#setlists"]
-  ];
   const megaLinks = primaryNavItems.map(([text, href]) => {
     const link = `<a class="mega-link" href="${escapeAttr(href)}">${escapeHtml(text)}</a>`;
-    if (text !== "Home") return link;
-    return link + homeSubs.map(([label, anchor]) => `<a class="mega-sub" href="${escapeAttr(anchor)}">${escapeHtml(label)}</a>`).join("");
+    const subs = navSubLinks[text];
+    if (!subs) return link;
+    return link + subs.map(([label, anchor]) => `<a class="mega-sub" href="${escapeAttr(anchor)}">${escapeHtml(label)}</a>`).join("");
   }).join("");
   const latestCol = featured ? `<div class="mega-col">
       <div class="mega-col-head"><p class="mega-label">Latest Show</p><a class="mega-more" href="/#latest-setlist">View Setlist</a></div>
@@ -7530,8 +7548,11 @@ body.stagelight .album-cover, body.stagelight .album-cover-lg {
 }
 body.stagelight .album-cover img, body.stagelight .album-cover-lg img { width: 100%; height: 100%; object-fit: cover; }
 body.stagelight .album-tile:hover .album-cover { transform: translateY(-3px); border-color: rgba(255,255,255,0.22); transition: transform 0.18s ease, border-color 0.18s ease; }
-body.stagelight .album-cover.is-empty, body.stagelight .album-cover-lg.is-empty { display: flex; align-items: center; justify-content: center; background: var(--sl-glass); }
-body.stagelight .album-cover-fallback { font-family: var(--sl-display); font-weight: 640; font-size: 18px; color: var(--sl-faint); text-align: center; padding: 18px; letter-spacing: -0.01em; }
+body.stagelight .album-cover.is-empty, body.stagelight .album-cover-lg.is-empty { display: flex; align-items: center; justify-content: center; background: radial-gradient(120% 120% at 50% 0%, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 60%, transparent), var(--sl-glass); }
+body.stagelight .album-cover-fallback { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 22px; width: 100%; height: 100%; }
+body.stagelight .acf-mark { width: 46%; max-width: 120px; height: auto; opacity: 0.5; }
+body.stagelight .acf-title { font-family: var(--sl-display); font-weight: 640; font-size: 17px; letter-spacing: -0.01em; color: var(--sl-muted); }
+body.stagelight .acf-note { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .album-tile-title { display: block; font-family: var(--sl-display); font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin-top: 14px; }
 body.stagelight .album-tile-year { display: block; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); margin-top: 3px; }
 

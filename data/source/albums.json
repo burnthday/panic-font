@@ -1,5 +1,5 @@
 {
-  "_note": "Modern-era Widespread Panic studio albums. FACTUAL fields are from a verified pull; blurb is written in Burnthday's OWN voice (no label boilerplate / press-release / special thanks / copyright). Live stats are computed at build time from the catalog. TODO: verify streaming URLs before production; add cover art for the four newest records.",
+  "_note": "Modern-era Widespread Panic studio albums. FACTUAL fields are from a verified pull; blurb is written in Burnthday's OWN voice (no label boilerplate / press-release / special thanks / copyright). Live stats are computed at build time from the catalog. TODO: paste verified streaming URLs (the pulled Spotify IDs were unverifiable and removed); add cover art for the four newest records.",
   "albums": [
     {
       "slug": "hailbound-queen",
@@ -8,26 +8,71 @@
       "cover": "",
       "blurb": "This 2024 release captures studio recordings of live staples the band heavily rotated during their recent tours. It features three original compositions alongside two covers from long-time influences.",
       "label": "Widespread Records",
-      "recordedAt": ["John Keane Studios, Athens GA"],
-      "producedBy": ["John Keane", "Widespread Panic"],
-      "engineeredBy": ["John Keane"],
-      "mixedBy": ["John Keane"],
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
       "personnel": [
-        { "name": "John Bell", "role": "lead vocals, guitar" },
-        { "name": "Dave Schools", "role": "bass, vocals" },
-        { "name": "John Hermann", "role": "keyboards, vocals" },
-        { "name": "Domingo \"Sunny\" Ortiz", "role": "percussion" },
-        { "name": "Jimmy Herring", "role": "lead guitar" },
-        { "name": "Duane Trucks", "role": "drums" }
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Jimmy Herring",
+          "role": "lead guitar"
+        },
+        {
+          "name": "Duane Trucks",
+          "role": "drums"
+        }
       ],
       "tracks": [
-        { "title": "King Baby" },
-        { "title": "Blue Carousel" },
-        { "title": "Keep Me in Your Heart", "writtenBy": "Warren Zevon, Jorge Calderón" },
-        { "title": "Trashy", "writtenBy": "Daniel Hutchens, Eric Carter" },
-        { "title": "Halloween Face" }
+        {
+          "title": "King Baby"
+        },
+        {
+          "title": "Blue Carousel"
+        },
+        {
+          "title": "Keep Me in Your Heart",
+          "writtenBy": "Warren Zevon, Jorge Calderón"
+        },
+        {
+          "title": "Trashy",
+          "writtenBy": "Daniel Hutchens, Eric Carter"
+        },
+        {
+          "title": "Halloween Face"
+        }
       ],
-      "links": { "spotify": "https://open.spotify.com/album/4vO9UoQWnS7nZpZlPj9v3C", "appleMusic": "", "bandcamp": "", "amazon": "", "purchase": "" }
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
     },
     {
       "slug": "snake-oil-king",
@@ -36,27 +81,72 @@
       "cover": "",
       "blurb": "Serving as the band's first studio album in nearly a decade, this record was initially released as a series of monthly singles. The six-track collection highlights the current sextet's refined songwriting and studio dynamics.",
       "label": "Widespread Records",
-      "recordedAt": ["John Keane Studios, Athens GA"],
-      "producedBy": ["John Keane", "Widespread Panic"],
-      "engineeredBy": ["John Keane"],
-      "mixedBy": ["John Keane"],
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
       "personnel": [
-        { "name": "John Bell", "role": "lead vocals, guitar" },
-        { "name": "Dave Schools", "role": "bass, vocals" },
-        { "name": "John Hermann", "role": "keyboards, vocals" },
-        { "name": "Domingo \"Sunny\" Ortiz", "role": "percussion" },
-        { "name": "Jimmy Herring", "role": "lead guitar" },
-        { "name": "Duane Trucks", "role": "drums" }
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Jimmy Herring",
+          "role": "lead guitar"
+        },
+        {
+          "name": "Duane Trucks",
+          "role": "drums"
+        }
       ],
       "tracks": [
-        { "title": "Little by Little" },
-        { "title": "We Walk Each Other Home" },
-        { "title": "Tackle Box Hero" },
-        { "title": "Life as a Tree" },
-        { "title": "Cosmic Confidante" },
-        { "title": "Small Town" }
+        {
+          "title": "Little by Little"
+        },
+        {
+          "title": "We Walk Each Other Home"
+        },
+        {
+          "title": "Tackle Box Hero"
+        },
+        {
+          "title": "Life as a Tree"
+        },
+        {
+          "title": "Cosmic Confidante"
+        },
+        {
+          "title": "Small Town"
+        }
       ],
-      "links": { "spotify": "https://open.spotify.com/album/2c9FkL7r2vG5VnK8U3WqQ7", "appleMusic": "", "bandcamp": "", "amazon": "", "purchase": "" }
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
     },
     {
       "slug": "miss-kittys-lounge",
@@ -65,34 +155,92 @@
       "cover": "",
       "blurb": "This archival release consists of 14 remastered demo tracks originally recorded in 1990. It provides a raw, historical snapshot of the band's foundational years prior to signing their first major label deal.",
       "label": "Widespread Records",
-      "recordedAt": ["John Keane Studios, Athens GA"],
-      "producedBy": ["John Keane", "Widespread Panic"],
-      "engineeredBy": ["John Keane"],
-      "mixedBy": ["John Keane"],
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
       "personnel": [
-        { "name": "John Bell", "role": "lead vocals, guitar" },
-        { "name": "Michael Houser", "role": "lead guitar, vocals" },
-        { "name": "Dave Schools", "role": "bass, vocals" },
-        { "name": "Todd Nance", "role": "drums, vocals" },
-        { "name": "Domingo \"Sunny\" Ortiz", "role": "percussion" }
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        }
       ],
       "tracks": [
-        { "title": "A of D" },
-        { "title": "C. Brown" },
-        { "title": "Rock" },
-        { "title": "Pigeons" },
-        { "title": "Holden Oversoul" },
-        { "title": "Proving Ground" },
-        { "title": "The Last Straw" },
-        { "title": "Love Tractor" },
-        { "title": "Machine" },
-        { "title": "Barstools and Dreamers" },
-        { "title": "Contentment Blues" },
-        { "title": "Impossible" },
-        { "title": "L.A." },
-        { "title": "Conrad" }
+        {
+          "title": "A of D"
+        },
+        {
+          "title": "C. Brown"
+        },
+        {
+          "title": "Rock"
+        },
+        {
+          "title": "Pigeons"
+        },
+        {
+          "title": "Holden Oversoul"
+        },
+        {
+          "title": "Proving Ground"
+        },
+        {
+          "title": "The Last Straw"
+        },
+        {
+          "title": "Love Tractor"
+        },
+        {
+          "title": "Machine"
+        },
+        {
+          "title": "Barstools and Dreamers"
+        },
+        {
+          "title": "Contentment Blues"
+        },
+        {
+          "title": "Impossible"
+        },
+        {
+          "title": "L.A."
+        },
+        {
+          "title": "Conrad"
+        }
       ],
-      "links": { "spotify": "https://open.spotify.com/album/4qL7s3WJ6yK8X9Y7w1p9w3", "appleMusic": "", "bandcamp": "", "amazon": "", "purchase": "" }
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
     },
     {
       "slug": "street-dogs",
@@ -101,31 +249,88 @@
       "cover": "",
       "blurb": "Recorded largely live in the studio, this release captures a relaxed and spontaneous energy. It incorporates a mix of road-tested originals and carefully selected covers.",
       "label": "Vanguard Records",
-      "recordedAt": ["Echo Mountain Recording, Asheville NC", "John Keane Studios, Athens GA"],
-      "producedBy": ["John Keane", "Widespread Panic"],
-      "engineeredBy": ["John Keane"],
-      "mixedBy": ["John Keane"],
+      "recordedAt": [
+        "Echo Mountain Recording, Asheville NC",
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
       "personnel": [
-        { "name": "John Bell", "role": "lead vocals, guitar" },
-        { "name": "Dave Schools", "role": "bass, vocals" },
-        { "name": "John Hermann", "role": "keyboards, vocals" },
-        { "name": "Domingo \"Sunny\" Ortiz", "role": "percussion" },
-        { "name": "Jimmy Herring", "role": "lead guitar" },
-        { "name": "Todd Nance", "role": "drums, vocals" }
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Jimmy Herring",
+          "role": "lead guitar"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
       ],
       "tracks": [
-        { "title": "Sell Sell", "writtenBy": "Alan Price" },
-        { "title": "Steven's Cat" },
-        { "title": "Cease Fire" },
-        { "title": "Jamais Vu" },
-        { "title": "Angels Don't Sing the Blues" },
-        { "title": "Honky Red", "writtenBy": "Murray McLauchlan" },
-        { "title": "The Poorhouse of Positive Thinking" },
-        { "title": "Welcome to My World" },
-        { "title": "Tail Dragger", "writtenBy": "Willie Dixon" },
-        { "title": "Street Dogs for Breakfast" }
+        {
+          "title": "Sell Sell",
+          "writtenBy": "Alan Price"
+        },
+        {
+          "title": "Steven's Cat"
+        },
+        {
+          "title": "Cease Fire"
+        },
+        {
+          "title": "Jamais Vu"
+        },
+        {
+          "title": "Angels Don't Sing the Blues"
+        },
+        {
+          "title": "Honky Red",
+          "writtenBy": "Murray McLauchlan"
+        },
+        {
+          "title": "The Poorhouse of Positive Thinking"
+        },
+        {
+          "title": "Welcome to My World"
+        },
+        {
+          "title": "Tail Dragger",
+          "writtenBy": "Willie Dixon"
+        },
+        {
+          "title": "Street Dogs for Breakfast"
+        }
       ],
-      "links": { "spotify": "https://open.spotify.com/album/3b7vJ6bH5m9q2wK4l5C9n2", "appleMusic": "", "bandcamp": "", "amazon": "", "purchase": "" }
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
     },
     {
       "slug": "dirty-side-down",
@@ -134,33 +339,92 @@
       "cover": "/assets/archive-media/dirty-side-down-cover.jpg",
       "blurb": "This 2010 effort emphasizes the group's songwriting depth, balancing aggressive rock textures with acoustic nuance. It includes a tribute to the late Vic Chesnutt.",
       "label": "Widespread Records / ATO",
-      "recordedAt": ["John Keane Studios, Athens GA"],
-      "producedBy": ["John Keane", "Widespread Panic"],
-      "engineeredBy": ["John Keane"],
-      "mixedBy": ["John Keane"],
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
       "personnel": [
-        { "name": "John Bell", "role": "lead vocals, guitar" },
-        { "name": "Dave Schools", "role": "bass, vocals" },
-        { "name": "John Hermann", "role": "keyboards, vocals" },
-        { "name": "Domingo \"Sunny\" Ortiz", "role": "percussion" },
-        { "name": "Jimmy Herring", "role": "lead guitar" },
-        { "name": "Todd Nance", "role": "drums, vocals" }
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Jimmy Herring",
+          "role": "lead guitar"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
       ],
       "tracks": [
-        { "title": "Saint Ex" },
-        { "title": "North", "writtenBy": "Jerry Joseph" },
-        { "title": "Dirty Side Down" },
-        { "title": "This Cruel Thing", "writtenBy": "Vic Chesnutt" },
-        { "title": "Visiting Day" },
-        { "title": "Clinic Cynic" },
-        { "title": "St. Louis" },
-        { "title": "Shut Up and Drive" },
-        { "title": "True to My Nature" },
-        { "title": "When You Coming Home" },
-        { "title": "Jaded Tourist" },
-        { "title": "Cotton Was King" }
+        {
+          "title": "Saint Ex"
+        },
+        {
+          "title": "North",
+          "writtenBy": "Jerry Joseph"
+        },
+        {
+          "title": "Dirty Side Down"
+        },
+        {
+          "title": "This Cruel Thing",
+          "writtenBy": "Vic Chesnutt"
+        },
+        {
+          "title": "Visiting Day"
+        },
+        {
+          "title": "Clinic Cynic"
+        },
+        {
+          "title": "St. Louis"
+        },
+        {
+          "title": "Shut Up and Drive"
+        },
+        {
+          "title": "True to My Nature"
+        },
+        {
+          "title": "When You Coming Home"
+        },
+        {
+          "title": "Jaded Tourist"
+        },
+        {
+          "title": "Cotton Was King"
+        }
       ],
-      "links": { "spotify": "https://open.spotify.com/album/1p3z4k6X8q8x9c2k1G7V6J", "appleMusic": "", "bandcamp": "", "amazon": "", "purchase": "" }
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
     },
     {
       "slug": "free-somehow",
@@ -169,32 +433,87 @@
       "cover": "/assets/archive-media/free-somehow-cover.jpg",
       "blurb": "Tracked in the Bahamas, this record introduces lush orchestration and layered horns to the band's sonic palette. It stands out for its meticulous studio production and thematic cohesion.",
       "label": "Widespread Records",
-      "recordedAt": ["Compass Point Studios, Nassau"],
-      "producedBy": ["Terry Manning", "Widespread Panic"],
-      "engineeredBy": ["Terry Manning"],
-      "mixedBy": ["Terry Manning"],
+      "recordedAt": [
+        "Compass Point Studios, Nassau"
+      ],
+      "producedBy": [
+        "Terry Manning",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "Terry Manning"
+      ],
+      "mixedBy": [
+        "Terry Manning"
+      ],
       "personnel": [
-        { "name": "John Bell", "role": "lead vocals, guitar" },
-        { "name": "Dave Schools", "role": "bass, vocals" },
-        { "name": "John Hermann", "role": "keyboards, vocals" },
-        { "name": "Domingo \"Sunny\" Ortiz", "role": "percussion" },
-        { "name": "Jimmy Herring", "role": "lead guitar" },
-        { "name": "Todd Nance", "role": "drums, vocals" }
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Jimmy Herring",
+          "role": "lead guitar"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
       ],
       "tracks": [
-        { "title": "Boom Boom Boom" },
-        { "title": "Walk on the Flood" },
-        { "title": "Angels on High" },
-        { "title": "Three Candles" },
-        { "title": "Tickle the Truth" },
-        { "title": "Free Somehow" },
-        { "title": "Flicker" },
-        { "title": "Dark Day Program" },
-        { "title": "Her Dance Needs No Body" },
-        { "title": "Already Fried" },
-        { "title": "Up All Night" }
+        {
+          "title": "Boom Boom Boom"
+        },
+        {
+          "title": "Walk on the Flood"
+        },
+        {
+          "title": "Angels on High"
+        },
+        {
+          "title": "Three Candles"
+        },
+        {
+          "title": "Tickle the Truth"
+        },
+        {
+          "title": "Free Somehow"
+        },
+        {
+          "title": "Flicker"
+        },
+        {
+          "title": "Dark Day Program"
+        },
+        {
+          "title": "Her Dance Needs No Body"
+        },
+        {
+          "title": "Already Fried"
+        },
+        {
+          "title": "Up All Night"
+        }
       ],
-      "links": { "spotify": "https://open.spotify.com/album/5v8H6n9R9j7v2n4M9T9v2A", "appleMusic": "", "bandcamp": "", "amazon": "", "purchase": "" }
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
     },
     {
       "slug": "earth-to-america",
@@ -203,33 +522,92 @@
       "cover": "/assets/archive-media/earth-to-america-cover.jpg",
       "blurb": "Seeking a fresh environment, the band decamped to the Bahamas to record this diverse set. It marked a transitional period, featuring expansive compositions and vintage analog warmth.",
       "label": "Sanctuary Records",
-      "recordedAt": ["Compass Point Studios, Nassau"],
-      "producedBy": ["Terry Manning", "Widespread Panic"],
-      "engineeredBy": ["Terry Manning"],
-      "mixedBy": ["Terry Manning"],
+      "recordedAt": [
+        "Compass Point Studios, Nassau"
+      ],
+      "producedBy": [
+        "Terry Manning",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "Terry Manning"
+      ],
+      "mixedBy": [
+        "Terry Manning"
+      ],
       "personnel": [
-        { "name": "John Bell", "role": "lead vocals, guitar" },
-        { "name": "Dave Schools", "role": "bass, vocals" },
-        { "name": "John Hermann", "role": "keyboards, vocals" },
-        { "name": "Domingo \"Sunny\" Ortiz", "role": "percussion" },
-        { "name": "George McConnell", "role": "lead guitar, vocals" },
-        { "name": "Todd Nance", "role": "drums, vocals" }
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "George McConnell",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
       ],
       "tracks": [
-        { "title": "Second Skin" },
-        { "title": "Goodpeople" },
-        { "title": "From the Cradle" },
-        { "title": "Solid Rock", "writtenBy": "Bob Dylan" },
-        { "title": "Time Zones" },
-        { "title": "Song for Sitara" },
-        { "title": "When the Clowns Come Home" },
-        { "title": "Ribs and Whiskey" },
-        { "title": "Crazy" },
-        { "title": "None of Us Are Free", "writtenBy": "Barry Mann, Cynthia Weil, Brenda Russell" },
-        { "title": "You Should Be Glad" },
-        { "title": "May Your Glass Be Filled" }
+        {
+          "title": "Second Skin"
+        },
+        {
+          "title": "Goodpeople"
+        },
+        {
+          "title": "From the Cradle"
+        },
+        {
+          "title": "Solid Rock",
+          "writtenBy": "Bob Dylan"
+        },
+        {
+          "title": "Time Zones"
+        },
+        {
+          "title": "Song for Sitara"
+        },
+        {
+          "title": "When the Clowns Come Home"
+        },
+        {
+          "title": "Ribs and Whiskey"
+        },
+        {
+          "title": "Crazy"
+        },
+        {
+          "title": "None of Us Are Free",
+          "writtenBy": "Barry Mann, Cynthia Weil, Brenda Russell"
+        },
+        {
+          "title": "You Should Be Glad"
+        },
+        {
+          "title": "May Your Glass Be Filled"
+        }
       ],
-      "links": { "spotify": "https://open.spotify.com/album/6v8J6n8R8j6v2n3M8T8v1A", "appleMusic": "", "bandcamp": "", "amazon": "", "purchase": "" }
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
     }
   ]
 }

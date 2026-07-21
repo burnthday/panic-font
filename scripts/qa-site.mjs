@@ -445,8 +445,8 @@ function checkGuestAnnotations(homeHtml, review2025Html) {
 }
 
 function checkNavigation(html, siteData) {
-  const expectedMega = ["Home", "Song Possibilities", "Tour Stats", "Setlists", "Rumors", "Lyrics & Chords", "Song Origins", "Tour In Review", "The Shelf", "About"];
-  const expectedFooter = ["Song List", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About", "Privacy"];
+  const expectedMega = ["Home", "Song Possibilities", "Tour Stats", "Setlists", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
+  const expectedFooter = ["Song List", "Albums", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About", "Privacy"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerNav = linkTexts(sectionByClass(html, "footer-links"));
   record("Mega menu covers every Burnthday destination plus the homepage sections", arraysEqual(megaNav, expectedMega), megaNav.join(" | "));
