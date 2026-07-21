@@ -1,5 +1,5 @@
 {
-  "_note": "Modern-era Widespread Panic studio albums. FACTUAL fields are from a verified pull; blurb is written in Burnthday's OWN voice (no label boilerplate / press-release / special thanks / copyright). Live stats are computed at build time from the catalog. TODO: paste verified streaming URLs (the pulled Spotify IDs were unverifiable and removed); add cover art for the four newest records.",
+  "_note": "Full studio discography of Widespread Panic studio albums. FACTUAL fields are from a verified pull; blurb is written in Burnthday's OWN voice (no label boilerplate / press-release / special thanks / copyright). Live stats are computed at build time from the catalog. TODO: paste verified streaming URLs (the pulled Spotify IDs were unverifiable and removed); add cover art for the four newest records.",
   "albums": [
     {
       "slug": "hailbound-queen",
@@ -599,6 +599,730 @@
         },
         {
           "title": "May Your Glass Be Filled"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "ball",
+      "title": "Ball",
+      "releaseDate": "2003-04-15",
+      "cover": "",
+      "blurb": "Serving as the first studio album after the passing of founding guitarist Michael Houser, this release marks a transitional period for the band. George McConnell stepped in to handle lead guitar duties on a collection of resilient, groove-heavy tracks.",
+      "label": "Sanctuary Records",
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "George McConnell",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Fishing"
+        },
+        {
+          "title": "Thin Air (Smells Like Mississippi)"
+        },
+        {
+          "title": "Tortured Artist"
+        },
+        {
+          "title": "Papa Johnny Road"
+        },
+        {
+          "title": "Sparks Fly"
+        },
+        {
+          "title": "Counting Train Cars"
+        },
+        {
+          "title": "Don't Wanna Lose You"
+        },
+        {
+          "title": "Longer Look"
+        },
+        {
+          "title": "Meeting of the Waters"
+        },
+        {
+          "title": "Nebulous"
+        },
+        {
+          "title": "Monstrosity"
+        },
+        {
+          "title": "Time Waits"
+        },
+        {
+          "title": "Travelin' Man"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "dont-tell-the-band",
+      "title": "Don't Tell the Band",
+      "releaseDate": "2001-06-19",
+      "cover": "",
+      "blurb": "This lively studio effort captures the band operating at peak late-90s/early-2000s energy. It is notable for being the final studio album to feature founding lead guitarist Michael Houser before his passing.",
+      "label": "Sanctuary Records",
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Little Lilly"
+        },
+        {
+          "title": "Give"
+        },
+        {
+          "title": "Imitation Leather Shoes"
+        },
+        {
+          "title": "This Part of Town"
+        },
+        {
+          "title": "Sometimes",
+          "writtenBy": "Daniel Hutchens, Eric Carter"
+        },
+        {
+          "title": "Thought Sausage"
+        },
+        {
+          "title": "Down"
+        },
+        {
+          "title": "Big Wooly Mammoth"
+        },
+        {
+          "title": "Casa Del Grillo"
+        },
+        {
+          "title": "Old Joe"
+        },
+        {
+          "title": "Action Man"
+        },
+        {
+          "title": "Don't Tell the Band"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "til-the-medicine-takes",
+      "title": "'Til the Medicine Takes",
+      "releaseDate": "1999-07-27",
+      "cover": "",
+      "blurb": "Marking an ambitious expansion of their studio sound, this album introduces turntables, a horn section, and gospel choirs to the mix. It features several enduring cornerstones of their live repertoire.",
+      "label": "Capricorn Records",
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Surprise Valley"
+        },
+        {
+          "title": "Bear's Gone Fishin'"
+        },
+        {
+          "title": "Climb to Safety",
+          "writtenBy": "Jerry Joseph"
+        },
+        {
+          "title": "Blue Indian"
+        },
+        {
+          "title": "The Waker"
+        },
+        {
+          "title": "Party At Your Mama's House"
+        },
+        {
+          "title": "Dyin' Man"
+        },
+        {
+          "title": "You'll Be Fine"
+        },
+        {
+          "title": "One Arm Steve"
+        },
+        {
+          "title": "Christmas Katie"
+        },
+        {
+          "title": "All Time Low"
+        },
+        {
+          "title": "Nobody's Loss"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "bombs-and-butterflies",
+      "title": "Bombs & Butterflies",
+      "releaseDate": "1997-02-04",
+      "cover": "",
+      "blurb": "Arriving after the massive success of their '96 tour, this album balances heavy rockers with intimate, acoustic-driven reflections. It includes a celebrated collaboration with Vic Chesnutt on 'Aunt Avis.'",
+      "label": "Capricorn Records",
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Radio Child"
+        },
+        {
+          "title": "Aunt Avis",
+          "writtenBy": "Vic Chesnutt"
+        },
+        {
+          "title": "Tall Boy"
+        },
+        {
+          "title": "Gradle"
+        },
+        {
+          "title": "Glory"
+        },
+        {
+          "title": "Rebirtha"
+        },
+        {
+          "title": "You Got Yours"
+        },
+        {
+          "title": "Hope in a Hopeless World",
+          "writtenBy": "Phil Roy, Bob Thiele"
+        },
+        {
+          "title": "Happy"
+        },
+        {
+          "title": "Greta"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "aint-life-grand",
+      "title": "Ain't Life Grand",
+      "releaseDate": "1994-09-06",
+      "cover": "",
+      "blurb": "Recorded largely live in a traditional studio setting to capture the essence of their live shows, this record is a definitive document of the band's mid-90s era. It solidified many of the biggest anthems in their catalog.",
+      "label": "Capricorn Records",
+      "recordedAt": [
+        "Keane Recording, Athens GA",
+        "Southern Tracks, Atlanta GA"
+      ],
+      "producedBy": [
+        "John Keane",
+        "Widespread Panic"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Little Kin"
+        },
+        {
+          "title": "Ain't Life Grand"
+        },
+        {
+          "title": "Airplane"
+        },
+        {
+          "title": "Can't Get High",
+          "writtenBy": "Daniel Hutchens, Eric Carter"
+        },
+        {
+          "title": "Heroes"
+        },
+        {
+          "title": "Raise the Roof"
+        },
+        {
+          "title": "Junior"
+        },
+        {
+          "title": "L.A."
+        },
+        {
+          "title": "Blackout Blues"
+        },
+        {
+          "title": "Jack"
+        },
+        {
+          "title": "Fishwater"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "everyday",
+      "title": "Everyday",
+      "releaseDate": "1993-03-02",
+      "cover": "",
+      "blurb": "This was the first studio album to officially feature keyboardist John \"JoJo\" Hermann. His arrival filled out the band's signature six-piece sound, heavily coloring the blues-infused tracks.",
+      "label": "Capricorn Records",
+      "recordedAt": [
+        "Muscle Shoals Sound Studio, AL"
+      ],
+      "producedBy": [
+        "Johnny Sandlin"
+      ],
+      "engineeredBy": [
+        "Johnny Sandlin",
+        "Steve Melton"
+      ],
+      "mixedBy": [
+        "Johnny Sandlin"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "John Hermann",
+          "role": "keyboards, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Pleas"
+        },
+        {
+          "title": "Hatfield"
+        },
+        {
+          "title": "Wondering"
+        },
+        {
+          "title": "Papa's Home"
+        },
+        {
+          "title": "Diner"
+        },
+        {
+          "title": "Better Off"
+        },
+        {
+          "title": "Pickin' Up the Pieces"
+        },
+        {
+          "title": "Henry Parsons Died",
+          "writtenBy": "Daniel Hutchens, Eric Carter"
+        },
+        {
+          "title": "Pilgrims"
+        },
+        {
+          "title": "Postcard"
+        },
+        {
+          "title": "Dream Song"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "widespread-panic",
+      "title": "Widespread Panic",
+      "releaseDate": "1991-07-30",
+      "cover": "",
+      "blurb": "The band's major label debut on Capricorn Records brought their freewheeling jam aesthetic to a much wider audience. It features the Memphis Horns and guest keyboard work by T. Lavitz.",
+      "label": "Capricorn Records",
+      "recordedAt": [
+        "Emerald Studios, Nashville TN",
+        "Master Sound Studios, Atlanta GA"
+      ],
+      "producedBy": [
+        "Johnny Sandlin"
+      ],
+      "engineeredBy": [
+        "Johnny Sandlin"
+      ],
+      "mixedBy": [
+        "Johnny Sandlin"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "T. Lavitz",
+          "role": "keyboards"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Send Your Mind",
+          "writtenBy": "Van Morrison"
+        },
+        {
+          "title": "Walkin' (For Your Love)"
+        },
+        {
+          "title": "Pigeons"
+        },
+        {
+          "title": "Mercy"
+        },
+        {
+          "title": "Rock"
+        },
+        {
+          "title": "Makes Sense to Me",
+          "writtenBy": "Daniel Hutchens"
+        },
+        {
+          "title": "C. Brown"
+        },
+        {
+          "title": "Love Tractor"
+        },
+        {
+          "title": "Weight of the World"
+        },
+        {
+          "title": "I'm Not Alone"
+        },
+        {
+          "title": "Barstools and Dreamers"
+        },
+        {
+          "title": "Proving Ground"
+        },
+        {
+          "title": "The Last Straw"
+        }
+      ],
+      "links": {
+        "spotify": "",
+        "appleMusic": "",
+        "bandcamp": "",
+        "amazon": "",
+        "purchase": ""
+      }
+    },
+    {
+      "slug": "space-wrangler",
+      "title": "Space Wrangler",
+      "releaseDate": "1988-02-04",
+      "cover": "",
+      "blurb": "The debut independent release that started it all. Raw and unapologetically southern, this album laid down the foundation for the band's massive grassroots following.",
+      "label": "Landslide Records",
+      "recordedAt": [
+        "John Keane Studios, Athens GA"
+      ],
+      "producedBy": [
+        "Widespread Panic",
+        "John Keane"
+      ],
+      "engineeredBy": [
+        "John Keane"
+      ],
+      "mixedBy": [
+        "John Keane"
+      ],
+      "personnel": [
+        {
+          "name": "John Bell",
+          "role": "lead vocals, guitar"
+        },
+        {
+          "name": "Michael Houser",
+          "role": "lead guitar, vocals"
+        },
+        {
+          "name": "Dave Schools",
+          "role": "bass, vocals"
+        },
+        {
+          "name": "Todd Nance",
+          "role": "drums, vocals"
+        },
+        {
+          "name": "Domingo \"Sunny\" Ortiz",
+          "role": "percussion"
+        }
+      ],
+      "tracks": [
+        {
+          "title": "Chilly Water"
+        },
+        {
+          "title": "Travelin' Light",
+          "writtenBy": "J.J. Cale"
+        },
+        {
+          "title": "Space Wrangler"
+        },
+        {
+          "title": "Coconut"
+        },
+        {
+          "title": "The Take Out"
+        },
+        {
+          "title": "Porch Song"
+        },
+        {
+          "title": "Stop-Go"
+        },
+        {
+          "title": "Driving Song"
         }
       ],
       "links": {
