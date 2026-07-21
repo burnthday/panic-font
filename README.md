@@ -133,6 +133,21 @@ For a local post-show build only, `npm run postshow` passes `--allow-ec-lag`. Wh
 
 The full Blogger Takeout feed is checked in at `data/source/blogger-feed.atom`. The build turns those entries into static pages at their original Blogger paths, plus archive indexes at `/archive/` and `/tour-in-review/`. Media files recovered from Takeout live in `assets/archive-media/` and are linked locally when the old Blogger image filename can be matched safely.
 
+## Newsletter Archive
+
+`data/source/newsletters.json` is a digitized catalog of the two Widespread Panic fan newsletters, distinct from the Blogger Archive above. It is both a standalone fan resource and a sourced backbone for song origins.
+
+- **Moon Times** — the official WSP newsletter (WSP office / Brown Cat), preserved on the Internet Archive from `widespreadpanic.com`'s own text ("nonflash") site. The importer enumerates the real inventory from the Wayback CDX index rather than assuming a fixed grid, so it captures every archived issue across vol. 1–7 (including the odd "issue 3.5" and the frameset-based web-only vol. 7 era). Issues the Internet Archive never captured (vol. 2 #2, vol. 4 #4) and masthead-only shells whose content redirects to another issue (vol. 7 #3) are recorded under `knownGaps`, never fabricated.
+- **The Panicle** — the earlier '90s fan herald (Athens, GA). No complete archive exists; the one transcribed issue found online (vol. 1 #5, July 1992) is pulled from the "Nothing But Widespread Panic" fan blog. It is dense song history (debuts, alternate titles, proto-songs), so it drives most of the cross-reference. Untranscribed issues are listed in `knownGaps.panicle` for physical scans.
+
+Each issue record carries the publication, volume/number, printed or `circa`-estimated date (flagged with `dateEstimated`), source URL, Wayback timestamp, attribution, full extracted text, and a `songMentions` list. Each mention is cross-referenced against `data/source/song-origins.json` and `data/source/catalog.csv` (`crossReferencesOrigin`, `originSlug`, `catalogFirstPlayed`), classified (`debut` / `origin` / `alt-title` / `recording` / `mention`), and confidence-rated. This is preservation with attribution — Moon Times links back to the official source and the Internet Archive; the Panicle credits the transcribing blog.
+
+Rebuild it from the live sources with:
+
+```bash
+npm run import:newsletters
+```
+
 ## Live Google Sheets Automation
 
 For automatic rebuilds from Google Sheets, add a Google service account that has viewer access to this spreadsheet:

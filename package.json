@@ -12,6 +12,7 @@
     "import:official-setlists": "node scripts/import-official-setlists.mjs",
     "enrich:setlist-transitions": "node scripts/enrich-setlist-transitions.mjs",
     "import:song-origins": "node scripts/import-song-origins.mjs",
+    "import:newsletters": "node scripts/import-newsletters.mjs",
     "validate:playstats": "node scripts/validate-playstats-match.mjs",
     "validate:tour-data": "node scripts/validate-current-tour-data.mjs",
     "validate:production": "node scripts/validate-production-readiness.mjs",
