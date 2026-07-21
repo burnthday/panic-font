@@ -125,7 +125,8 @@
           "title": "Shut Up And Drive",
           "why": "Dirty Side Down"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Time Zones",
@@ -231,7 +232,8 @@
           "title": "From The Cradle",
           "why": "Earth to America"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Her Dance Needs No Body",
@@ -320,7 +322,8 @@
           "title": "Three Candles",
           "why": "The Jimmy Herring era"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Raise The Roof",
@@ -400,7 +403,8 @@
           "a": "About 45 times (per Everyday Companion)."
         }
       ],
-      "related": []
+      "related": [],
+      "kind": "story"
     },
     {
       "title": "Three Candles",
@@ -494,7 +498,8 @@
           "title": "St. Louis",
           "why": "The Jimmy Herring era"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "From The Cradle",
@@ -578,7 +583,8 @@
           "title": "Time Zones",
           "why": "Earth to America"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Gomero Blanco",
@@ -649,7 +655,8 @@
           "title": "St. Louis",
           "why": "The instrumentals"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Driving Song",
@@ -753,7 +760,8 @@
           "title": "Sleepy Monkey",
           "why": "Early Athens (1985 to 1989)"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Rock",
@@ -849,7 +857,8 @@
           "title": "Sleepy Monkey",
           "why": "Early Athens (1985 to 1989)"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Tall Boy",
@@ -945,7 +954,8 @@
           "title": "You Got Yours",
           "why": "Bombs & Butterflies"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Better Off",
@@ -1030,7 +1040,8 @@
           "title": "Wondering",
           "why": "Everyday"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Bear's Gone Fishin'",
@@ -1130,7 +1141,8 @@
           "title": "Party At Your Mama's House",
           "why": "'Til the Medicine Takes"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Surprise Valley",
@@ -1229,7 +1241,8 @@
           "title": "Blue Indian",
           "why": "Michael Houser"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Big Wooly Mammoth",
@@ -1318,7 +1331,8 @@
           "title": "Little Lilly",
           "why": "Don't Tell the Band"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Blue Indian",
@@ -1418,7 +1432,8 @@
           "title": "Driving Song",
           "why": "Michael Houser"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Send Your Mind",
@@ -1492,7 +1507,8 @@
           "title": "Rock",
           "why": "Widespread Panic (Mom's Kitchen)"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Sleeping Man",
@@ -1571,7 +1587,8 @@
           "title": "Aunt Avis",
           "why": "Vic Chesnutt"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Aunt Avis",
@@ -1680,7 +1697,8 @@
           "title": "You Got Yours",
           "why": "Bombs & Butterflies"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Bowlegged Woman",
@@ -1734,7 +1752,8 @@
           "a": "About 242 times (per Everyday Companion)."
         }
       ],
-      "related": []
+      "related": [],
+      "kind": "fact"
     },
     {
       "title": "Henry Parsons Died",
@@ -1842,7 +1861,8 @@
           "title": "Better Off",
           "why": "Everyday"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Chainsaw City",
@@ -1926,7 +1946,8 @@
           "title": "Time Zones",
           "why": "Jerry Joseph"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Quarter Tank Of Gasoline",
@@ -2015,7 +2036,8 @@
           "title": "Makes Sense To Me",
           "why": "Bloodkin"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Party At Your Mama's House",
@@ -2111,7 +2133,8 @@
           "title": "Blue Indian",
           "why": "'Til the Medicine Takes"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Little Lilly",
@@ -2208,7 +2231,8 @@
           "title": "Give",
           "why": "Don't Tell the Band"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Down",
@@ -2297,7 +2321,8 @@
           "title": "Little Lilly",
           "why": "Don't Tell the Band"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Give",
@@ -2386,7 +2411,8 @@
           "title": "Little Lilly",
           "why": "Don't Tell the Band"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Casa Del Grillo",
@@ -2481,7 +2507,8 @@
           "title": "Little Lilly",
           "why": "Don't Tell the Band"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Sleepy Monkey",
@@ -2590,7 +2617,8 @@
           "title": "Rock",
           "why": "Early Athens (1985 to 1989)"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Wondering",
@@ -2696,7 +2724,8 @@
           "title": "Dream Song",
           "why": "Michael Houser"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Pilgrims",
@@ -2762,7 +2791,8 @@
           "a": "About 575 times (per Everyday Companion)."
         }
       ],
-      "related": []
+      "related": [],
+      "kind": "story"
     },
     {
       "title": "Makes Sense To Me",
@@ -2851,7 +2881,8 @@
           "title": "Quarter Tank Of Gasoline",
           "why": "Bloodkin"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Can't Get High",
@@ -2945,7 +2976,8 @@
           "title": "Quarter Tank Of Gasoline",
           "why": "Bloodkin"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Junior",
@@ -3034,7 +3066,8 @@
           "title": "Tall Boy",
           "why": "The Mississippi songs"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Love Tractor",
@@ -3126,7 +3159,8 @@
           "title": "Sleepy Monkey",
           "why": "Early Athens (1985 to 1989)"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Dream Song",
@@ -3218,7 +3252,8 @@
           "title": "Driving Song",
           "why": "Michael Houser"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Little Kin",
@@ -3284,7 +3319,8 @@
           "a": "About 444 times (per Everyday Companion)."
         }
       ],
-      "related": []
+      "related": [],
+      "kind": "story"
     },
     {
       "title": "Vacation",
@@ -3376,7 +3412,8 @@
           "title": "Rock",
           "why": "Early Athens (1985 to 1989)"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Cotton Was King",
@@ -3489,7 +3526,8 @@
           "title": "Three Candles",
           "why": "The Jimmy Herring era"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "St. Louis",
@@ -3602,7 +3640,8 @@
           "title": "Her Dance Needs No Body",
           "why": "The Jimmy Herring era"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Shut Up And Drive",
@@ -3710,7 +3749,8 @@
           "title": "Three Candles",
           "why": "The Jimmy Herring era"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Postcard",
@@ -3822,7 +3862,8 @@
           "title": "Rock",
           "why": "Early Athens (1985 to 1989)"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Fishing",
@@ -3928,7 +3969,8 @@
           "title": "Papa Johnny Road",
           "why": "After Houser (the Ball era)"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Papa Johnny Road",
@@ -4052,7 +4094,8 @@
           "title": "Meeting Of The Waters",
           "why": "After Houser (the Ball era)"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Nebulous",
@@ -4163,7 +4206,8 @@
           "title": "Papa Johnny Road",
           "why": "After Houser (the Ball era)"
         }
-      ]
+      ],
+      "kind": "story"
     },
     {
       "title": "Travelin' Man",
@@ -4274,7 +4318,8 @@
           "title": "Nebulous",
           "why": "After Houser (the Ball era)"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Tortured Artist",
@@ -4380,7 +4425,8 @@
           "title": "Nebulous",
           "why": "After Houser (the Ball era)"
         }
-      ]
+      ],
+      "kind": "trivia"
     },
     {
       "title": "Meeting Of The Waters",
@@ -4486,7 +4532,8 @@
           "title": "Papa Johnny Road",
           "why": "After Houser (the Ball era)"
         }
-      ]
+      ],
+      "kind": "trivia"
     },
     {
       "title": "Counting Train Cars",
@@ -4583,7 +4630,8 @@
           "title": "Papa Johnny Road",
           "why": "After Houser (the Ball era)"
         }
-      ]
+      ],
+      "kind": "trivia"
     },
     {
       "title": "Burned Faceless",
@@ -4662,7 +4710,8 @@
           "title": "Driving Song",
           "why": "Michael Houser"
         }
-      ]
+      ],
+      "kind": "trivia"
     },
     {
       "title": "You Got Yours",
@@ -4768,7 +4817,8 @@
           "title": "Dream Song",
           "why": "Michael Houser"
         }
-      ]
+      ],
+      "kind": "fact"
     },
     {
       "title": "Airplane",
@@ -4851,13 +4901,15 @@
           "title": "Driving Song",
           "why": "Michael Houser"
         }
-      ]
+      ],
+      "kind": "trivia"
     }
   ],
   "schema": {
     "note": "Structured for SEO: each origin maps to schema.org MusicComposition (composer/lyricist, recordedAs album) with quotes[] as Quotation objects (creator=speaker, citation=source/url) and sameAs authority links. No prose narration; Burnthday is compiler, sources speak for themselves.",
     "fields": "title, slug, type, isCover, performedBy, composer, originalArtist, aliases[], albums[{name,year}], firstPlayed(ISO), firstPlayedDisplay, timesPlayed, summary, quotes[{text,speaker,speakerRole,source,sourceDate,url}], notes, sources[{label,publisher,url}], sameAs[]",
-    "enrichment": "Each origin also carries: clusters[] (type/writer/album/theme pillar-cluster tags), related[] (sibling origins with a why), albumArt (cover asset path when a WSP release), and faq[] (pre-computed Q&A for FAQPage JSON-LD). Songs cross-link to their on-site song page (lyrics/chords/tabs/live-history) by matching title/slug."
+    "enrichment": "Each origin also carries: clusters[] (type/writer/album/theme pillar-cluster tags), related[] (sibling origins with a why), albumArt (cover asset path when a WSP release), and faq[] (pre-computed Q&A for FAQPage JSON-LD). Songs cross-link to their on-site song page (lyrics/chords/tabs/live-history) by matching title/slug.",
+    "kind": "Each origin carries kind: 'story' (leads with a real narrative), 'fact' (a sourced writer/album/context note), or 'trivia' (a deep-cut confirmation, e.g. an unreleased song). Render stories full; render facts/trivia as compact cards."
   },
   "acknowledgments": [
     {

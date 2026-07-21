@@ -21,8 +21,15 @@ notes,                                            // factual, optional
 sources[ {label, publisher, url} ], sameAs[],     // authority links
 clusters[ {type, label, slug} ],                  // type ∈ type|writer|album|theme
 related[ {slug, title, why} ],                    // sibling origins with a reason
-faq[ {q, a} ]                                     // pre-computed for FAQPage
+faq[ {q, a} ],                                    // pre-computed for FAQPage
+kind                                              // "story" | "fact" | "trivia" — see below
 ```
+
+**`kind`** tells the site how much to show: `story` (21 — leads with a real narrative; give it a full write-up), `fact` (25 — a sourced writer/album/context note; a compact card), `trivia` (5 — a deep-cut confirmation like the unreleased "Burned Faceless"; a one-liner). Don't dress a one-line fact up as a saga.
+
+## Band FAQ
+
+`data/source/band-faq.json` is a separate band-level FAQ (13 questions a new fan asks: the name origin, what happened to Houser, how they formed, first release, starter albums, etc.). Answers are the site's own plain copy, sourced where the fact came from the archive; entries flagged `"verify": true` are general knowledge to confirm before publishing. Render as a FAQ page + schema.org `FAQPage` JSON-LD — high-value for "who is Widespread Panic" / "what happened to Michael Houser" search intent.
 
 26 of 51 lead with a verbatim attributed quote; the other 25 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Spreadnet mailing-list transcripts have no canonical URL, so those `url`s are `null` on purpose — do not invent one.
 
