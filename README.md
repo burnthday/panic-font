@@ -150,7 +150,7 @@ npm run import:newsletters
 
 ## Curated Song Origins
 
-`data/source/song-origins-curated.json` holds 41 net-new song origins compiled from the fan newsletters, band interviews (the Panicle blog, JamBase, American Songwriter, Glide, the Spreadnet interview archive, a Colorado Music Hall of Fame speech), and the definitive [everydaycompanion.com](https://www.everydaycompanion.com/) song database. Burnthday is the **compiler**, not a narrator: entries lead with the source's own words, attributed, and never a ghostwritten voice-over. Every claim is sourced.
+`data/source/song-origins-curated.json` holds 48 net-new song origins compiled from the fan newsletters, band interviews (the Panicle blog, JamBase, American Songwriter, Glide, the Spreadnet interview archive, a Colorado Music Hall of Fame speech), and the definitive [everydaycompanion.com](https://www.everydaycompanion.com/) song database. Burnthday is the **compiler**, not a narrator: entries lead with the source's own words, attributed, and never a ghostwritten voice-over. Every claim is sourced.
 
 It is a **net-new supplement** to the Facebook-sourced `song-origins.json`, cross-checked so it duplicates none of the existing 40. The data is **structured for SEO** so the build can emit schema.org JSON-LD (`MusicComposition` + `Quotation` + `FAQPage`) rather than a prose blob. Each entry carries:
 
@@ -161,7 +161,7 @@ It is a **net-new supplement** to the Facebook-sourced `song-origins.json`, cros
 
 Full data + design handoff for the site build lives in [`data/source/SONG-ORIGINS-SPEC.md`](data/source/SONG-ORIGINS-SPEC.md); a page prototype is at [`design/prototypes/song-origin-page.html`](design/prototypes/song-origin-page.html).
 
-22 of the 41 lead with a verbatim attributed quote; the other 19 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Songs researched but left out (no sourced story beyond a debut date, e.g. Weight Of The World, Blackout Blues, Airplane) are deliberately omitted under evidence discipline. No em dashes, by request.
+22 of the 41 lead with a verbatim attributed quote; the other 24 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Songs researched but left out (no sourced story beyond a debut date, e.g. Weight Of The World, Blackout Blues, Airplane) are deliberately omitted under evidence discipline. No em dashes, by request.
 
 **Wiring (pending, post-final-push):** these render once the build merges them. The merge point is `loadSongOrigins()` in `scripts/build.mjs` (append the curated entries), plus a `renderSongOriginPage()` pass that renders from the structured fields (quotes as attributed blockquotes with source links) **and** emits the schema.org JSON-LD. Kept separate here to avoid colliding with in-flight build changes on the working branch.
 

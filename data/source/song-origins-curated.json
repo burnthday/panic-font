@@ -931,6 +931,11 @@
           "why": "The Mississippi songs"
         },
         {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "The Mississippi songs"
+        },
+        {
           "slug": "aunt-avis",
           "title": "Aunt Avis",
           "why": "Bombs & Butterflies"
@@ -1404,8 +1409,8 @@
           "why": "Michael Houser"
         },
         {
-          "slug": "wondering",
-          "title": "Wondering",
+          "slug": "travelin-man",
+          "title": "Travelin' Man",
           "why": "Michael Houser"
         }
       ]
@@ -3010,6 +3015,11 @@
       ],
       "related": [
         {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "The Mississippi songs"
+        },
+        {
           "slug": "tall-boy",
           "title": "Tall Boy",
           "why": "The Mississippi songs"
@@ -3194,8 +3204,8 @@
           "why": "Michael Houser"
         },
         {
-          "slug": "wondering",
-          "title": "Wondering",
+          "slug": "travelin-man",
+          "title": "Travelin' Man",
           "why": "Michael Houser"
         }
       ]
@@ -3803,11 +3813,778 @@
           "why": "Early Athens (1985 to 1989)"
         }
       ]
+    },
+    {
+      "title": "Fishing",
+      "slug": "fishing",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-16",
+      "firstPlayedDisplay": "4/16/03",
+      "timesPlayed": 62,
+      "summary": "“Fishing” is a Widespread Panic original and the opening track of Ball (2003).",
+      "quotes": [
+        {
+          "text": "The song ‘Fishing,’ the first song on the record, started with Todd and I going in and just jamming on... bass and drums, just fooling around. We went back and made a loop out of it. John [Keane] copied the loop and started fooling around with some guitar, came up with a little flamenco riff, and JB had been sitting there in the control room on the sofa. All of a sudden he starts flipping through his notebook and says ‘Can I cut some vocals? I’ve got something that I wrote a while ago.’",
+          "speaker": "Dave Schools",
+          "speakerRole": "bassist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "The opening track on Ball, and the first song written for it after Michael Houser's death.",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Fishing”?",
+          "a": "“Fishing” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Fishing” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Fishing” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Fishing”?",
+          "a": "Its live debut was 4/16/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Fishing”?",
+          "a": "About 62 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ]
+    },
+    {
+      "title": "Papa Johnny Road",
+      "slug": "papa-johnny-road",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "John Hermann, John Bell",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-15",
+      "firstPlayedDisplay": "4/15/03",
+      "timesPlayed": 124,
+      "summary": "“Papa Johnny Road” is a Widespread Panic song written by John Hermann and John Bell, on Ball (2003).",
+      "quotes": [
+        {
+          "text": "JoJo and I wrote that. That was his initial inspiration. Most of the music was from JoJo’s magic brain. Then he and I did the red wine and napkin thing and came up with the lyrics.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        },
+        {
+          "text": "Is Papa Johnny Road a real place? Yeah, in Mississippi.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "Papa Johnny Road is a real place in Mississippi. On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "John Hermann & John Bell",
+          "slug": "jojo-hermann-songs"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "The Mississippi songs",
+          "slug": "mississippi-songs"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Papa Johnny Road”?",
+          "a": "“Papa Johnny Road” was written by John Hermann, John Bell."
+        },
+        {
+          "q": "Is “Papa Johnny Road” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Papa Johnny Road” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Papa Johnny Road”?",
+          "a": "Its live debut was 4/15/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Papa Johnny Road”?",
+          "a": "About 124 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "junior",
+          "title": "Junior",
+          "why": "The Mississippi songs"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        }
+      ]
+    },
+    {
+      "title": "Nebulous",
+      "slug": "nebulous",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-17",
+      "firstPlayedDisplay": "4/17/03",
+      "timesPlayed": 46,
+      "summary": "“Nebulous” is a Widespread Panic original from Ball (2003), shaped by George McConnell and JoJo Hermann.",
+      "quotes": [
+        {
+          "text": "For ‘Nebulous,’ George and I messed with some of the words and patterns so they would fit in... George would come up with some of the notes and we got together and found the flow. He had like three pages of notes and he kind of consolidated them.",
+          "speaker": "JoJo Hermann",
+          "speakerRole": "keyboardist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "An early George McConnell co-write. On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "George McConnell",
+          "slug": "george-mcconnell-songs"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Nebulous”?",
+          "a": "“Nebulous” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Nebulous” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Nebulous” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Nebulous”?",
+          "a": "Its live debut was 4/17/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Nebulous”?",
+          "a": "About 46 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ]
+    },
+    {
+      "title": "Travelin' Man",
+      "slug": "travelin-man",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Michael Houser",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-05-02",
+      "firstPlayedDisplay": "5/2/03",
+      "timesPlayed": 92,
+      "summary": "“Travelin’ Man” is a Michael Houser song, among the last he brought to Widespread Panic.",
+      "quotes": [
+        {
+          "text": "The most recent one was when we played ‘Traveling Man’ live, it was just killing me. He showed us that song almost a year ago. I’ll always think about him when we’re playing that song.",
+          "speaker": "John Bell",
+          "speakerRole": "singer, guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "One of the last songs Michael Houser showed the band before his death in 2002.",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "writer",
+          "label": "Michael Houser",
+          "slug": "michael-houser-songs"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Travelin' Man”?",
+          "a": "“Travelin' Man” was written by Michael Houser."
+        },
+        {
+          "q": "Is “Travelin' Man” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Travelin' Man” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Travelin' Man”?",
+          "a": "Its live debut was 5/2/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Travelin' Man”?",
+          "a": "About 92 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        }
+      ]
+    },
+    {
+      "title": "Tortured Artist",
+      "slug": "tortured-artist",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-11",
+      "firstPlayedDisplay": "4/11/03",
+      "timesPlayed": 87,
+      "summary": "“Tortured Artist” is a Widespread Panic original from Ball (2003).",
+      "quotes": [
+        {
+          "text": "‘Thin Air,’ we kind of came up with that off the cuff, and ‘Tortured Artist.’",
+          "speaker": "George McConnell",
+          "speakerRole": "guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "Came together off the cuff in the studio. On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Tortured Artist”?",
+          "a": "“Tortured Artist” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Tortured Artist” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Tortured Artist” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Tortured Artist”?",
+          "a": "Its live debut was 4/11/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Tortured Artist”?",
+          "a": "About 87 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        }
+      ]
+    },
+    {
+      "title": "Meeting Of The Waters",
+      "slug": "meeting-of-the-waters",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-18",
+      "firstPlayedDisplay": "4/18/03",
+      "timesPlayed": 13,
+      "summary": "“Meeting of the Waters” is a Widespread Panic original from Ball (2003).",
+      "quotes": [
+        {
+          "text": "JB did a lot of the slide work on the record, like on ‘Meeting of the Waters.’",
+          "speaker": "George McConnell",
+          "speakerRole": "guitarist",
+          "source": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson",
+          "sourceDate": "2003-10",
+          "url": null
+        }
+      ],
+      "notes": "Features John Bell's slide guitar. On Ball (2003). One of the band's rarer live songs.",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Meeting Of The Waters”?",
+          "a": "“Meeting Of The Waters” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Meeting Of The Waters” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Meeting Of The Waters” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Meeting Of The Waters”?",
+          "a": "Its live debut was 4/18/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Meeting Of The Waters”?",
+          "a": "About 13 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "counting-train-cars",
+          "title": "Counting Train Cars",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ]
+    },
+    {
+      "title": "Counting Train Cars",
+      "slug": "counting-train-cars",
+      "type": "Original",
+      "isCover": false,
+      "performedBy": "Widespread Panic",
+      "composer": "Widespread Panic",
+      "originalArtist": null,
+      "aliases": [],
+      "albums": [
+        {
+          "name": "Ball",
+          "year": 2003
+        }
+      ],
+      "firstPlayed": "2003-04-15",
+      "firstPlayedDisplay": "4/15/03",
+      "timesPlayed": 36,
+      "summary": "“Counting Train Cars” is a Widespread Panic original from Ball (2003).",
+      "quotes": [],
+      "notes": "Relix opened its 2003 Ball feature by pairing this song's line , “Is this the place they call paradise?” , which JB sang at the first Bonnaroo, against Joni Mitchell's “Woodstock.” On Ball (2003).",
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, \"Southeast of Eden\" by John Swenson (magazine scan)",
+          "publisher": "Relix",
+          "url": null
+        },
+        {
+          "label": "Type & first-played",
+          "publisher": "Everyday Companion / Burnthday catalog",
+          "url": null
+        }
+      ],
+      "sameAs": [],
+      "clusters": [
+        {
+          "type": "type",
+          "label": "Widespread Panic originals",
+          "slug": "widespread-panic-originals"
+        },
+        {
+          "type": "album",
+          "label": "Ball",
+          "slug": "album-ball"
+        },
+        {
+          "type": "theme",
+          "label": "After Houser (the Ball era)",
+          "slug": "after-houser"
+        }
+      ],
+      "albumArt": "/assets/archive-media/ball-cover.jpg",
+      "faq": [
+        {
+          "q": "Who wrote “Counting Train Cars”?",
+          "a": "“Counting Train Cars” is a Widespread Panic original, credited to the band."
+        },
+        {
+          "q": "Is “Counting Train Cars” a Widespread Panic original or a cover?",
+          "a": "It is a Widespread Panic original."
+        },
+        {
+          "q": "What album is “Counting Train Cars” on?",
+          "a": "It appears on Ball (2003)."
+        },
+        {
+          "q": "When did Widespread Panic first play “Counting Train Cars”?",
+          "a": "Its live debut was 4/15/03."
+        },
+        {
+          "q": "How many times has Widespread Panic played “Counting Train Cars”?",
+          "a": "About 36 times (per Everyday Companion)."
+        }
+      ],
+      "related": [
+        {
+          "slug": "fishing",
+          "title": "Fishing",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "meeting-of-the-waters",
+          "title": "Meeting Of The Waters",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "nebulous",
+          "title": "Nebulous",
+          "why": "After Houser (the Ball era)"
+        },
+        {
+          "slug": "papa-johnny-road",
+          "title": "Papa Johnny Road",
+          "why": "After Houser (the Ball era)"
+        }
+      ]
     }
   ],
   "schema": {
     "note": "Structured for SEO: each origin maps to schema.org MusicComposition (composer/lyricist, recordedAs album) with quotes[] as Quotation objects (creator=speaker, citation=source/url) and sameAs authority links. No prose narration; Burnthday is compiler, sources speak for themselves.",
     "fields": "title, slug, type, isCover, performedBy, composer, originalArtist, aliases[], albums[{name,year}], firstPlayed(ISO), firstPlayedDisplay, timesPlayed, summary, quotes[{text,speaker,speakerRole,source,sourceDate,url}], notes, sources[{label,publisher,url}], sameAs[]",
     "enrichment": "Each origin also carries: clusters[] (type/writer/album/theme pillar-cluster tags), related[] (sibling origins with a why), albumArt (cover asset path when a WSP release), and faq[] (pre-computed Q&A for FAQPage JSON-LD). Songs cross-link to their on-site song page (lyrics/chords/tabs/live-history) by matching title/slug."
-  }
+  },
+  "acknowledgments": [
+    {
+      "name": "Ethan Ice",
+      "for": "providing scans of the Relix (Oct/Nov 2003) \"Southeast of Eden\" feature, which sourced the Ball-era song origins (Fishing, Papa Johnny Road, Nebulous, Travelin' Man, Tortured Artist, Meeting of the Waters, Counting Train Cars)"
+    }
+  ]
 }

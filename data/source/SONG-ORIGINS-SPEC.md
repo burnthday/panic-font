@@ -4,7 +4,7 @@ Handoff for the Burnthday.com build session. This describes the curated song-ori
 
 ## What the data is
 
-41 net-new song origins, compiled from fan newsletters (Moon Times / The Panicle), band interviews (Spreadnet archive, JamBase, American Songwriter, Glide, a Colorado Music Hall of Fame speech), and everydaycompanion.com. Every claim is sourced. **Burnthday is the compiler, not a narrator** — entries lead with the source's own words, attributed; there is no ghostwritten voice-over. No em dashes anywhere (deliberate).
+48 net-new song origins, compiled from fan newsletters (Moon Times / The Panicle), band interviews (Spreadnet archive, JamBase, American Songwriter, Glide, a Colorado Music Hall of Fame speech), and everydaycompanion.com. Every claim is sourced. **Burnthday is the compiler, not a narrator** — entries lead with the source's own words, attributed; there is no ghostwritten voice-over. No em dashes anywhere (deliberate).
 
 It is a **net-new supplement** to the Facebook-sourced `song-origins.json` (the existing 40), cross-checked for zero title/slug collisions. Merge both when rendering `/song-origins/`.
 
@@ -24,7 +24,7 @@ related[ {slug, title, why} ],                    // sibling origins with a reas
 faq[ {q, a} ]                                     // pre-computed for FAQPage
 ```
 
-22 of 41 lead with a verbatim attributed quote; the other 19 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Spreadnet mailing-list transcripts have no canonical URL, so those `url`s are `null` on purpose — do not invent one.
+24 of 48 lead with a verbatim attributed quote; the other 24 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Spreadnet mailing-list transcripts have no canonical URL, so those `url`s are `null` on purpose — do not invent one.
 
 ## SEO / structured data (this is the point)
 
@@ -61,3 +61,7 @@ Prototype: `design/prototypes/song-origin-page.html` (Postcard). Notable moves:
 - `loadSongOrigins()` in `build.mjs` currently reads only `song-origins.json`; append the curated entries (all net-new, dedupe by slug).
 - The current `renderSongOriginPage()` hardcodes an "Original Facebook post" link — render from the structured fields instead (quotes as attributed blockquotes with source links) and emit the JSON-LD above.
 - Cross-linking already works by normalized title (`originsByTitle`); curated titles match `catalog.csv`.
+
+## Acknowledgments
+
+The file carries an `acknowledgments[]` field. Ethan Ice contributed the Relix (Oct/Nov 2003) "Southeast of Eden" scans that sourced the seven Ball-era origins (Fishing, Papa Johnny Road, Nebulous, Travelin' Man, Tortured Artist, Meeting of the Waters, Counting Train Cars). Surface a "special thanks" credit where these render.
