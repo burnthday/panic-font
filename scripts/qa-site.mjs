@@ -443,14 +443,13 @@ function checkGuestAnnotations(homeHtml, review2025Html) {
 }
 
 function checkNavigation(html, siteData) {
-  const expectedTop = ["Home", "Rumors", "Lyrics & Chords", "Song Origins", "Tour In Review", "The Shelf", "About"];
+  const expectedMega = ["Home", "Song Possibilities", "Tour Stats", "Setlists", "Rumors", "Lyrics & Chords", "Song Origins", "Tour In Review", "The Shelf", "About"];
   const expectedFooter = ["Song List", "The Shelf", "Tour In Review", "Song Origins", "Lyrics & Chords", "Rumors", "About", "Privacy"];
-  const topNav = linkTexts(sectionByClass(html, "jump-links"));
-  const mobileNav = linkTexts(sectionByClass(html, "mobile-nav-links"));
+  const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerNav = linkTexts(sectionByClass(html, "footer-links"));
-  record("Top nav matches old Burnthday nav", arraysEqual(topNav, expectedTop), topNav.join(" | "));
-  record("Mobile menu matches the complete top navigation", arraysEqual(mobileNav, expectedTop), mobileNav.join(" | "));
-  assertIncludes(html, '<details class="mobile-nav">', "Homepage has an accessible mobile navigation menu");
+  record("Mega menu covers every Burnthday destination plus the homepage sections", arraysEqual(megaNav, expectedMega), megaNav.join(" | "));
+  assertIncludes(html, 'aria-controls="mega-menu"', "Homepage menu toggle is wired to the mega menu");
+  record("One mega menu serves desktop and mobile", html.includes('id="mega-menu"') && !html.includes('<details class="mobile-nav">'));
   record("Homepage omits the redundant On This Page jump row", !html.includes('class="home-sections"') && !html.includes("ON THIS PAGE"));
   record("Footer navigation is organized around current site destinations", arraysEqual(footerNav, expectedFooter), footerNav.join(" | "));
   assertIncludes(html, "The working Widespread Panic song list, setlists, and tour data.", "Footer explains what Burnthday is");

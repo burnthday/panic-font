@@ -2028,7 +2028,7 @@ function renderHtml(data) {
     }).replace(/</g, "\\u003c")}</script>
   </head>
   <body class="stagelight">
-    ${renderSiteHeader()}
+    ${renderSiteHeader({ stagelight: true, data })}
 
     <main>
       ${renderHomeIntro(data)}
@@ -2202,7 +2202,8 @@ function renderFitScriptBody() {
       });`;
 }
 
-function renderSiteHeader() {
+function renderSiteHeader(options = {}) {
+  if (options.stagelight) return renderStagelightHeader(options.data);
   return `<header class="site-head">
   <div class="masthead-row">
     <a class="brand" href="/" aria-label="Burnthday">
@@ -2224,6 +2225,105 @@ function renderSiteHeader() {
 </header>`;
 }
 
+function renderStagelightHeader(data) {
+  const featured = data?.setlists?.[0] || null;
+  const nextShow = (data?.tourDates || []).find((entry) => !entry.isPosted && (!featured || entry.isoDate > featured.isoDate)) || null;
+  const homeSubs = [
+    ["Song Possibilities", "/#song-list"],
+    ["Tour Stats", "/#tour-stats"],
+    ["Setlists", "/#setlists"]
+  ];
+  const megaLinks = primaryNavItems.map(([text, href]) => {
+    const link = `<a class="mega-link" href="${escapeAttr(href)}">${escapeHtml(text)}</a>`;
+    if (text !== "Home") return link;
+    return link + homeSubs.map(([label, anchor]) => `<a class="mega-sub" href="${escapeAttr(anchor)}">${escapeHtml(label)}</a>`).join("");
+  }).join("");
+  const latestCol = featured ? `<div class="mega-col">
+      <div class="mega-col-head"><p class="mega-label">Latest Show</p><a class="mega-more" href="/#latest-setlist">View Setlist</a></div>
+      <div class="mega-show">
+        <time class="mega-show-date" datetime="${escapeAttr(featured.isoDate || "")}">${escapeHtml([weekdayName(featured.isoDate), featured.date].filter(Boolean).join(" · "))}</time>
+        <p class="mega-show-city">${escapeHtml(featured.location)}</p>
+        <p class="mega-show-venue">${escapeHtml(featured.venue)}</p>
+        ${featured.streamUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(featured.streamUrl)}">Listen at nugs.net</a>` : ""}
+      </div>
+      ${nextShow ? `<div class="mega-next">
+        <p class="mega-label">Next Show</p>
+        <p class="mega-next-line"><strong>${escapeHtml(nextShow.location)}</strong><span>${escapeHtml(nextShow.venue)} · ${escapeHtml(nextShow.date)}</span></p>
+      </div>` : ""}
+    </div>` : "";
+  return `<header class="site-head" id="top">
+  <a class="brand" href="/" aria-label="Burnthday">
+    <img class="brand-logo-sl" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true">
+    <span class="brand-wordmark" aria-hidden="true">Burnthday</span>
+  </a>
+  <div class="head-actions">
+    <a class="head-cta" href="https://widespreadpanic.com/tour">Get Tickets</a>
+    <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="mega-menu" aria-label="Open menu">
+      <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+</header>
+<div class="mega-menu" id="mega-menu" hidden>
+  <div class="mega-inner">
+    <div class="mega-col mega-nav-col">
+      <p class="mega-label">Navigation</p>
+      <nav class="mega-nav" aria-label="Primary navigation">${megaLinks}</nav>
+    </div>
+    ${latestCol}
+    <div class="mega-col">
+      <p class="mega-label">Follow</p>
+      <p class="mega-blurb">The working Widespread Panic song list, setlists, and tour data.</p>
+      <nav class="mega-social" aria-label="Burnthday social links">
+        <a href="https://www.facebook.com/burnthday">Facebook</a>
+        <a href="https://twitter.com/burnthday">X</a>
+        <a href="https://www.instagram.com/burnthday/">Instagram</a>
+      </nav>
+      <a class="mega-more" href="https://widespreadpanic.com/tour">Get Tickets</a>
+    </div>
+  </div>
+</div>
+<script>${renderStagelightHeaderScriptBody()}</script>`;
+}
+
+function renderStagelightHeaderScriptBody() {
+  return `(() => {
+    const head = document.querySelector(".site-head");
+    const toggle = head.querySelector(".menu-toggle");
+    const menu = document.getElementById("mega-menu");
+    const setOpen = (open) => {
+      menu.hidden = !open;
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      head.classList.toggle("menu-open", open);
+      document.body.style.overflow = open ? "hidden" : "";
+      if (open) head.classList.remove("is-hidden");
+    };
+    toggle.addEventListener("click", () => setOpen(menu.hidden));
+    menu.addEventListener("click", (event) => {
+      if (event.target.closest("a")) setOpen(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !menu.hidden) setOpen(false);
+    });
+
+    let lastY = window.scrollY;
+    let ticking = false;
+    window.addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (menu.hidden) {
+          if (y > lastY + 6 && y > 180) head.classList.add("is-hidden");
+          else if (y < lastY - 6 || y <= 180) head.classList.remove("is-hidden");
+        }
+        lastY = y;
+        ticking = false;
+      });
+    }, { passive: true });
+  })();`;
+}
+
 function renderNavigationScriptBody() {
   return `(() => {
     const normalizePath = (value) => {
@@ -2235,24 +2335,6 @@ function renderNavigationScriptBody() {
       const linkPath = normalizePath(new URL(link.href, window.location.origin).pathname);
       if (link.origin === window.location.origin && linkPath === currentPath) link.setAttribute("aria-current", "page");
     });
-    if (document.body && document.body.classList.contains("stagelight")) {
-      const head = document.querySelector(".site-head");
-      const mobileMenu = head ? head.querySelector(".mobile-nav") : null;
-      let lastY = window.scrollY;
-      let ticking = false;
-      window.addEventListener("scroll", () => {
-        if (ticking || !head) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-          const y = window.scrollY;
-          const menuOpen = mobileMenu && mobileMenu.open;
-          if (!menuOpen && y > lastY + 6 && y > 180) head.classList.add("is-hidden");
-          else if (y < lastY - 6 || y <= 180) head.classList.remove("is-hidden");
-          lastY = y;
-          ticking = false;
-        });
-      }, { passive: true });
-    }
   })();`;
 }
 
@@ -2262,7 +2344,7 @@ function renderSiteFooter(data, options = {}) {
     return `<footer class="site-foot">
   <div class="site-foot-inner">
     <div class="footer-lead">
-      <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true"><span>BURNTHDAY</span></a>
+      <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true"><span>Burnthday</span></a>
       <p>The working Widespread Panic song list, setlists, and tour data.</p>
     </div>
     <nav class="footer-links" aria-label="Explore Burnthday">
@@ -3262,7 +3344,7 @@ ul, ol { padding: 0; list-style: none; }
 summary { list-style: none; cursor: pointer; }
 summary::-webkit-details-marker { display: none; }
 sup { line-height: 0; }
-main { width: min(1180px, calc(100% - 56px)); margin: 0 auto; }
+main { width: min(1400px, calc(100% - 56px)); margin: 0 auto; }
 main > section { margin-top: 96px; }
 .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 26px; }
 .section-heading h2 { font-size: 34px; font-weight: 640; letter-spacing: -0.01em; line-height: 1.12; }
@@ -3335,7 +3417,7 @@ main > section { margin-top: 96px; }
 .ticket-link { display: inline-flex; align-items: center; height: 44px; padding: 0 26px; border-radius: 999px; font-weight: 650; }
 .posse-link img { width: 220px; border-radius: 12px; }
 .site-foot { margin-top: 110px; }
-.site-foot-inner { width: min(1180px, calc(100% - 56px)); margin: 0 auto; display: flex; justify-content: space-between; gap: 44px; flex-wrap: wrap; padding: 56px 0 40px; }
+.site-foot-inner { width: min(1400px, calc(100% - 56px)); margin: 0 auto; display: flex; justify-content: space-between; gap: 44px; flex-wrap: wrap; padding: 56px 0 40px; }
 .footer-lead p { margin-top: 12px; max-width: 300px; font-size: 14px; line-height: 1.55; }
 .footer-brand { font-size: 20px; font-weight: 800; letter-spacing: 0.045em; }
 .footer-links, .social-links { display: flex; flex-direction: column; gap: 2px; }
@@ -6382,32 +6464,13 @@ body.stagelight ::selection { background: rgba(212,81,79,0.45); color: #fff; }
   border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
 }
 
-/* ---- NAV ---- */
-body.stagelight .site-head {
-  background: linear-gradient(180deg, rgba(16,16,18,0.78), rgba(13,13,15,0.6));
-  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
-  border-bottom: 1px solid var(--sl-line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
-}
-body.stagelight .masthead-row { align-items: center; }
-body.stagelight .brand-logo { display: none; }
-body.stagelight .brand { display: inline-flex; align-items: center; gap: 12px; }
-body.stagelight .brand-logo-sl { display: block; height: 40px; width: auto; }
+/* ---- NAV: brand lockup ---- */
+body.stagelight .brand { display: inline-flex; align-items: center; gap: 13px; }
+body.stagelight .brand-logo-sl { display: block; height: 38px; width: auto; }
 body.stagelight .brand-wordmark {
-  display: inline-block; font-family: var(--sl-display); font-weight: 800;
-  font-size: 20px; letter-spacing: 0.05em; color: var(--sl-ink);
+  display: inline-block; font-family: var(--sl-display); font-weight: 640;
+  font-size: 21px; letter-spacing: -0.012em; color: var(--sl-ink);
 }
-body.stagelight .header-social .social-dot {
-  background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted);
-}
-body.stagelight .header-social .social-dot:hover { color: var(--sl-ink); border-color: var(--sl-line-strong); }
-body.stagelight .jump-links { border-top: 1px solid var(--sl-line); }
-body.stagelight .jump-links a { color: var(--sl-muted); }
-body.stagelight .jump-links a:hover, body.stagelight .jump-links a[aria-current="page"] { color: var(--sl-ink); }
-body.stagelight .jump-links a[aria-current="page"] { border-color: var(--sl-ink); }
-body.stagelight .mobile-nav summary { color: var(--sl-muted); border-color: var(--sl-line-strong); }
-body.stagelight .mobile-nav-links { background: rgba(20,20,23,0.96); border: 1px solid var(--sl-line); }
-body.stagelight .mobile-nav-links a { color: var(--sl-muted); }
-body.stagelight .menu-icon i { background: var(--sl-muted); }
 
 /* ---- MASTHEAD TITLE + TRAIL ---- */
 body.stagelight main { color: var(--sl-ink); }
@@ -6420,16 +6483,16 @@ body.stagelight .section-heading h2 { font-family: var(--sl-display); color: var
 body.stagelight .section-heading span { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.06em; }
 
 /* ---- TYPE SCALE + RHYTHM ---- */
-body.stagelight main { max-width: 1180px; }
+body.stagelight main { max-width: 1400px; }
 body.stagelight main > section { margin-top: 96px; }
 body.stagelight main > .latest-setlist { margin-top: 44px; }
 body.stagelight .section-heading h2 { font-size: 34px; }
 body.stagelight .section-heading { margin-bottom: 26px; }
 
-/* ---- NAV: single glass bar, wordmark left ---- */
+/* ---- NAV: single glass bar, brand left, actions + hamburger right ---- */
 body.stagelight .site-head {
-  display: flex; align-items: center; gap: 28px; min-height: 64px;
-  padding: 0 max(28px, calc((100% - 1180px) / 2));
+  display: flex; align-items: center; gap: 28px; min-height: 66px;
+  padding: 0 max(28px, calc((100% - 1400px) / 2));
   position: sticky; top: 0; z-index: 60;
   background: linear-gradient(180deg, rgba(16,16,18,0.78), rgba(13,13,15,0.62));
   -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
@@ -6438,11 +6501,82 @@ body.stagelight .site-head {
 }
 body.stagelight .site-head.is-hidden { transform: translateY(-102%); }
 @media (prefers-reduced-motion: reduce) { body.stagelight .site-head { transition: none; } }
-body.stagelight .masthead-row { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; }
-body.stagelight .header-social { order: 3; margin-left: 12px; }
-body.stagelight .jump-links { order: 2; margin-left: auto; border: 0; padding: 0; display: flex; gap: 24px; font-size: 14px; }
-body.stagelight .jump-links a { padding: 6px 0; border: 0; }
-body.stagelight .mobile-nav { order: 2; margin-left: auto; }
+body.stagelight .head-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+body.stagelight .head-cta {
+  display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border-radius: 999px;
+  font-size: 14px; font-weight: 580; color: var(--sl-ink);
+  background: rgba(255,255,255,0.055); border: 1px solid var(--sl-line-strong);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+body.stagelight .head-cta:hover { background: rgba(255,255,255,0.1); transform: translateY(-1px); }
+body.stagelight .menu-toggle {
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; border-radius: 12px;
+  border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04);
+  transition: background 0.18s ease;
+}
+body.stagelight .menu-toggle:hover { background: rgba(255,255,255,0.09); }
+body.stagelight .menu-toggle .menu-icon { display: block; width: 16px; height: 10px; position: relative; }
+body.stagelight .menu-toggle .menu-icon i {
+  position: absolute; left: 0; right: 0; height: 1.6px; background: var(--sl-ink); border-radius: 1px;
+  transition: transform 0.24s ease, top 0.24s ease;
+}
+body.stagelight .menu-toggle .menu-icon i:first-child { top: 0; }
+body.stagelight .menu-toggle .menu-icon i:last-child { top: 8.4px; }
+body.stagelight .menu-open .menu-toggle .menu-icon i:first-child { top: 4.2px; transform: rotate(45deg); }
+body.stagelight .menu-open .menu-toggle .menu-icon i:last-child { top: 4.2px; transform: rotate(-45deg); }
+
+/* ---- MEGA MENU ---- */
+body.stagelight .mega-menu {
+  position: fixed; inset: 0; z-index: 55; overflow-y: auto;
+  padding: 130px max(28px, calc((100% - 1400px) / 2)) 72px;
+  background: linear-gradient(180deg, rgba(10,10,12,0.97), rgba(8,8,10,0.985));
+  -webkit-backdrop-filter: blur(28px) saturate(1.3); backdrop-filter: blur(28px) saturate(1.3);
+}
+body.stagelight .mega-menu[hidden] { display: none; }
+body.stagelight .mega-inner {
+  display: grid; grid-template-columns: 1.35fr 1fr 0.85fr; gap: 40px 64px;
+  animation: sl-mega-in 0.32s ease both;
+}
+@keyframes sl-mega-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .mega-inner { animation: none; } }
+body.stagelight .mega-col { border-top: 1px solid var(--sl-line-strong); padding-top: 18px; min-width: 0; }
+body.stagelight .mega-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .mega-col-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+body.stagelight .mega-nav { display: flex; flex-direction: column; margin-top: 26px; }
+body.stagelight .mega-link {
+  font-family: var(--sl-display); font-size: clamp(30px, 3.2vw, 42px); font-weight: 620;
+  letter-spacing: -0.015em; line-height: 1.14; padding: 7px 0; color: var(--sl-ink);
+  transition: color 0.15s ease, transform 0.18s ease;
+}
+body.stagelight .mega-link:hover { color: #fff; transform: translateX(6px); }
+body.stagelight .mega-sub {
+  display: flex; align-items: baseline; gap: 12px; padding: 5px 0 5px 6px;
+  font-family: var(--sl-display); font-size: clamp(20px, 2vw, 25px); font-weight: 480;
+  letter-spacing: -0.01em; color: var(--sl-muted); transition: color 0.15s ease, transform 0.18s ease;
+}
+body.stagelight .mega-sub::before { content: "\\21B3"; color: var(--sl-faint); font-size: 0.8em; }
+body.stagelight .mega-sub:hover { color: var(--sl-ink); transform: translateX(6px); }
+body.stagelight .mega-more { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); border-bottom: 1px solid var(--sl-line-strong); padding-bottom: 3px; }
+body.stagelight .mega-more:hover { color: var(--sl-ink); border-color: var(--sl-ink); }
+body.stagelight .mega-show { margin-top: 30px; }
+body.stagelight .mega-show-date { display: block; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .mega-show-city { font-family: var(--sl-display); font-size: clamp(26px, 2.6vw, 34px); font-weight: 680; letter-spacing: -0.015em; margin-top: 10px; color: var(--sl-ink); }
+body.stagelight .mega-show-venue { font-size: 15px; color: var(--sl-muted); margin-top: 6px; }
+body.stagelight .mega-show .sc-chip { margin-top: 22px; }
+body.stagelight .mega-next { margin-top: 38px; padding-top: 18px; border-top: 1px solid var(--sl-line); }
+body.stagelight .mega-next-line { margin-top: 12px; display: flex; flex-direction: column; gap: 3px; }
+body.stagelight .mega-next-line strong { font-size: 17px; font-weight: 620; color: var(--sl-ink); }
+body.stagelight .mega-next-line span { font-size: 13.5px; color: var(--sl-muted); }
+body.stagelight .mega-blurb { margin-top: 26px; font-size: 14.5px; line-height: 1.6; color: var(--sl-muted); max-width: 260px; }
+body.stagelight .mega-social { display: flex; flex-direction: column; gap: 2px; margin: 22px 0 30px; }
+body.stagelight .mega-social a { padding: 6px 0; font-size: 15px; color: var(--sl-muted); transition: color 0.15s ease, transform 0.18s ease; }
+body.stagelight .mega-social a:hover { color: var(--sl-ink); transform: translateX(4px); }
+@media (max-width: 900px) {
+  body.stagelight .mega-menu { padding-top: 100px; }
+  body.stagelight .mega-inner { grid-template-columns: 1fr; gap: 44px; }
+  body.stagelight .head-cta { display: none; }
+}
 
 /* ---- SHOW ENTRY: one component, two states ---- */
 body.stagelight .show-entry {
@@ -6506,9 +6640,8 @@ body.stagelight .current-stop-setlists { display: grid; gap: 16px; margin-top: 1
 body.stagelight .setlist-list { display: grid; gap: 16px; }
 body.stagelight .setlist-archive-panel > summary { display: none; }
 @media (max-width: 560px) {
-  body.stagelight .jump-links, body.stagelight .header-social { display: none; }
-  body.stagelight .mobile-nav { display: block; margin-left: auto; border: 0; }
   body.stagelight .site-head { gap: 16px; }
+  body.stagelight .brand-wordmark { font-size: 19px; }
 }
 @media (max-width: 900px) {
   body.stagelight .show-entry[open] .sc-lockup,
@@ -6636,7 +6769,7 @@ body.stagelight .site-foot-inner {
   display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 24px 56px;
   padding: 64px 0 32px; align-items: start;
 }
-body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 800; font-size: 22px; letter-spacing: 0.045em; }
+body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 22px; letter-spacing: -0.012em; }
 body.stagelight .footer-mark { height: 34px; width: auto; }
 body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 14px; max-width: 300px; font-size: 14px; line-height: 1.6; }
 body.stagelight .footer-links strong, body.stagelight .social-links strong { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; }
@@ -6688,7 +6821,7 @@ body.stagelight .bento-panel {
   background: rgba(4,4,6,0.85);
   -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
 }
-body.stagelight .bento-panel .laminate { max-width: 1100px; margin: 0 auto; }
+body.stagelight .bento-panel .laminate { max-width: 1240px; margin: 0 auto; }
 body.stagelight .bento-panel[hidden] { display: none; }
 body.stagelight .bento-close {
   position: fixed; top: 18px; right: 22px; z-index: 95;
