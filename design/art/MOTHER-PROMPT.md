@@ -13,9 +13,18 @@ Claude writes short briefs and integrates approved output into the site.
 3. Palette stays: bone / marker red / gold / deep green / mint stipple on black.
    No text in the art.
 
-## Approved direction — mother image
-The wizard-with-crystal-ball frame (07/21/26): stippled halo field on black,
-underlit grin, smoke curl, two sly amanitas. This is the style anchor for the set.
+## Style anchors
+The REFERENCE POSTERS are the anchor — the JT crystal-ball poster and the
+Sleepy Sun stipple-field poster (drop scans at `design/art/reference/`).
+No generated frame is an anchor until Alex approves one.
+
+The 07/21 wizard test frame is the REJECTED example: what you get from
+overprompting with no reference. Reject any output showing its tells:
+- soft airbrushed shading anywhere (faces, robes, glows) — inks must be flat
+- auto-halftone gradient fades instead of deliberate stipple
+- generic stock faces with no character design
+- muddy washed color instead of the marker palette
+- subjects cropped by the frame edge
 
 ## Short prompts for the remaining slate (reference image attached each time)
 - **Shelf:** "Same style: a dusty shelf of mason jars on the stippled halo, one jar glowing and rattling."
