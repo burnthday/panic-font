@@ -41,6 +41,7 @@ async function main() {
   await checkTourInReviewPages();
   await checkArchiveIndex();
   await checkMusicLayer(allHtmlFiles, allHtml);
+  await checkSocialCard(homeHtml);
   await checkLocalAssets(allHtml);
 
   const failed = checks.filter((check) => !check.passed);
@@ -882,6 +883,38 @@ async function isValidJson(relPath) {
   } catch {
     return false;
   }
+}
+
+async function checkSocialCard(homeHtml) {
+  // The brand share image must exist in dist and be exactly 1200x630.
+  const cardPath = path.join(root, "dist", "assets", "social-card.png");
+  let width = 0;
+  let height = 0;
+  let exists = false;
+  try {
+    const buf = await readFile(cardPath);
+    exists = true;
+    // PNG IHDR: width/height are big-endian uint32 at byte offsets 16 and 20.
+    if (buf.length > 24 && buf.toString("ascii", 12, 16) === "IHDR") {
+      width = buf.readUInt32BE(16);
+      height = buf.readUInt32BE(20);
+    }
+  } catch {
+    exists = false;
+  }
+  record("Social card asset exists (dist/assets/social-card.png)", exists);
+  record("Social card is exactly 1200x630", width === 1200 && height === 630, `Got ${width}x${height}`);
+
+  // The homepage (and every non-noindex page via finalizeHtml) must reference it for OG + Twitter.
+  assertIncludes(homeHtml, '<meta property="og:image" content="https://burnthday.com/assets/social-card.png">', "Home og:image points at the social card with an absolute https URL");
+  assertIncludes(homeHtml, '<meta name="twitter:image" content="https://burnthday.com/assets/social-card.png">', "Home twitter:image points at the social card with an absolute https URL");
+  assertIncludes(homeHtml, '<meta name="twitter:card" content="summary_large_image">', "Home declares twitter:card summary_large_image");
+
+  // A representative inner page proves finalizeHtml/renderSocialMeta injects the same card everywhere.
+  const songHtml = await readText("dist/songs/index.html");
+  assertIncludes(songHtml, 'property="og:image" content="https://burnthday.com/assets/social-card.png"', "Inner page inherits the social card og:image");
+  assertIncludes(songHtml, 'name="twitter:image" content="https://burnthday.com/assets/social-card.png"', "Inner page inherits the social card twitter:image");
+  assertIncludes(songHtml, 'name="twitter:card" content="summary_large_image"', "Inner page declares twitter:card summary_large_image");
 }
 
 async function checkLocalAssets(htmlByFile) {

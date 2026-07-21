@@ -4405,13 +4405,13 @@ function renderHtml(data) {
     <meta property="og:image" content="https://burnthday.com/assets/social-card.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Burnthday fish and crossbones logo">
+    <meta property="og:image:alt" content="Burnthday — the Widespread Panic spread sheet, 698 songs and 158 tours">
     <meta property="og:site_name" content="Burnthday">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${escapeHtml(data.site.title)} by Burnthday">
     <meta name="twitter:description" content="${escapeHtml(description)}">
     <meta name="twitter:image" content="https://burnthday.com/assets/social-card.png">
-    <meta name="twitter:image:alt" content="Burnthday fish and crossbones logo">
+    <meta name="twitter:image:alt" content="Burnthday — the Widespread Panic spread sheet, 698 songs and 158 tours">
     <link rel="canonical" href="https://burnthday.com/">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
