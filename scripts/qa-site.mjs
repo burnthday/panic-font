@@ -1049,6 +1049,26 @@ async function checkTourInReviewPages() {
   const tourDirs = entries.filter((entry) => entry.isDirectory());
   record("Generated tour-in-review pages cover the band's history", tourDirs.length > 90, `found ${tourDirs.length} tour pages`);
 
+  // Same-season legs are merged into one tour (owner's rule): a small break in a
+  // season no longer spawns a "Spring Tour II". No "-ii" slug may survive.
+  const iiDirs = tourDirs.filter((entry) => /-i{2,}$/i.test(entry.name));
+  record("No same-season '-ii' tour slug survives the merge", iiDirs.length === 0,
+    iiDirs.length ? `found ${iiDirs.map((d) => d.name).join(", ")}` : "no -ii dirs");
+
+  const sitemapEarly = await readText("dist/sitemap.xml").catch(() => "");
+  record("Sitemap carries no '-ii' tour URL", !/tour-in-review\/[^"<]*-ii\//.test(sitemapEarly), "sitemap clean of -ii");
+
+  // Every dead -ii slug must 301 to its merged tour page so shared links survive.
+  const redirects = await readText("dist/_redirects").catch(() => "");
+  const deadSlugs = [
+    "1994-summer-tour-ii", "1996-spring-tour-ii", "1997-fall-tour-ii", "2001-spring-tour-ii",
+    "2009-summer-tour-ii", "2011-spring-tour-ii", "2016-fall-tour-ii", "2017-summer-tour-ii",
+    "2018-summer-tour-ii", "2020-winter-tour-ii"
+  ];
+  const redirected = deadSlugs.filter((slug) => redirects.includes(`/tour-in-review/${slug} `) || redirects.includes(`/tour-in-review/${slug}/ `));
+  record("Every merged '-ii' tour slug 301-redirects to its surviving page", redirected.length === deadSlugs.length,
+    `${redirected.length}/${deadSlugs.length} dead slugs redirected`);
+
   const fallHtml = await readText("dist/tour-in-review/2010-fall-tour/index.html").catch(() => "");
   record("2010 Fall Tour review page exists", fallHtml.length > 0);
   record("2010 Fall review has a Welcome Back bustout section", fallHtml.includes("Welcome Back"));
@@ -1079,6 +1099,32 @@ async function checkTourInReviewPages() {
   record("Tour In Review hub badges tours that have a written review",
     writtenBadgeCount > 0 && hub.includes(">Burnthday review</a>"),
     `found ${writtenBadgeCount} written-review badges`);
+
+  // VOICE PILOT: five tours carry a sourced "Tour Notes" section (byline +
+  // Sources line). Drafts for the owner's review, rendered from
+  // data/source/tour-notes/<slug>.md.
+  const pilotSlugs = ["2010-fall-tour", "1998-spring-tour", "2006-summer-tour", "2024-spring-tour", "2025-summer-tour"];
+  let notesOk = 0;
+  for (const slug of pilotSlugs) {
+    const pageHtml = await readText(`dist/tour-in-review/${slug}/index.html`).catch(() => "");
+    const hasNotes = pageHtml.includes('class="tour-notes"') && /Notes by\s+Burnthday/.test(pageHtml);
+    const hasSources = pageHtml.includes('class="tour-notes-sources"') && /class="tns-label">Sources</.test(pageHtml);
+    if (hasNotes && hasSources) notesOk += 1;
+    else record(`Pilot Tour Notes render on ${slug}`, false, `notes=${hasNotes} sources=${hasSources}`);
+  }
+  record("All five Tour Notes voice pilots render a notes section with a Sources line",
+    notesOk === pilotSlugs.length, `${notesOk}/${pilotSlugs.length} pilots have Tour Notes + Sources`);
+
+  // The restructured detail page reads editorially: notes/news above the fold,
+  // then stats, then the full-width sheet, then a compact logistics strip.
+  const orderHtml = await readText("dist/tour-in-review/2010-fall-tour/index.html").catch(() => "");
+  const posNews = orderHtml.indexOf('class="tour-news');
+  const posStats = orderHtml.indexOf('class="tour-stats-block"');
+  const posSheet = orderHtml.indexOf('class="tour-sheet-wrap"');
+  const posLog = orderHtml.indexOf('class="tour-logistics"');
+  record("Restructured tour page orders news → stats → sheet → logistics",
+    posNews > 0 && posNews < posStats && posStats < posSheet && posSheet < posLog,
+    `news@${posNews} stats@${posStats} sheet@${posSheet} logistics@${posLog}`);
 }
 
 async function checkArchiveIndex() {

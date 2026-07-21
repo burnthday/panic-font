@@ -157,7 +157,7 @@ async function main() {
   await writeFile(path.join(dist, "data", "site-data.json"), JSON.stringify(siteData, null, 2), "utf8");
   await writeFile(path.join(dist, "data", "freshness.json"), JSON.stringify(buildFreshnessReport(siteData, archiveEntries, songOrigins, generatedTourReviews), null, 2), "utf8");
   await writeFile(path.join(dist, "_headers"), renderHeaders(), "utf8");
-  await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries, generatedTourReviews), "utf8");
+  await writeFile(path.join(dist, "_redirects"), renderRedirects(archiveEntries, generatedTourReviews, tourInReviews), "utf8");
   await writeFile(path.join(dist, "robots.txt"), "User-agent: *\nAllow: /\nSitemap: https://burnthday.com/sitemap.xml\n", "utf8");
   await writeFile(path.join(dist, "llms.txt"), renderLlmsTxt(siteData), "utf8");
   await writeFile(path.join(dist, "sitemap.xml"), renderSitemap(siteData, archiveEntries, songOrigins, generatedTourReviews, tourInReviews), "utf8");
@@ -2769,11 +2769,13 @@ async function writeTourInReviewPages(data, archiveEntries = []) {
   const cache = await loadSetlistFmCache();
   if (!cache) return [];
   const reviews = buildTourInReviews(data, cache);
+  const notesBySlug = await loadTourNotes();
   for (let i = 0; i < reviews.length; i += 1) {
     const prev = reviews[i - 1] || null;
     const next = reviews[i + 1] || null;
     const crosslink = findProseReviewForTour(reviews[i], archiveEntries);
-    await writeStaticPage(reviews[i].path, renderTourInReviewPage(reviews[i], data, prev, next, crosslink));
+    const notes = notesBySlug.get(reviews[i].slug) || null;
+    await writeStaticPage(reviews[i].path, renderTourInReviewPage(reviews[i], data, prev, next, crosslink, notes));
   }
   return reviews;
 }
@@ -2830,28 +2832,52 @@ function buildTourInReviews(data, cache) {
     };
   });
 
-  // Disambiguate same-named legs within a year: "Spring Tour", "Spring Tour II".
+  // Merge same-named legs within a year into ONE tour (owner's rule): a small
+  // break inside a season does not create a second tour. "Spring Tour" +
+  // "Spring Tour II" become one "Spring Tour" spanning both legs — all shows
+  // included, every stat computed over the union of show indices. Distinctly-
+  // named runs (Halloween Run, New Year's Run, <Month> Run) stay separate; two
+  // same-named month runs in one year (rare) merge too, since the group key is
+  // year + name. We record the -ii slugs the old disambiguation WOULD have
+  // produced so renderRedirects can 301 those dead links to the merged page.
   const byYearName = new Map();
+  const order = [];
   for (const m of meta) {
     const groupKey = `${m.year}|${m.name}`;
-    if (!byYearName.has(groupKey)) byYearName.set(groupKey, []);
+    if (!byYearName.has(groupKey)) { byYearName.set(groupKey, []); order.push(groupKey); }
     byYearName.get(groupKey).push(m);
   }
-  for (const group of byYearName.values()) {
-    if (group.length > 1) group.forEach((m, i) => { m.dispName = i === 0 ? m.name : `${m.name} ${romanNumeral(i + 1)}`; });
-  }
-  for (const m of meta) {
-    m.dispName = m.dispName || m.name;
-    m.slug = `${m.year}-${tourNameSlug(m.dispName)}`;
-    m.inProgress = daysBetweenIso(m.last, newestDate) <= TOUR_GAP_DAYS;
+  const mergedMeta = [];
+  const deadSlugRedirects = new Map(); // dead -ii slug -> surviving merged slug
+  for (const groupKey of order) {
+    const group = byYearName.get(groupKey);
+    const base = group[0];
+    if (group.length > 1) {
+      const survivingSlug = `${base.year}-${tourNameSlug(base.name)}`;
+      group.forEach((m, i) => {
+        if (i > 0) {
+          const deadDisp = `${m.name} ${romanNumeral(i + 1)}`;
+          deadSlugRedirects.set(`${m.year}-${tourNameSlug(deadDisp)}`, survivingSlug);
+        }
+      });
+      const idxs = group.flatMap((m) => m.idxs).sort((a, b) => a - b);
+      base.idxs = idxs;
+      base.first = showData[idxs[0]].date;
+      base.last = showData[idxs[idxs.length - 1]].date;
+    }
+    base.dispName = base.name;
+    base.slug = `${base.year}-${tourNameSlug(base.name)}`;
+    base.inProgress = daysBetweenIso(base.last, newestDate) <= TOUR_GAP_DAYS;
+    mergedMeta.push(base);
   }
 
   const reviews = [];
-  for (const m of meta) {
+  for (const m of mergedMeta) {
     if (m.inProgress) continue; // exclude the currently-running tour
     const review = computeTourReview(m, showData, playIndices, catalogByKey);
     if (review) reviews.push(review);
   }
+  reviews.deadSlugRedirects = deadSlugRedirects; // consumed by renderRedirects
   return reviews;
 }
 
@@ -2859,6 +2885,18 @@ function computeTourReview(meta, showData, playIndices, catalogByKey) {
   const { idxs } = meta;
   const tourShows = idxs.map((i) => showData[i]);
   const showCount = tourShows.length;
+
+  // Contiguous legs within the tour (a merged tour spans >1 leg), split on the
+  // same >21-day gap. Powers the compact logistics strip on the page.
+  const legs = [];
+  let legStart = 0;
+  for (let i = 1; i < tourShows.length; i += 1) {
+    if (daysBetweenIso(tourShows[i - 1].date, tourShows[i].date) > TOUR_GAP_DAYS) {
+      legs.push({ first: tourShows[legStart].date, last: tourShows[i - 1].date, shows: i - legStart });
+      legStart = i;
+    }
+  }
+  if (tourShows.length) legs.push({ first: tourShows[legStart].date, last: tourShows[tourShows.length - 1].date, shows: tourShows.length - legStart });
 
   const counts = new Map();
   const firstTourIdxByKey = new Map();
@@ -2976,7 +3014,8 @@ function computeTourReview(meta, showData, playIndices, catalogByKey) {
     bustouts,
     debuts,
     sheet: { originals: sheetOriginals, covers: sheetCovers },
-    handWriteInCount: handRows.length
+    handWriteInCount: handRows.length,
+    legs
   };
 }
 
@@ -3001,7 +3040,7 @@ function findProseReviewForTour(tour, archiveEntries = []) {
   }) || null;
 }
 
-function renderTourInReviewPage(tour, data, prev, next, crosslink) {
+function renderTourInReviewPage(tour, data, prev, next, crosslink, notes = null) {
   const title = `${tour.year} ${tour.dispName}`;
   const dateRange = `${formatLongDate(tour.first)} – ${formatLongDate(tour.last)}`;
   const countLine = `${formatNumber(tour.showCount)} shows · ${formatNumber(tour.cityCount)} cities · ${formatNumber(tour.stateCount)} states`;
@@ -3018,6 +3057,53 @@ function renderTourInReviewPage(tour, data, prev, next, crosslink) {
 
   const debutShown = tour.debuts.slice(0, TOUR_DEBUT_LIST_CAP);
   const debutMore = tour.debuts.length - debutShown.length;
+
+  // TOUR NOTES — the human lead, directly under the hero when it exists. Prose in
+  // Burnthday's voice, byline, and a mono "Sources" line linking each URL. These
+  // are drafts for the owner's review.
+  const notesHtml = notes ? `<section class="tour-notes" aria-label="Tour Notes">
+        <div class="tour-notes-head">
+          <h2 class="tour-h2">Tour Notes</h2>
+          <span class="tour-notes-byline">Notes by ${escapeHtml(notes.byline || "Burnthday")}</span>
+        </div>
+        <div class="tour-notes-body prose-plate">${notes.bodyHtml}</div>
+        ${notes.sources.length ? `<p class="tour-notes-sources"><span class="tns-label">Sources</span>${notes.sources.map((url, i) => {
+          let host = url;
+          try { host = new URL(url).hostname.replace(/^www\./, ""); } catch { /* keep raw */ }
+          return `<a href="${escapeAttr(url)}" rel="noopener noreferrer nofollow"><span class="tns-num">${i + 1}</span>${escapeHtml(host)}</a>`;
+        }).join("")}</p>` : ""}
+      </section>` : "";
+
+  // "The news" — paired Welcome Back (bustouts w/ LTP) + Nice To Meet You (FTP).
+  const welcomeCol = tour.bustouts.length ? `<div class="tour-news-col">
+          <h2 class="tour-h2">Welcome Back</h2>
+          <p class="tour-news-sub">Bustouts — back after a long absence</p>
+          <ul class="tour-ltp-list">
+            ${tour.bustouts.map((row) => `<li><span class="tl-song">${escapeHtml(row.title)}</span><span class="tl-ltp">LTP ${row.gap}</span></li>`).join("")}
+          </ul>
+        </div>` : "";
+  const meetCol = tour.debuts.length ? `<div class="tour-news-col">
+          <h2 class="tour-h2">Nice To Meet You <span class="tour-h2-tag">FTP</span></h2>
+          <p class="tour-news-sub">First time played anywhere</p>
+          <ul class="tour-ftp-list">
+            ${debutShown.map((row) => `<li><span class="tf-song">${escapeHtml(row.title)}</span><span class="tf-meta">${escapeHtml(isoToShortDate(row.date))}${row.city ? ` · ${escapeHtml([row.city, row.state].filter(Boolean).join(", "))}` : ""}</span></li>`).join("")}
+          </ul>
+          ${debutMore > 0 ? `<p class="tour-more">+${formatNumber(debutMore)} more</p>` : ""}
+        </div>` : "";
+  const newsHtml = (welcomeCol || meetCol) ? `<section class="tour-news${welcomeCol && meetCol ? "" : " is-single"}" aria-label="Bustouts and debuts">
+        ${welcomeCol}${meetCol}
+      </section>` : "";
+
+  // Compact logistics strip — tour legs/dates + Shows by State, demoted to mono.
+  const legsStrip = (tour.legs && tour.legs.length > 1) ? `<div class="tl-legs">
+          <span class="tl-legs-label">Legs</span>
+          ${tour.legs.map((leg) => `<span class="tl-leg">${escapeHtml(formatTourSpan(leg.first, leg.last))} <small>${leg.shows} ${leg.shows === 1 ? "show" : "shows"}</small></span>`).join("")}
+        </div>` : "";
+  const logisticsHtml = (legsStrip || stateLine) ? `<section class="tour-logistics" aria-label="Tour logistics">
+        <h2 class="tour-logistics-h">Logistics</h2>
+        ${legsStrip}
+        ${stateLine ? `<div class="tl-states"><span class="tl-legs-label">Shows by state</span><span class="tour-state-line">${stateLine}</span></div>` : ""}
+      </section>` : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -3050,43 +3136,33 @@ function renderTourInReviewPage(tour, data, prev, next, crosslink) {
         <p class="tour-attr">Compiled from <a href="https://www.setlist.fm/" rel="noopener noreferrer">setlist.fm</a> · ${formatNumber(tour.showCount)} shows</p>
       </header>
 
-      <div class="song-stat-grid">${tiles.join("")}</div>
+      ${notesHtml}
 
-      ${stateLine ? `<section class="tour-block">
-        <h2 class="tour-h2">Shows By State</h2>
-        <p class="tour-state-line">${stateLine}</p>
-      </section>` : ""}
+      ${newsHtml}
 
-      <section class="tour-block">
-        <h2 class="tour-h2">Most Played (${tour.topCount})</h2>
-        <ol class="tour-toplist">
-          ${tour.mostPlayed.map((row) => `<li><span class="tt-song">${escapeHtml(row.title)}</span><span class="tt-count">${row.count}</span></li>`).join("")}
-        </ol>
+      <section class="tour-stats-block" aria-label="By the numbers">
+        <div class="song-stat-grid">${tiles.join("")}</div>
+        <div class="tour-mostplayed">
+          <h2 class="tour-h2">Most Played (${tour.topCount})</h2>
+          <ol class="tour-toplist">
+            ${tour.mostPlayed.map((row) => `<li><span class="tt-song">${escapeHtml(row.title)}</span><span class="tt-count">${row.count}</span></li>`).join("")}
+          </ol>
+        </div>
       </section>
 
-      ${tour.bustouts.length ? `<section class="tour-block">
-        <h2 class="tour-h2">Welcome Back</h2>
-        <ul class="tour-ltp-list">
-          ${tour.bustouts.map((row) => `<li><span class="tl-song">${escapeHtml(row.title)}</span><span class="tl-ltp">LTP ${row.gap}</span></li>`).join("")}
-        </ul>
-      </section>` : ""}
-
-      ${tour.debuts.length ? `<section class="tour-block">
-        <h2 class="tour-h2">Nice To Meet You (FTP)</h2>
-        <ul class="tour-ftp-list">
-          ${debutShown.map((row) => `<li><span class="tf-song">${escapeHtml(row.title)}</span><span class="tf-meta">${escapeHtml(isoToShortDate(row.date))}${row.city ? ` · ${escapeHtml([row.city, row.state].filter(Boolean).join(", "))}` : ""}</span></li>`).join("")}
-        </ul>
-        ${debutMore > 0 ? `<p class="tour-more">+${formatNumber(debutMore)} more</p>` : ""}
-      </section>` : ""}
-
-      <section class="laminate primary-board tour-review-sheet" id="the-sheet">
-        ${renderBoardHeader("THE SHEET", `Rotation as of ${formatLongDate(tour.first)}`)}
-        ${renderSongPanel(`sheet-${tour.slug}-originals`, "ORIGINALS", tour.sheet.originals)}
-        ${renderSongPanel(`sheet-${tour.slug}-covers`, "COVERS", tour.sheet.covers)}
+      <section class="tour-sheet-wrap" aria-label="The Sheet">
+        <p class="tour-sheet-intro">The rotation as it stood when the tour opened — every song on the board, hand write-ins dated the night they landed.</p>
+        <div class="laminate primary-board tour-review-sheet" id="the-sheet">
+          ${renderBoardHeader("THE SHEET", `Rotation as of ${formatLongDate(tour.first)}`)}
+          ${renderSongPanel(`sheet-${tour.slug}-originals`, "ORIGINALS", tour.sheet.originals)}
+          ${renderSongPanel(`sheet-${tour.slug}-covers`, "COVERS", tour.sheet.covers)}
+        </div>
       </section>
 
-      ${crosslink ? `<nav class="archive-crosslink" aria-label="Related">
-        <a href="${escapeAttr(publicPath(crosslink.path))}"><span class="xl-eyebrow">Burnthday Review</span><span class="xl-title">Read Burnthday's written review</span><span class="xl-go" aria-hidden="true">→</span></a>
+      ${logisticsHtml}
+
+      ${crosslink ? `<nav class="archive-crosslink tour-crosslink" aria-label="Related">
+        <a href="${escapeAttr(publicPath(crosslink.path))}"><span class="xl-eyebrow">Burnthday Review</span><span class="xl-title">Read Burnthday's written review of this tour</span><span class="xl-go" aria-hidden="true">→</span></a>
       </nav>` : ""}
 
       <nav class="album-nav" aria-label="More tours">
@@ -3944,6 +4020,60 @@ async function loadBestGuesses() {
     if (parsed) entries.push(parsed);
   }
   return entries;
+}
+
+// Sourced "Tour Notes" in Burnthday's voice, one markdown file per tour in
+// data/source/tour-notes/<tour-slug>.md. Frontmatter: tour (slug), written,
+// byline, sources (bracketed comma list of URLs). Body is blank-line-separated
+// prose with **bold**. Rendered on the tour page under the hero. These are
+// DRAFTS for the owner's review — the files are hand-editable.
+async function loadTourNotes() {
+  const dir = path.join(root, "data", "source", "tour-notes");
+  let files = [];
+  try {
+    files = (await readdir(dir)).filter((file) => file.endsWith(".md"));
+  } catch {
+    return new Map();
+  }
+  const bySlug = new Map();
+  for (const file of files.sort()) {
+    let raw;
+    try {
+      raw = await readFile(path.join(dir, file), "utf8");
+    } catch {
+      continue;
+    }
+    const parsed = parseTourNotes(raw, file);
+    if (parsed && parsed.slug) bySlug.set(parsed.slug, parsed);
+  }
+  return bySlug;
+}
+
+function parseTourNotes(raw, file) {
+  const fm = raw.match(/^﻿?---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!fm) {
+    console.warn(`Tour Notes: ${file} has no frontmatter; skipping.`);
+    return null;
+  }
+  const front = {};
+  for (const line of fm[1].split(/\r?\n/)) {
+    const idx = line.indexOf(":");
+    if (idx === -1) continue;
+    const key = line.slice(0, idx).trim();
+    if (key) front[key] = line.slice(idx + 1).trim();
+  }
+  const sources = String(front.sources || "")
+    .replace(/^\[|\]$/g, "")
+    .split(/[,\s]+/)
+    .map((s) => s.trim())
+    .filter((s) => /^https?:\/\//.test(s));
+  return {
+    slug: (front.tour || file.replace(/\.md$/, "")).trim(),
+    written: front.written || "",
+    byline: front.byline || "Burnthday",
+    sources,
+    bodyHtml: renderBestGuessBlocks(fm[2], "para")
+  };
 }
 
 function parseBestGuess(raw, file) {
@@ -10942,6 +11072,49 @@ body.stagelight .tl-ltp { flex: none; font-family: var(--sl-mono); font-size: 12
 body.stagelight .tf-meta { flex: none; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; text-align: right; }
 body.stagelight .tour-more { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 14px 0 0; }
 body.stagelight .tour-review-sheet { margin-left: auto; margin-right: auto; }
+body.stagelight .tour-h2-tag { font-family: var(--sl-mono); font-size: 0.62em; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-pill); padding: 2px 8px; vertical-align: middle; margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+/* ---- TOUR IN REVIEW DETAIL v2: editorial top-to-bottom flow ---- */
+/* Tour Notes — the human lead directly under the hero. */
+body.stagelight .tour-notes { border-left: 2px solid var(--sl-accent, var(--sl-line-strong)); padding: 4px 0 4px 26px; }
+body.stagelight .tour-notes-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+body.stagelight .tour-notes-head .tour-h2 { margin: 0; }
+body.stagelight .tour-notes-byline { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .tour-notes-body { font-size: 16.5px; line-height: 1.62; max-width: 68ch; }
+body.stagelight .tour-notes-body p { color: var(--sl-muted); }
+body.stagelight .tour-notes-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 20px 0 0; }
+body.stagelight .tour-notes-sources .tns-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .tour-notes-sources a { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--sl-muted); border: 1px solid var(--sl-line); border-radius: var(--sl-r-pill); padding: 3px 10px 3px 6px; }
+body.stagelight .tour-notes-sources a:hover { color: var(--sl-ink); border-color: var(--sl-line-strong); }
+body.stagelight .tour-notes-sources .tns-num { font-size: 10px; color: var(--sl-faint); border: 1px solid var(--sl-line); border-radius: 999px; width: 15px; height: 15px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* The news — paired Welcome Back + Nice To Meet You columns. */
+body.stagelight .tour-news { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+body.stagelight .tour-news.is-single { grid-template-columns: 1fr; max-width: 640px; }
+body.stagelight .tour-news-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.02em; color: var(--sl-faint); margin: -8px 0 16px; }
+body.stagelight .tour-news .tour-ltp-list, body.stagelight .tour-news .tour-ftp-list { grid-template-columns: 1fr; }
+
+/* By the numbers — tiles + Most Played grouped. */
+body.stagelight .tour-mostplayed { margin-top: 28px; }
+
+/* The Sheet — full-width centerpiece with a one-line intro. */
+body.stagelight .tour-sheet-intro { font-family: var(--sl-display); font-size: 16px; line-height: 1.5; color: var(--sl-muted); margin: 0 0 18px; max-width: 62ch; }
+
+/* Compact logistics — legs/dates + shows-by-state as a tight mono strip. */
+body.stagelight .tour-logistics { background: rgba(255,255,255,0.02); border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); padding: 18px 22px; }
+body.stagelight .tour-logistics-h { font-family: var(--sl-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 14px; }
+body.stagelight .tl-legs, body.stagelight .tl-states { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+body.stagelight .tl-states { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--sl-line-faint); }
+body.stagelight .tl-legs-label { flex: none; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); min-width: 92px; }
+body.stagelight .tl-leg { font-family: var(--sl-mono); font-size: 13px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .tl-leg small { color: var(--sl-faint); }
+body.stagelight .tl-leg + .tl-leg { border-left: 1px solid var(--sl-line); padding-left: 14px; }
+body.stagelight .tl-states .tour-state-line { line-height: 1.7; }
+body.stagelight .tour-crosslink { margin-left: auto; margin-right: auto; }
+@media (max-width: 760px) {
+  body.stagelight .tour-news { grid-template-columns: 1fr; gap: 34px; }
+  body.stagelight .tl-legs-label { min-width: 0; flex-basis: 100%; }
+}
 
 /* Tour In Review hub: year-grouped index */
 body.stagelight .tour-index { margin: 8px 0 44px; }
@@ -11058,7 +11231,7 @@ function renderHeaders() {
 `;
 }
 
-function renderRedirects(archiveEntries = [], generatedReviews = []) {
+function renderRedirects(archiveEntries = [], generatedReviews = [], tourInReviews = []) {
   const reviewByYear = new Map(generatedReviews.map((review) => {
     const match = clean(review.path).match(/^\/?(\d{4})\//);
     return match ? [match[1], publicPath(review.path)] : null;
@@ -11080,6 +11253,13 @@ function renderRedirects(archiveEntries = [], generatedReviews = []) {
     "/:year/:month/:slug.html /:year/:month/:slug 301",
     "/archive/:year/:slug.html /archive/:year/:slug 301"
   ];
+
+  // 301 each dead same-season "-ii" tour slug to the merged tour page so old
+  // shared links never 404 after same-named legs were merged into one tour.
+  for (const [deadSlug, survivingSlug] of (tourInReviews?.deadSlugRedirects || new Map())) {
+    lines.push(`/tour-in-review/${deadSlug} /tour-in-review/${survivingSlug}/ 301`);
+    lines.push(`/tour-in-review/${deadSlug}/ /tour-in-review/${survivingSlug}/ 301`);
+  }
 
   const seen = new Set(lines);
   for (const entry of archiveEntries) {
