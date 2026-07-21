@@ -2035,17 +2035,15 @@ function renderHtml(data) {
       ${renderLatestSetlist(data)}
       ${renderBoardIntro(data)}
       ${renderRotationBoard(data)}
-      ${renderSheetKey(data)}
+      ${renderSheetBentos(data)}
       ${renderTourStats(data)}
       ${renderShelfWatch(data)}
-      ${renderShelfBoard(data)}
-      ${renderWoodshedBoard(data)}
+      ${renderNickJohnsonFeature(data)}
       ${renderSetlists(data, { skipFeaturedRun: true })}
-      ${renderTourDates(data)}
       ${renderCommunityLinks()}
     </main>
 
-    ${renderSiteFooter(data)}
+    ${renderSiteFooter(data, { stagelight: true })}
 
     <script>
       ${renderFitScriptBody()}
@@ -2237,11 +2235,53 @@ function renderNavigationScriptBody() {
       const linkPath = normalizePath(new URL(link.href, window.location.origin).pathname);
       if (link.origin === window.location.origin && linkPath === currentPath) link.setAttribute("aria-current", "page");
     });
+    if (document.body && document.body.classList.contains("stagelight")) {
+      const head = document.querySelector(".site-head");
+      const mobileMenu = head ? head.querySelector(".mobile-nav") : null;
+      let lastY = window.scrollY;
+      let ticking = false;
+      window.addEventListener("scroll", () => {
+        if (ticking || !head) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          const y = window.scrollY;
+          const menuOpen = mobileMenu && mobileMenu.open;
+          if (!menuOpen && y > lastY + 6 && y > 180) head.classList.add("is-hidden");
+          else if (y < lastY - 6 || y <= 180) head.classList.remove("is-hidden");
+          lastY = y;
+          ticking = false;
+        });
+      }, { passive: true });
+    }
   })();`;
 }
 
-function renderSiteFooter(data) {
+function renderSiteFooter(data, options = {}) {
   const year = data?.site?.year || new Date().getFullYear();
+  if (options.stagelight) {
+    return `<footer class="site-foot">
+  <div class="site-foot-inner">
+    <div class="footer-lead">
+      <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true"><span>BURNTHDAY</span></a>
+      <p>The working Widespread Panic song list, setlists, and tour data.</p>
+    </div>
+    <nav class="footer-links" aria-label="Explore Burnthday">
+      <strong>EXPLORE</strong>
+      ${footerNavItems.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join("")}
+    </nav>
+    <nav class="social-links" aria-label="Follow Burnthday">
+      <strong>FOLLOW</strong>
+      <a href="https://www.facebook.com/burnthday"><span class="social-mark facebook" aria-hidden="true">f</span><span>Facebook</span></a>
+      <a href="https://twitter.com/burnthday"><span class="social-mark x" aria-hidden="true">X</span><span>X</span></a>
+      <a href="https://www.instagram.com/burnthday/"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span><span>Instagram</span></a>
+    </nav>
+    <div class="footer-bottom">
+      <p class="footer-legal">© ${escapeHtml(String(year))} Burnthday. All rights reserved.<span aria-hidden="true">·</span>The Widespread Panic Spread Sheet</p>
+      <a class="back-top" href="#top">Back to top <span aria-hidden="true">↑</span></a>
+    </div>
+  </div>
+</footer>`;
+  }
   return `<footer class="site-foot">
   <div class="site-foot-inner">
     <div class="footer-lead">
@@ -2416,7 +2456,7 @@ function calculateRotationHeat(song, shows) {
 }
 
 function renderBentoCard(key, label, count, desc, extra) {
-  return `<button type="button" class="bento-card bento-${key}" data-bento="${key}" aria-expanded="false" aria-controls="bento-panel-${key}">
+  return `<button type="button" class="bento-card bento-${key}" id="${key}" data-bento="${key}" aria-expanded="false" aria-controls="bento-panel-${key}">
     <span class="bc-open" aria-hidden="true">+</span>
     <span class="bc-name">${escapeHtml(label)}</span>
     <span class="bc-count">${formatNumber(count)}<small>SONGS</small></span>
@@ -2429,7 +2469,14 @@ function bentoFact(left, right) {
   return `<span class="bc-fact"><span>${escapeHtml(left)}</span><span>${escapeHtml(right)}</span></span>`;
 }
 
-function renderShelfBoard(data) {
+function renderBentoPanel(key, label, sheet) {
+  return `<div class="bento-panel" id="bento-panel-${key}" hidden role="dialog" aria-modal="true" aria-label="${escapeAttr(label)} sheet">
+    <button type="button" class="bento-close" data-bento-close aria-label="Close ${escapeAttr(label)}"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2.5 2.5 13.5 13.5M13.5 2.5 2.5 13.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+    ${sheet}
+  </div>`;
+}
+
+function renderSheetBentos(data) {
   const shelfRows = [...(data.boards.shelfOriginals || []), ...(data.boards.shelfCovers || [])];
   const purgRows = [...(data.boards.purgatoryOriginals || []), ...(data.boards.purgatoryCovers || [])];
   const woodCount = (data.boards.woodshedOriginals?.length || 0) + (data.boards.woodshedCovers?.length || 0);
@@ -2443,47 +2490,56 @@ function renderShelfBoard(data) {
   const purgFacts = purgSample.map((row) => bentoFact(row.title.toUpperCase(), `ONE PLAY${row.lastDisplay ? ` · ${row.lastDisplay}` : ""}`)).join("");
   const woodExtra = `<span class="bc-bar" aria-hidden="true"><i style="width:${clearedPct}%"></i></span>${bentoFact(`${formatNumber(cleared)} OF ${formatNumber(rotationCount)} CLEARED`, `${clearedPct}%`)}`;
 
-  const shelf = `<section class="laminate shelf-board" id="shelf">
+  const shelf = `<section class="laminate shelf-board" id="shelf-sheet">
   ${renderBoardHeader("THE SHELF")}
   ${renderSongPanel("shelf-originals", "ORIGINALS", data.boards.shelfOriginals, { shelfMode: true, columns: 3 })}
   ${renderSongPanel("shelf-covers", "COVERS", data.boards.shelfCovers, { shelfMode: true, columns: 3 })}
 </section>`;
-  const purgatory = `<section class="laminate purgatory-board" id="purgatory">
+  const purgatory = `<section class="laminate purgatory-board" id="purgatory-sheet">
   ${renderBoardHeader("PURGATORY")}
   ${renderSongPanel("purgatory-originals", "ORIGINALS", data.boards.purgatoryOriginals, { shelfMode: true, columns: 3 })}
   ${renderSongPanel("purgatory-covers", "COVERS", data.boards.purgatoryCovers, { shelfMode: true, columns: 3 })}
 </section>`;
+  const woodshed = `<section class="laminate woodshed-board" id="woodshed-sheet">
+  ${renderBoardHeader("THE WOODSHED")}
+  ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
+  ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
+</section>`;
 
-  return `<div class="bento-grid" aria-label="Reference sheets">
+  return `<div class="bento-grid" aria-label="Sheet key and reference sheets">
+    ${renderSheetKey(data)}
     ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
     ${renderBentoCard("woodshed", "The Woodshed", woodCount, "On the current sheet, not yet played with Nick.", woodExtra)}
   </div>
-  <div class="bento-panel" id="bento-panel-shelf" hidden>${shelf}</div>
-  <div class="bento-panel" id="bento-panel-purgatory" hidden>${purgatory}</div>
+  ${renderBentoPanel("shelf", "The Shelf", shelf)}
+  ${renderBentoPanel("purgatory", "Purgatory", purgatory)}
+  ${renderBentoPanel("woodshed", "The Woodshed", woodshed)}
   <script>
-    document.querySelectorAll("[data-bento]").forEach((card) => card.addEventListener("click", () => {
-      const wasOpen = card.getAttribute("aria-expanded") === "true";
-      document.querySelectorAll("[data-bento]").forEach((other) => other.setAttribute("aria-expanded", "false"));
-      document.querySelectorAll(".bento-panel").forEach((panel) => { panel.hidden = true; });
-      if (!wasOpen) {
-        card.setAttribute("aria-expanded", "true");
-        const panel = document.getElementById("bento-panel-" + card.getAttribute("data-bento"));
-        if (panel) { panel.hidden = false; }
-      }
-    }));
-    document.querySelectorAll(".bento-panel").forEach((panel) => panel.addEventListener("click", (event) => {
-      if (event.target === panel) {
-        panel.hidden = true;
-        document.querySelectorAll("[data-bento]").forEach((card) => card.setAttribute("aria-expanded", "false"));
-      }
-    }));
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
-        document.querySelectorAll(".bento-panel").forEach((panel) => { panel.hidden = true; });
-        document.querySelectorAll("[data-bento]").forEach((card) => card.setAttribute("aria-expanded", "false"));
-      }
-    });
+    (() => {
+      const cards = document.querySelectorAll("[data-bento]");
+      const panels = document.querySelectorAll(".bento-panel");
+      const closeAll = () => {
+        panels.forEach((panel) => { panel.hidden = true; });
+        cards.forEach((card) => card.setAttribute("aria-expanded", "false"));
+        document.body.style.overflow = "";
+      };
+      cards.forEach((card) => card.addEventListener("click", () => {
+        const wasOpen = card.getAttribute("aria-expanded") === "true";
+        closeAll();
+        if (!wasOpen) {
+          card.setAttribute("aria-expanded", "true");
+          const panel = document.getElementById("bento-panel-" + card.getAttribute("data-bento"));
+          if (panel) { panel.hidden = false; document.body.style.overflow = "hidden"; }
+        }
+      }));
+      panels.forEach((panel) => panel.addEventListener("click", (event) => {
+        if (event.target === panel || event.target.closest("[data-bento-close]")) closeAll();
+      }));
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeAll();
+      });
+    })();
   </script>`;
 }
 
@@ -2508,15 +2564,6 @@ function renderShelfWatch(data) {
   }).join("")}</div>
   <p class="shelf-note">SLP — shows since last play. At ${escapeHtml(String(cutoff))}, a song goes to The Shelf.</p>
 </section>`;
-}
-
-function renderWoodshedBoard(data) {
-  const wood = `<section class="laminate woodshed-board" id="woodshed">
-  ${renderBoardHeader("THE WOODSHED")}
-  ${renderSongPanel("woodshed-originals", "ORIGINALS", data.boards.woodshedOriginals, { shelfMode: true, woodshedMode: true, columns: 3 })}
-  ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
-</section>`;
-  return `<div class="bento-panel" id="bento-panel-woodshed" hidden>${wood}</div>` + renderNickJohnsonFeature(data);
 }
 
 function renderNickJohnsonFeature(data) {
@@ -2581,8 +2628,7 @@ function renderNickRanking(songs, options = {}) {
 }
 
 function renderSheetKey(data) {
-  return `<section class="sheet-key-sheet" id="sheet-key">
-  <div class="sheet-key">
+  return `<section class="bento-card bento-key sheet-key" id="sheet-key">
     <div class="key-strip">
       <div class="key-head">
         <h2>SHEET KEY</h2>
@@ -2591,7 +2637,7 @@ function renderSheetKey(data) {
       ${renderMarkerLegend(data.site.markerLegend)}
     </div>
     <details class="key-more">
-    <summary>What everything on the sheets means</summary>
+    <summary><span>What everything on the sheets means</span><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
     <div class="key-topline">
       <section class="key-block key-song-list">
         <h3>Song List</h3>
@@ -2604,22 +2650,19 @@ function renderSheetKey(data) {
       <section class="key-block key-marker">
         <h3>Marker Colors</h3>
         <p>On the Song List, colors show which recent show the song was played at.</p>
-        ${renderMarkerLegend(data.site.markerLegend)}
         <p>On Shelf and Purgatory, black means the song came off that sheet this tour.</p>
       </section>
+      <section class="key-block key-other-sheets">
+        <h3>Other Sheets</h3>
+        <dl>
+          <div><dt>Shelf</dt><dd>Songs outside the rotation window, with lifetime count and last-played date.</dd></div>
+          <div><dt>Shelf Watch</dt><dd>Songs within ${escapeHtml(String(data.rules.shelfWatchWindow))} shows of the ${escapeHtml(String(data.rules.rotationSlpLimit))}-show Shelf cutoff.</dd></div>
+          <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
+          <div><dt>The Woodshed</dt><dd>Songs on the current sheet not yet played with Nick Johnson on guitar.</dd></div>
+        </dl>
+      </section>
     </div>
-    <section class="key-block key-other-sheets">
-      <h3>Other Sheets</h3>
-      <dl>
-        <div><dt>Shelf</dt><dd>Songs outside the rotation window, with lifetime count and last-played date.</dd></div>
-        <div><dt>Shelf Watch</dt><dd>Songs within ${escapeHtml(String(data.rules.shelfWatchWindow))} shows of the ${escapeHtml(String(data.rules.rotationSlpLimit))}-show Shelf cutoff.</dd></div>
-        <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
-        <div><dt>The Woodshed</dt><dd>Songs on the current sheet not yet played with Nick Johnson on guitar.</dd></div>
-      </dl>
-    </section>
-  </div>
-</details>
-  </div>
+  </details>
 </section>`;
 }
 
@@ -2839,6 +2882,18 @@ function renderSetlists(data, options = {}) {
     : new Set();
   const setlists = data.setlists.filter((show) => !featuredRunDates.has(show.isoDate));
   const postedLabel = featuredRunDates.size ? `${setlists.length} older posted` : `${data.totals.postedSetlists} posted`;
+  const upcomingDates = (data.tourDates || []).filter((date) => !date.isPosted);
+  const upcomingBlock = upcomingDates.length ? `<div class="upcoming-dates" id="tour-dates">
+    <div class="upcoming-heading"><h3>UPCOMING</h3><span>${formatNumber(upcomingDates.length)} shows ahead</span></div>
+    <ol class="tour-dates">
+      ${upcomingDates.map((date) => `<li class="is-upcoming">
+        <time>${escapeHtml(date.date)}</time>
+        <strong>${escapeHtml(date.location)}</strong>
+        <span>${escapeHtml(date.venue)}</span>
+        <em>Upcoming</em>
+      </li>`).join("")}
+    </ol>
+  </div>` : "";
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
     <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>
@@ -2850,6 +2905,7 @@ function renderSetlists(data, options = {}) {
       ${setlists.map((show) => renderShowCard(data, show, { lazy: true })).join("")}
     </div>
   </details>
+  ${upcomingBlock}
 </section>`;
 }
 
@@ -3140,31 +3196,9 @@ function splitDisplaySetSongs(value) {
   return String(value || "").split(/\s*>\s*/).map((part) => part.trim()).filter(Boolean);
 }
 
-function renderTourDates(data) {
-  const posted = data.tourDates.filter((date) => date.isPosted).length;
-  const upcoming = data.tourDates.length - posted;
-  return `<section class="tour-date-section" id="tour-dates">
-  <div class="section-heading">
-    <h2>${escapeHtml(String(data.site.year))} TOUR DATES</h2>
-    <span>${formatNumber(posted)} played · ${formatNumber(upcoming)} ahead</span>
-  </div>
-  <ol class="tour-dates">
-    ${data.tourDates.map((date) => `<li class="${date.isPosted ? "is-posted" : "is-upcoming"}">
-      <time>${escapeHtml(date.date)}</time>
-      <strong>${escapeHtml(date.location)}</strong>
-      <span>${escapeHtml(date.venue)}</span>
-      <em>${date.isPosted ? "Setlist posted" : "Upcoming"}</em>
-    </li>`).join("")}
-  </ol>
-</section>`;
-}
-
 function renderCommunityLinks() {
   return `<section class="community-links" aria-label="Community links">
   <a class="ticket-link" href="https://widespreadpanic.com/tour">Get Tickets</a>
-  <a class="posse-link" href="https://www.facebook.com/HerringPosse/">
-    <img src="/assets/PosseFacebookBanner.png" alt="Jimmy Herring Has a Posse">
-  </a>
 </section>`;
 }
 
@@ -6400,7 +6434,10 @@ body.stagelight .site-head {
   background: linear-gradient(180deg, rgba(16,16,18,0.78), rgba(13,13,15,0.62));
   -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
   border-bottom: 1px solid var(--sl-line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: transform 0.3s ease;
 }
+body.stagelight .site-head.is-hidden { transform: translateY(-102%); }
+@media (prefers-reduced-motion: reduce) { body.stagelight .site-head { transition: none; } }
 body.stagelight .masthead-row { display: flex; align-items: center; gap: 12px; margin: 0; padding: 0; }
 body.stagelight .header-social { order: 3; margin-left: 12px; }
 body.stagelight .jump-links { order: 2; margin-left: auto; border: 0; padding: 0; display: flex; gap: 24px; font-size: 14px; }
@@ -6430,12 +6467,12 @@ body.stagelight .sc-place { display: flex; flex-direction: column; min-width: 0;
 body.stagelight .sc-place strong { font-family: var(--sl-display); font-weight: 640; font-size: 19px; letter-spacing: -0.005em; color: var(--sl-ink); }
 body.stagelight .sc-place small { font-size: 13px; color: var(--sl-muted); margin-top: 2px; }
 body.stagelight .sc-lockup { display: none; }
-body.stagelight .show-entry[open] .sc-lockup { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 36px; align-items: center; padding: 34px 36px 0; }
-body.stagelight .show-entry.is-latest[open] .sc-lockup { grid-template-columns: 1.05fr 0.95fr; gap: 48px; padding: 44px 44px 0; }
-body.stagelight .show-entry.no-image[open] .sc-lockup { grid-template-columns: 1fr; }
+body.stagelight .show-entry[open] .sc-lockup,
+body.stagelight .show-entry.is-latest[open] .sc-lockup { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: center; padding: 44px 84px 0 44px; }
+body.stagelight .show-entry.no-image[open] .sc-lockup { grid-template-columns: 1fr; padding-right: 84px; }
 body.stagelight .sc-lock { display: block; }
 body.stagelight .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-muted); }
-body.stagelight .sc-city { display: block; font-family: var(--sl-display); font-weight: 720; font-size: 34px; letter-spacing: -0.015em; line-height: 1.05; margin: 12px 0 0; color: var(--sl-ink); }
+body.stagelight .sc-city { display: block; font-family: var(--sl-display); font-weight: 720; font-size: 40px; letter-spacing: -0.015em; line-height: 1.05; margin: 12px 0 0; color: var(--sl-ink); }
 body.stagelight .show-entry.is-latest .sc-city { font-size: 56px; letter-spacing: -0.02em; }
 body.stagelight .sc-venue { display: block; font-size: 16px; color: var(--sl-muted); margin-top: 10px; font-weight: 440; }
 body.stagelight .sc-chips { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
@@ -6447,7 +6484,7 @@ body.stagelight .sc-chip-glass { background: rgba(255,255,255,0.055); border: 1p
 body.stagelight .sc-chip-glass:hover { transform: translateY(-1px); background: rgba(255,255,255,0.09); }
 body.stagelight .sc-photo { display: block; position: relative; }
 body.stagelight .sc-photo img { width: 100%; height: auto; border-radius: 14px; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 30px 60px -24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1); }
-body.stagelight .sc-body { padding: 0 36px 32px; }
+body.stagelight .sc-body { padding: 0 44px 36px; }
 body.stagelight .show-entry.is-latest .sc-body { padding: 0 44px 40px; }
 body.stagelight .sc-sets { border-top: 1px solid var(--sl-line); margin-top: 32px; padding-top: 30px; display: grid; gap: 18px; }
 body.stagelight .sc-row { display: grid; grid-template-columns: 96px 1fr; gap: 20px; }
@@ -6526,25 +6563,23 @@ body.stagelight .tour-table button:hover, body.stagelight .tour-table button[ari
 body.stagelight .slp-progress { background: rgba(255,255,255,0.1); }
 body.stagelight .slp-progress i { background: var(--red); }
 
-/* ---- TOUR DATES ---- */
-body.stagelight .tour-date-section {
+/* ---- UPCOMING DATES (inside Setlists) ---- */
+body.stagelight .upcoming-dates {
+  margin-top: 20px; border-radius: var(--sl-r); overflow: hidden;
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+  border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
 }
-body.stagelight .tour-dates li { border-bottom: 1px solid rgba(255,255,255,0.05); }
+body.stagelight .upcoming-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 20px 26px 14px; }
+body.stagelight .upcoming-heading h3 { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; font-weight: 600; color: var(--sl-ink); }
+body.stagelight .upcoming-heading span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .tour-dates li { border-top: 1px solid rgba(255,255,255,0.05); }
 body.stagelight .tour-dates li time { font-family: var(--sl-mono); color: var(--sl-muted); }
 body.stagelight .tour-dates li strong { color: var(--sl-ink); }
 body.stagelight .tour-dates li span { color: var(--sl-muted); }
 body.stagelight .tour-dates li em { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.12em; font-style: normal; }
-body.stagelight .tour-dates li.is-upcoming { background: rgba(255,255,255,0.02); }
 
 /* ---- SHEET KEY ---- */
-body.stagelight .sheet-key {
-  background: var(--sl-glass);
-  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
-}
 body.stagelight .sheet-key, body.stagelight .sheet-key h2, body.stagelight .sheet-key h3 { color: var(--sl-ink); }
 body.stagelight .sheet-key p, body.stagelight .marker-legend em { color: var(--sl-muted); }
 body.stagelight .marker-legend strong { color: var(--sl-ink); }
@@ -6568,8 +6603,6 @@ body.stagelight .ticket-link {
   box-shadow: 0 8px 24px -8px rgba(242,242,240,0.35), inset 0 1px 0 rgba(255,255,255,0.9);
 }
 body.stagelight .ticket-link:hover { background: #fff; }
-body.stagelight .posse-link { opacity: 0.9; border-radius: 12px; overflow: hidden; }
-body.stagelight .posse-link:hover { opacity: 1; }
 
 /* ---- RARITY SYMBOLS: light ink shapes on dark (silver/gold kept) ---- */
 body.stagelight .rarity-symbol [fill="#111111"] { fill: #f2f2f0; }
@@ -6590,19 +6623,43 @@ body.stagelight .setlist-section .setlist-text, body.stagelight .setlist-row-bod
 
 /* ---- FOOTER ---- */
 body.stagelight .site-foot {
-  background: linear-gradient(180deg, rgba(18,18,20,0.65), rgba(12,12,14,0.78));
+  margin-top: 120px; position: relative;
+  background: linear-gradient(180deg, rgba(15,15,17,0.72), rgba(9,9,11,0.92));
   -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
   border-top: 1px solid var(--sl-line); color: var(--sl-muted);
 }
-body.stagelight .footer-brand { font-family: var(--sl-display); color: var(--sl-ink); font-weight: 800; letter-spacing: 0.045em; }
-body.stagelight .footer-lead p { color: var(--sl-muted); }
+body.stagelight .site-foot::before {
+  content: ""; position: absolute; top: -1px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+}
+body.stagelight .site-foot-inner {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 24px 56px;
+  padding: 64px 0 32px; align-items: start;
+}
+body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 800; font-size: 22px; letter-spacing: 0.045em; }
+body.stagelight .footer-mark { height: 34px; width: auto; }
+body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 14px; max-width: 300px; font-size: 14px; line-height: 1.6; }
 body.stagelight .footer-links strong, body.stagelight .social-links strong { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; }
-body.stagelight .footer-links a, body.stagelight .social-links a { color: var(--sl-muted); }
-body.stagelight .footer-links a:hover, body.stagelight .social-links a:hover { color: var(--sl-ink); }
+body.stagelight .footer-links a, body.stagelight .social-links a { color: var(--sl-muted); transition: color 0.15s ease, transform 0.15s ease; }
+body.stagelight .footer-links a:hover, body.stagelight .social-links a:hover { color: var(--sl-ink); transform: translateX(2px); }
 body.stagelight .social-mark { background: rgba(255,255,255,0.06); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); }
+body.stagelight .footer-bottom {
+  grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--sl-line);
+}
+body.stagelight .footer-legal { font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); margin: 0; }
+body.stagelight .footer-legal span { margin: 0 8px; }
+body.stagelight .back-top { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .back-top:hover { color: var(--sl-ink); }
+@media (max-width: 760px) {
+  body.stagelight .site-foot-inner { grid-template-columns: 1fr 1fr; padding: 48px 0 28px; gap: 32px 24px; }
+  body.stagelight .footer-lead { grid-column: 1 / -1; }
+}
 
-/* ---- BENTO CARDS: Shelf / Purgatory / Woodshed ---- */
-body.stagelight .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 56px; }
+/* ---- BENTO CARDS: Sheet Key / Shelf / Purgatory / Woodshed ---- */
+body.stagelight .bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 44px; }
+body.stagelight .bento-key { grid-column: 1 / -1; cursor: default; padding: 24px 26px 18px; }
+body.stagelight .bento-key:hover { transform: none; border-color: var(--sl-line); }
 body.stagelight .bento-card {
   position: relative; text-align: left; padding: 26px; cursor: pointer;
   font: inherit; color: var(--sl-ink);
@@ -6627,12 +6684,21 @@ body.stagelight .bc-bar { display: block; height: 4px; border-radius: 2px; backg
 body.stagelight .bc-bar i { display: block; height: 100%; background: var(--green); }
 body.stagelight .bento-panel {
   position: fixed; inset: 0; z-index: 90; overflow-y: auto;
-  padding: 5vh 4vw 8vh;
-  background: rgba(6,6,8,0.72);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  padding: 28px 4vw 9vh;
+  background: rgba(4,4,6,0.85);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
 }
 body.stagelight .bento-panel .laminate { max-width: 1100px; margin: 0 auto; }
 body.stagelight .bento-panel[hidden] { display: none; }
+body.stagelight .bento-close {
+  position: fixed; top: 18px; right: 22px; z-index: 95;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; border-radius: 50%;
+  background: rgba(24,24,27,0.85); border: 1px solid var(--sl-line-strong); color: var(--sl-ink);
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.8);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+body.stagelight .bento-close:hover { background: rgba(46,46,50,0.95); transform: scale(1.05); }
 @media (max-width: 900px) { body.stagelight .bento-grid { grid-template-columns: 1fr; } }
 
 /* ---- CLOSED-BAR MINI PULLS ---- */
@@ -6687,30 +6753,35 @@ body.stagelight .board-intro h2 { font-family: var(--sl-display); font-size: 34p
 body.stagelight .board-intro-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--sl-faint); margin-top: 10px; }
 body.stagelight main > .board-intro + section { margin-top: 44px; }
 
-/* ---- SHEET KEY STRIP ---- */
-body.stagelight .sheet-key-sheet {
-  background: var(--sl-glass);
-  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
-  padding: 24px 28px;
-}
+/* ---- SHEET KEY BENTO ---- */
 body.stagelight .key-strip { display: flex; align-items: center; gap: 20px 40px; flex-wrap: wrap; }
-body.stagelight .key-head { max-width: 240px; }
+body.stagelight .key-head { max-width: 260px; }
 body.stagelight .sheet-key h2 { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; font-weight: 600; }
 body.stagelight .key-head p { font-size: 13px; color: var(--sl-faint); margin-top: 6px; line-height: 1.5; }
-body.stagelight .key-strip .marker-legend { margin-left: auto; }
+body.stagelight .key-strip .marker-legend { margin-left: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+body.stagelight .key-strip .marker-legend li { flex-direction: column; align-items: flex-start; gap: 8px; border-radius: 14px; padding: 12px 14px; background: rgba(255,255,255,0.025); }
+body.stagelight .key-strip .marker-legend img { width: 26px; }
+body.stagelight .key-strip .marker-legend span { display: flex; flex-direction: column; }
+body.stagelight .key-strip .marker-legend strong { font-size: 12.5px; }
+body.stagelight .key-strip .marker-legend em { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--sl-faint); margin-top: 2px; }
 body.stagelight .key-more { margin-top: 18px; border-top: 1px solid var(--sl-line); }
-body.stagelight .key-more summary { padding: 14px 0 4px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .key-more summary { display: flex; align-items: center; gap: 10px; padding: 14px 0 4px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .key-more summary:hover { color: var(--sl-ink); }
-body.stagelight .key-more .key-topline { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 14px; }
-body.stagelight .key-more .marker-legend { display: none; }
+body.stagelight .key-more summary .sc-chev { position: static; transition: transform 0.2s ease; }
+body.stagelight .key-more[open] summary .sc-chev { transform: rotate(180deg); }
+body.stagelight .key-more .key-topline { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 28px; margin-top: 16px; padding-bottom: 6px; }
 body.stagelight .key-block h3 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 8px; color: var(--sl-muted); }
 body.stagelight .key-block p, body.stagelight .key-block li, body.stagelight .key-block dd, body.stagelight .key-block dt { font-size: 13px; color: var(--sl-muted); }
 body.stagelight .key-block dt { color: var(--sl-ink); font-weight: 600; }
 body.stagelight .key-points li { display: flex; gap: 10px; padding: 3px 0; }
 body.stagelight .key-points strong { color: var(--sl-ink); }
 body.stagelight .key-other-sheets dl { display: grid; gap: 8px; margin-top: 8px; }
-@media (max-width: 760px) { body.stagelight .key-more .key-topline { grid-template-columns: 1fr; } body.stagelight .key-strip .marker-legend { margin-left: 0; } }
+body.stagelight .key-other-sheets dd { margin: 2px 0 0; }
+@media (max-width: 900px) {
+  body.stagelight .key-more .key-topline { grid-template-columns: 1fr; }
+  body.stagelight .key-strip .marker-legend { margin-left: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  body.stagelight .key-head { max-width: none; }
+}
 
 /* ---- NEXT-SHOW STRIP (closed accordion) ---- */
 body.stagelight .next-strip {
@@ -6769,10 +6840,6 @@ body.stagelight .ticket-link { text-decoration: none; }
 /* ---- THE PAPER SHEETS: keep white, add the spotlight case ---- */
 /* the sheets are paper artifacts — undo the dark-page text/heading cascade */
 body.stagelight .laminate { position: relative; color: #111; }
-body.stagelight .laminate h1,
-body.stagelight .laminate h2,
-body.stagelight .laminate h3,
-body.stagelight .board-title h1 { font-family: revert; color: revert; letter-spacing: revert; }
 body.stagelight .primary-board::before,
 body.stagelight .shelf-board::before,
 body.stagelight .woodshed-board::before,

@@ -90,12 +90,10 @@ function checkCorePageState(html, siteData) {
   assertIncludes(html, `<h1>${escapeHtml(boardTitle)}</h1>`, `Song List title matches board show: ${boardTitle}`);
 
   record("Current tour-stop setlists appear above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
-  record("Sheet key appears below Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"'));
-  record("Tour Stats appears below the Sheet Key", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="tour-stats"'));
-  record("Shelf Watch appears between Tour Stats and Shelf", indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="shelf-watch"') && indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"'));
-  record("Shelf and Purgatory appear below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"'));
-  record("The Woodshed appears below Purgatory", indexOf(html, 'id="purgatory"') < indexOf(html, 'id="woodshed"'));
-  record("Nick Stats appears below The Woodshed", indexOf(html, 'id="woodshed"') < indexOf(html, 'id="nick-johnson"'));
+  record("Sheet key bento sits directly below the Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"') && indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="tour-stats"'));
+  record("Shelf, Purgatory, and Woodshed bentos share the sheet-key grid below the Song List", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"') && indexOf(html, 'id="purgatory"') < indexOf(html, 'id="woodshed"') && indexOf(html, 'id="woodshed"') < indexOf(html, 'id="tour-stats"'));
+  record("Shelf Watch appears below Tour Stats", indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="shelf-watch"'));
+  record("Nick Stats appears below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="nick-johnson"'));
   record("Older setlists appear below Nick Stats", indexOf(html, 'id="nick-johnson"') < indexOf(html, 'id="setlists"'));
 
   record("Unique-song total matches the current-tour ledger", siteData.totals?.currentTourSongs === siteData.currentTour?.length);
@@ -109,7 +107,7 @@ function checkCorePageState(html, siteData) {
   assertIncludes(html, "Times played this tour", "Sheet key says tiny numbers are times played this tour");
   assertIncludes(html, "The Woodshed", "Sheet key includes The Woodshed");
   assertIncludes(html, "not yet played with Nick Johnson", "The Woodshed explains Nick Johnson logic");
-  record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed").includes("songs not yet played with Nick Johnson"));
+  record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed-sheet").includes("songs not yet played with Nick Johnson"));
   checkMarkerLegend(html, siteData);
 
   assertCurrentTourSong(html, siteData, "Just Kissed My Baby", "Song List add-on keeps its tour count and play date");
@@ -259,12 +257,12 @@ function checkNickJohnsonFeature(html, siteData) {
 
 function checkTourDates(html, siteData) {
   const feature = sectionHtml(html, "tour-dates");
-  const posted = siteData.tourDates.filter((date) => date.isPosted).length;
-  const upcoming = siteData.tourDates.length - posted;
-  assertIncludes(feature, `${posted} played · ${upcoming} ahead`, "Tour Dates summarizes played and upcoming shows");
-  record("Tour Dates renders every scheduled date once", (feature.match(/<li class="is-(?:posted|upcoming)">/g) || []).length === siteData.tourDates.length);
-  record("Tour Dates gives every row a clear status", (feature.match(/Setlist posted|Upcoming/g) || []).length === siteData.tourDates.length);
-  record("Tour Dates uses neutral status copy instead of green styling hooks", !feature.includes("green"));
+  const upcoming = siteData.tourDates.filter((date) => !date.isPosted).length;
+  assertIncludes(feature, `${upcoming} shows ahead`, "Upcoming block summarizes the remaining schedule");
+  record("Upcoming block lists every unplayed show once", (feature.match(/<li class="is-upcoming">/g) || []).length === upcoming);
+  record("Upcoming block gives every row a clear status", (feature.match(/<em>Upcoming<\/em>/g) || []).length === upcoming);
+  record("Upcoming block omits already-posted shows", !feature.includes('<li class="is-posted">') && !feature.includes("Setlist posted"));
+  record("Upcoming shows sit inside the Setlists section, below the archive", indexOf(html, 'id="setlists"') < indexOf(html, 'id="tour-dates"') && indexOf(html, '<details class="setlist-archive-panel"') < indexOf(html, 'id="tour-dates"'));
 }
 
 async function checkMobileTourDateCss() {
