@@ -13,11 +13,11 @@
 //
 //   npm run verify:ec-links            # fetch + write data/source/ec-links.json
 //   npm run verify:ec-links -- --dry-run   # fetch + print, write nothing
-//   npm run verify:ec-links -- --url http://everydaycompanion.com/asp/tunelist.asp
+//   npm run verify:ec-links -- --url https://everydaycompanion.com/asp/wsp_song_info.asp
 //
 // Output shape (a flat map keyed by the SAME normalizeTitle() key the catalog
 // and build.mjs use, so lookups line up exactly):
-//   { "climbtosafety": "http://everydaycompanion.com/asp/tunes_1234.asp", ... }
+//   { "climbtosafety": "https://everydaycompanion.com/spreadsheet/histories/CLIMB.asp", ... }
 //
 // Do NOT commit a hand-written / fake ec-links.json — an absent file is the
 // correct default, and the block falls back to http://everydaycompanion.com/.
@@ -29,10 +29,13 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, "..");
 
-const EC_ORIGIN = "http://everydaycompanion.com";
-// Everyday Companion's canonical A-Z tune list. Each row links to a per-song
-// page (…/asp/tunes_NNNN.asp) whose anchor text is the song title.
-const DEFAULT_INDEX_URLS = [`${EC_ORIGIN}/asp/tunelist.asp`];
+const EC_ORIGIN = "https://everydaycompanion.com";
+// Everyday Companion's master "Song Information Index". It rebuilt in 2026: the
+// old /asp/tunelist.asp is gone, and per-song pages now live at
+// /spreadsheet/histories/<CODE>.asp. This index lays out one table row per song
+// — the first cell is the plain-title, a later cell holds the "History" deep
+// link — which is exactly the (title, per-song URL) pairing we need.
+const DEFAULT_INDEX_URLS = [`${EC_ORIGIN}/asp/wsp_song_info.asp`];
 
 const args = parseArgs(process.argv.slice(2));
 const indexUrls = args.urls.length ? args.urls : DEFAULT_INDEX_URLS;
@@ -65,7 +68,7 @@ async function main() {
   }
 
   if (args.dryRun) {
-    console.log(`[dry-run] parsed ${seen} anchors -> ${keys.length} unique song keys. Nothing written.`);
+    console.log(`[dry-run] parsed ${seen} song rows -> ${keys.length} unique song keys. Nothing written.`);
     for (const key of keys.slice(0, 12)) console.log(`  ${key}  ->  ${ordered[key]}`);
     if (keys.length > 12) console.log(`  … +${keys.length - 12} more`);
     return;
@@ -76,16 +79,23 @@ async function main() {
   console.log(`Wrote ${keys.length} verified Everyday Companion links to ${path.relative(root, output)}.`);
 }
 
-// Pull (title, absoluteUrl) pairs from an Everyday Companion index page. Any
-// anchor whose href points at a per-song tune page counts.
+// Pull (title, absoluteUrl) pairs from Everyday Companion's Song Information
+// Index. Each song is one table row: the first <td> is the plain-text title,
+// and a later <td> holds <a href="../spreadsheet/histories/<CODE>.asp">History</a>
+// — the per-song page. Anchor text there is the literal word "History", not the
+// title, so we can't key off the anchor; we split on row boundaries and pair the
+// row's first-cell title with its history href.
 function parseSongLinks(html, baseUrl) {
   const out = [];
-  for (const match of String(html || "").matchAll(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)) {
-    const rawHref = match[1];
-    const title = cleanText(match[2]);
+  const rows = String(html || "").split(/<tr\b/i);
+  for (const row of rows) {
+    const history = row.match(/href=["']([^"']*\/spreadsheet\/histories\/[^"']+\.asp)["']/i);
+    if (!history) continue;
+    const firstCell = row.match(/<td\b[^>]*>([\s\S]*?)<\/td>/i);
+    if (!firstCell) continue;
+    const title = cleanText(firstCell[1]);
     if (!title) continue;
-    if (!/tunes?_?\d+\.asp|\/tunes?\//i.test(rawHref)) continue;
-    out.push({ title, href: absolutize(rawHref, baseUrl) });
+    out.push({ title, href: absolutize(history[1], baseUrl) });
   }
   return out;
 }
