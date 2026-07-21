@@ -1881,6 +1881,7 @@ function renderGeneratedTourReviewPage(review, data) {
     ${renderSiteFooter(data)}
     <script>
       ${renderFitScriptBody()}
+      ${renderStrikeScriptBody()}
     </script>
   </body>
 </html>
@@ -2642,10 +2643,31 @@ function renderHtml(data) {
 
     <script>
       ${renderFitScriptBody()}
+      ${renderStrikeScriptBody()}
     </script>
   </body>
 </html>
 `;
+}
+
+// Draw the dry-erase strikes as they scroll into view. Gated behind .can-strike
+// so no-JS (and no-IO) visitors see the strikes fully drawn from the start.
+function renderStrikeScriptBody() {
+  return `(() => {
+    if (!("IntersectionObserver" in window)) return;
+    const masks = document.querySelectorAll(".marker-mask");
+    if (!masks.length) return;
+    document.body.classList.add("can-strike");
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("draw");
+          io.unobserve(entry.target);
+        }
+      }
+    }, { rootMargin: "0px 0px -6% 0px" });
+    masks.forEach((mask) => io.observe(mask));
+  })();`;
 }
 
 function renderFitScriptBody() {
@@ -3411,35 +3433,28 @@ function renderSheetKey(data) {
 
 function renderMarkerLegend(items = []) {
   if (!items.length) return "";
-  return `<ol class="marker-legend">${items.map((item) => `<li><img src="/assets/${escapeAttr(item.asset)}" alt=""><span><strong>${escapeHtml(item.color)}</strong><em>${escapeHtml(item.label)}</em></span></li>`).join("")}</ol>`;
-}
-
-// Dry-erase number marker: live text with an animated cross-out swipe, as if
-// someone struck the number off the board. Replaces the old marker-N.png scans.
-function renderMarkerNumber(value) {
-  const strikes = [
-    "M6,58 C28,44 62,60 94,40 M70,49 C52,56 34,60 18,64",
-    "M8,42 C36,58 68,40 94,56 M78,46 C60,52 42,56 24,52",
-    "M6,52 C40,38 60,62 94,46 M28,60 C46,50 66,44 84,42",
-    "M8,60 C30,40 70,58 94,38 M66,54 C48,60 30,58 16,54"
-  ];
-  const d = strikes[(value - 1) % strikes.length];
-  return `<span class="marker-num-t v${value}" aria-hidden="true"><b>${value}</b><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${d}" pathLength="1" vector-effect="non-scaling-stroke"/></svg></span>`;
+  return `<ol class="marker-legend">${items.map((item) => {
+    const color = STRIKE_COLORS[item.asset];
+    const swatch = color
+      ? `<svg class="marker-swipe legend-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${STRIKE_PATHS[0][0]}" stroke="${color}"/></svg>`
+      : `<img src="/assets/${escapeAttr(item.asset)}" alt="">`;
+    return `<li>${swatch}<span><strong>${escapeHtml(item.color)}</strong><em>${escapeHtml(item.label)}</em></span></li>`;
+  }).join("")}</ol>`;
 }
 
 function renderBoardHeader(title, subtitle = "") {
   return `<div class="header-row">
     <div class="nums left">
-      ${renderMarkerNumber(1)}
-      ${renderMarkerNumber(2)}
+      <img alt="1" class="marker-num" src="/assets/marker-1.png">
+      <img alt="2" class="marker-num" src="/assets/marker-2.png">
     </div>
     <div class="board-title">
       <h1>${escapeHtml(title)}</h1>
       ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ""}
     </div>
     <div class="nums right">
-      ${renderMarkerNumber(3)}
-      ${renderMarkerNumber(4)}
+      <img alt="3" class="marker-num" src="/assets/marker-3.png">
+      <img alt="4" class="marker-num" src="/assets/marker-4.png">
     </div>
   </div>`;
 }
@@ -3450,15 +3465,15 @@ function renderPrimaryBoardHeader(data) {
 
   return `<div class="header-row primary-header">
     <div class="nums left">
-      ${renderMarkerNumber(1)}
-      ${renderMarkerNumber(2)}
+      <img alt="1" class="marker-num" src="/assets/marker-1.png">
+      <img alt="2" class="marker-num" src="/assets/marker-2.png">
     </div>
     <div class="board-title">
       <h1>${escapeHtml(title.toUpperCase())}</h1>
     </div>
     <div class="nums right">
-      ${renderMarkerNumber(3)}
-      ${renderMarkerNumber(4)}
+      <img alt="3" class="marker-num" src="/assets/marker-3.png">
+      <img alt="4" class="marker-num" src="/assets/marker-4.png">
     </div>
   </div>`;
 }
@@ -3478,6 +3493,39 @@ function renderSongPanel(id, label, rows, options = {}) {
   </section>`;
 }
 
+// Dry-erase strike colors, one per show in the last-four legend (matches the
+// retired marker-*.png scans).
+const STRIKE_COLORS = {
+  "marker-black.png": "#131313",
+  "marker-green.png": "#47866a",
+  "marker-blue.png": "#465692",
+  "marker-red.png": "#d4514f"
+};
+
+// Hand-wobble swipe variants (viewBox 0 0 400 12). Two passes like a real
+// cross-out: the main stroke and a lighter return tail.
+const STRIKE_PATHS = [
+  ["M8,7 C70,3 150,10 226,6 S340,4 393,6.5", "M338,8.5 C282,10 224,9 178,7.5"],
+  ["M7,5.5 C88,9 170,3.5 250,7 S352,8 394,5.5", "M96,4 C160,2.8 230,5 292,4.2"],
+  ["M9,6.5 C60,9.5 160,4 240,8 S330,9 392,7", "M310,5 C250,3.6 190,5.4 140,4.6"],
+  ["M6,8 C90,4 180,9.5 262,5.5 S356,5 394,7.5", "M120,9 C185,10.4 255,9.2 315,10"]
+];
+
+function strikeHash(value) {
+  let h = 0;
+  for (let i = 0; i < value.length; i += 1) h = (h * 31 + value.charCodeAt(i)) >>> 0;
+  return h;
+}
+
+function renderStrikeMark(asset, seed) {
+  const color = STRIKE_COLORS[asset];
+  if (!color) return `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(asset)}" alt=""></span>`;
+  const h = strikeHash(String(seed || ""));
+  const [main, tail] = STRIKE_PATHS[h % STRIKE_PATHS.length];
+  const delay = (h >> 4) % 7;
+  return `<span class="marker-mask" style="--sd:${delay * 0.045}s"><svg class="marker-swipe" viewBox="0 0 400 12" preserveAspectRatio="none" aria-hidden="true"><path d="${main}" pathLength="1" stroke="${color}"/><path d="${tail}" pathLength="1" stroke="${color}"/></svg></span>`;
+}
+
 function renderSong(row, options = {}) {
   const stripeAsset = options.shelfMode && !options.woodshedMode && (row.playedFromShelf || row.playedFromPurgatory) ? "marker-black.png" : row.stripeAsset;
   const shelfDate = row.playedFromShelf || row.playedFromPurgatory ? displayDate(row.seedLast) : row.lastDisplay;
@@ -3486,7 +3534,7 @@ function renderSong(row, options = {}) {
   const title = row.title.toUpperCase();
   const countValue = options.nickMode ? row.nickCount : options.shelfMode ? row.total : row.tourCount;
   const songClasses = ["rotation-song", dateText ? "has-date" : "", countValue > 0 ? "has-count" : "", row.isAddOn ? "is-hand-addon" : ""].filter(Boolean).join(" ");
-  const marker = stripeAsset ? `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(stripeAsset)}" alt=""></span>` : "";
+  const marker = stripeAsset ? renderStrikeMark(stripeAsset, row.key || row.title) : "";
   const count = countValue > 0 ? `<sup>${countValue}</sup>` : "";
   const date = dateText ? `<span class="date-sup${row.isAddOn ? " add-on-date" : ""}">${row.isAddOn ? `(${escapeHtml(dateText)})` : escapeHtml(dateText)}</span>` : "";
 
@@ -4078,6 +4126,7 @@ main > section { margin-top: 96px; }
 .marker-legend { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
 .marker-legend li { display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.08); border-radius: 999px; padding: 8px 16px 8px 12px; }
 .marker-legend img { width: 22px; height: auto; }
+.marker-legend .legend-swipe { width: 26px; height: 8px; flex: none; mix-blend-mode: normal; opacity: 1; }
 .marker-legend strong { font-size: 13px; }
 .marker-legend em { font-size: 12px; font-style: normal; }
 
@@ -4591,6 +4640,11 @@ main {
   height: 14px;
   object-fit: fill;
   mix-blend-mode: multiply;
+}
+
+.marker-legend .legend-swipe {
+  width: 38px;
+  height: 12px;
 }
 
 .marker-legend span {
@@ -7756,40 +7810,65 @@ body.stagelight .ticket-link { text-decoration: none; }
 /* the sheets are paper artifacts — undo the dark-page text/heading cascade */
 body.stagelight .laminate { position: relative; color: #111; }
 
-/* dry-erase number markers: live text struck through with an animated swipe */
-.marker-num-t {
-  position: relative;
-  width: clamp(48px, 4.4vw, 80px);
-  height: clamp(58px, 5vw, 92px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ---- REAL LAMINATE: clear plastic pouch sealed around the paper ---- */
+body.stagelight .laminate {
+  border: 0;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 30px 80px rgba(0, 0, 0, 0.55);
 }
-.marker-num-t b {
-  font-family: var(--sl-display, "Bricolage Grotesque"), "MilkRun", system-ui, sans-serif;
-  font-weight: 800;
-  font-size: clamp(40px, 3.6vw, 66px);
-  line-height: 1;
-  color: #17150f;
+/* the clear plastic rim sealed past the paper edge */
+body.stagelight .laminate::before {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  z-index: -1;
+  border-radius: 16px;
+  background: linear-gradient(118deg,
+    rgba(255, 255, 255, 0.30) 0%,
+    rgba(255, 255, 255, 0.10) 20%,
+    rgba(255, 255, 255, 0.22) 44%,
+    rgba(255, 255, 255, 0.07) 66%,
+    rgba(255, 255, 255, 0.26) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.35),
+    inset 0 0 22px rgba(255, 255, 255, 0.12),
+    0 30px 80px rgba(0, 0, 0, 0.65);
 }
-.marker-num-t.v1 { transform: rotate(-5deg); }
-.marker-num-t.v2 { transform: rotate(3deg) translateY(4px); }
-.marker-num-t.v3 { transform: rotate(-3deg) translateY(3px); }
-.marker-num-t.v4 { transform: rotate(6deg); }
-.marker-num-t svg { position: absolute; left: -14%; top: 10%; width: 128%; height: 80%; overflow: visible; pointer-events: none; }
-.marker-num-t svg path {
-  fill: none; stroke: #c9403e; stroke-width: 4.5px; stroke-linecap: round;
-  opacity: 0.88; mix-blend-mode: multiply;
-  stroke-dasharray: 1; stroke-dashoffset: 1;
-  animation: marker-strike 0.55s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+/* specular glare band across the plastic face: washes the paper slightly,
+   like light hitting the pouch */
+body.stagelight .laminate::after {
+  content: "";
+  position: absolute;
+  inset: -18px;
+  z-index: 6;
+  border-radius: 16px;
+  pointer-events: none;
+  background:
+    linear-gradient(112deg,
+      transparent 32%,
+      rgba(255, 255, 255, 0.30) 41%,
+      rgba(255, 255, 255, 0.08) 47%,
+      transparent 54%),
+    radial-gradient(120% 50% at 6% -2%, rgba(255, 255, 255, 0.28), transparent 40%);
+  background-repeat: no-repeat;
+  background-size: 130% 720px, 100% 900px;
 }
-.nums.left .marker-num-t:nth-child(1) svg path { animation-delay: 0.35s; }
-.nums.left .marker-num-t:nth-child(2) svg path { animation-delay: 0.6s; }
-.nums.right .marker-num-t:nth-child(1) svg path { animation-delay: 0.85s; }
-.nums.right .marker-num-t:nth-child(2) svg path { animation-delay: 1.1s; }
-@keyframes marker-strike { to { stroke-dashoffset: 0; } }
+
+/* ---- DRY-ERASE STRIKES: SVG marker swipes over played songs ---- */
+.marker-swipe { display: block; width: 100%; height: 100%; overflow: visible; opacity: 0.88; mix-blend-mode: multiply; }
+.marker-swipe path { fill: none; stroke-width: 5px; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.marker-swipe path + path { stroke-width: 3.4px; opacity: 0.6; }
+/* draw-in when the board scrolls into view */
+.can-strike .marker-swipe path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.can-strike .marker-mask.draw .marker-swipe path { animation: strike-swipe 0.4s ease-out forwards; animation-delay: var(--sd, 0s); }
+.can-strike .marker-mask.draw .marker-swipe path + path { animation-duration: 0.3s; animation-delay: calc(var(--sd, 0s) + 0.22s); }
+@keyframes strike-swipe { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .marker-num-t svg path { animation: none; stroke-dashoffset: 0; }
+  .can-strike .marker-swipe path { stroke-dasharray: none; stroke-dashoffset: 0; animation: none !important; }
 }
 body.stagelight .primary-board::before,
 body.stagelight .shelf-board::before,
