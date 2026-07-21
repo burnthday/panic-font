@@ -36,6 +36,7 @@ async function main() {
   await checkLegacyPages(siteData);
   await checkProsePlate(allHtmlFiles, allHtml);
   await checkSongOrigins(allHtmlFiles, allHtml, siteData);
+  await checkLyricsChords(allHtmlFiles, allHtml);
   await checkTourInReviewPages();
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkLocalAssets(allHtml);
@@ -663,6 +664,48 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
   const expected = siteData.songOrigins?.totalEntries || 0;
   const cardCount = (indexHtml.match(/class="origin-card"/g) || []).length;
   record("Song Origins index lists every origin", expected > 0 && cardCount === expected, `index has ${cardCount} cards, expected ${expected}`);
+}
+
+// Lyrics & Chords: the hub is a searchable, designed index (not a raw link list)
+// and lyric subpages carry song-specific framing WITHOUT the verbatim body being
+// altered. Verifies the hub search + rows, a known lyric page's eyebrow, its
+// computed "Live history" link resolving to a real /song/ page, and that a
+// distinctive lyric line survives untouched on the prose plate.
+async function checkLyricsChords(files, htmlByFile) {
+  const hub = await readText("dist/lyrics-chords/index.html").catch(() => "");
+  record("Lyrics & Chords hub is generated", hub.length > 0);
+  assertIncludes(hub, 'id="lyric-search"', "Lyrics & Chords hub carries the client-side search box");
+  const rowCount = (hub.match(/class="lyric-row"/g) || []).length;
+  record("Lyrics & Chords hub lists lyric pages as rows", rowCount > 0, `${rowCount} lyric rows`);
+  assertIncludes(hub, "songs with lyrics &amp; chords", "Lyrics & Chords hub reports a song count");
+  assertIncludes(hub, 'class="archive-eyebrow">LYRICS &amp; CHORDS', "Lyrics & Chords hub shows the section eyebrow");
+  // The hub must no longer be the raw Blogger link-list: its rows link to real
+  // archive pages that exist in dist.
+  const firstRowHref = hub.match(/class="lyric-row" href="([^"]+)"/)?.[1] || "";
+  const firstRowExists = firstRowHref ? files.some((f) => f.endsWith(firstRowHref.replace(/^\//, "").split("/").join(path.sep))) : false;
+  record("Lyrics & Chords hub rows link to real archive pages in dist", firstRowExists, firstRowHref || "no row href found");
+
+  // Known lyric subpages: carry the framing eyebrow, a computed crosslink to a
+  // real /song/ live-history page, and keep a distinctive verbatim lyric line.
+  const knowns = [
+    { path: "dist/2023/06/king-baby-lyrics.html", line: "Feed it", song: "/song/king-baby/" },
+    { path: "dist/2020/07/life-as-tree-lyrics.html", line: "Daydreams and nightlights", song: "/song/life-as-a-tree/" }
+  ];
+  let checkedOne = false;
+  for (const known of knowns) {
+    const html = await readText(known.path).catch(() => "");
+    if (!html) continue;
+    checkedOne = true;
+    assertIncludes(html, 'class="archive-eyebrow">LYRICS &amp; CHORDS', `${known.path} carries the LYRICS & CHORDS eyebrow`);
+    const liveHref = html.match(/class="origin-xlink" href="(\/song\/[^"]+)"/)?.[1] || "";
+    const targetExists = liveHref ? files.some((f) => f.endsWith(path.join(liveHref.replace(/^\//, "").replace(/\/$/, ""), "index.html"))) : false;
+    record(`${known.path} links Live history to a real /song/ page in dist`, liveHref === known.song && targetExists, `${liveHref || "no link"} → ${targetExists ? "exists" : "missing"}`);
+    // Body is verbatim: the distinctive lyric line is present unchanged, on the
+    // shared prose plate, and this check never rewrites it.
+    assertIncludes(html, 'class="archive-content prose-plate"', `${known.path} keeps the verbatim body on the prose plate`);
+    assertIncludes(html, known.line, `${known.path} lyric body is unchanged (distinctive line intact)`);
+  }
+  record("At least one known lyric page was framing-checked", checkedOne, "king-baby / life-as-tree lyric page present in dist");
 }
 
 function checkMarkerLegend(html, siteData) {

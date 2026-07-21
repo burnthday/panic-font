@@ -113,16 +113,23 @@ async function main() {
   await copyAssets();
   // lookup so archive/lyrics pages can cross-link to a matching Song Origin
   siteData.originsByTitle = new Map((songOrigins || []).map((origin) => [normalizeTitle(origin.title), origin]));
+  // Data layers the lyric/archive pages join against must exist BEFORE those pages
+  // render: albums (album chip), song slug map (/song/ live-history link) and the
+  // lyrics resource index. These are pure, deterministic joins over already-loaded
+  // catalog/archive data — the later writeAlbumPages/writeSongPages calls rebuild the
+  // same values idempotently.
+  const albums = await loadAlbums();
+  siteData.albums = [...albums].sort((a, b) => String(b.releaseDate || "").localeCompare(String(a.releaseDate || "")));
+  siteData.songSlugMap = buildSongSlugMap(siteData.catalog || []);
+  siteData.lyricsResourceByKey = buildLyricsResourceIndex(archiveEntries);
   await writeBloggerArchive(archiveEntries, siteData);
   await writeModernArchivePages(archiveEntries, siteData);
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
   await writePrivacyPage(siteData);
-  const albums = await loadAlbums();
   await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
   siteData.ecLinksByKey = await loadEcLinks();
-  siteData.lyricsResourceByKey = buildLyricsResourceIndex(archiveEntries);
   siteData.songVideosByKey = await loadSongVideos();
   siteData.relistenDates = await loadRelistenDates();
   attachBestGuesses(siteData, await loadBestGuesses());
@@ -1250,8 +1257,112 @@ async function writeModernArchivePages(entries, data) {
   for (const page of pages) {
     const entry = entries.find((candidate) => candidate.path === page.legacyPath);
     if (!entry) continue;
+    // The Lyrics & Chords landing was a bare Blogger link list. Replace it with a
+    // searchable, designed index modeled on the Song Index; every other modern
+    // page keeps the standard archive template.
+    if (page.path === "/lyrics-chords/index.html") {
+      await writeStaticPage(page.path, renderLyricsChordsIndex(entries, data, { ...entry, ...page }));
+      continue;
+    }
     await writeStaticPage(page.path, renderArchivePage({ ...entry, ...page }, data));
   }
+}
+
+// Enumerate every lyric/chord archive page (excluding the hub's own legacy source)
+// as a computed row: the bare song name plus a cheap catalog join for meta. Sorted
+// alphabetically. Nothing is authored — every field is derived from existing data.
+function collectLyricPages(entries, data, hubLegacyPath) {
+  const seen = new Set();
+  const rows = [];
+  for (const entry of entries) {
+    if (!entry.path || entry.path === hubLegacyPath) continue;
+    if (!isLyricArchivePage(entry)) continue;
+    if (seen.has(entry.path)) continue;
+    seen.add(entry.path);
+    const join = lyricPageJoin(entry, data);
+    const title = join.songName || cleanArchiveTitle(entry.title);
+    rows.push({ entry, title, ...join });
+  }
+  return rows.sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
+}
+
+function renderLyricsChordsIndex(entries, data, hubEntry) {
+  const pages = collectLyricPages(entries, data, hubEntry.legacyPath);
+  const matched = pages.filter((page) => page.song).length;
+  const rows = pages.map((page) => {
+    const plays = page.song && Number.isFinite(page.song.total) && page.song.total > 0
+      ? `${formatNumber(page.song.total)}<small>plays</small>`
+      : "";
+    const sub = page.primaryAlbum ? page.primaryAlbum.title : (page.song ? page.song.type : "Lyrics & chords");
+    return `<a class="lyric-row" href="${escapeAttr(page.entry.path)}" data-title="${escapeAttr(page.title.toLowerCase())}">
+      <span class="lr-title">${escapeHtml(page.title)}</span>
+      <span class="lr-sub">${escapeHtml(sub)}</span>
+      <span class="lr-plays">${plays}</span>
+    </a>`;
+  }).join("");
+  const count = `${formatNumber(pages.length)} song${pages.length === 1 ? "" : "s"} with lyrics &amp; chords`;
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Widespread Panic Lyrics &amp; Chords | Burnthday</title>
+    <meta name="description" content="Search every Widespread Panic lyric and chord sheet on Burnthday — song by song, with live play counts and the album each came from.">
+    <link rel="canonical" href="https://burnthday.com/lyrics-chords/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main songs-main">
+      <header class="archive-title">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Lyrics &amp; Chords</span></nav>
+        <p class="archive-eyebrow">LYRICS &amp; CHORDS</p>
+        <h1>Lyrics &amp; Chords</h1>
+        <p class="songs-deck">Every lyric and chord sheet in the archive — search it, then open the song. ${count}.</p>
+      </header>
+      <div class="song-search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <input type="search" id="lyric-search" placeholder="Search ${formatNumber(pages.length)} songs…" autocomplete="off" aria-label="Search lyrics and chords">
+        <span class="song-count" id="lyric-count">${count}</span>
+      </div>
+      <div class="song-list lyrics-list" id="lyric-list">${rows}</div>
+      <p class="song-empty" id="lyric-empty" hidden>No songs match that search.</p>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+    <script>${renderLyricsSearchScript()}</script>
+  </body>
+</html>
+`;
+}
+
+// Client-side title filter for the Lyrics & Chords hub. Adapted from
+// renderSongSearchScript (the Song Index) against the lyric-row markup — kept as
+// its own copy rather than imported so the two indexes can drift independently.
+function renderLyricsSearchScript() {
+  return `(() => {
+    const input = document.getElementById("lyric-search");
+    const rows = [...document.querySelectorAll(".lyric-row")];
+    const count = document.getElementById("lyric-count");
+    const empty = document.getElementById("lyric-empty");
+    const total = rows.length;
+    const apply = () => {
+      const q = input.value.trim().toLowerCase();
+      let shown = 0;
+      rows.forEach((row) => {
+        const hit = !q || row.dataset.title.includes(q);
+        row.hidden = !hit;
+        if (hit) shown++;
+      });
+      empty.hidden = shown !== 0;
+      count.textContent = q ? shown + " of " + total + " songs" : total + " songs with lyrics & chords";
+    };
+    input.addEventListener("input", apply);
+    input.focus();
+  })();`;
 }
 
 async function writeSongOrigins(origins, data, albums = []) {
@@ -1579,11 +1690,11 @@ function renderArchivePage(entry, data) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page">
-        ${renderArchiveHeader(entry)}
+        ${renderArchiveHeader(entry, data)}
         <div class="archive-content prose-plate">
           ${content}
         </div>
-        ${renderArchiveOriginLink(entry, data)}
+        ${isLyricArchivePage(entry) ? renderLyricCrosslinks(entry, data) : renderArchiveOriginLink(entry, data)}
       </article>
     </main>
     ${renderSiteFooter(data || { generatedAt: new Date().toISOString(), source: { label: "Blogger Takeout" } }, { stagelight: true })}
@@ -1629,6 +1740,37 @@ function cleanArchiveTitle(title) {
   return value;
 }
 
+// A lyric/chord archive page is exactly one whose section resolves to the
+// Lyrics & Chords hub (title/category carries "lyric" or "chord"). Single source
+// of truth so the hub list, the subpage framing and the resource index agree.
+function isLyricArchivePage(entry) {
+  return archiveSection(entry).href === "/lyrics-chords/";
+}
+
+// Reduce a lyric-page title down to the bare song name so it can join the
+// catalog: drop the "Widespread Panic" prefix (via cleanArchiveTitle) and the
+// trailing "(Album) Lyrics"/"Chords"/"| Burnthday" noise. Content is never touched.
+function lyricSongName(entry) {
+  return cleanArchiveTitle(entry.title)
+    .replace(/\b(album\s+)?lyrics?\b/gi, "")
+    .replace(/\bchords?\b/gi, "")
+    .replace(/[|–—-]\s*burnthday.*$/i, "")
+    .trim();
+}
+
+// Build the computed join for a single lyric page WITHOUT authoring anything:
+// the matched catalog song, its /song/ slug, a researched Song Origin and the
+// album it appears on. Returns null-ish members when a join is missing.
+function lyricPageJoin(entry, data) {
+  const songName = lyricSongName(entry);
+  const key = normalizeTitle(songName);
+  const song = key ? (data.catalog || []).find((row) => (row.key || normalizeTitle(row.title)) === key) : null;
+  const slug = song ? (data.songSlugMap?.get(song.key) || "") : "";
+  const origin = key ? (data.originsByTitle?.get(key) || null) : null;
+  const primaryAlbum = song ? (songAlbumsFor(song, data.albums || [])[0] || null) : null;
+  return { songName, key, song, slug, origin, primaryAlbum };
+}
+
 function archiveSection(entry) {
   const haystack = `${entry.title || ""} ${(entry.categories || []).join(" ")}`.toLowerCase();
   if (/^\s*about\b/.test((entry.title || "").toLowerCase())) return { label: "About", href: "/about/" };
@@ -1639,18 +1781,39 @@ function archiveSection(entry) {
   return { label: "Archive", href: "/archive/" };
 }
 
-function renderArchiveHeader(entry) {
+function renderArchiveHeader(entry, data) {
   const section = archiveSection(entry);
   const title = cleanArchiveTitle(entry.title);
   const isLanding = section.label.toLowerCase() === title.toLowerCase();
   const trail = [`<a href="/">Home</a>`];
   if (!isLanding) trail.push(`<a href="${escapeAttr(section.href)}">${escapeHtml(section.label)}</a>`);
   trail.push(`<span aria-current="page">${escapeHtml(title)}</span>`);
+  // Lyric/chord pages get a song-specific eyebrow so they read as part of the
+  // Lyrics & Chords section rather than an anonymous Blogger post. Framing only —
+  // the breadcrumb, title and verbatim body are untouched.
+  const eyebrow = !isLanding && isLyricArchivePage(entry)
+    ? `<p class="archive-eyebrow">LYRICS &amp; CHORDS</p>`
+    : "";
   return `<header class="archive-title">
     <nav class="crumbs" aria-label="Breadcrumb">${trail.join('<span class="crumb-sep" aria-hidden="true">›</span>')}</nav>
+    ${eyebrow}
     <h1>${escapeHtml(title)}</h1>
     ${entry.categories && entry.categories.length ? `<div class="archive-tags">${entry.categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("")}</div>` : ""}
   </header>`;
+}
+
+// Song-specific crosslink row for a lyric/chord page. Every link is a computed
+// join over the catalog / origins / albums — nothing here rewrites or reformats
+// Alex's lyric body, which stays verbatim on the prose plate above. Reuses the
+// same .origin-crosslinks component the Song Origin template ships.
+function renderLyricCrosslinks(entry, data) {
+  const { song, slug, origin, primaryAlbum } = lyricPageJoin(entry, data);
+  const links = [];
+  if (song && slug) links.push(`<a class="origin-xlink" href="/song/${escapeAttr(slug)}/"><span class="oxl-label">Live history</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
+  if (origin) links.push(`<a class="origin-xlink" href="/song-origins/${escapeAttr(origin.slug)}/"><span class="oxl-label">Song origin</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
+  if (primaryAlbum) links.push(`<a class="origin-xlink" href="/albums/${escapeAttr(primaryAlbum.slug)}/"><span class="oxl-label">Appears on ${escapeHtml(primaryAlbum.title)}</span><span class="oxl-go" aria-hidden="true">→</span></a>`);
+  if (!links.length) return "";
+  return `<nav class="origin-crosslinks" aria-label="Related pages">${links.join("")}</nav>`;
 }
 
 // If a lyrics/archive page resolves to a single catalog song that has a
@@ -2860,14 +3023,9 @@ function attachBestGuesses(data, entries) {
 function buildLyricsResourceIndex(archiveEntries = []) {
   const byKey = new Map();
   for (const entry of archiveEntries) {
-    if (archiveSection(entry).href !== "/lyrics-chords/") continue;
+    if (!isLyricArchivePage(entry)) continue;
     if (!entry.path) continue;
-    const songName = cleanArchiveTitle(entry.title)
-      .replace(/\b(album\s+)?lyrics?\b/gi, "")
-      .replace(/\bchords?\b/gi, "")
-      .replace(/[|–—-]\s*burnthday.*$/i, "")
-      .trim();
-    const key = normalizeTitle(songName);
+    const key = normalizeTitle(lyricSongName(entry));
     if (!key) continue;
     const contentLen = String(entry.content || "").length;
     const existing = byKey.get(key);
@@ -9161,6 +9319,23 @@ body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(-
   body.stagelight .sr-tier { grid-column: 1; }
   body.stagelight .sr-plays { grid-column: 2; grid-row: 1; }
   body.stagelight .song-count { display: none; }
+}
+
+/* Lyrics & Chords hub — a row per lyric page, modeled on the Song Index row. */
+body.stagelight .archive-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 4px 0 12px; }
+body.stagelight .lyric-row {
+  display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 96px; align-items: center; gap: 18px;
+  padding: 15px 16px; border-radius: var(--sl-r-sm); color: var(--sl-ink); text-decoration: none; transition: background 0.16s ease;
+}
+body.stagelight .lyric-row:hover { background: rgba(255,255,255,0.03); }
+body.stagelight .lr-title { font-family: var(--sl-display); font-size: 15px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.stagelight .lr-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.stagelight .lr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .lr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
+@media (max-width: 640px) {
+  body.stagelight .lyric-row { grid-template-columns: minmax(0, 1fr) 84px; grid-auto-rows: auto; row-gap: 4px; }
+  body.stagelight .lr-sub { grid-column: 1; }
+  body.stagelight .lr-plays { grid-column: 2; grid-row: 1; }
 }
 
 body.stagelight .song-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 10px; }
