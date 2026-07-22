@@ -6951,6 +6951,7 @@ function renderFitScriptBody() {
         const showOptions = [...(section?.querySelectorAll("[data-show-value]") || [])];
         const mobileSort = section?.querySelector("[data-mobile-sort]");
         const typeButtons = [...(section?.querySelectorAll("[data-type-filter]") || [])];
+        const notPlayedToggle = section?.querySelector("[data-notplayed-toggle]");
         const status = section?.querySelector(".show-filter-status");
         const rarityFilter = section?.querySelector("[data-rarity-filter]");
         const rarityOptions = [...(section?.querySelectorAll("[data-rarity-option]") || [])];
@@ -6958,6 +6959,7 @@ function renderFitScriptBody() {
         const rarityActive = section?.querySelector("[data-rarity-active]");
         let selectedShow = "";
         let selectedType = "all";
+        let notPlayedOn = false;
         let sortKey = "count";
         let sortDirection = "descending";
 
@@ -6978,7 +6980,8 @@ function renderFitScriptBody() {
             const matchesType = selectedType === "all" || row.dataset.type === selectedType;
             const matchesRarity = !selectedRarities.length || selectedRarities.includes(row.dataset.rarityTier);
             const matchesShow = !selectedShow || (row.dataset.shows || "").split(",").includes(selectedShow);
-            const visible = matchesType && matchesRarity;
+            const matchesPlayed = notPlayedOn ? row.dataset.played === "no" : row.dataset.played !== "no";
+            const visible = matchesType && matchesRarity && matchesPlayed;
             row.hidden = !visible;
             if (visible) visibleCount += 1;
             row.classList.toggle("is-selected-show", Boolean(selectedShow && matchesShow && visible));
@@ -7023,6 +7026,20 @@ function renderFitScriptBody() {
           typeButtons.forEach((item) => item.classList.toggle("is-active", item === typeButton));
           applyState();
         }));
+        notPlayedToggle?.addEventListener("click", () => {
+          notPlayedOn = !notPlayedOn;
+          notPlayedToggle.setAttribute("aria-pressed", String(notPlayedOn));
+          notPlayedToggle.classList.toggle("is-active", notPlayedOn);
+          if (notPlayedOn) {
+            // Not-played songs never belong to a highlighted show; reset the show filter.
+            selectedShow = "";
+            if (section) section.dataset.hl = "";
+            showOptions.forEach((item) => item.classList.toggle("is-active", item.dataset.showValue === ""));
+            const allOption = showOptions.find((item) => item.dataset.showValue === "");
+            if (showValue && allOption) showValue.textContent = allOption.textContent;
+          }
+          applyState();
+        });
         rarityOptions.forEach((box) => box.addEventListener("change", applyState));
         rarityClear?.addEventListener("click", () => {
           rarityOptions.forEach((box) => { box.checked = false; });
@@ -7643,6 +7660,13 @@ function renderTourStats(data) {
       showDatesBySong.get(key).push(show.isoDate);
     }
   }
+  // Color-coded left-rail: each of the last four shows a song appeared in gets one
+  // segment in that show's canonical marker color, always visible (not just on select).
+  const lastFour = (data.site.markerLegend || []).filter((mark) => mark.isoDate);
+  const lastFourRail = (dates) => {
+    const played = new Set(dates);
+    return lastFour.filter((mark) => played.has(mark.isoDate)).map((mark) => mark.color.toLowerCase());
+  };
 
   return `<section class="tour-stats" id="tour-stats">
   <details class="stats-disclosure" open>
@@ -7675,6 +7699,7 @@ function renderTourStats(data) {
       <button type="button" data-type-filter="original">Originals</button>
       <button type="button" data-type-filter="cover">Covers</button>
     </div>
+    <button type="button" class="np-toggle" data-notplayed-toggle aria-pressed="false">Not played</button>
     ${renderRarityFilter(songs)}
     <div class="mobile-sort">${renderCustomSelect({ hook: "data-mobile-sort", label: "Sort by", active: "count", options: [{ value: "count", label: "Most played" }, { value: "rarity", label: "Rarest" }, { value: "heat", label: "Longest wait" }, { value: "title", label: "Song name" }] })}</div>
     <span class="show-filter-status" aria-live="polite"></span>
@@ -7693,21 +7718,30 @@ function renderTourStats(data) {
         const showDates = showDatesBySong.get(song.key) || [];
         const rarity = calculateRarity(song);
         const heat = calculateRotationHeat(song, shows);
-        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-rarity-tier="${escapeAttr(rarity.tier)}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}">
-          <th scope="row">${escapeHtml(song.title)}</th>
+        const railColors = lastFourRail(showDates);
+        const railAttr = railColors.length ? ` data-lastfour="${escapeAttr(railColors.join(","))}"` : "";
+        const rail = railColors.length ? `<span class="lf-rail" aria-hidden="true">${railColors.map((color) => `<i class="rail-${color}"></i>`).join("")}</span>` : "";
+        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-rarity-tier="${escapeAttr(rarity.tier)}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}"${railAttr} data-played="yes">
+          <th scope="row">${rail}${escapeHtml(song.title)}</th>
           <td class="plays-cell">${formatNumber(song.tourCount)}</td>
           <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.tier === "new" ? "new this tour" : rarity.tier === "bustout" || rarity.tier === "mega" ? `back after ${formatNumber(song.seedSlp || 0)} shows · LTP ${escapeHtml(song.seedLast || "")}` : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
           <td class="signal-cell heat-cell"><strong>${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} ago</strong><small>usual gap ${heat.expectedGap.toFixed(1)} shows</small></td>
           <td>${escapeHtml(song.lastDisplay)}</td>
         </tr>`;
+      }).join("")}${notPlayed.map((song) => {
+        const rarity = calculateRarity(song);
+        const heat = calculateRotationHeat(song, shows);
+        return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="0" data-frequency="0" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-rarity-tier="${escapeAttr(rarity.tier)}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="" data-played="no" hidden>
+          <th scope="row">${escapeHtml(song.title)}</th>
+          <td class="plays-cell">0</td>
+          <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.tier === "new" ? "new this tour" : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
+          <td class="signal-cell heat-cell"><strong>${song.effectiveSlp ? `${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} ago` : "—"}</strong><small>not played this tour</small></td>
+          <td>${escapeHtml(song.lastDisplay || "—")}</td>
+        </tr>`;
       }).join("")}</tbody>
     </table>
   </div>
   ${songs.length > 12 ? `<button type="button" class="stats-expand" data-table-expand aria-expanded="false" data-expand-label="Show all ${formatNumber(songs.length)} songs" data-collapse-label="Show fewer">Show all ${formatNumber(songs.length)} songs</button>` : ""}
-  ${notPlayed.length ? `<details class="not-played">
-    <summary><span>Show the ${formatNumber(notPlayed.length)} songs not played this tour</span><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
-    <ul class="np-list">${notPlayed.map((song) => `<li><span class="np-title">${escapeHtml(song.title)}</span><span class="np-meta">${song.effectiveSlp ? `${formatNumber(song.effectiveSlp)} shows ago` : "—"}</span></li>`).join("")}</ul>
-  </details>` : ""}
   <details class="index-method">
     <summary>WHAT THESE MEAN</summary>
     <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Ultra Rare, or Hyper Rare, driven mostly by plays in the last 100 shows with lifetime play count as a small tie-breaker. Two gap tiers outrank them all: a song that returns after 200+ shows away (the Shelf cutoff) is a <strong>Bustout</strong>, and one back after 1,000+ shows is a <strong>Mega Bustout</strong>. The symbols follow trading-card language: a black circle, diamond, or star; two silver stars; three gold stars; a radiant star for a Bustout, doubled for a Mega. A song new this tour gets an open star until it has history.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
@@ -12769,8 +12803,27 @@ body.stagelight .stats-disclosure[open] > summary .sc-chev { transform: rotate(1
 body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin-bottom: 0; }
 
 /* ---- TOUR-STATS TABLE: capped preview + expand affordance ---- */
-body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; }
+body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; border-radius: var(--sl-r-md); -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar { width: 8px; }
+body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar-track { background: transparent; }
+body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); border: 2px solid transparent; background-clip: content-box; }
 body.stagelight .tour-table thead th { position: sticky; top: 0; z-index: 3; background: #101013; }
+body.stagelight .tour-table-wrap.is-capped thead th:first-child { border-top-left-radius: var(--sl-r-md); }
+body.stagelight .tour-table-wrap.is-capped thead th:last-child { border-top-right-radius: var(--sl-r-md); }
+/* Color-coded last-four rail on the song name cell */
+body.stagelight .tour-table tbody th[scope="row"] { position: relative; }
+body.stagelight .lf-rail { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; height: 60%; }
+body.stagelight .lf-rail i { display: block; width: 3px; border-radius: 2px; background: currentColor; }
+body.stagelight .lf-rail .rail-black { color: #131313; box-shadow: 0 0 0 1px rgba(255,255,255,0.28); }
+body.stagelight .lf-rail .rail-blue { color: #465692; }
+body.stagelight .lf-rail .rail-green { color: #47866a; }
+body.stagelight .lf-rail .rail-red { color: #d4514f; }
+body.stagelight .tour-table tbody th[scope="row"] { padding-left: 18px; }
+/* Not-played toggle chip */
+body.stagelight .np-toggle { height: 40px; padding: 0 16px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04); color: var(--sl-muted); font-size: 13px; font-weight: 560; cursor: pointer; }
+body.stagelight .np-toggle:hover { color: var(--sl-ink); }
+body.stagelight .np-toggle[aria-pressed="true"], body.stagelight .np-toggle.is-active { background: var(--sl-ink); color: #111; border-color: var(--sl-ink); }
 body.stagelight .tour-table tbody tr.is-selected-show { background: rgba(255,255,255,0.08); box-shadow: inset 3px 0 0 #e8e6e1; }
 body.stagelight .tour-stats[data-hl="black"] .tour-table tbody tr.is-selected-show { background: rgba(255,255,255,0.05); box-shadow: inset 4px 0 0 rgba(255,255,255,0.4), inset 3px 0 0 #131313; }
 body.stagelight .tour-stats[data-hl="blue"] .tour-table tbody tr.is-selected-show { background: rgba(70,86,146,0.16); box-shadow: inset 3px 0 0 #465692; }

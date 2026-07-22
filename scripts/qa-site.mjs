@@ -174,12 +174,31 @@ function checkTourStats(html, siteData) {
   for (const type of ["all", "original", "cover"]) assertIncludes(feature, `data-type-filter="${type}"`, `Tour Stats includes the ${type} type filter`);
   assertIncludes(feature, "data-rarity-filter", "Tour Stats offers a multi-select rarity filter");
   record("Rarity filter lists every tier present in the table", [...new Set([...feature.matchAll(/data-rarity-tier="([^"]+)"/g)].map((match) => match[1]))].every((tier) => feature.includes(`<input type="checkbox" value="${tier}" data-rarity-option>`)));
-  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-l100="(\d+)" data-rarity="(\d+)" data-rarity-tier="([^"]+)" data-heat="(\d+)" data-last="([^"]*)" data-type="([^"]+)" data-shows="([^"]*)">/g)]
+  const rendered = [...feature.matchAll(/<tr data-title="([^"]+)" data-count="(\d+)" data-frequency="(\d+)" data-l100="(\d+)" data-rarity="(\d+)" data-rarity-tier="([^"]+)" data-heat="(\d+)" data-last="([^"]*)" data-type="([^"]+)" data-shows="([^"]*)"(?: data-lastfour="[^"]*")? data-played="yes">/g)]
     .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
   record("Tour Stats includes every played song exactly once", rendered.length === songs.length, `${rendered.length} rendered vs ${songs.length} expected`);
   record("Tour Stats defaults to most played with alphabetical tie-breaking", arraysEqual(rendered.map((song) => song.title), songs.map((song) => song.title.toLowerCase())));
   record("Tour Stats play counts match the ledger", rendered.every((song, index) => song.count === songs[index].tourCount));
   record("Tour Stats does not report scheduled tour dates", !feature.includes("tour dates"));
+
+  // (Change 1) Color-coded last-four rail: rows played in one of the last four shows
+  // carry data-lastfour with the show's marker color, and render one rail segment each.
+  const legendColors = (siteData.site?.markerLegend || []).filter((mark) => mark.isoDate).map((mark) => mark.color.toLowerCase());
+  const railMatches = [...feature.matchAll(/data-lastfour="([^"]+)"/g)].map((match) => match[1].split(","));
+  record("Tour Stats marks last-four appearances with a color rail", railMatches.length > 0, `${railMatches.length} rows carry a last-four rail`);
+  record("Last-four rail colors come from the marker legend", railMatches.every((colors) => colors.length > 0 && colors.every((color) => legendColors.includes(color))));
+  const railSegTotal = (feature.match(/<i class="rail-(?:black|blue|green|red)"><\/i>/g) || []).length;
+  const railDeclTotal = railMatches.reduce((total, colors) => total + colors.length, 0);
+  record("Rail segments match declared last-four appearances", railSegTotal === railDeclTotal && railSegTotal > 0, `${railSegTotal} segments vs ${railDeclTotal} declared`);
+
+  // (Change 3) Not-played toggle: the not-played songs render as hidden data-played="no"
+  // rows in the same tbody; played rows are data-played="yes". A chip toggles between them.
+  assertIncludes(feature, "data-notplayed-toggle", "Tour Stats offers a Not-played toggle chip");
+  const notPlayed = [...(siteData.boards?.rotationOriginals || []), ...(siteData.boards?.rotationCovers || [])].filter((song) => !song.playedThisTour);
+  const notPlayedRows = [...feature.matchAll(/<tr [^>]*data-played="no"[^>]*>/g)].map((match) => match[0]);
+  record("Not-played songs render as hidden data-played=no rows", notPlayedRows.length === notPlayed.length && notPlayedRows.every((tr) => / hidden>/.test(tr)), `${notPlayedRows.length} not-played rows vs ${notPlayed.length} expected`);
+  const playedRows = [...feature.matchAll(/<tr [^>]*data-played="yes"[^>]*>/g)];
+  record("Played songs render as visible data-played=yes rows", playedRows.length === songs.length && playedRows.every((match) => !/ hidden>/.test(match[0])), `${playedRows.length} played rows vs ${songs.length} expected`);
 }
 
 function checkTourSongCounts(html, siteData) {
@@ -411,6 +430,19 @@ async function checkMobilePassCss() {
     /body\.stagelight \.lyric-head \{ grid-template-columns: var\(--lr-cols\); \}/.test(css)
       && /body\.stagelight \.lyric-head \.lh-tab \{ display: none; \}/.test(css),
     "mobile lyric-head aligns SONG/PLAYS with the rows");
+  // (Change 1) Last-four rail defines all four canonical marker colors.
+  record("Tour Stats last-four rail defines the four marker colors",
+    /\.lf-rail \.rail-black \{ color: #131313;/.test(css)
+      && /\.rail-blue \{ color: #465692;/.test(css)
+      && /\.rail-green \{ color: #47866a;/.test(css)
+      && /\.rail-red \{ color: #d4514f;/.test(css),
+    "rail-black/blue/green/red map to the marker hexes");
+  // (Change 2) Capped table gets a clean inset, rounded, auto-styled scrollbar.
+  record("Capped table styles a clean inset scrollbar with a rounded corner",
+    /\.tour-table-wrap\.is-capped \{[^}]*border-radius:/.test(css)
+      && /\.tour-table-wrap\.is-capped::-webkit-scrollbar \{ width: 8px;/.test(css)
+      && /::-webkit-scrollbar-thumb \{[^}]*border-radius: 8px;[^}]*background-clip: content-box;/.test(css),
+    "border-radius on the wrap + thin inset webkit scrollbar thumb");
 }
 
 // Feature 2 — the homepage UPCOMING board carries a full-bleed live-show backdrop
