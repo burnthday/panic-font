@@ -7686,7 +7686,7 @@ function renderSiteFooter(data, options = {}) {
   <div class="site-foot-inner">
     <div class="footer-lead">
       <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="Burnthday"></a>
-      <p class="footer-identity">Burnthday's Spread Sheet</p>
+      <p class="footer-identity">Burnthday's Panic Spread Sheet</p>
       <p>The same song list the band uses to make setlists, with ${year} tour data and more.</p>
       ${renderFooterSocialRow()}
     </div>
@@ -8394,11 +8394,11 @@ function renderLatestSetlist(data) {
     else break;
   }
   const completedRunShows = run.slice(1);
-  const runLabel = run.length > 1 ? "Latest Shows" : "Latest Show";
+  const runLabel = run.length > 1 ? "Latest shows" : "Latest show";
   const runMeta = run.length > 1 ? `${run.length}-night run · ${featured.venue}` : featured.venue;
   return `<section class="latest-setlist" id="latest-setlist">
   <div class="section-heading latest-heading">
-    <h2>${escapeHtml(runLabel.toUpperCase())}</h2>
+    <h2>${escapeHtml(runLabel)}</h2>
     <span class="latest-heading-meta">${escapeHtml(runMeta)}</span>
   </div>
   ${renderShowCard(data, featured, { latest: true, open: true, priority: true })}
@@ -12256,6 +12256,7 @@ body.stagelight .home-trail a:hover { color: var(--sl-ink); }
 /* ---- SECTION HEADINGS ---- */
 body.stagelight .section-heading h2 { font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; letter-spacing: -0.01em; }
 body.stagelight .section-heading span { font-family: var(--sl-mono); color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+body.stagelight .latest-heading .latest-heading-meta { text-transform: none; letter-spacing: 0.02em; font-size: 13px; }
 
 /* ---- TYPE SCALE + RHYTHM ---- */
 body.stagelight main { max-width: 1400px; }
@@ -12838,7 +12839,7 @@ body.stagelight .footer-sources { margin: 0; font-family: var(--sl-mono); font-s
 body.stagelight .footer-sources a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
 body.stagelight .footer-sources a:hover { color: var(--sl-ink); }
 body.stagelight .footer-bottom-links { display: flex; align-items: center; gap: 24px; margin-left: auto; }
-body.stagelight .footer-privacy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .footer-privacy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .footer-privacy:hover { color: var(--sl-ink); }
 body.stagelight .back-top { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 1px solid var(--sl-line); border-radius: 9px; font-size: 15px; color: var(--sl-faint); transition: color 0.15s ease, border-color 0.15s ease, transform 0.15s ease; }
 body.stagelight .back-top:hover { color: var(--sl-ink); border-color: var(--sl-muted); transform: translateY(-2px); }
@@ -13113,7 +13114,7 @@ body.stagelight .tn-disclaimer { padding: 8px 22px 20px; font-family: var(--sl-m
 @media (max-width: 560px) { body.stagelight .tn-lead { font-size: 15px; } body.stagelight .tonight-toggle { gap: 12px; padding: 16px; } }
 
 /* ---- FOOTER CREDIT ---- */
-body.stagelight .site-credit { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .site-credit { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .site-credit:hover { color: var(--sl-ink); }
 
 body.stagelight .tour-stats { padding: 26px 28px 20px; }

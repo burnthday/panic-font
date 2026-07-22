@@ -878,7 +878,7 @@ function checkNavigation(html, siteData) {
   }
   assertIncludes(footerBottom, 'href="https://gnarlywhal.com"', "Footer keeps the Gnarlywhal site credit");
   assertIncludes(html, `© ${siteData.site.year} Burnthday`, "Footer keeps the Burnthday copyright line");
-  assertIncludes(html, "Burnthday's Spread Sheet", "Footer keeps the Spread Sheet identity line");
+  assertIncludes(html, "Burnthday's Panic Spread Sheet", "Footer keeps the Spread Sheet identity line");
 }
 
 async function checkLegacyPages(siteData) {
