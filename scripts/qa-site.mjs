@@ -609,9 +609,10 @@ async function checkLatestSetlist(html, siteData) {
   }
   record("Hero right rail closes with the All-setlists button",
     heroOnly.includes('class="hero-all"') && heroOnly.includes(`All ${siteData.site.year} setlists`), "hero-all present");
-  record("Song stats is a popup: trigger button + dialog with the last-played table",
-    heroOnly.includes("data-stats-open") && heroOnly.includes('id="hero-stats-modal"') && heroOnly.includes('role="dialog"') && heroOnly.includes('class="ltp-list"'),
-    "stats button + modal present");
+  record("Song stats expands in place: trigger button + panel in the photo slot with rarity symbols",
+    heroOnly.includes("data-stats-open") && heroOnly.includes('id="hero-stats-panel"') && heroOnly.includes('class="hero-media"')
+    && heroOnly.includes('class="ltp-list"') && /hero-stats-panel[\s\S]*?rarity-symbol/.test(heroOnly),
+    "stats button + in-place panel + rarity symbols present");
   const preview = siteData.site?.isShowDayPreview ? siteData.site.featuredShow : null;
   const upcoming = preview || (siteData.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (feat?.isoDate || ""));
   if (upcoming) {

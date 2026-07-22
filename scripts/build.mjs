@@ -7078,17 +7078,33 @@ function renderSetlistExpandScript() {
 
 // Sticky home section-nav: highlight the link whose section is in view. Subtle
 // IntersectionObserver, guarded so no-IO visitors just get plain links.
-// Song stats popup: open/close with backdrop, ✕, and Esc; focus returns to the button.
+// Song stats in-place expansion: the photo crossfades away and the panel slides
+// up into its slot. hidden attr is lifted a frame before the class toggles so the
+// transition plays; restored after the close transition ends.
 function renderHeroModalScript() {
   return `(() => {
-    const modal = document.getElementById("hero-stats-modal");
+    const panel = document.getElementById("hero-stats-panel");
+    const media = panel?.closest(".hero-media");
     const openBtn = document.querySelector("[data-stats-open]");
-    if (!modal || !openBtn) return;
-    const open = () => { modal.hidden = false; document.body.style.overflow = "hidden"; modal.querySelector(".hero-modal-x")?.focus(); };
-    const close = () => { modal.hidden = true; document.body.style.overflow = ""; openBtn.focus(); };
-    openBtn.addEventListener("click", open);
-    modal.querySelectorAll("[data-stats-close]").forEach((el) => el.addEventListener("click", close));
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !modal.hidden) close(); });
+    if (!panel || !media || !openBtn) return;
+    const open = () => {
+      panel.hidden = false;
+      void panel.offsetHeight; // force reflow so the transition always plays (rAF can stall in background tabs)
+      media.classList.add("stats-open");
+      openBtn.setAttribute("aria-expanded", "true");
+      panel.querySelector(".hero-modal-x")?.focus();
+    };
+    const close = () => {
+      media.classList.remove("stats-open");
+      openBtn.setAttribute("aria-expanded", "false");
+      const done = () => { panel.hidden = true; panel.removeEventListener("transitionend", done); };
+      panel.addEventListener("transitionend", done);
+      setTimeout(done, 500);
+      openBtn.focus();
+    };
+    openBtn.addEventListener("click", () => (media.classList.contains("stats-open") ? close() : open()));
+    panel.querySelectorAll("[data-stats-close]").forEach((el) => el.addEventListener("click", close));
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && media.classList.contains("stats-open")) close(); });
   })();`;
 }
 
@@ -7470,7 +7486,6 @@ function renderStagelightHeader(data) {
       <span class="head-search-label">Search</span>
       <kbd class="head-search-kbd" aria-hidden="true"><span class="head-search-cmd">⌘</span>K</kbd>
     </button>
-    <a class="head-cta" href="https://widespreadpanic.com/tour">Get Tickets</a>
     <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="mega-menu" aria-label="Open menu">
       <span class="menu-icon" aria-hidden="true"><i></i><i></i></span>
     </button>
@@ -8581,8 +8596,9 @@ function renderHomeHero(data, show) {
     if (r.gap === null) tickerItems.push(`<span class="tk-item tk-debut"><em>Live debut</em><b>${escapeHtml(r.title)}</b></span>`);
   }
   const isLineupNote = (note) => /entire (show|night)|on guitar|sitting in for|filling in/i.test(note);
+  const noteText = (note) => clean(String((note && typeof note === "object" ? note.text : note) || "").replace(/^\[|\]$/g, ""));
   for (const note of [...annotations.guestNotes, ...annotations.bracketNotes]) {
-    const text = clean(String(note).replace(/^\[|\]$/g, ""));
+    const text = noteText(note);
     if (text && !isLineupNote(text)) tickerItems.push(`<span class="tk-item tk-note"><b>${escapeHtml(text)}</b></span>`);
   }
   const tickerSeq = tickerItems.length ? tickerItems.join('<span class="tk-sep" aria-hidden="true">·</span>') + '<span class="tk-sep" aria-hidden="true">·</span>' : "";
@@ -8593,7 +8609,7 @@ function renderHomeHero(data, show) {
 
   // Lineup boilerplate stays as the quiet footnote under the setlist.
   const lineupNotes = [...annotations.guestNotes, ...annotations.bracketNotes]
-    .map((note) => clean(String(note).replace(/^\[|\]$/g, "")))
+    .map(noteText)
     .filter((text) => text && isLineupNote(text));
   const footnote = lineupNotes.length
     ? `<p class="hero-footnote">${lineupNotes.map((text) => `[${escapeHtml(text)}]`).join(" ")}</p>`
@@ -8624,24 +8640,22 @@ function renderHomeHero(data, show) {
       <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
     </a>` : "";
 
-  // ---- SONG STATS MODAL (popup experience; declutters the hero) ----
+  // ---- SONG STATS: in-place expansion — the photo gives way and the stats panel
+  // takes over its slot in the right rail (cards stay visible, hero height holds). ----
   const statCell = (r) => {
     const g = r.gap === null ? "Live debut" : r.gap === 0 ? "Also last show" : `${formatNumber(r.gap)} show${r.gap === 1 ? "" : "s"} ago`;
     const name = r.slug ? `<a href="/song/${escapeAttr(r.slug)}/">${escapeHtml(r.title)}</a>` : escapeHtml(r.title);
-    return `<li class="ltp-item"><span class="ltp-song">${name}</span><span class="ltp-gap${r.gap === null || (r.gap || 0) >= 40 ? " is-rare" : ""}">${g}</span></li>`;
+    const symbol = r.tier ? `<span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(r.tier)}</span>` : "";
+    return `<li class="ltp-item">${symbol}<span class="ltp-song">${name}</span><span class="ltp-gap${r.gap === null || (r.gap || 0) >= 40 ? " is-rare" : ""}">${g}</span></li>`;
   };
   const rareCount = ltpRows.filter((r) => r.gap === null || (r.gap || 0) >= 40).length;
   const statsButton = ltpRows.length
-    ? `<button type="button" class="hero-stats-btn" data-stats-open aria-haspopup="dialog" aria-controls="hero-stats-modal">Song stats<span>${formatNumber(ltpRows.length)} songs${rareCount ? ` · ${rareCount} deep pull${rareCount === 1 ? "" : "s"}` : ""}</span></button>`
+    ? `<button type="button" class="hero-stats-btn" data-stats-open aria-expanded="false" aria-controls="hero-stats-panel">Song stats<span>${formatNumber(ltpRows.length)} songs${rareCount ? ` · ${rareCount} deep pull${rareCount === 1 ? "" : "s"}` : ""}</span></button>`
     : "";
-  const statsModal = ltpRows.length
-    ? `<div class="hero-modal" id="hero-stats-modal" role="dialog" aria-modal="true" aria-label="Song stats for ${ariaHeading}" hidden>
-        <div class="hero-modal-backdrop" data-stats-close></div>
-        <div class="hero-modal-panel">
-          <div class="hero-modal-head"><h3>Song stats</h3><span>${escapeHtml(show.date)} · ${escapeHtml(show.location)}</span><button type="button" class="hero-modal-x" data-stats-close aria-label="Close">✕</button></div>
-          <p class="sc-stats-head"><span>Song</span><span>Last time played</span></p>
-          <ol class="ltp-list">${ltpRows.map(statCell).join("")}</ol>
-        </div>
+  const statsPanel = ltpRows.length
+    ? `<div class="hero-stats-panel" id="hero-stats-panel" role="region" aria-label="Song stats for ${ariaHeading}" hidden>
+        <div class="hero-modal-head"><h3>Song stats</h3><span>${escapeHtml(show.date)} · ${escapeHtml(show.location)}</span><button type="button" class="hero-modal-x" data-stats-close aria-label="Close song stats">✕</button></div>
+        <ol class="ltp-list">${ltpRows.map(statCell).join("")}</ol>
       </div>`
     : "";
 
@@ -8664,7 +8678,10 @@ function renderHomeHero(data, show) {
         ${statsButton}
       </div>
       <div class="hero-right">
-        ${photo}
+        <div class="hero-media">
+          ${photo}
+          ${statsPanel}
+        </div>
         ${ticker}
         <div class="hero-cards">
           ${nightCards}
@@ -8673,7 +8690,6 @@ function renderHomeHero(data, show) {
         </div>
       </div>
     </div>
-    ${statsModal}
   </section>`;
 }
 
@@ -8714,9 +8730,11 @@ function computeLastPlayedRows(data, show) {
   const titles = [...new Set((show.sets || []).flatMap((set) => set.songTitles || []))];
   return titles.map((title) => {
     const key = normalizeTitle(title);
+    const row = (data.catalog || []).find((entry) => entry.key === key);
     const gap = lastTimePlayedGap(data, key, show.isoDate);
     const slug = data.songSlugMap?.get(key);
-    return { title, slug, gap };
+    const tier = row ? calculateRarity(row).tier : null;
+    return { title, slug, gap, tier };
   }).sort((a, b) => {
     if (a.gap === null) return -1; if (b.gap === null) return 1;
     return b.gap - a.gap;
@@ -12856,18 +12874,35 @@ body.stagelight .hc-go { color: var(--sl-faint); }
 body.stagelight .hero-card-upcoming { border-style: dashed; }
 body.stagelight .hero-all { display: flex; justify-content: center; gap: 8px; padding: 10px; border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-md); font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); transition: color 0.15s ease, background 0.15s ease; }
 body.stagelight .hero-all:hover { color: var(--sl-ink); background: rgba(255,255,255,0.05); }
-/* Song stats modal */
-body.stagelight .hero-modal { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 24px; }
-body.stagelight .hero-modal[hidden] { display: none; }
-body.stagelight .hero-modal-backdrop { position: absolute; inset: 0; background: rgba(6,6,8,0.7); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
-body.stagelight .hero-modal-panel { position: relative; width: min(680px, 100%); max-height: min(78vh, 720px); overflow-y: auto; padding: 24px 28px 28px; border-radius: var(--sl-r); border: 1px solid var(--sl-line-strong); background: #121215; box-shadow: 0 60px 120px -30px rgba(0,0,0,0.9); }
-body.stagelight .hero-modal-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
-body.stagelight .hero-modal-head h3 { font-family: var(--sl-display); font-size: 22px; font-weight: 650; }
-body.stagelight .hero-modal-head span { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
-body.stagelight .hero-modal-x { margin-left: auto; width: 32px; height: 32px; border: 1px solid var(--sl-line); border-radius: 8px; background: transparent; color: var(--sl-muted); cursor: pointer; }
+/* Song stats: in-place expansion. The photo and the stats panel share one slot
+   (.hero-media, sized by the photo cap); toggling .stats-open crossfades the
+   photo away and slides the panel up into its place — cards stay put, hero
+   height never changes. */
+body.stagelight .hero-media { position: relative; height: clamp(260px, 36vh, 380px); }
+body.stagelight .hero-media .hero-photo { position: absolute; inset: 0; height: 100%; transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .hero-stats-panel {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  padding: 18px 22px 16px; border-radius: var(--sl-r-md); border: 1px solid var(--sl-line-strong);
+  background: rgba(16,16,19,0.88); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85);
+  opacity: 0; transform: translateY(14px); pointer-events: none;
+  transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1);
+}
+body.stagelight .hero-media.stats-open .hero-photo { opacity: 0; transform: scale(0.985) translateY(-6px); pointer-events: none; }
+body.stagelight .hero-media.stats-open .hero-stats-panel { opacity: 1; transform: none; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .hero-media .hero-photo, body.stagelight .hero-stats-panel { transition: none; }
+}
+body.stagelight .hero-modal-head { flex: none; display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; }
+body.stagelight .hero-modal-head h3 { font-family: var(--sl-display); font-size: 20px; font-weight: 650; }
+body.stagelight .hero-modal-head span { font-family: var(--sl-mono); font-size: 11.5px; color: var(--sl-faint); }
+body.stagelight .hero-modal-x { margin-left: auto; width: 30px; height: 30px; border: 1px solid var(--sl-line); border-radius: 8px; background: transparent; color: var(--sl-muted); cursor: pointer; }
 body.stagelight .hero-modal-x:hover { color: var(--sl-ink); border-color: var(--sl-muted); }
-body.stagelight .hero-modal-panel .ltp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
-@media (max-width: 640px) { body.stagelight .hero-modal-panel .ltp-list { grid-template-columns: 1fr; } }
+body.stagelight .hero-stats-panel .ltp-list { list-style: none; margin: 0; padding: 0 2px 4px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 0 26px; align-content: start; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+body.stagelight .hero-stats-panel .ltp-item { display: flex; align-items: baseline; gap: 8px; }
+body.stagelight .hero-stats-panel .ltp-item .rarity-symbol { flex: none; min-width: 30px; }
+body.stagelight .hero-stats-panel .ltp-song { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 640px) { body.stagelight .hero-stats-panel .ltp-list { grid-template-columns: 1fr; } }
 @media (max-width: 900px) {
   body.stagelight .hero-inner { grid-template-columns: 1fr; row-gap: 26px; }
   body.stagelight .hero-right { order: -1; }
