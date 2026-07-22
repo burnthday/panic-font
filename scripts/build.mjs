@@ -6509,7 +6509,7 @@ function renderAlbumPage(album, albums, data) {
         <div class="album-body">
           ${album.blurb ? `<p class="album-blurb">${escapeHtml(album.blurb)}</p>` : ""}
           ${stats.matchedCount ? `<div class="album-footprint">
-            <div><strong>${formatNumber(stats.onSheetCount)}</strong><span>on the current sheet</span></div>
+            <div><strong>${formatNumber(stats.onSheetCount)}</strong><span>in rotation</span></div>
             <div><strong>${formatNumber(stats.totalPlays)}</strong><span>live plays, these songs</span></div>
             <div><strong>${formatNumber(stats.tracks.length)}</strong><span>tracks</span></div>
           </div>` : ""}
@@ -13321,7 +13321,7 @@ body.stagelight .albums-deck { font-size: 15px; color: var(--sl-muted); margin-t
 body.stagelight .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
 body.stagelight .album-tile { display: block; color: var(--sl-ink); }
 body.stagelight .album-cover, body.stagelight .album-cover-lg {
-  display: block; position: relative; aspect-ratio: 1 / 1; border-radius: var(--sl-r-md); overflow: hidden;
+  display: block; margin: 0; position: relative; aspect-ratio: 1 / 1; border-radius: var(--sl-r-md); overflow: hidden;
   border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow); background: rgba(255,255,255,0.03);
 }
 body.stagelight .album-cover img, body.stagelight .album-cover-lg img { width: 100%; height: 100%; object-fit: cover; }
