@@ -5015,6 +5015,9 @@ async function attachSetlistFmPerformances(data) {
   }
   for (const list of byTitle.values()) list.sort((a, b) => b.date.localeCompare(a.date));
   data.performancesByTitle = byTitle;
+  // Sorted unique show-date spine (oldest first) so we can count how many shows
+  // fell between a song's two most recent performances = its last-time-played gap.
+  data.allShowDates = [...new Set((cache.shows || []).map((show) => show.date).filter(Boolean))].sort();
 
   // Ordered show log (oldest-first) with each show's flat, in-order song list. This
   // is what the origin "By the Numbers" panel computes over: frequency, drought,
@@ -8221,6 +8224,34 @@ function computeShowPulls(data, show) {
   return groups;
 }
 
+function renderShowLastPlayed(data, show) {
+  const titles = [...new Set((show.sets || []).flatMap((set) => set.songTitles || []))];
+  const rows = titles.map((title) => {
+    const key = normalizeTitle(title);
+    const row = (data.catalog || []).find((entry) => entry.key === key);
+    const gap = lastTimePlayedGap(data, key, show.isoDate);
+    const slug = data.songSlugMap?.get(key);
+    return { title, slug, gap };
+  }).sort((a, b) => {
+    if (a.gap === null) return -1; if (b.gap === null) return 1;
+    return b.gap - a.gap;
+  });
+  const cell = (r) => {
+    const g = r.gap === null ? "Live debut" : r.gap === 0 ? "Also last show" : `${formatNumber(r.gap)} show${r.gap === 1 ? "" : "s"} since`;
+    const name = r.slug ? `<a href="/song/${escapeAttr(r.slug)}/">${escapeHtml(r.title)}</a>` : escapeHtml(r.title);
+    return `<li class="ltp-item"><span class="ltp-song">${name}</span><span class="ltp-gap${r.gap === null || (r.gap || 0) >= 40 ? " is-rare" : ""}">${g}</span></li>`;
+  };
+  const shown = rows.slice(0, 8);
+  const rest = rows.slice(8);
+  return `<div class="sc-row sc-ltp">
+    <span class="sc-label">Last time played</span>
+    <div class="ltp-wrap">
+      <ol class="ltp-list">${shown.map(cell).join("")}</ol>
+      ${rest.length ? `<details class="ltp-more"><summary><span>Show all ${formatNumber(rows.length)}</span></summary><ol class="ltp-list">${rest.map(cell).join("")}</ol></details>` : ""}
+    </div>
+  </div>`;
+}
+
 function renderShowPulls(groups) {
   if (!groups.length) return "";
   return `<div class="sc-row sc-pulls"><span class="sc-label">Pulls</span><span class="sc-pull-list">${groups.map((group) =>
@@ -8259,8 +8290,9 @@ function renderShowCard(data, show, options = {}) {
     ? `<span class="sc-mini-pulls">${renderRaritySymbol(pullGroups[0].tier)}<b>${escapeHtml(pullGroups[0].songs[0])}</b>${pullCount > 1 ? `<span class="sc-more">+${pullCount - 1} MORE</span>` : ""}</span>`
     : "";
   const previewNote = hasSetlist ? "" : `<div class="sc-row"><span class="sc-label" aria-hidden="true"></span><p class="sc-preview-note">The setlist posts here after the show, verified against the official page.</p></div>`;
-  const body = setRows || previewNote || pullsRow || notes
-    ? `<div class="sc-body"><div class="sc-sets">${setRows}${notes}${previewNote}${pullsRow}</div></div>`
+  const ltpRow = (options.latest && hasSetlist) ? renderShowLastPlayed(data, show) : "";
+  const body = setRows || previewNote || pullsRow || notes || ltpRow
+    ? `<div class="sc-body"><div class="sc-sets">${setRows}${notes}${previewNote}${pullsRow}${ltpRow}</div></div>`
     : "";
   const loading = options.lazy ? ' loading="lazy"' : "";
   const priority = options.priority ? ' fetchpriority="high"' : "";
@@ -12255,6 +12287,16 @@ body.stagelight .setlist-expand-all { display: inline-flex; align-items: center;
 body.stagelight .setlist-expand-all:hover { color: var(--sl-ink); border-color: var(--sl-line-strong); }
 body.stagelight .setlist-expand-all .sea-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 body.stagelight .setlist-expand-all .sea-count { font-weight: 700; color: var(--sl-ink); }
+body.stagelight .sc-ltp .ltp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 28px; }
+body.stagelight .ltp-item { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+body.stagelight .ltp-song a { color: var(--sl-ink); text-decoration: none; }
+body.stagelight .ltp-song a:hover { text-decoration: underline; }
+body.stagelight .ltp-gap { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.03em; color: var(--sl-faint); white-space: nowrap; }
+body.stagelight .ltp-gap.is-rare { color: #e0a24a; }
+body.stagelight .ltp-more { grid-column: 1 / -1; margin-top: 6px; }
+body.stagelight .ltp-more > summary { cursor: pointer; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); padding: 6px 0; }
+body.stagelight .ltp-more[open] > summary { color: var(--sl-ink); }
+@media (max-width: 560px) { body.stagelight .sc-ltp .ltp-list { grid-template-columns: 1fr; } }
 body.stagelight .sc-bg { position: absolute; inset: 0; z-index: 0; display: block; }
 body.stagelight .sc-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
 body.stagelight .sc-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,9,11,0.95) 24%, rgba(9,9,11,0.68) 58%, rgba(9,9,11,0.4)); }
@@ -14294,6 +14336,22 @@ function newestUniqueDates(setlists, catalog, currentTour) {
     if (parsed) dates.add(parsed);
   }
   return [...dates].sort().reverse().slice(0, 4);
+}
+
+// Last-time-played gap for a song at a given show: how many shows the band played
+// between this appearance and the previous one. 0 = also played the show before;
+// null = no prior performance in the setlist.fm history (a debut here).
+function lastTimePlayedGap(data, key, showIso) {
+  const perfs = data.performancesByTitle?.get(key);
+  const dates = data.allShowDates;
+  if (!perfs || !dates || !showIso) return null;
+  const prev = perfs.find((perf) => perf.date < showIso);
+  if (!prev) return null;
+  let lo = 0, hi = dates.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (dates[mid] <= prev.date) lo = mid + 1; else hi = mid; }
+  let count = 0;
+  for (let i = lo; i < dates.length && dates[i] < showIso; i += 1) count += 1;
+  return count;
 }
 
 function showsSinceLastPlayed(setlists, lastIso) {
