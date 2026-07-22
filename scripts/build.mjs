@@ -8532,25 +8532,74 @@ function renderSheetBentos(data) {
   </script>`;
 }
 
+// Shelf Watch as an editorial photo-card rail (Alex + ChatGPT spec, 7/22):
+// archival full-bleed photos (band's own gallery CDN, Thomas G. Smith, New
+// Orleans 1999–2000) rotate by POSITION — never claiming to depict the song —
+// under a heavy scrim; plain-language copy; arrows top-right; no hover motion.
+const SHELF_WATCH_PHOTOS = [
+  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-3.jpg",
+  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-1.jpg",
+  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-2.jpg",
+  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000.jpg"
+];
+
 function renderShelfWatch(data) {
   const songs = data.boards.shelfWatch || [];
   if (!songs.length) return "";
 
   const cutoff = data.rules.rotationSlpLimit;
-  return `<section class="shelf-watch" id="shelf-watch">
-  <div class="section-heading data-heading">
-    <h2>Shelf watch</h2>
-    <span>songs nearing the ${escapeHtml(String(cutoff))}-show cutoff <span class="th-tip"><button type="button" class="th-tip-btn" aria-label="What is SLP?"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg></button><span class="th-tip-pop" role="tooltip"><b>SLP</b> — shows since last play. At ${escapeHtml(String(cutoff))}, a song goes to The Shelf.</span></span></span>
-  </div>
-  <div class="shelf-grid">${songs.map((song) => {
+  const shortDate = (song) => {
+    const iso = song.effectiveLastIso || "";
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return song.lastDisplay || "";
+    const [year, month, day] = iso.split("-").map(Number);
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(Date.UTC(year, month - 1, day)));
+  };
+  const cards = songs.map((song, index) => {
     const remaining = Math.max(0, cutoff - song.effectiveSlp);
-    const heat = remaining <= 5 ? "heat-hot" : remaining <= 12 ? "heat-warm" : "heat-cool";
-    return `<div class="shelf-card ${heat}" data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}">
-      <p class="n">${formatNumber(remaining)}</p><p class="to">to The Shelf</p>
-      <p class="song">${escapeHtml(song.title)}</p>
-      <p class="slp">SLP ${formatNumber(song.effectiveSlp)} · LAST ${escapeHtml(song.lastDisplay)}</p>
-    </div>`;
-  }).join("")}</div>
+    const slug = data.songSlugMap?.get(song.key) || "";
+    const photo = SHELF_WATCH_PHOTOS[index % SHELF_WATCH_PHOTOS.length];
+    const pct = Math.min(100, Math.round((song.effectiveSlp / cutoff) * 100));
+    const hot = remaining <= 10;
+    const inner = `<span class="sw-img" style="background-image:url('${photo}')" aria-hidden="true"></span>
+      <span class="sw-body">
+        <span class="sw-n">${formatNumber(remaining)}</span>
+        <span class="sw-to">show${remaining === 1 ? "" : "s"} to the Shelf</span>
+        <strong class="sw-song">${escapeHtml(song.title)}</strong>
+        <span class="sw-meta"><b>${formatNumber(song.effectiveSlp)}</b> shows since last played · ${escapeHtml(shortDate(song))}</span>
+        <span class="sw-rule" aria-hidden="true"><i style="width:${pct}%"></i></span>
+        <span class="sw-count"><b>${formatNumber(song.effectiveSlp)}</b> / ${formatNumber(cutoff)} shows</span>
+      </span>`;
+    const attrs = `class="sw-card${hot ? " is-hot" : ""}" data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}"`;
+    return slug ? `<a ${attrs} href="/songs/${escapeAttr(slug)}/">${inner}</a>` : `<div ${attrs}>${inner}</div>`;
+  }).join("");
+
+  return `<section class="shelf-watch" id="shelf-watch">
+  <div class="sw-head">
+    <h2 class="sw-lead"><b>Shelf Watch</b> tracks songs nearing ${formatNumber(cutoff)} shows since their last play.</h2>
+    <div class="sw-arrows">
+      <button type="button" class="sw-arrow" data-sw-prev aria-label="Previous songs" disabled><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="sw-arrow" data-sw-next aria-label="More songs"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+  <div class="sw-rail" data-sw-rail>${cards}</div>
+  <p class="sw-credit">Photos by <a href="https://widespreadpanic.com/galleries/1999-10-30-new-orleans-la-uno-lakefront-arena/">Thomas G. Smith</a> · New Orleans, <a href="https://widespreadpanic.com/galleries/1999-10-30-new-orleans-la-uno-lakefront-arena/">1999</a>–<a href="https://widespreadpanic.com/galleries/2000-10-27-new-orleans-la-uno-lakefront-arena/">2000</a></p>
+  <script>
+    (() => {
+      const rail = document.querySelector("[data-sw-rail]");
+      const prev = document.querySelector("[data-sw-prev]");
+      const next = document.querySelector("[data-sw-next]");
+      if (!rail || !prev || !next) return;
+      const step = () => (rail.querySelector(".sw-card")?.getBoundingClientRect().width || 320) + 16;
+      const sync = () => {
+        prev.disabled = rail.scrollLeft <= 4;
+        next.disabled = rail.scrollLeft >= rail.scrollWidth - rail.clientWidth - 4;
+      };
+      prev.addEventListener("click", () => rail.scrollBy({ left: -step(), behavior: "smooth" }));
+      next.addEventListener("click", () => rail.scrollBy({ left: step(), behavior: "smooth" }));
+      rail.addEventListener("scroll", sync, { passive: true });
+      sync();
+    })();
+  </script>
 </section>`;
 }
 
@@ -13432,11 +13481,7 @@ body.stagelight .tour-table thead th:nth-child(4) { width: 24%; }
 body.stagelight .tour-table thead th:nth-child(5) { width: 15%; }
 body.stagelight .tour-table tbody th[scope="row"] { overflow: hidden; text-overflow: ellipsis; }
 body.stagelight .tour-table .signal-cell small { white-space: normal; }
-body.stagelight .shelf-watch {
-  background: var(--sl-glass);
-  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
-}
+/* (shelf-watch section frame removed — the photo-card rail carries the design) */
 /* Tour stats: the frame sits on the spreadsheet itself, not the whole section
    (page-rhythm call, Alex round 6). */
 body.stagelight .tour-stats .tour-table-wrap {
@@ -14154,26 +14199,58 @@ body.stagelight .ns-flag.is-tonight { color: var(--sl-ink); border-color: rgba(2
 body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; border-radius: var(--sl-r-md); background: linear-gradient(200deg, rgba(255,255,255,0.10), transparent 38%); pointer-events: none; }
 
 /* ---- SHELF WATCH HEAT CARDS ---- */
-body.stagelight .shelf-watch { background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-body.stagelight .shelf-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-body.stagelight .shelf-card {
-  padding: 24px; position: relative; border-radius: var(--sl-r);
-  background: var(--sl-glass);
-  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
-  transition: transform 0.18s ease;
+/* ---- SHELF WATCH: editorial photo-card rail (archival feature, not a data
+   block). No section frame; the cards carry the design. Static on hover. ---- */
+body.stagelight .shelf-watch { background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; }
+body.stagelight .sw-head { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; }
+body.stagelight .sw-lead { margin: 0; font-family: var(--sl-display); font-size: 32px; font-weight: 400; line-height: 1.15; letter-spacing: -0.01em; color: var(--sl-muted); }
+body.stagelight .sw-lead b { font-weight: 640; color: var(--sl-ink); }
+body.stagelight .sw-arrows { margin-left: auto; display: flex; gap: 8px; flex: none; }
+body.stagelight .sw-arrow {
+  width: 40px; height: 40px; display: grid; place-items: center;
+  border: 1px solid var(--sl-line-strong); border-radius: 50%; background: transparent;
+  color: var(--sl-ink); cursor: pointer; transition: color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
 }
-body.stagelight .shelf-card:hover { transform: translateY(-2px); }
-body.stagelight .shelf-card .n { font-family: var(--sl-mono); font-size: 34px; font-weight: 640; line-height: 1; font-variant-numeric: tabular-nums; margin: 0; }
-body.stagelight .shelf-card .to { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; color: var(--sl-faint); text-transform: uppercase; margin: 7px 0 0; }
-body.stagelight .shelf-card .song { font-size: 17px; font-weight: 580; margin: 16px 0 0; line-height: 1.35; }
-body.stagelight .shelf-card .slp { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--sl-muted); margin: 6px 0 0; }
-body.stagelight .heat-hot { border-color: rgba(212,81,79,0.42); box-shadow: var(--sl-glass-shadow), 0 0 56px -6px rgba(212,81,79,0.35), inset 0 1px 0 rgba(255,177,175,0.16); }
-body.stagelight .heat-hot .n { color: #ef9390; text-shadow: 0 0 24px rgba(212,81,79,0.65); }
-body.stagelight .heat-warm { border-color: rgba(212,81,79,0.2); box-shadow: var(--sl-glass-shadow), 0 0 40px -8px rgba(212,81,79,0.16); }
-body.stagelight .heat-warm .n { color: #e5b3b1; }
-body.stagelight .shelf-note { font-size: 13.5px; color: var(--sl-faint); margin-top: 18px; }
-@media (max-width: 900px) { body.stagelight .shelf-grid { grid-template-columns: 1fr; } }
+body.stagelight .sw-arrow:hover:not(:disabled) { border-color: var(--sl-muted); background: rgba(255,255,255,0.05); }
+body.stagelight .sw-arrow:disabled { color: var(--sl-faint); opacity: 0.4; cursor: default; }
+/* Rail: ~3 full cards + a sliver of the fourth; snap scrolling, no scrollbar. */
+body.stagelight .sw-rail {
+  display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+body.stagelight .sw-rail::-webkit-scrollbar { display: none; }
+body.stagelight .sw-card {
+  flex: 0 0 calc((100% - 32px) / 3.15); min-width: 0; scroll-snap-align: start;
+  position: relative; display: flex; flex-direction: column; justify-content: flex-end;
+  min-height: 480px; border-radius: var(--sl-r); overflow: hidden;
+  border: 1px solid var(--sl-line); text-decoration: none; color: var(--sl-ink); cursor: pointer;
+}
+body.stagelight .sw-img { position: absolute; inset: 0; background-size: cover; background-position: center 22%; }
+/* Heavy scrim: the photo reads at ~25-35%, data always wins. */
+body.stagelight .sw-img::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(9,9,11,0.6) 0%, rgba(9,9,11,0.42) 34%, rgba(9,9,11,0.82) 64%, rgba(9,9,11,0.95) 100%);
+}
+body.stagelight .sw-body { position: relative; display: flex; flex-direction: column; padding: 22px 24px 20px; }
+body.stagelight .sw-n { font-family: var(--sl-mono); font-size: 44px; font-weight: 640; line-height: 1; font-variant-numeric: tabular-nums; }
+body.stagelight .sw-to { font-size: 14px; color: var(--sl-muted); margin-top: 6px; }
+body.stagelight .sw-song { font-family: var(--sl-display); font-size: 22px; font-weight: 640; letter-spacing: -0.01em; margin-top: 14px; line-height: 1.25; }
+body.stagelight .sw-meta { font-size: 13.5px; color: var(--sl-muted); margin-top: 8px; }
+body.stagelight .sw-meta b { color: var(--sl-ink); font-weight: 620; }
+body.stagelight .sw-rule { display: block; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.14); margin-top: 18px; overflow: hidden; }
+body.stagelight .sw-rule i { display: block; height: 100%; background: rgba(255,255,255,0.55); }
+body.stagelight .sw-count { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); margin-top: 10px; font-variant-numeric: tabular-nums; }
+body.stagelight .sw-count b { color: var(--sl-muted); }
+/* Warm red urgency only inside ~10 shows of the Shelf; others stay neutral. */
+body.stagelight .sw-card.is-hot .sw-n, body.stagelight .sw-card.is-hot .sw-meta b, body.stagelight .sw-card.is-hot .sw-count b { color: #ef8b88; }
+body.stagelight .sw-card.is-hot .sw-rule i { background: #d4514f; }
+body.stagelight .sw-credit { margin: 16px 0 0; font-family: var(--sl-mono); font-size: 12.5px; color: rgba(255,255,255,0.55); }
+body.stagelight .sw-credit a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.22); }
+body.stagelight .sw-credit a:hover { color: var(--sl-ink); }
+@media (max-width: 900px) {
+  body.stagelight .sw-lead { font-size: 24px; }
+  body.stagelight .sw-card { flex-basis: 86%; min-height: 420px; }
+}
 
 body.stagelight .ticket-link { text-decoration: none; }
 

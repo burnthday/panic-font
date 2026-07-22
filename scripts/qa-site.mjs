@@ -230,7 +230,13 @@ function checkShelfWatch(html, siteData) {
   const actual = siteData.boards?.shelfWatch || [];
   const feature = sectionHtml(html, "shelf-watch");
 
-  assertIncludes(feature, "<h2>Shelf watch</h2>", "Homepage has Shelf Watch");
+  assertIncludes(feature, "<b>Shelf Watch</b> tracks songs nearing", "Homepage has the Shelf Watch rail with its one-sentence header");
+  record("Shelf Watch rail has paired arrows and no tooltip/helper chrome",
+    feature.includes("data-sw-prev") && feature.includes("data-sw-next") && !feature.includes("th-tip") && !feature.includes("SLP \u2014"),
+    "arrows present, tooltip removed");
+  record("Shelf Watch cards carry the archival photos with one credit line",
+    (feature.match(/class="sw-img"/g) || []).length >= 4 && feature.includes("Photos by") && feature.includes("Thomas G. Smith") && feature.includes("widespreadpanic.com/galleries"),
+    "photo backgrounds + single linked credit");
   record(
     "Shelf Watch is derived from the closest eligible SLP values",
     arraysEqual(actual.map((song) => song.title), expected.map((song) => song.title)),
@@ -245,11 +251,12 @@ function checkShelfWatch(html, siteData) {
   for (const song of expected) {
     const remaining = cutoff - song.effectiveSlp;
     assertIncludes(feature, `data-song-title="${escapeAttribute(song.title)}" data-slp="${song.effectiveSlp}"`, `Shelf Watch includes ${song.title} at ${song.effectiveSlp} SLP`);
-    assertIncludes(feature, `LAST ${song.lastDisplay}`, `Shelf Watch gives ${song.title}'s last-played date`);
     const rowStart = feature.indexOf(`data-song-title="${escapeAttribute(song.title)}"`);
-    const rowEnd = (() => { const next = feature.indexOf('<div class="shelf-card', rowStart + 1); return next >= 0 ? next : feature.length; })();
+    const rowEnd = (() => { const next = feature.indexOf('data-song-title="', rowStart + 20); return next >= 0 ? next : feature.length; })();
     const row = rowStart >= 0 && rowEnd > rowStart ? feature.slice(rowStart, rowEnd) : "";
-    assertIncludes(row, `<p class="n">${remaining}</p>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
+    assertIncludes(row, `shows since last played`, `Shelf Watch gives ${song.title}'s plain-language last-played line`);
+    assertIncludes(row, `<span class="sw-n">${remaining}</span>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
+    assertIncludes(row, `to the Shelf`, `Shelf Watch pairs ${song.title}'s number with the full phrase`);
   }
 }
 
