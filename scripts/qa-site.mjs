@@ -439,7 +439,7 @@ async function checkMobilePassCss() {
     "header + rows must resolve identical column edges");
   // (Change 1) Last-four rail defines all four canonical marker colors.
   record("Tour Stats last-four rail defines the four marker colors",
-    /\.lf-rail \.rail-black \{ color: #131313;/.test(css)
+    /\.lf-rail \.rail-black \{ color: #2e2e30;/.test(css)
       && /\.rail-blue \{ color: #465692;/.test(css)
       && /\.rail-green \{ color: #47866a;/.test(css)
       && /\.rail-red \{ color: #d4514f;/.test(css),
@@ -878,7 +878,7 @@ function checkNavigation(html, siteData) {
   }
   assertIncludes(footerBottom, 'href="https://gnarlywhal.com"', "Footer keeps the Gnarlywhal site credit");
   assertIncludes(html, `© ${siteData.site.year} Burnthday`, "Footer keeps the Burnthday copyright line");
-  assertIncludes(html, "Burnthday's Widespread Panic Spread Sheet", "Footer keeps the Spread Sheet identity line");
+  assertIncludes(html, "Burnthday's Spread Sheet", "Footer keeps the Spread Sheet identity line");
 }
 
 async function checkLegacyPages(siteData) {

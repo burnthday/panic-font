@@ -7030,6 +7030,13 @@ function renderNickRankingScript() {
     wire(typeButtons, (btn) => { type = btn.dataset.nickType; });
     wire(stateButtons, (btn) => { state = btn.dataset.nickState; });
     wire(sortButtons, (btn) => { sort = btn.dataset.nickSort; });
+    const nickScroll = feature.querySelector("[data-nick-scroll]");
+    const nickExpand = feature.querySelector("[data-nick-expand]");
+    nickExpand?.addEventListener("click", () => {
+      const capped = nickScroll?.classList.toggle("is-capped");
+      nickExpand.setAttribute("aria-expanded", String(!capped));
+      nickExpand.textContent = capped ? nickExpand.dataset.expandLabel : nickExpand.dataset.collapseLabel;
+    });
     apply();
   })();`;
 }
@@ -7632,7 +7639,7 @@ function renderFooterColumns(year = new Date().getFullYear()) {
 
 function renderFooterBottom(year) {
   return `<div class="footer-bottom">
-      <p class="footer-sources">Setlist data via <a href="https://www.setlist.fm/" rel="noopener">setlist.fm</a> and <a href="https://widespreadpanic.com/" rel="noopener">widespreadpanic.com</a> · Song history from <a href="http://everydaycompanion.com/" rel="noopener">Everyday Companion</a></p>
+      <p class="footer-sources">Setlist data via <a href="https://www.setlist.fm/" rel="noopener">setlist.fm</a>, <a href="https://widespreadpanic.com/" rel="noopener">widespreadpanic.com</a>, and <a href="http://everydaycompanion.com/" rel="noopener">everydaycompanion.com</a></p>
       <div class="footer-bottom-links">
         <span class="footer-copy">© ${escapeHtml(String(year))} Burnthday</span>
         <a class="footer-privacy" href="/privacy/">Privacy</a>
@@ -7649,7 +7656,7 @@ function renderSiteFooter(data, options = {}) {
   <div class="site-foot-inner">
     <div class="footer-lead">
       <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="Burnthday"></a>
-      <p class="footer-identity">Burnthday's Widespread Panic Spread Sheet</p>
+      <p class="footer-identity">Burnthday's Spread Sheet</p>
       <p>The same song list the band uses to make setlists, with ${year} tour data and more.</p>
       ${renderFooterSocialRow()}
     </div>
@@ -8169,7 +8176,10 @@ function renderNickJohnsonFeature(data) {
     <span class="nrh-col">Song</span>
     <span class="nrh-col nrh-plays">Plays</span>
   </div>
+  <div class="nick-ranking-wrap is-capped" data-nick-scroll>
   ${renderNickRanking(rotation)}
+  </div>
+  <button type="button" class="stats-expand" data-nick-expand aria-expanded="false" data-expand-label="Show the full list" data-collapse-label="Show fewer">Show the full list</button>
   </div>
   </details>
 </section>`;
@@ -12775,9 +12785,9 @@ body.stagelight .site-foot-inner {
 body.stagelight .footer-lead { max-width: 420px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
 body.stagelight .footer-mark { width: min(340px, 85%); height: auto; }
-body.stagelight .footer-lead p.footer-identity { margin: 14px 0 0; max-width: none; white-space: nowrap; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
+body.stagelight .footer-lead p.footer-identity { margin: 16px 0 0; max-width: none; white-space: nowrap; font-weight: 650; font-size: 17px; color: var(--sl-ink); letter-spacing: 0.01em; }
 body.stagelight .footer-copy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
-body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 8px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }
+body.stagelight .footer-lead p { color: var(--sl-muted); margin-top: 8px; max-width: 340px; font-size: 17px; line-height: 1.55; }
 body.stagelight .footer-links { gap: 9px; }
 body.stagelight .footer-links strong { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 8px; }
 body.stagelight .footer-links a { color: var(--sl-muted); font-size: 17px; transition: color 0.15s ease, transform 0.15s ease; }
@@ -12981,6 +12991,8 @@ body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin
 
 /* ---- TOUR-STATS TABLE: capped preview + expand affordance ---- */
 body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; border-radius: var(--sl-r-md); -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+/* Nick's ranking gets the same capped-scroll treatment as the Tour Stats table. */
+body.stagelight .nick-ranking-wrap.is-capped { max-height: 520px; overflow-y: auto; -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
 body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar { width: 8px; }
 body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar-track { background: transparent; }
 body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
@@ -12993,8 +13005,8 @@ body.stagelight .tour-table tbody th[scope="row"] { position: relative; }
 /* Full row height with no radius so consecutive rows' bars read as continuous
    vertical strips; multiple shows stack side by side, never overlapping. */
 body.stagelight .lf-rail { position: absolute; left: 0; top: 0; bottom: 0; display: flex; gap: 2px; }
-body.stagelight .lf-rail i { display: block; width: 3px; background: currentColor; }
-body.stagelight .lf-rail .rail-black { color: #131313; box-shadow: 0 0 0 1px rgba(255,255,255,0.28); }
+body.stagelight .lf-rail i { display: block; width: 2px; background: currentColor; }
+body.stagelight .lf-rail .rail-black { color: #2e2e30; }
 body.stagelight .lf-rail .rail-blue { color: #465692; }
 body.stagelight .lf-rail .rail-green { color: #47866a; }
 body.stagelight .lf-rail .rail-red { color: #d4514f; }
