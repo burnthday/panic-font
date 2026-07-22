@@ -8469,10 +8469,14 @@ function renderSheetBentos(data) {
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
 </section>`;
 
-  const scrawlPool = [...shelfRows, ...purgRows, ...woodRows].map((row) => row.title.toUpperCase());
-  // ONE element: five handwritten setlists (20 real songs each, drawn from the
-  // Shelf/Purgatory/Woodshed), each ending in its "encore" — Alex's greats
-  // written as the trailing lines so they hang off the bottom of that column.
+  // Curate to titles short enough to sit on one line in a column (no overflow).
+  const scrawlPool = [...shelfRows, ...purgRows, ...woodRows]
+    .map((row) => row.title.toUpperCase())
+    .filter((title) => title.length <= 19);
+  // ONE element: five handwritten setlists laid out like loose papers behind the
+  // bentos. Every column has the SAME line count; the greats (Alex's picks) are
+  // the last lines, and a natural bottom-spotlight fade + per-column stagger let
+  // different amounts trail into the light. No overlap, every title on one line.
   const encorePerCol = [
     ["RAISE THE ROOF", "WEST VIRGINIA"],
     ["L.A.", "STIR IT UP"],
@@ -8480,11 +8484,12 @@ function renderSheetBentos(data) {
     ["HAVIN' A BALL"],
     ["BALL OF CONFUSION"]
   ];
+  const TOTAL_LINES = 20;
   const sheetCols = Array.from({ length: 5 }, (unused, index) => {
-    const titles = scrawlPool.slice(index * 20, index * 20 + 20);
-    const body = titles.map((title) => `<span class="ss-song">${escapeHtml(title)}</span>`).join("");
-    const hang = encorePerCol[index].map((title) => `<span class="ss-song ss-hang">${escapeHtml(title)}</span>`).join("");
-    return `<div class="ss-col">${body}${hang}</div>`;
+    const greats = encorePerCol[index];
+    const titles = scrawlPool.slice(index * 20, index * 20 + (TOTAL_LINES - greats.length));
+    const lines = [...titles, ...greats].map((title) => `<span class="ss-song">${escapeHtml(title)}</span>`).join("");
+    return `<div class="ss-col ss-col-${index + 1}">${lines}</div>`;
   }).join("");
   return `${renderSheetKey(data)}
   <div class="bento-region">
@@ -13717,8 +13722,10 @@ body.stagelight .bento-card {
   display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
   position: relative; text-align: left; padding: 26px; cursor: pointer;
   font: inherit; color: var(--sl-ink);
-  background: var(--sl-glass);
-  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  /* Transparent enough that the setlist sheet behind ghosts through the glass
+     (Alex: like the original), with a light backdrop blur so it stays legible. */
+  background: linear-gradient(180deg, rgba(24,24,28,0.4), rgba(16,16,20,0.3));
+  -webkit-backdrop-filter: blur(9px) saturate(1.3); backdrop-filter: blur(9px) saturate(1.3);
   border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
   transition: transform 0.18s ease, border-color 0.18s ease;
 }
@@ -13741,30 +13748,32 @@ body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink
 /* One continuous sheet behind the three bentos: the scrawl runs under the
    glass (barely there), then its last line comes into focus below the cards
    (the Webflow move). Cards sit above it. */
-body.stagelight .bento-region { position: relative; padding-top: 64px; padding-bottom: 118px; }
+body.stagelight .bento-region { position: relative; padding-top: 70px; padding-bottom: 128px; }
 body.stagelight .bento-region .bento-grid { position: relative; z-index: 1; }
-/* ONE element: five handwritten setlists at a slight angle behind the bentos.
-   Spans the whole region so it shows above, below, and (the cards being glass)
-   faintly through them. Columns are staggered; the greats hang off the bottom. */
+/* ONE element: five handwritten setlists laid out like loose papers behind the
+   bentos — shows above, below, and faintly through the glass cards. A single
+   smooth mask ramps the whole sheet from nearly invisible at the top to lit at
+   the base (spotlight from below), so there are no hard opacity steps. */
 body.stagelight .sheet-scrawl {
-  position: absolute; inset: -6px -14px -6px -14px; z-index: 0; overflow: hidden;
-  display: flex; gap: 44px; padding: 0 18px; align-items: flex-start;
-  font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.04em;
-  pointer-events: none; user-select: none; transform: rotate(-2deg);
-  filter: blur(1.5px);
+  position: absolute; inset: -10px -20px 0; z-index: 0; overflow: hidden;
+  display: flex; gap: 52px; padding: 0 24px; align-items: flex-end;
+  font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.03em;
+  pointer-events: none; user-select: none;
+  filter: blur(2.4px);
+  color: rgba(255,255,255,0.5);
+  -webkit-mask-image: linear-gradient(180deg, transparent 6%, rgba(0,0,0,0.12) 34%, rgba(0,0,0,0.45) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 6%, rgba(0,0,0,0.12) 34%, rgba(0,0,0,0.45) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
 }
-body.stagelight .ss-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-body.stagelight .ss-song { display: block; font-size: 17px; line-height: 1.74; white-space: nowrap; color: rgba(255,255,255,0.085); }
-/* The encore lines hang off the bottom: brighter, a touch bigger, pushed down. */
-body.stagelight .ss-hang { color: rgba(255,255,255,0.24); font-size: 19px; margin-top: 8px; }
-body.stagelight .ss-hang:first-of-type { margin-top: 22px; }
-/* Stagger the five sheets so their bottoms (and the hanging greats) trail at
-   different heights, like five sheets pinned at slightly different levels. */
-body.stagelight .ss-col:nth-child(1) { transform: translateY(6px); }
-body.stagelight .ss-col:nth-child(2) { transform: translateY(30px); }
-body.stagelight .ss-col:nth-child(3) { transform: translateY(-4px); }
-body.stagelight .ss-col:nth-child(4) { transform: translateY(44px); }
-body.stagelight .ss-col:nth-child(5) { transform: translateY(18px); }
+body.stagelight .ss-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+body.stagelight .ss-song { display: block; font-size: 13px; line-height: 1.68; white-space: nowrap; }
+/* Laid out like loose papers: shrunk, each sheet nudged and tilted its own way,
+   the first pushed further off the left. Stagger sets how many trailing songs
+   reach the light (~2, ~2, ~1.5, ~1, <1). */
+body.stagelight .ss-col-1 { transform: translate(-34px, -6px) rotate(-2deg); }
+body.stagelight .ss-col-2 { transform: translate(-8px, -10px) rotate(1.5deg); }
+body.stagelight .ss-col-3 { transform: translate(0, -26px) rotate(-1deg); }
+body.stagelight .ss-col-4 { transform: translate(6px, -40px) rotate(1.25deg); }
+body.stagelight .ss-col-5 { transform: translate(20px, -54px) rotate(-1.75deg); }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
