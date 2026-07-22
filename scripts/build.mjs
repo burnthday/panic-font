@@ -8413,14 +8413,8 @@ function calculateRotationHeat(song, shows) {
   return { expectedGap, score, label };
 }
 
-function renderBentoCard(key, label, count, desc, extra, sheetTitles = []) {
-  // The sheet "shows through" the card: a blurred, faint column of the sheet's
-  // real song titles (no sheet photo exists in the repo, so the text IS the sheet).
-  const sheetBg = sheetTitles.length
-    ? `<span class="bc-sheetbg" aria-hidden="true">${sheetTitles.map((title) => escapeHtml(title)).join(" \u2192 ")}</span>`
-    : "";
+function renderBentoCard(key, label, count, desc, extra) {
   return `<button type="button" class="bento-card bento-${key}" id="${key}" data-bento="${key}" aria-expanded="false" aria-controls="bento-panel-${key}">
-    ${sheetBg}
     <span class="bc-open" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     <span class="bc-name">${escapeHtml(label)}</span>
     <span class="bc-count">${formatNumber(count)}<small>SONGS</small></span>
@@ -8475,13 +8469,18 @@ function renderSheetBentos(data) {
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
 </section>`;
 
+  const scrawlPool = [...shelfRows, ...purgRows, ...woodRows].map((row) => row.title.toUpperCase());
+  // The visible tail of the sheet: hand-picked greats (Alex), sparse arrows.
+  const greats = "HAVIN' A BALL <span class=\"ss-arrow\">\u2192</span> RAISE THE ROOF &nbsp; BALL OF CONFUSION &nbsp; STIR IT UP <span class=\"ss-arrow\">\u2192</span> SYMPATHY FOR THE DEVIL &nbsp; WEST VIRGINIA &nbsp; L.A. <span class=\"ss-arrow\">\u2192</span> BAND ON THE RUN";
   return `${renderSheetKey(data)}
+  <div class="bento-region">
+  <div class="sheet-scrawl" aria-hidden="true"><span class="ss-blur">${scrawlPool.slice(0, 110).map((title) => escapeHtml(title)).join("&nbsp;&nbsp; ")}</span><span class="ss-focus">${greats}</span></div>
   <div class="bento-grid" aria-label="Reference sheets">
-    ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts, shelfRows.map((row) => row.title))}
-    ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts, purgRows.map((row) => row.title))}
-    ${renderBentoCard("woodshed", "The Woodshed", woodCount, "In rotation, not yet played with Nick.", woodExtra, woodRows.map((row) => row.title))}
+    ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
+    ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
+    ${renderBentoCard("woodshed", "The Woodshed", woodCount, "In rotation, not yet played with Nick.", woodExtra)}
   </div>
-  <p class="sheet-scrawl" aria-hidden="true">${["Havin' A Ball", "Raise The Roof", "Ball of Confusion", "Stir It Up", "Sympathy for the Devil", "West Virginia", "L.a.", "Band On The Run"].map((title) => escapeHtml(title)).join(' <span class="ss-arrow">→</span> ')}</p>
+  </div>
   ${renderBentoPanel("shelf", "The Shelf", shelf)}
   ${renderBentoPanel("purgatory", "Purgatory", purgatory)}
   ${renderBentoPanel("woodshed", "The Woodshed", woodshed)}
@@ -13690,6 +13689,9 @@ body.stagelight .bento-grid { display: grid; grid-template-columns: repeat(3, 1f
 body.stagelight .bento-key { grid-column: 1 / -1; cursor: default; padding: 24px 26px 18px; }
 body.stagelight .bento-key:hover { transform: none; border-color: var(--sl-line); }
 body.stagelight .bento-card {
+  /* Flex column kills the UA button vertical-centering that let shorter cards
+     (Shelf/Purgatory) drift below the taller Woodshed in the equal-height grid. */
+  display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
   position: relative; text-align: left; padding: 26px; cursor: pointer;
   font: inherit; color: var(--sl-ink);
   background: var(--sl-glass);
@@ -13713,25 +13715,27 @@ body.stagelight .bc-open svg { transition: transform 0.32s cubic-bezier(0.22,1,0
 body.stagelight .bento-card:hover .bc-open { border-color: var(--sl-ink); color: var(--sl-ink); background: rgba(255,255,255,0.06); }
 body.stagelight .bento-card:hover .bc-open svg { transform: rotate(-90deg); }
 body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink); border-color: var(--sl-ink); }
-/* The sheet ghosting through: blurred faint run of the sheet's real titles. */
-body.stagelight .bc-sheetbg {
-  position: absolute; inset: -12% -6%; z-index: 0; pointer-events: none;
-  font-family: "PanicHand", "MilkRun", cursive; font-size: 21px; line-height: 1.9; text-transform: uppercase; letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.06); filter: blur(1.8px); transform: rotate(-3deg);
-  overflow: hidden; white-space: normal; word-break: break-word;
-}
-body.stagelight .bento-card > span:not(.bc-sheetbg):not(.bc-open) { position: relative; z-index: 1; }
-/* Below the bentos: a readable line of Garrie's scrawl — barely-blurred hand
-   font fading in at the left, out at the right. Subtle but legible. */
+/* One continuous sheet behind the three bentos: the scrawl runs under the
+   glass (barely there), then its last line comes into focus below the cards
+   (the Webflow move). Cards sit above it. */
+body.stagelight .bento-region { position: relative; padding-bottom: 58px; }
+body.stagelight .bento-region .bento-grid { position: relative; z-index: 1; }
 body.stagelight .sheet-scrawl {
-  margin: 26px 2px 0; overflow: hidden; white-space: nowrap;
-  font-family: "PanicHand", "MilkRun", cursive; font-size: 24px; text-transform: uppercase; letter-spacing: 0.04em;
-  color: rgba(255,255,255,0.3); filter: blur(0.4px); transform: rotate(-0.6deg);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
-  pointer-events: none; user-select: none;
+  position: absolute; inset: -14px 0 0; z-index: 0; overflow: hidden;
+  font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.05em;
+  pointer-events: none; user-select: none; transform: rotate(-1.2deg);
 }
-body.stagelight .sheet-scrawl .ss-arrow { color: rgba(255,255,255,0.18); margin: 0 6px; }
+body.stagelight .ss-blur {
+  display: block; padding: 0 8px; white-space: normal; word-break: break-word;
+  font-size: 22px; line-height: 2.05; color: rgba(255,255,255,0.03); filter: blur(2.6px);
+}
+body.stagelight .ss-focus {
+  position: absolute; left: 0; right: 0; bottom: 10px; text-align: center; white-space: nowrap;
+  font-size: 25px; color: rgba(255,255,255,0.34); filter: blur(0.3px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 88%, transparent);
+}
+body.stagelight .ss-arrow { color: rgba(255,255,255,0.2); margin: 0 8px; }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
@@ -14055,7 +14059,9 @@ body.stagelight .bi-swipe b { font-family: "PanicHand", "MilkRun", var(--sl-disp
 }
 body.stagelight main > .board-intro + section { margin-top: 68px; }
 
-/* ---- SHEET KEY (quiet disclosure only; the color key is the intro's bi-swipes) ---- */
+/* ---- SHEET KEY (the four explainer columns, held close under the song sheet
+   so "the band uses this color-coded song list" reads as its caption) ---- */
+body.stagelight main > section.sheet-key { margin-top: 28px; }
 body.stagelight .sheet-key { margin-bottom: 34px; }
 /* Ramp-style explainer: four equal columns, lead words bold, plain language. */
 body.stagelight .key-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px; margin-top: 22px; }
