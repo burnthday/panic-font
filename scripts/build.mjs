@@ -2499,8 +2499,36 @@ function renderFaqPage(data) {
         </details>`;
 
   // Group the rendered questions under mono-label section headers, preserving the
-  // order sections first appear in the data. A single inline photo break rides
-  // just before the "Right Now" group (the Posse banner, an in-house Burnthday mark).
+  // order sections first appear in the data. Each section is preceded by a photo
+  // break: three Wikimedia Commons live shots (each carrying a visible photographer
+  // + license credit line per band-photography etiquette) plus the in-house Posse
+  // banner ahead of "Right Now". License verified on each file's Commons page; the
+  // source images live in /assets and are copied to /assets at build.
+  const sectionBreaks = {
+    "The Band": {
+      src: "/assets/wsp-band-jb-2014.jpg", w: 1600, h: 1200,
+      alt: "John Bell of Widespread Panic performing, 2014",
+      credit: "John Bell, 2014 · Photo: NewMillenniumMusic / Wikimedia Commons (CC BY-SA 4.0)"
+    },
+    "The Story": {
+      src: "/assets/wsp-band-2007.jpg", w: 1600, h: 1200,
+      alt: "Widespread Panic on stage, 2007",
+      credit: "Widespread Panic, 2007 · Photo: Mattd523 / Wikimedia Commons (CC BY-SA 3.0)"
+    },
+    "The Scene": {
+      src: "/assets/wsp-redrocks-2010.jpg", w: 1600, h: 936,
+      alt: "Widespread Panic at Red Rocks Amphitheatre, 2010",
+      credit: "Red Rocks, 2010 · Photo: Mike Hardaker / Wikimedia Commons (CC BY-SA 3.0)"
+    }
+  };
+  const posseBreak = `<figure class="faq-break">
+          <img src="/assets/PosseFacebookBanner.png" alt="Jimmy Herring Has a Posse banner" loading="lazy" decoding="async" width="820" height="312">
+        </figure>\n        `;
+  const photoBreak = (b) => `<figure class="faq-break faq-break-photo">
+          <img src="${b.src}" alt="${escapeAttr(b.alt)}" loading="lazy" decoding="async" width="${b.w}" height="${b.h}">
+          <figcaption class="faq-break-credit">${escapeHtml(b.credit)}</figcaption>
+        </figure>\n        `;
+
   const sectionOrder = [];
   for (const faq of faqs) {
     const name = faq.section || "More";
@@ -2509,12 +2537,9 @@ function renderFaqPage(data) {
   const items = sectionOrder.map((name) => {
     const groupFaqs = faqs.filter((faq) => (faq.section || "More") === name);
     const count = groupFaqs.length;
-    const isRightNow = /right now/i.test(name);
-    const breakImg = isRightNow
-      ? `<figure class="faq-break">
-          <img src="/assets/PosseFacebookBanner.png" alt="Jimmy Herring Has a Posse banner" loading="lazy" decoding="async" width="820" height="312">
-        </figure>\n        `
-      : "";
+    const breakImg = /right now/i.test(name)
+      ? posseBreak
+      : (sectionBreaks[name] ? photoBreak(sectionBreaks[name]) : "");
     return `${breakImg}<section class="faq-group" aria-labelledby="grp-${slugify(name)}">
           <h2 class="faq-group-label" id="grp-${slugify(name)}">${escapeHtml(name)}<span class="faq-group-count" aria-hidden="true">${count}</span></h2>
           ${groupFaqs.map(renderItem).join("\n          ")}
@@ -2623,11 +2648,16 @@ function renderFaqCss() {
         font-size: 11px; letter-spacing: 0.12em; color: var(--sl-faint); font-weight: 400;
       }
 
-      /* Inline photo break (in-house Posse banner). */
+      /* Inline photo break (in-house Posse banner + credited Commons live shots). */
       .faq-break { margin: 40px 0 0; }
       .faq-break img {
         display: block; width: 100%; height: auto; border-radius: var(--sl-r-md);
         border: 1px solid var(--sl-line); opacity: 0.92;
+      }
+      .faq-break-photo { margin: 44px 0 0; }
+      .faq-break-credit {
+        margin: 8px 0 0; font-family: var(--sl-mono); font-size: 9.5px;
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint);
       }
 
       .faq-item { border-bottom: 1px solid var(--sl-line); padding: .2rem 0; }

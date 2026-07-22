@@ -46,14 +46,39 @@
       "verify": false
     },
     {
+      "id": "jojo-join",
+      "section": "The Band",
+      "question": "How did JoJo join the band?",
+      "answer": "Good circumstances for us, tougher ones for the guy he replaced. Panic actually had a keyboard player before JoJo. T Lavitz of the Dixie Dregs was brought in at Capricorn's urging to fill out the sound on the 1991 self-titled record and the tour behind it, but the band's brutal schedule wore on him and he stepped off early in 1992. In came John “JoJo” Hermann, an old friend whose Oxford, Mississippi band Beanland was winding down. His tryout was an acoustic set at the Georgia Theatre on March 4, 1992, the band opening for Tower of Power and hiding the set behind a joke name. He passed, played his first proper show a week and a half later, and he's been our piano man ever since.",
+      "sources": [
+        {
+          "label": "JamBase: JoJo Hermann's Widespread Panic debut (1992)",
+          "url": "https://www.jambase.com/article/widespread-panic-jojo-hermann-first-show-1992-video"
+        },
+        {
+          "label": "JamBase: Happy Birthday John “JoJo” Hermann — Making His Panic Debut, 1992",
+          "url": "https://www.jambase.com/article/happy-birthday-john-jojo-hermann-making-widespread-panic-debut-1992"
+        }
+      ],
+      "verify": false
+    },
+    {
       "id": "who-writes-covers",
       "section": "The Band",
       "question": "Do they write their own songs, and whose songs do they cover?",
-      "answer": "Mostly originals, credited collectively to “Widespread Panic” during the Houser era. Their covers lean on their Athens and Southern circle: Bloodkin (Danny Hutchens), the late Vic Chesnutt, and Jerry Joseph, plus deep blues and funk like Junior Kimbrough and the Meters. JB also fronts Brute, his long-running project with Vic Chesnutt, and Schools has run with Hard Working Americans on the side.",
+      "answer": "Mostly originals, and to this day they credit them collectively to “Widespread Panic” rather than to any one member. It never stopped: the 2024 record Hailbound Queen still opens its liner notes with “All songs written by Widespread Panic,” then spells out the exceptions one by one. Their covers lean on their Athens and Southern circle: Bloodkin (Danny Hutchens), the late Vic Chesnutt, and Jerry Joseph, plus deep blues and funk like Junior Kimbrough and the Meters. The whole band, not just JB, moonlighted as Brute, a long-running collaboration with Vic Chesnutt that put out two albums, Nine High a Pallet (1995) and Co-Balt (2002). Schools has run with Hard Working Americans on the side.",
       "sources": [
         {
           "label": "Everyday Companion; band interviews (see Song Origins)",
           "url": null
+        },
+        {
+          "label": "Hailbound Queen liner notes (2024), official Bandcamp",
+          "url": "https://widespreadpanic.bandcamp.com/album/hailbound-queen"
+        },
+        {
+          "label": "Brute — Co-Balt (personnel: the full Panic lineup + Vic Chesnutt)",
+          "url": "https://en.wikipedia.org/wiki/Co-Balt"
         }
       ],
       "verify": false
@@ -67,6 +92,52 @@
         {
           "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003",
           "url": null
+        }
+      ],
+      "verify": false
+    },
+    {
+      "id": "early-years-fast",
+      "section": "The Story",
+      "question": "Can you walk me through the early years, fast?",
+      "answer": "Fast version. JB and Michael Houser met at the University of Georgia in the early '80s and started as a guitar duo. By the mid-'80s they were a full band grinding it out in Athens, playing an A-frame house and dollar-Monday nights at the Uptown Lounge before Space Wrangler landed in 1988. Keys came in stages, T Lavitz of the Dixie Dregs first, then JoJo Hermann for good in 1992. That same year they helped launch H.O.R.D.E., the traveling festival they co-founded with Blues Traveler, Phish, the Spin Doctors, and Col. Bruce Hampton's Aquarium Rescue Unit, the tour that carried the whole jam scene out of the clubs.",
+      "sources": [
+        {
+          "label": "New Georgia Encyclopedia: Widespread Panic",
+          "url": "https://www.georgiaencyclopedia.org/articles/arts-culture/widespread-panic/"
+        },
+        {
+          "label": "Flagpole: Widespread Panic Celebrates 30 Years of Athens Music",
+          "url": "https://flagpole.com/music/music-features/2016/02/03/widespread-panic-celebrates-30-years-of-athens-music/"
+        },
+        {
+          "label": "H.O.R.D.E. tour — Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/H.O.R.D.E."
+        }
+      ],
+      "verify": false
+    },
+    {
+      "id": "modern-era-fast",
+      "section": "The Story",
+      "question": "And from the major-label years to now?",
+      "answer": "They signed to Capricorn and cut the major-label records Everyday (1993) and Ain't Life Grand (1994), then toured without mercy. Early in 1996 they ran the Sit n Ski tour through Western ski towns, an acoustic-leaning run where the band played sitting down. Two years later came the Athens free show for Light Fuse Get Away, roughly 100,000 people downtown. The hardest turn was 2002, when Mikey died of cancer. George McConnell held the guitar chair from 2002 to 2006, and Jimmy Herring has had it since. In 2012 they hung up the electrics for the Wood Tour, their first all-acoustic run, and released the live album Wood. Running under all of it is an Allman Brothers thread, from Warren Haynes sit-ins going back to 1991 to the 2009 Southbound co-tour, and today it's literally in the blood: drummer Duane Trucks is Butch Trucks' nephew and Derek Trucks' brother.",
+      "sources": [
+        {
+          "label": "Ain't Life Grand (1994), Capricorn/Warner — Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Ain%27t_Life_Grand_(Widespread_Panic_album)"
+        },
+        {
+          "label": "JamBase: Sit N Ski With Widespread Panic (1996 acoustic tour)",
+          "url": "https://www.jambase.com/article/sunday-cinema-sit-n-ski-with-widespread-panic"
+        },
+        {
+          "label": "Wood (live album, 2012) — Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Wood_(Widespread_Panic_album)"
+        },
+        {
+          "label": "Jambands: Panic and the Allmans Head Southbound (2009)",
+          "url": "https://jambands.com/news/2009/10/19/panic-and-the-allmans-head-southbound-for-the-final-time-2/"
         }
       ],
       "verify": false
@@ -122,7 +193,7 @@
       "id": "biggest-show",
       "section": "The Story",
       "question": "What's the biggest show they ever played?",
-      "answer": "Panic in the Streets, April 18, 1998. To celebrate the release of their live album Light Fuse Get Away, the band threw a free show on Washington Street outside the 40 Watt Club in their hometown of Athens. They figured maybe 20,000 might turn up. Something close to 100,000 packed downtown, and it still stands as the largest record-release party ever thrown. If you want to understand what this band means to Georgia, start there.",
+      "answer": "Panic in the Streets, April 18, 1998. To celebrate the release of their live album Light Fuse Get Away, the band threw a free show on Washington Street outside the 40 Watt Club in their hometown of Athens. They figured maybe 20,000 might turn up. Something close to 100,000 packed downtown, and it still stands as the largest record-release party ever thrown. For scale of a different kind, look at Bonnaroo: Panic was the very first band booked for the inaugural festival in 2002 and headlined both of its nights, one of six times they'd play the Manchester farm. If you want to understand what this band means to Georgia, start with Athens.",
       "sources": [
         {
           "label": "Athens 1998 (official)",
@@ -131,6 +202,10 @@
         {
           "label": "JamBase: Panic Performs Before Massive Crowd At Hometown Concert In 1998",
           "url": "https://www.jambase.com/article/widespread-panic-performs-massive-crowd-hometown-concert-1998"
+        },
+        {
+          "label": "Relix: Bonnaroo 2011 lineup (Panic's sixth appearance)",
+          "url": "https://relix.com/news/detail/bonnaroo-2011-eminem-arcade-fire-widespread-panic-the-black-keys-buffa/"
         }
       ],
       "verify": false
@@ -156,7 +231,7 @@
       "id": "still-touring",
       "section": "Right Now",
       "question": "Are they still touring?",
-      "answer": "Yes, very much so, and 2026 turned into one of the more storied stretches of the whole run. The hard part first: Jimmy Herring is off the road getting treatment for a cancer that came back late in 2025, so Nick Johnson is handling lead guitar (more on Nick below). Fans got the first taste when Nick and Billy Strings both sat in over the New Year's run at the Fox Theatre in Atlanta, before the 2026 tour got rolling. The band has carried it beautifully. In June they ran their 78th straight sellout at Red Rocks with Nick slinging solos like he'd been there for years. We're all pulling for Jimmy and holding his seat.",
+      "answer": "Yes, very much so, and 2026 turned into one of the more storied stretches of the whole run. Jimmy Herring is off the road getting cancer treatment, so Nick Johnson is handling lead guitar (more on Nick below), and the band has carried it beautifully. Fans got the first taste when Nick and Billy Strings both sat in over the New Year's run at the Fox Theatre in Atlanta, before the 2026 tour got rolling. In June they ran their 78th straight sellout at Red Rocks with Nick slinging solos like he'd been there for years. We're all pulling for Jimmy and holding his seat.",
       "sources": [
         {
           "label": "An Update on Jimmy (official, 1/8/2026)",
@@ -190,23 +265,6 @@
         {
           "label": "Flagpole: Sunny Ortiz and Sam Holt on Athens, Panic and Keeping the Music Alive",
           "url": "https://flagpole.com/featured/2025/08/26/sunny-ortiz-and-sam-holt-on-athens-panic-and-keeping-the-music-alive/"
-        }
-      ],
-      "verify": false
-    },
-    {
-      "id": "jimmy-herring",
-      "section": "Right Now",
-      "question": "How is Jimmy Herring doing?",
-      "answer": "He's fighting, and the word from the band is hopeful. Jimmy was first diagnosed with stage 1 tonsil cancer in 2024 and treated it during that year's break. It came back at the end of 2025, so he stepped away from the 2026 tour to focus on getting well. The band has said his prognosis is positive and they expect him back when he's ready. It cuts close in the Panic family for a reason most casual fans miss: drummer Duane Trucks is Jimmy's son-in-law. We'll leave the light on.",
-      "sources": [
-        {
-          "label": "An Update on Jimmy (official, 1/8/2026)",
-          "url": "https://widespreadpanic.com/2026/01/08/an-update-on-jimmy/"
-        },
-        {
-          "label": "JamBase: Herring Stepping Away To Undergo Further Cancer Treatment",
-          "url": "https://www.jambase.com/article/jimmy-herring-widespread-panic-further-cancer-treatment"
         }
       ],
       "verify": false
@@ -253,8 +311,13 @@
       "id": "starter-albums",
       "section": "The Scene",
       "question": "Which albums should a new fan start with?",
-      "answer": "Start with the studio run: Space Wrangler (1988), Ain't Life Grand (1994), Bombs & Butterflies (1997), and 'Til the Medicine Takes (1999). Then, because Panic is above all a live band, go to Light Fuse Get Away (1998), the definitive live document. After that, quit reading and go pull a tape.",
-      "sources": [],
+      "answer": "Start with the studio run: Space Wrangler (1988), Ain't Life Grand (1994), Bombs & Butterflies (1997), and 'Til the Medicine Takes (1999). Then, because Panic is above all a live band, go to Light Fuse Get Away (1998), the definitive live document. To hear where they are right now, cue up their 2024 record Hailbound Queen, which opens with “King Baby,” a Jerry Joseph co-write that's become a live staple. After that, quit reading and go pull a tape.",
+      "sources": [
+        {
+          "label": "Hailbound Queen (2024), official Bandcamp",
+          "url": "https://widespreadpanic.bandcamp.com/album/hailbound-queen"
+        }
+      ],
       "verify": false
     }
   ]
