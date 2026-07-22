@@ -7182,6 +7182,37 @@ function renderHeroModalScript() {
     };
     cards.forEach((card) => card.addEventListener("click", () => showView(card.dataset.viewBtn)));
 
+    // Date pager: walk every posted show chronologically (upcoming at the end).
+    const pager = hero.querySelector(".hero-pager");
+    if (pager) {
+      const order = pager.dataset.pagerOrder.split(",");
+      const prevBtn = pager.querySelector("[data-page-prev]");
+      const nextBtn = pager.querySelector("[data-page-next]");
+      const count = pager.querySelector("[data-page-count]");
+      const currentIso = () => hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view;
+      const syncPager = () => {
+        const index = order.indexOf(currentIso());
+        if (prevBtn) prevBtn.disabled = index <= 0;
+        if (nextBtn) nextBtn.disabled = index < 0 || index >= order.length - 1;
+        if (count && index >= 0) count.textContent = (index + 1) + " of " + order.length;
+      };
+      const step = (delta) => {
+        const index = order.indexOf(currentIso());
+        const target = order[index + delta];
+        if (target) { showView(target); setTimeout(syncPager, 260); }
+      };
+      prevBtn?.addEventListener("click", () => step(-1));
+      nextBtn?.addEventListener("click", () => step(1));
+      document.addEventListener("keydown", (event) => {
+        const target = event.target instanceof Element ? event.target : null;
+        if (target && target.closest("input, textarea, select, [contenteditable]")) return;
+        if (event.key === "ArrowLeft") { step(-1); }
+        else if (event.key === "ArrowRight") { step(1); }
+      });
+      hero.addEventListener("click", (event) => { if (event.target.closest("[data-view-btn]")) setTimeout(syncPager, 260); });
+      syncPager();
+    }
+
     // Glint follows the cursor while hovering the stats button.
     hero.addEventListener("pointermove", (event) => {
       const btn = event.target.closest(".hero-stats-btn");
@@ -8356,8 +8387,8 @@ function renderSheetBentos(data) {
   ${renderSongPanel("woodshed-covers", "COVERS", data.boards.woodshedCovers, { shelfMode: true, woodshedMode: true, columns: 3 })}
 </section>`;
 
-  return `<div class="bento-grid" aria-label="Sheet key and reference sheets">
-    ${renderSheetKey(data)}
+  return `${renderSheetKey(data)}
+  <div class="bento-grid" aria-label="Reference sheets">
     ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
     ${renderBentoCard("woodshed", "The Woodshed", woodCount, "In rotation, not yet played with Nick.", woodExtra)}
@@ -8505,39 +8536,22 @@ function renderNickRanking(songs) {
 }
 
 function renderSheetKey(data) {
-  return `<section class="bento-card bento-key sheet-key" id="sheet-key">
-    <div class="key-strip">
-      <div class="key-head">
-        <h2>Sheet key</h2>
-        <p>Marker color identifies the most recent shows on the sheet.</p>
-      </div>
-      ${renderMarkerLegend(data.site.markerLegend)}
-    </div>
+  const legend = data.site.markerLegend || [];
+  const dots = legend.map((item, index) => {
+    const color = STRIKE_COLORS[item.asset] || "#131313";
+    const n = index + 1;
+    return `<li><span class="mk-dot" style="--mc:${color}"><b>${n}</b><small>show${n === 1 ? "" : "s"} ago</small></span><span class="mk-show">${escapeHtml(item.label)}</span></li>`;
+  }).join("");
+  return `<section class="sheet-key" id="sheet-key">
+    <p class="sheet-key-line">Marker color identifies the most recent shows on the sheet.</p>
+    ${legend.length ? `<ol class="marker-dots" aria-label="Marker colors, most recent show first">${dots}</ol>` : ""}
     <details class="key-more">
-    <summary><span>What everything on the sheets means</span><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
-    <div class="key-topline">
-      <section class="key-block key-song-list">
-        <h3>Song List</h3>
-        <p>The main sheet shows originals and covers active for the ${escapeHtml(String(data.site.year))} tour.</p>
-        <ul class="key-points">
-          <li><strong>Tiny Number</strong><span>Times played this tour.</span></li>
-          <li><strong>Marker</strong><span>Played during one of the last four shows.</span></li>
-        </ul>
-      </section>
-      <section class="key-block key-marker">
-        <h3>Marker Colors</h3>
-        <p>On the Song List, colors show which recent show the song was played at.</p>
-        <p>On Shelf and Purgatory, black means the song came off that sheet this tour.</p>
-      </section>
-      <section class="key-block key-other-sheets">
-        <h3>Other Sheets</h3>
-        <dl>
-          <div><dt>Shelf</dt><dd>Songs outside the rotation window, with lifetime count and last-played date.</dd></div>
-          <div><dt>Shelf Watch</dt><dd>Songs within ${escapeHtml(String(data.rules.shelfWatchWindow))} shows of the ${escapeHtml(String(data.rules.rotationSlpLimit))}-show Shelf cutoff.</dd></div>
-          <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
-          <div><dt>The Woodshed</dt><dd>Songs in rotation not yet played with Nick Johnson on guitar.</dd></div>
-        </dl>
-      </section>
+    <summary class="link-quiet">What everything on the sheets means <svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+    <div class="key-grid">
+      <p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't run in the last four shows. The tiny number beside a song counts its plays this tour.</p>
+      <p><b>The Shelf holds songs 200 shows gone.</b> When one comes back it's a bustout, the pull every crowd hopes for. This sheet shows how deep the band can reach.</p>
+      <p><b>Purgatory keeps the one-timers,</b> songs played exactly once, ever. Some are covers from a single wild night. A second play moves a song out, and it rarely comes.</p>
+      <p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. It shrinks every night he digs deeper, and it's the cleanest read on how fast he's learning the book.</p>
     </div>
   </details>
 </section>`;
@@ -8676,7 +8690,7 @@ function renderHomeSectionNav(data) {
 // media (photo + stats panel), and the highlights ticker. Each run night gets a
 // full view; the night cards crossfade a view into place (never a half-swap where
 // one show's setlist sits under another's title).
-function renderHeroView(data, show) {
+function renderHeroView(data, show, opts = {}) {
   const annotations = buildSetlistAnnotations(show);
   const sets = (show.sets || []).filter((set) => (set.songTitles && set.songTitles.length) || clean(set.songs));
   const hasSetlist = sets.length > 0;
@@ -8744,7 +8758,7 @@ function renderHeroView(data, show) {
     : "";
   const credit = show.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(show.photoCredit)}</figcaption>` : "";
   const photo = show.image
-    ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async" fetchpriority="high">${credit}</figure>`
+    ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" crossorigin="anonymous" decoding="async"${opts.eager ? ' fetchpriority="high"' : ' loading="lazy"'}>${credit}</figure>`
     : "";
   return {
     iso,
@@ -8753,7 +8767,7 @@ function renderHeroView(data, show) {
         <h2 class="sc-city">${escapeHtml(show.location)}</h2>
         <span class="sc-venue">${escapeHtml(venueLine)}</span>
         ${chips ? `<span class="sc-chips">${chips}</span>` : ""}`,
-    music: `<div class="hero-sets sc-sets">${setRows}</div>${footnote}${statsButton}`,
+    music: `<div class="hero-sets sc-sets">${setRows}${annotations.guestNotes.length ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}</div></div>` : ""}</div>${footnote}${statsButton}`,
     media: `<div class="hero-media">${photo}${statsPanel}</div>`,
     ticker
   };
@@ -8818,7 +8832,9 @@ function renderHomeHero(data) {
     if (entry.venue === featured.venue && entry.location === featured.location) runShows.push(entry);
     else break;
   }
-  const views = runShows.map((entry) => ({ show: entry, view: renderHeroView(data, entry), kind: "night" }));
+  const runIsos = new Set(runShows.map((entry) => entry.isoDate));
+  // Every posted setlist is a hero view, so the date pager can walk the whole tour.
+  const views = posted.map((entry, index) => ({ show: entry, view: renderHeroView(data, entry, { eager: index === 0 }), kind: "night" }));
   const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
   let upcoming = preview || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (featured.isoDate || ""));
   if (upcoming) {
@@ -8833,7 +8849,7 @@ function renderHomeHero(data) {
 
   // One card per view (featured included, hidden while active): the rail always
   // shows "the other nights" plus the upcoming show.
-  const cards = views.map(({ show: entry, view, kind }, index) => {
+  const cards = views.filter(({ show: entry, kind }) => kind === "upcoming" || runIsos.has(entry.isoDate)).map(({ show: entry, view, kind }, index) => {
     if (kind === "upcoming") {
       const upDow = weekdayName(entry.isoDate || "").slice(0, 3).toUpperCase();
       return `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false">
@@ -8861,10 +8877,16 @@ function renderHomeHero(data) {
   // The blurred backdrop continues past the hero as a mirrored echo, so the next
   // section fades out of the same light instead of cutting to flat black.
   const echo = bgSrc ? `<div class="hero-echo" aria-hidden="true"><img src="${escapeAttr(bgSrc)}" alt="" crossorigin="anonymous" loading="lazy" decoding="async"></div>` : "";
+  const pagerOrder = [...views].sort((a, b) => (a.view.iso || "").localeCompare(b.view.iso || "")).map(({ view }) => view.iso);
+  const pager = pagerOrder.length > 1 ? `<div class="hero-pager" data-pager-order="${escapeAttr(pagerOrder.join(","))}">
+      <button type="button" class="hero-page" data-page-prev aria-label="Earlier show">&#8249;</button>
+      <button type="button" class="hero-page" data-page-next aria-label="Later show">&#8250;</button>
+      <span class="hero-page-count" data-page-count>${pagerOrder.indexOf(featured.isoDate) + 1} of ${pagerOrder.length}</span>
+    </div>` : "";
   return `<section class="home-hero${featured.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${views[0].view.ariaHeading}">
     ${bg}
     <div class="hero-inner">
-      <div class="hero-slot hero-lock-slot">${slot("lock")}</div>
+      <div class="hero-lockwrap">${pager}<div class="hero-slot hero-lock-slot">${slot("lock")}</div></div>
       <div class="hero-slot hero-media-slot">${slot("media")}</div>
       <div class="hero-slot hero-music-slot">${slot("music")}</div>
       <div class="hero-rail">
@@ -13018,7 +13040,16 @@ body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px
 body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 20px; align-items: start; }
 body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
 body.stagelight .hero-slot, body.stagelight .hero-rail { min-width: 0; }
-body.stagelight .hero-lock-slot { grid-column: 1; grid-row: 1; align-self: center; }
+body.stagelight .hero-lockwrap { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; }
+body.stagelight .hero-pager { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+body.stagelight .hero-page {
+  width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--sl-line-strong);
+  border-radius: 50%; background: transparent; color: var(--sl-muted); font-size: 17px; line-height: 1;
+  cursor: pointer; transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+body.stagelight .hero-page:hover:not(:disabled) { color: var(--sl-ink); border-color: var(--sl-muted); background: rgba(255,255,255,0.05); }
+body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
+body.stagelight .hero-page-count { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--sl-faint); margin-left: 4px; }
 body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
 body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; }
 body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
@@ -13752,35 +13783,34 @@ body.stagelight .board-intro h2 { font-family: var(--sl-display); font-size: 34p
 body.stagelight .board-intro-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--sl-faint); margin-top: 10px; }
 body.stagelight main > .board-intro + section { margin-top: 44px; }
 
-/* ---- SHEET KEY BENTO ---- */
-body.stagelight .key-strip { display: flex; align-items: center; gap: 20px 40px; flex-wrap: wrap; }
-body.stagelight .key-head { max-width: 260px; }
-body.stagelight .sheet-key h2 { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; font-weight: 600; }
-body.stagelight .key-head p { font-size: 13.5px; color: var(--sl-faint); margin-top: 6px; line-height: 1.5; }
-body.stagelight .key-strip .marker-legend { margin-left: auto; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-body.stagelight .key-strip .marker-legend li { flex-direction: column; align-items: flex-start; gap: 8px; border-radius: 14px; padding: 12px 14px; background: rgba(255,255,255,0.025); }
-body.stagelight .key-strip .marker-legend img { width: 26px; }
-body.stagelight .key-strip .marker-legend span { display: flex; flex-direction: column; }
-body.stagelight .key-strip .marker-legend strong { font-size: 12.5px; }
-body.stagelight .key-strip .marker-legend em { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--sl-faint); margin-top: 2px; }
-body.stagelight .key-more { margin-top: 18px; border-top: 1px solid var(--sl-line); }
-body.stagelight .key-more summary { display: flex; align-items: center; gap: 10px; padding: 14px 0 4px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .key-more summary:hover { color: var(--sl-ink); }
-body.stagelight .key-more summary .sc-chev { position: static; transition: transform 0.2s ease; }
-body.stagelight .key-more[open] summary .sc-chev { transform: rotate(180deg); }
-body.stagelight .key-more .key-topline { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 28px; margin-top: 16px; padding-bottom: 6px; }
-body.stagelight .key-block h3 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 8px; color: var(--sl-muted); }
-body.stagelight .key-block p, body.stagelight .key-block li, body.stagelight .key-block dd, body.stagelight .key-block dt { font-size: 13.5px; color: var(--sl-muted); }
-body.stagelight .key-block dt { color: var(--sl-ink); font-weight: 600; }
-body.stagelight .key-points li { display: flex; gap: 10px; padding: 3px 0; }
-body.stagelight .key-points strong { color: var(--sl-ink); }
-body.stagelight .key-other-sheets dl { display: grid; gap: 8px; margin-top: 8px; }
-body.stagelight .key-other-sheets dd { margin: 2px 0 0; }
-@media (max-width: 900px) {
-  body.stagelight .key-more .key-topline { grid-template-columns: 1fr; }
-  body.stagelight .key-strip .marker-legend { margin-left: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
-  body.stagelight .key-head { max-width: none; }
+/* ---- SHEET KEY (no bento: one bold line, marker circles, quiet disclosure) ---- */
+body.stagelight .sheet-key { margin-bottom: 34px; }
+body.stagelight .sheet-key-line { font-size: 17px; font-weight: 650; color: var(--sl-ink); margin: 0 0 20px; }
+body.stagelight .marker-dots { list-style: none; margin: 0; padding: 0; display: flex; gap: 34px; flex-wrap: wrap; }
+body.stagelight .marker-dots li { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+body.stagelight .mk-dot {
+  width: 88px; height: 88px; border-radius: 50%; background: var(--mc);
+  display: grid; place-content: center; text-align: center; gap: 1px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.16), 0 14px 30px -14px rgba(0,0,0,0.7);
 }
+body.stagelight .mk-dot b { font-family: var(--sl-display); font-size: 24px; font-weight: 680; color: rgba(255,255,255,0.94); line-height: 1; }
+body.stagelight .mk-dot small { font-family: var(--sl-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.72); }
+body.stagelight .mk-show { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
+body.stagelight .key-more { margin-top: 24px; }
+body.stagelight .key-more summary { list-style: none; cursor: pointer; }
+body.stagelight .key-more summary::-webkit-details-marker { display: none; }
+body.stagelight .key-more summary .sc-chev { position: static; align-self: center; transition: transform 0.2s ease; }
+body.stagelight .key-more[open] summary .sc-chev { transform: rotate(180deg); }
+/* Ramp-style explainer: four equal columns, lead words bold, plain language. */
+body.stagelight .key-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px; margin-top: 22px; }
+body.stagelight .key-grid p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--sl-muted); }
+body.stagelight .key-grid b { color: var(--sl-ink); font-weight: 650; }
+@media (max-width: 900px) {
+  body.stagelight .key-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  body.stagelight .marker-dots { gap: 22px; }
+  body.stagelight .mk-dot { width: 74px; height: 74px; }
+}
+@media (max-width: 560px) { body.stagelight .key-grid { grid-template-columns: 1fr; } }
 
 /* ---- HOME SECTION NAV (sticky breadcrumbs) ---- */
 /* Quiet glass bar under the sticky site header. Rides up with the header when it

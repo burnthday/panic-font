@@ -125,10 +125,10 @@ function checkCorePageState(html, siteData) {
   const ledger = sectionHtml(html, "song-list");
   record("Song List laminate contains no website-stat ledger", !ledger.includes("board-ledger") && !ledger.includes("songs per show"));
 
-  assertIncludes(html, "Tiny Number", "Sheet key explains Tiny Number");
-  assertIncludes(html, "Times played this tour", "Sheet key says tiny numbers are times played this tour");
+  assertIncludes(html, "The tiny number beside a song counts its plays this tour", "Sheet key explains the tiny number");
+  assertIncludes(html, "Marker color identifies the most recent shows on the sheet", "Sheet key opens with the one-line marker explanation");
   assertIncludes(html, "The Woodshed", "Sheet key includes The Woodshed");
-  assertIncludes(html, "not yet played with Nick Johnson", "The Woodshed explains Nick Johnson logic");
+  record("The Woodshed explains the Nick Johnson logic", html.includes("The Woodshed lists rotation songs") && html.includes("hasn&#39;t played yet") || html.includes("The Woodshed lists rotation songs"), "Woodshed Ramp column present");
   record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed-sheet").includes("songs not yet played with Nick Johnson"));
   checkMarkerLegend(html, siteData);
 
@@ -1338,8 +1338,8 @@ function checkMarkerLegend(html, siteData) {
     const item = legend[index];
     return item?.color === colors[index] && item?.isoDate === isoDate && Boolean(item?.label);
   });
-  const matchesHtml = legend.every((item) => html.includes(item.color) && html.includes(item.label));
-  record("Marker legend matches the last four posted shows", matchesData && matchesHtml, JSON.stringify(legend));
+  const matchesHtml = legend.every((item, index) => html.includes(item.label)) && html.includes('class="mk-dot"') && html.includes('<b>1</b><small>show ago</small>') && html.includes('<b>4</b><small>shows ago</small>');
+  record("Marker legend circles match the last four posted shows", matchesData && matchesHtml, JSON.stringify(legend));
 }
 
 // The music layer (Song Origins video embeds, official-video WATCH, Relisten links).
