@@ -62,7 +62,8 @@ const navSubLinks = {
     ["Song Possibilities", "/#song-list"],
     ["Song Index", "/songs/"],
     ["Tour Stats", "/#tour-stats"],
-    ["Setlists", "/#setlists"]
+    ["Setlists", "/#setlists"],
+    ["The Almanac", "/almanac/"]
   ],
   "Albums": [
     ["Lyrics & Chords", "/lyrics-chords/"],
@@ -84,7 +85,8 @@ const footerColumns = [
     ["Song Index", "/songs/"],
     ["Albums", "/albums/"],
     ["Lyrics & Chords", "/lyrics-chords/"],
-    ["Song Origins", "/song-origins/"]
+    ["Song Origins", "/song-origins/"],
+    ["The Almanac", "/almanac/"]
   ]],
   ["The Sheet", [
     ["Song List", "/"],
@@ -152,7 +154,10 @@ async function main() {
   await writeFaqPage(siteData);
   await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
+  attachSeguePairs(siteData);
+  attachAlmanac(siteData, await loadAlmanac());
   attachTonightOdds(siteData);
+  await writeAlmanacPage(siteData);
   siteData.songVideosByKey = await loadSongVideos();
   siteData.relistenDates = await loadRelistenDates();
   attachBestGuesses(siteData, await loadBestGuesses());
@@ -2494,6 +2499,223 @@ function renderFaqCss() {
   `;
 }
 
+// ── THE ALMANAC PAGE (/almanac/) ─────────────────────────────────────────────
+// Renders the computed almanac. Page chrome is neutral site voice; Burnthday's
+// verbatim "Play" notes appear only inside the pull card with a "— Burnthday"
+// attribution, and the lyric snippets are styled as 🎵 pull-lines. Tiers are
+// shown as plain-language badges; the p-value lives in a title attribute + small
+// print, never on the surface.
+async function writeAlmanacPage(data) {
+  if (!data.almanac) return;
+  await writeStaticPage("/almanac/index.html", renderAlmanacPage(data));
+}
+
+function almanacTierBadge(entry) {
+  const tier = entry.tier;
+  const long = entry.behavioral && tier === "confirmed" ? "Confirmed pattern" : (ALMANAC_TIER_LABEL[tier] || "");
+  const title = entry.stat && Number.isFinite(entry.stat.p)
+    ? `Exact binomial p = ${entry.stat.p.toExponential(1)}`
+    : "";
+  return `<span class="alm-badge alm-badge-${tier}"${title ? ` title="${escapeAttr(title)}"` : ""}>${escapeHtml(long)}</span>`;
+}
+
+// The stat sentence, in plain language, no p-value on the surface.
+function almanacWeeklyStatLine(entry) {
+  const s = entry.stat;
+  if (!s || !s.tot) return "";
+  const ratio = s.ratio >= 10 ? Math.round(s.ratio) : s.ratio.toFixed(1);
+  return `${formatNumber(s.obs)} of ${formatNumber(s.tot)} lifetime plays are ${escapeHtml(entry.dayPlural || (entry.day + "s"))} · ${ratio}× the odds`;
+}
+function almanacHolidayStatLine(entry) {
+  const s = entry.stat;
+  if (!s) return "";
+  const occ = entry.occasion || "holiday";
+  if (s.dateShows < ALMANAC_MIN_TARGET_SHOWS && entry.tier === "watching") {
+    return `Only ${formatNumber(s.dateShows)} ${escapeHtml(occ)} shows in history — not enough data to prove it yet.`;
+  }
+  const ratio = s.ratio >= 10 ? Math.round(s.ratio) : s.ratio.toFixed(1);
+  return `${formatNumber(s.obs)} of ${formatNumber(s.dateShows)} ${escapeHtml(occ)} shows have featured it · ${ratio}× the odds`;
+}
+
+function almanacSongLink(entry) {
+  return entry.slug
+    ? `<a href="/song/${escapeAttr(entry.slug)}/">${escapeHtml(entry.song)}</a>`
+    : escapeHtml(entry.song);
+}
+
+// One tradition card — song, tier badge, 🎵 lyric pull-line, verbatim Play note,
+// and the plain stat line.
+function renderAlmanacTraditionCard(entry, statLine) {
+  const dayTag = entry.day ? `<span class="alm-daytag">${escapeHtml(entry.day)}</span>`
+    : (entry.occasion ? `<span class="alm-daytag">${escapeHtml(entry.occasion)}</span>` : "");
+  const lyric = entry.lyric
+    ? `<p class="alm-lyric"><span class="alm-note-icon" aria-hidden="true">🎵</span>${escapeHtml(entry.lyric)}</p>`
+    : "";
+  const play = entry.play
+    ? `<blockquote class="alm-play"><p>${escapeHtml(entry.play)}</p><cite>— Burnthday</cite></blockquote>`
+    : "";
+  // Entries with neither lyric nor Play note (End of the Show, Ain't Life Grand)
+  // get a neutral, factual line instead — never written in the owner's voice.
+  let neutral = "";
+  if (!entry.lyric && !entry.play) {
+    if (entry.behavioral) neutral = `<p class="alm-neutral">No lyric predicts this one — but the pattern is hard to ignore.</p>`;
+    else if (entry.claim === "owner") neutral = `<p class="alm-neutral">No lyric flags the day, but Burnthday vouches for it — and the numbers lean his way.</p>`;
+  }
+  return `<article class="alm-card alm-tier-${entry.tier}">
+        <header class="alm-card-head">
+          <h3 class="alm-song">${almanacSongLink(entry)}</h3>
+          <div class="alm-tags">${dayTag}${almanacTierBadge(entry)}</div>
+        </header>
+        ${lyric}
+        ${play}
+        ${neutral}
+        ${statLine ? `<p class="alm-stat">${statLine}</p>` : ""}
+      </article>`;
+}
+
+function renderAlmanacCuriosity(entry) {
+  if (entry.songs) {
+    const rows = entry.songs.map((s) => {
+      const ratio = s.stat.ratio >= 10 ? Math.round(s.stat.ratio) : s.stat.ratio.toFixed(1);
+      const name = s.slug ? `<a href="/song/${escapeAttr(s.slug)}/">${escapeHtml(s.title)}</a>` : escapeHtml(s.title);
+      return `<li><span class="alm-cur-song">${name}</span><span class="alm-cur-ratio">${ratio}× on ${escapeHtml(entry.day)}s</span><small>${formatNumber(s.stat.obs)} of ${formatNumber(s.stat.tot)}</small></li>`;
+    }).join("");
+    return `<article class="alm-curio">
+        <header class="alm-card-head"><h3 class="alm-song">${escapeHtml(entry.title)}</h3><div class="alm-tags"><span class="alm-daytag">${escapeHtml(entry.day)}</span><span class="alm-badge alm-badge-curiosity">Curiosity</span></div></header>
+        ${entry.note ? `<p class="alm-cur-note">${escapeHtml(entry.note)}</p>` : ""}
+        <ul class="alm-cur-list">${rows}</ul>
+      </article>`;
+  }
+  const s = entry.stat;
+  const ratio = s && s.ratio >= 10 ? Math.round(s.ratio) : (s ? s.ratio.toFixed(1) : "");
+  const tag = entry.occasion || entry.day || "";
+  const statLine = entry.date
+    ? `${formatNumber(s.obs)} of ${formatNumber(s.dateShows)} ${escapeHtml(entry.occasion || "")} shows · ${ratio}× the odds`
+    : `${formatNumber(s.obs)} of ${formatNumber(s.tot)} plays land on ${escapeHtml(entry.day)}s · ${ratio}× the odds`;
+  const name = entry.slug ? `<a href="/song/${escapeAttr(entry.slug)}/">${escapeHtml(entry.song)}</a>` : escapeHtml(entry.song);
+  return `<article class="alm-curio">
+        <header class="alm-card-head"><h3 class="alm-song">${name}</h3><div class="alm-tags">${tag ? `<span class="alm-daytag">${escapeHtml(tag)}</span>` : ""}<span class="alm-badge alm-badge-curiosity">Curiosity</span></div></header>
+        ${entry.note ? `<p class="alm-cur-note">${escapeHtml(entry.note)}</p>` : ""}
+        <p class="alm-stat">${statLine}</p>
+      </article>`;
+}
+
+function renderAlmanacPage(data) {
+  const alm = data.almanac;
+  const totalShows = formatNumber(alm.totalShows || 0);
+  const weekly = alm.weekly.map((e) => renderAlmanacTraditionCard(e, almanacWeeklyStatLine(e))).join("\n      ");
+  const holiday = alm.holiday.map((e) => renderAlmanacTraditionCard(e, almanacHolidayStatLine(e))).join("\n      ");
+  const curios = alm.curiosities.map((e) => renderAlmanacCuriosity(e)).join("\n      ");
+  const description = `Widespread Panic's day-of-the-week and holiday song traditions — lyrics that predict when a song gets played, tested against ${totalShows} shows of setlist history.`;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>The Almanac | When Widespread Panic Plays What | Burnthday</title>
+    <meta name="description" content="${escapeAttr(fitMetaText(description, 155))}">
+    <link rel="canonical" href="https://burnthday.com/almanac/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <style>${renderAlmanacCss()}</style>
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["The Almanac", "https://burnthday.com/almanac/"]
+    ])}</script>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main almanac-main">
+      <article class="archive-page almanac-page">
+        <header class="archive-title">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">The Almanac</span></nav>
+          <h1>The Almanac</h1>
+          <p class="alm-deck">Some Widespread Panic songs carry the day of the week — or the holiday — right in their lyrics. Fans have long noticed that the band leans into those lines when the calendar lines up. This is the ledger of those traditions: each one a lyric-predicted hunch, then tested against ${totalShows} shows of setlist history to see whether the numbers actually back it up.</p>
+        </header>
+
+        <section class="alm-section" aria-labelledby="alm-weekly-h">
+          <div class="alm-section-head">
+            <h2 id="alm-weekly-h">Weekly &amp; Calendar Traditions</h2>
+            <p>Songs whose lyrics name a day — and the setlist record that either confirms it or vouches for it.</p>
+          </div>
+          <div class="alm-grid">
+      ${weekly}
+          </div>
+        </section>
+
+        <section class="alm-section" aria-labelledby="alm-holiday-h">
+          <div class="alm-section-head">
+            <h2 id="alm-holiday-h">The Holiday Stat-Pack</h2>
+            <p>The Fourth of July and New Year's Eve bust-outs, with the numbers behind each one.</p>
+          </div>
+          <div class="alm-grid">
+      ${holiday}
+          </div>
+        </section>
+
+        <section class="alm-section alm-whispers" aria-labelledby="alm-whispers-h">
+          <div class="alm-section-head">
+            <h2 id="alm-whispers-h">The Data Whispers</h2>
+            <p>No lyric predicted these — they surfaced from scanning the numbers, and scanning enough numbers always finds <em>some</em> pattern by chance. Fun to notice; not the same kind of claim as the traditions above.</p>
+          </div>
+          <div class="alm-grid alm-grid-curio">
+      ${curios}
+          </div>
+        </section>
+
+        <p class="alm-foot">Ratios compare a song's share of plays on the target day against the band's overall share of shows on that day. Significance is an exact binomial test; the tier badges translate it into plain language — <strong>Confirmed</strong> (the lyric's hunch holds up strongly), <strong>Vouched</strong> (supported, if less overwhelmingly), <strong>Watching</strong> (too few shows to say yet). Computed from the setlist.fm cache; entertainment, not prophecy.</p>
+      </article>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+  </body>
+</html>
+`;
+}
+
+function renderAlmanacCss() {
+  return `
+      .almanac-page { max-width: 940px; }
+      body.stagelight .archive-title p.alm-deck { font-family: var(--sl-display); font-size: 17px; line-height: 1.6; letter-spacing: -0.01em; text-transform: none; color: var(--sl-muted); opacity: 1; max-width: 66ch; margin: 14px 0 0; }
+      .alm-section { margin-top: 2.6rem; }
+      .alm-section-head h2 { font-family: var(--sl-display); font-size: 1.5rem; letter-spacing: -.01em; margin: 0 0 .3rem; }
+      .alm-section-head p { margin: 0 0 1.1rem; opacity: .72; max-width: 62ch; line-height: 1.55; font-size: .95rem; }
+      .alm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+      .alm-card, .alm-curio { border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); background: rgba(255,255,255,.022); padding: 1.05rem 1.15rem 1.15rem; display: flex; flex-direction: column; gap: .55rem; }
+      .alm-card.alm-tier-confirmed { border-color: rgba(224,190,122,.34); background: linear-gradient(180deg, rgba(224,190,122,.06), rgba(255,255,255,.015)); }
+      .alm-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: .6rem; }
+      .alm-song { font-family: var(--sl-display); font-size: 1.18rem; letter-spacing: -.01em; margin: 0; line-height: 1.2; }
+      .alm-song a { color: var(--sl-ink); text-decoration: none; border-bottom: 1px solid transparent; }
+      .alm-song a:hover { border-bottom-color: rgba(224,190,122,.6); }
+      .alm-tags { display: flex; flex-direction: column; align-items: flex-end; gap: .35rem; flex-shrink: 0; }
+      .alm-daytag { font-family: var(--sl-mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .1em; opacity: .68; white-space: nowrap; }
+      .alm-badge { font-family: var(--sl-mono); font-size: .62rem; text-transform: uppercase; letter-spacing: .08em; padding: .2rem .5rem; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); white-space: nowrap; }
+      .alm-badge-confirmed { color: #e0be7a; border-color: rgba(224,190,122,.5); background: rgba(224,190,122,.1); }
+      .alm-badge-vouched { color: #cbd6c4; border-color: rgba(203,214,196,.4); }
+      .alm-badge-watching { color: var(--sl-muted); }
+      .alm-badge-curiosity { color: var(--sl-faint); }
+      .alm-lyric { margin: 0; font-size: 1.02rem; line-height: 1.5; color: #e6cf9e; font-style: italic; display: flex; gap: .5rem; align-items: baseline; }
+      .alm-note-icon { font-style: normal; font-size: .9rem; opacity: .9; }
+      .alm-play { margin: 0; border-left: 2px solid rgba(224,190,122,.4); padding: .1rem 0 .1rem .85rem; }
+      .alm-play p { margin: 0 0 .35rem; line-height: 1.55; color: var(--sl-ink); font-size: .96rem; }
+      .alm-play cite { font-family: var(--sl-mono); font-size: .72rem; font-style: normal; letter-spacing: .04em; opacity: .7; }
+      .alm-neutral { margin: 0; font-size: .93rem; line-height: 1.55; opacity: .78; }
+      .alm-stat { margin: .1rem 0 0; font-family: var(--sl-mono); font-size: .78rem; letter-spacing: .01em; opacity: .82; line-height: 1.5; }
+      .alm-cur-note { margin: 0; font-size: .93rem; line-height: 1.55; opacity: .78; }
+      .alm-cur-list { list-style: none; margin: .25rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .4rem; }
+      .alm-cur-list li { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: .2rem .6rem; font-size: .9rem; border-top: 1px solid var(--sl-line-faint); padding-top: .4rem; }
+      .alm-cur-list li small { grid-column: 1 / -1; font-family: var(--sl-mono); font-size: .68rem; opacity: .55; }
+      .alm-cur-song a { color: var(--sl-ink); }
+      .alm-cur-ratio { font-family: var(--sl-mono); font-size: .76rem; color: #e0be7a; opacity: .85; }
+      .alm-whispers .alm-section-head p em { font-style: italic; opacity: .95; }
+      .alm-foot { margin-top: 2.4rem; padding-top: 1.2rem; border-top: 1px solid var(--sl-line); font-size: .82rem; line-height: 1.6; opacity: .62; max-width: 74ch; }
+      .alm-foot strong { color: var(--sl-muted); font-weight: 600; }
+  `;
+}
+
 async function writeGeneratedTourReviewPages(data) {
   const reviews = [];
   const review2025 = await buildGeneratedTourReview(2025, data);
@@ -4796,6 +5018,346 @@ async function attachSetlistFmPerformances(data) {
   data.setlistShows = orderedShows;
 }
 
+// ── THE PREDICTION LAYER ─────────────────────────────────────────────────────
+// Two build-time passes over the ordered show log (data.setlistShows):
+//   1. The Almanac stat engine — tests each pre-registered lore claim against the
+//      whole cache: plays on the target day/date, ratio vs the band's baseline
+//      share, and an exact binomial upper-tail p-value. Tiers are COMPUTED from
+//      the claim category + significance, never hand-assigned.
+//   2. Segue-pair mining — every ordered adjacent pair, with confidence + lift.
+// "Jam" and "Drums and Bass" are segment pseudo-songs, excluded from ALL of this
+// math; "Drums" alone is a real song and is kept.
+function isPseudoSong(key) {
+  return key === "jam" || key === "drumsandbass" || key === "drumsbass";
+}
+
+const ALMANAC_DOW_INDEX = { sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6 };
+
+// Lazily-built log-factorial table for the exact binomial tail. Sized to the
+// largest n we could ever pass (a song's lifetime play count ≤ total shows).
+let _logFactCache = null;
+function logFactorials(upTo) {
+  if (_logFactCache && _logFactCache.length > upTo) return _logFactCache;
+  const n = Math.max(upTo + 1, 4096);
+  const lf = new Float64Array(n);
+  for (let i = 2; i < n; i++) lf[i] = lf[i - 1] + Math.log(i);
+  _logFactCache = lf;
+  return lf;
+}
+
+// P(X >= k) for X ~ Binomial(n, p): the chance of seeing at least this many
+// hits by luck alone. Summed in log-space via log-factorials for stability.
+function binomialUpperTail(k, n, p) {
+  if (n <= 0 || k <= 0) return 1;
+  if (p <= 0) return 0;
+  if (p >= 1) return 1;
+  if (k > n) return 0;
+  const lf = logFactorials(n);
+  const lp = Math.log(p);
+  const lq = Math.log(1 - p);
+  let sum = 0;
+  for (let i = k; i <= n; i++) {
+    sum += Math.exp(lf[n] - lf[i] - lf[n - i] + i * lp + (n - i) * lq);
+  }
+  return Math.min(1, Math.max(0, sum));
+}
+
+// One pass over the ordered show log → the distributions every Almanac stat reads:
+// band totals by weekday + by MM-DD, and per-song the same (deduped within a show,
+// so a "play" here means "a show that featured the song").
+function buildDayDistributions(shows) {
+  const bandDow = new Array(7).fill(0);
+  const bandMd = new Map();
+  const songDow = new Map();
+  const songMd = new Map();
+  const songTotal = new Map();
+  let totalShows = 0;
+  for (const show of shows) {
+    const dow = isoDayOfWeek(show.date);
+    if (dow < 0) continue;
+    const md = String(show.date).slice(5);
+    totalShows += 1;
+    bandDow[dow] += 1;
+    bandMd.set(md, (bandMd.get(md) || 0) + 1);
+    const seen = new Set();
+    for (const song of show.songs || []) {
+      const key = song.key;
+      if (!key || isPseudoSong(key) || seen.has(key)) continue;
+      seen.add(key);
+      if (!songDow.has(key)) { songDow.set(key, new Array(7).fill(0)); songMd.set(key, new Map()); songTotal.set(key, 0); }
+      songDow.get(key)[dow] += 1;
+      songTotal.set(key, songTotal.get(key) + 1);
+      const m = songMd.get(key);
+      m.set(md, (m.get(md) || 0) + 1);
+    }
+  }
+  return { bandDow, bandMd, songDow, songMd, songTotal, totalShows };
+}
+
+// Tier from the claim category + significance. The gates reproduce the owner-
+// approved hierarchy: a lyric that PREDICTED the day is a strong claim (Confirmed
+// at p<1e-3); Burnthday's word alone tops out at Vouched; a data-only pattern is
+// forever a Curiosity no matter how significant; and an endorsed claim with too
+// few target-date shows to resolve is honestly held at Watching.
+const ALMANAC_MIN_TARGET_SHOWS = 15;
+function assignAlmanacTier(claim, p, targetShows) {
+  if (claim === "dredged") return "curiosity";
+  const significant = Number.isFinite(p) && p < 0.05;
+  if (targetShows < ALMANAC_MIN_TARGET_SHOWS && !significant) return "watching";
+  if (claim === "lyric" || claim === "behavioral") {
+    if (Number.isFinite(p) && p < 1e-3) return "confirmed";
+    if (significant) return "vouched";
+    return "watching";
+  }
+  // claim === "owner": endorsed but not lyric-predicted → capped at Vouched.
+  if (significant) return "vouched";
+  return "watching";
+}
+
+const ALMANAC_TIER_LABEL = { confirmed: "Confirmed", vouched: "Vouched", watching: "Watching", curiosity: "Curiosity" };
+
+async function loadAlmanac() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "almanac.json"), "utf8");
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed.entries) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+// Compute one song's day/date stat block from the distributions.
+function almanacSongStat({ key, dow, md, dist }) {
+  const tot = dist.songTotal.get(key) || 0;
+  if (dow != null) {
+    const obs = (dist.songDow.get(key) || [])[dow] || 0;
+    const base = dist.totalShows ? dist.bandDow[dow] / dist.totalShows : 0;
+    const share = tot ? obs / tot : 0;
+    const ratio = base ? share / base : 0;
+    const expected = tot * base;
+    const p = binomialUpperTail(obs, tot, base);
+    return { obs, tot, base, share, ratio, expected, p, targetShows: dist.bandDow[dow] || 0 };
+  }
+  const obs = (dist.songMd.get(key) || new Map()).get(md) || 0;
+  const dateShows = dist.bandMd.get(md) || 0;
+  const base = dist.totalShows ? dateShows / dist.totalShows : 0;
+  const share = tot ? obs / tot : 0;
+  const ratio = base ? share / base : 0;
+  const expected = tot * base;
+  const p = binomialUpperTail(obs, tot, base);
+  return { obs, tot, base, share, ratio, expected, p, targetShows: dateShows, dateShows };
+}
+
+const WEEKDAY_PLURAL = ["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"];
+
+function attachAlmanac(data, almanac) {
+  data.almanac = null;
+  if (!almanac || !Array.isArray(almanac.entries)) return;
+  const shows = data.setlistShows || [];
+  if (shows.length < 100) return; // dormant until a real cache exists
+  const dist = buildDayDistributions(shows);
+  const slugMap = data.songSlugMap || new Map();
+  const catalogByKey = new Map((data.catalog || []).map((row) => [row.key || normalizeTitle(row.title), row]));
+
+  const entries = almanac.entries.map((raw) => {
+    const dow = raw.day ? ALMANAC_DOW_INDEX[String(raw.day).toLowerCase()] : null;
+    const md = raw.date || null;
+    const entry = {
+      id: raw.id,
+      kind: raw.kind,
+      claim: raw.claim,
+      day: raw.day || "",
+      dayPlural: dow != null ? WEEKDAY_PLURAL[dow] : "",
+      date: md || "",
+      occasion: raw.occasion || "",
+      lyric: raw.lyric || "",
+      play: raw.play || "",
+      note: raw.note || ""
+    };
+    if (Array.isArray(raw.songs)) {
+      // Multi-song curiosity (e.g. "Loose Monday"): one stat per song.
+      entry.title = raw.title || "";
+      entry.songs = raw.songs.map((title) => {
+        const key = normalizeTitle(title);
+        const stat = almanacSongStat({ key, dow, md, dist });
+        return { title, key, slug: slugMap.get(key) || "", stat };
+      }).sort((a, b) => b.stat.ratio - a.stat.ratio);
+      entry.tier = "curiosity";
+      entry.tierLabel = ALMANAC_TIER_LABEL.curiosity;
+      return entry;
+    }
+    const key = normalizeTitle(raw.song || "");
+    const stat = almanacSongStat({ key, dow, md, dist });
+    entry.song = raw.song;
+    entry.key = key;
+    entry.slug = slugMap.get(key) || "";
+    entry.songType = catalogByKey.get(key)?.type || "";
+    entry.stat = stat;
+    entry.tier = assignAlmanacTier(raw.claim, stat.p, stat.targetShows);
+    entry.tierLabel = ALMANAC_TIER_LABEL[entry.tier] || "";
+    entry.behavioral = raw.claim === "behavioral";
+    entry.hasLyric = Boolean(raw.lyric);
+    return entry;
+  });
+
+  // Lookup used by Tonight's Odds: Confirmed/Vouched single-song entries that
+  // carry a lyric, keyed by song → {day/date, lyric, ratioPct}. Only these
+  // "strong claim" rows earn the right to replace the bare % with their lyric.
+  const oddsReasons = new Map();
+  for (const e of entries) {
+    if (e.songs) continue;
+    if (!(e.tier === "confirmed" || e.tier === "vouched")) continue;
+    if (!e.hasLyric) continue;
+    oddsReasons.set(e.key, {
+      dow: e.day ? ALMANAC_DOW_INDEX[e.day.toLowerCase()] : null,
+      md: e.date || null,
+      lyric: e.lyric,
+      ratioPct: Math.round((e.stat.ratio - 1) * 100),
+      day: e.day,
+      occasion: e.occasion
+    });
+  }
+
+  data.almanac = {
+    entries,
+    oddsReasons,
+    weekly: entries.filter((e) => e.kind === "weekly"),
+    holiday: entries.filter((e) => e.kind === "holiday"),
+    curiosities: entries.filter((e) => e.kind === "curiosity"),
+    totalShows: dist.totalShows
+  };
+}
+
+// ── SEGUE-PAIR MINING ────────────────────────────────────────────────────────
+// Over the flat, in-order song list of every show: count directional adjacency,
+// per-song show counts, and shows-together. LIFETIME pairs survive adjacency≥15,
+// lift≥2.0 and a max-direction confidence ≥40%. TOUR-ACTIVE pairs are any two
+// songs that segued (were adjacent) at least once in the CURRENT tour's posted
+// setlists, regardless of lifetime strength.
+const PAIR_MIN_ADJ = 15;
+const PAIR_MIN_LIFT = 2.0;
+const PAIR_MIN_CONF = 0.40;
+
+function attachSeguePairs(data) {
+  data.lifetimePairs = new Map();
+  data.recentPairs = new Map();
+  const shows = data.setlistShows || [];
+  if (shows.length < 100) return;
+
+  const dirAdj = new Map(); // "a>b" → times a immediately preceded b
+  const together = new Map(); // "a|b" (sorted) → shows featuring both
+  const showCount = new Map(); // song → shows featuring it
+  const N = shows.length;
+  const pk = (a, b) => (a < b ? `${a}|${b}` : `${b}|${a}`);
+
+  for (const show of shows) {
+    const flat = (show.songs || []).map((s) => s.key).filter((k) => k && !isPseudoSong(k));
+    for (let i = 0; i < flat.length - 1; i++) {
+      const a = flat[i], b = flat[i + 1];
+      if (a === b) continue;
+      const dk = `${a}>${b}`;
+      dirAdj.set(dk, (dirAdj.get(dk) || 0) + 1);
+    }
+    const uniq = [...new Set(flat)];
+    for (const k of uniq) showCount.set(k, (showCount.get(k) || 0) + 1);
+    for (let i = 0; i < uniq.length; i++) {
+      for (let j = i + 1; j < uniq.length; j++) {
+        const key = pk(uniq[i], uniq[j]);
+        together.set(key, (together.get(key) || 0) + 1);
+      }
+    }
+  }
+  const adjTotal = (a, b) => (dirAdj.get(`${a}>${b}`) || 0) + (dirAdj.get(`${b}>${a}`) || 0);
+
+  // Build the lifetime partner map (song → sorted partners), symmetric.
+  const partners = new Map();
+  const addPartner = (from, to, rec) => {
+    if (!partners.has(from)) partners.set(from, []);
+    partners.get(from).push({ key: to, ...rec });
+  };
+  const slugMap = data.songSlugMap || new Map();
+  const titleByKey = new Map((data.catalog || []).map((row) => [row.key || normalizeTitle(row.title), row.title]));
+  let lifetimeCount = 0;
+  for (const [key, tog] of together) {
+    const [a, b] = key.split("|");
+    const adj = adjTotal(a, b);
+    if (adj < PAIR_MIN_ADJ) continue;
+    const cA = showCount.get(a) || 0, cB = showCount.get(b) || 0;
+    if (!cA || !cB) continue;
+    const lift = (tog * N) / (cA * cB);
+    if (lift < PAIR_MIN_LIFT) continue;
+    const confAtoB = tog / cA; // P(B in show | A in show)
+    const confBtoA = tog / cB; // P(A in show | B in show)
+    if (Math.max(confAtoB, confBtoA) < PAIR_MIN_CONF) continue;
+    lifetimeCount += 1;
+    const aLeads = (dirAdj.get(`${a}>${b}`) || 0) >= (dirAdj.get(`${b}>${a}`) || 0);
+    // From A's page: partner B, confidence = P(B|A), arrow points to whoever leads.
+    addPartner(a, b, { title: titleByKey.get(b) || b, slug: slugMap.get(b) || "", confidence: confAtoB, adj, together: tog, lift, leadsInto: aLeads });
+    addPartner(b, a, { title: titleByKey.get(a) || a, slug: slugMap.get(a) || "", confidence: confBtoA, adj, together: tog, lift, leadsInto: !aLeads });
+  }
+  for (const list of partners.values()) list.sort((x, y) => y.confidence - x.confidence || y.adj - x.adj);
+  data.lifetimePairs = partners;
+  data.lifetimePairCount = lifetimeCount;
+
+  // RECENT-WINDOW pairs: directional adjacency over the last 100 shows, counting
+  // only transitions WITHIN a set (same canonical set label) and excluding the
+  // Jam / Drums and Bass / Drums segment markers entirely. A directional pair
+  // survives at count ≥ 3; its confidence is count ÷ the SOURCE song's plays in
+  // the window — i.e. how often, when the source plays, the partner follows.
+  // This supersedes the old current-tour-only set (a superset) and drives both
+  // the odds propagation and the song page's recency view of "Travels With".
+  const RECENT_WINDOW_SIZE = 100;
+  const RECENT_MIN_COUNT = 3;
+  const isRecentReal = (k) => k && !isPseudoSong(k) && k !== "drums";
+  const window = shows.slice(-RECENT_WINDOW_SIZE);
+  const recentDir = new Map(); // "a>b" → count (same-set adjacency)
+  const recentPlays = new Map(); // song → shows in window that featured it
+  for (const show of window) {
+    const items = (show.songs || [])
+      .filter((s) => isRecentReal(s.key))
+      .map((s) => ({ key: s.key, set: canonicalSetLabel(s.set, s.encore) }));
+    const seen = new Set();
+    for (const it of items) {
+      if (seen.has(it.key)) continue;
+      seen.add(it.key);
+      recentPlays.set(it.key, (recentPlays.get(it.key) || 0) + 1);
+    }
+    for (let i = 0; i < items.length - 1; i++) {
+      const a = items[i], b = items[i + 1];
+      if (a.key === b.key || a.set !== b.set) continue;
+      const dk = `${a.key}>${b.key}`;
+      recentDir.set(dk, (recentDir.get(dk) || 0) + 1);
+    }
+  }
+  // Build per-song recent partner lists. A song sees a partner it LEADS INTO
+  // (arrow →, confidence = P(partner follows this song)) and a partner that
+  // LEADS INTO it (arrow ←, confidence = P(this song follows the partner)).
+  const recentPartners = new Map();
+  const recentList = [];
+  const pushRecent = (from, partnerKey, count, sourcePlays, leadsInto) => {
+    if (!recentPartners.has(from)) recentPartners.set(from, []);
+    const list = recentPartners.get(from);
+    const confidence = sourcePlays ? count / sourcePlays : 0;
+    const existing = list.find((p) => p.key === partnerKey);
+    if (existing) { if (confidence > existing.confidence) Object.assign(existing, { count, confidence, leadsInto }); return; }
+    list.push({ key: partnerKey, title: titleByKey.get(partnerKey) || partnerKey, slug: slugMap.get(partnerKey) || "", count, confidence, leadsInto });
+  };
+  let recentPairCount = 0;
+  for (const [dk, count] of recentDir) {
+    if (count < RECENT_MIN_COUNT) continue;
+    const [a, b] = dk.split(">");
+    const playsA = recentPlays.get(a) || 0;
+    recentPairCount += 1;
+    pushRecent(a, b, count, playsA, true);   // a leads into b (from a's page)
+    pushRecent(b, a, count, playsA, false);  // a leads into b (from b's page: ← a)
+    recentList.push({ a, b, count, confidence: playsA ? count / playsA : 0 });
+  }
+  for (const list of recentPartners.values()) list.sort((x, y) => y.confidence - x.confidence || y.count - x.count);
+  data.recentPairs = recentPartners;
+  data.recentPairCount = recentPairCount;
+  data.recentWindow = window.length ? { from: window[0].date, to: window[window.length - 1].date, shows: window.length } : null;
+}
+
 // ── TONIGHT'S ODDS ───────────────────────────────────────────────────────────
 // Entertainment, not prophecy. When there is a show TODAY (the board show is
 // still unposted), rank the songs most likely to appear. Score per song:
@@ -4886,12 +5448,49 @@ function attachTonightOdds(data) {
     return { song, score, tourFreq, slp, absentLast4, affinity, affinityPct, lifetime, due };
   }).filter((row) => row.score > 0);
 
+  // Base heats first (pre-boost), so propagation reads a fixed input and can't
+  // oscillate. Heat is the score relative to the strongest base score.
   scored.sort((a, b) => b.score - a.score || b.song.tourCount - a.song.tourCount || a.song.title.localeCompare(b.song.title));
+  const baseMax = scored.length ? scored[0].score : 1;
+  for (const row of scored) row.baseHeat = Math.max(1, Math.round((row.score / baseMax) * 100));
+  const scoredByKey = new Map(scored.map((row) => [row.song.key, row]));
+
+  // (b) PAIR PROPAGATION — one deterministic pass. A song gets a lift when a
+  // segue partner that is ITSELF hot tonight is in the running: boost = 1 + 0.25
+  // × (partnerHeat/100) × pairConfidence, capped at 1.35×. Lifetime partners use
+  // their real confidence; a partner that only paired up on THIS tour uses a flat
+  // recent-signal weight. Only the single strongest partner drives the boost.
+  const lifetimePairs = data.lifetimePairs || new Map();
+  const recentPairs = data.recentPairs || new Map();
+  for (const row of scored) {
+    let bestBoost = 1;
+    let bestPartner = null;
+    const consider = (partnerKey, conf) => {
+      const pr = scoredByKey.get(partnerKey);
+      if (!pr || pr === row) return;
+      const b = 1 + 0.25 * (pr.baseHeat / 100) * conf;
+      if (b > bestBoost) { bestBoost = b; bestPartner = pr; }
+    };
+    for (const p of (lifetimePairs.get(row.song.key) || [])) consider(p.key, p.confidence);
+    for (const p of (recentPairs.get(row.song.key) || [])) consider(p.key, p.confidence);
+    const boost = Math.min(1.35, bestBoost);
+    row.boostedScore = row.score * boost;
+    // The visible "travels with" hint is reserved for a real lift — a genuinely
+    // hot segue partner is also in the running tonight — so it reads as signal.
+    row.pairPartner = boost >= 1.05 && bestPartner ? bestPartner.song.title : "";
+  }
+
+  scored.sort((a, b) => b.boostedScore - a.boostedScore || b.song.tourCount - a.song.tourCount || a.song.title.localeCompare(b.song.title));
   const top = scored.slice(0, 25);
-  const max = top.length ? top[0].score : 1;
+  const max = top.length ? top[0].boostedScore : 1;
+
+  // (a) ALMANAC REASONS — a Confirmed/Vouched lyric-predicted entry that matches
+  // tonight's weekday or date earns its 🎵 lyric as the row's headline reason.
+  const almReasons = data.almanac?.oddsReasons || new Map();
+  const boardMd = String(board.isoDate).slice(5);
 
   const rows = top.map((row) => {
-    const heat = Math.max(1, Math.round((row.score / max) * 100));
+    const heat = Math.max(1, Math.round((row.boostedScore / max) * 100));
     const tier = heat >= 66 ? "hot" : heat >= 33 ? "warm" : "long";
     const hints = [];
     hints.push(row.song.playedThisTour ? `${row.song.tourCount} this tour` : "in rotation");
@@ -4900,12 +5499,15 @@ function attachTonightOdds(data) {
     if (row.lifetime >= 30 && Math.abs(row.affinityPct) >= 8) {
       hints.push(`${dowName}s ${row.affinityPct >= 0 ? "+" : ""}${row.affinityPct}%`);
     }
-    return {
-      title: row.song.title,
-      heat,
-      tier,
-      hint: hints.join(" · ")
-    };
+    if (row.pairPartner) hints.push(`travels with ${row.pairPartner}`);
+
+    const out = { title: row.song.title, heat, tier, hint: hints.join(" · ") };
+    const reason = almReasons.get(row.song.key);
+    if (reason && (reason.dow === todayDow || (reason.md && reason.md === boardMd))) {
+      out.reason = reason.lyric;
+      out.reasonPct = reason.ratioPct;
+    }
+    return out;
   });
 
   data.tonightOdds = rows.length
@@ -5562,6 +6164,7 @@ function renderSongPage(song, data, albums, slugMap) {
         <div><dt>Type</dt><dd>${escapeHtml(eyebrow)}</dd></div>
       </dl>
       ${renderSongLearnIt(song, data)}
+      ${renderSongTravelsWith(song, data)}
       ${songWatch}
       ${onAlbums.length ? `<section class="song-albums">
         <h2>Appears on</h2>
@@ -5579,6 +6182,51 @@ function renderSongPage(song, data, albums, slugMap) {
   </body>
 </html>
 `;
+}
+
+// "Travels With" — the song's strongest segue partners, mined from the ordered
+// setlist log. RECENCY WINS: partners from the last-100-show window lead, tagged
+// "recent" (confidence = how often the partner follows when this song plays), and
+// each also shows its all-time figure when a durable lifetime bond exists. Any
+// remaining slots (top 3) fill with lifetime-only partners tagged "all-time".
+function renderSongTravelsWith(song, data) {
+  const recent = data.recentPairs?.get(song.key) || [];
+  const lifetime = data.lifetimePairs?.get(song.key) || [];
+  if (!recent.length && !lifetime.length) return "";
+  const lifeByKey = new Map(lifetime.map((p) => [p.key, p]));
+  const twRow = (p, arrow, statHtml, tag) => {
+    const name = p.slug ? `<a href="/song/${escapeAttr(p.slug)}/">${escapeHtml(p.title)}</a>` : escapeHtml(p.title);
+    return `<li class="tw-row">
+          <span class="tw-pair"><span class="tw-this">${escapeHtml(song.title)}</span><span class="tw-arrow" aria-hidden="true">${arrow}</span><span class="tw-partner">${name}</span><span class="tw-tag tw-tag-${tag === "recent" ? "recent" : "alltime"}">${tag}</span></span>
+          <span class="tw-stat">${statHtml}</span>
+        </li>`;
+  };
+  const rows = [];
+  const used = new Set();
+  for (const p of recent) {
+    if (rows.length >= 3) break;
+    used.add(p.key);
+    const pct = Math.round(p.confidence * 100);
+    const life = lifeByKey.get(p.key);
+    const allTime = life ? `<small class="tw-era">${Math.round(life.confidence * 100)}% all-time · ${formatNumber(life.adj)} segues</small>` : "";
+    rows.push(twRow(p, p.leadsInto ? "→" : "←", `<b>${pct}%</b> recently · ${formatNumber(p.count)} in last 100${allTime}`, "recent"));
+  }
+  for (const p of lifetime) {
+    if (rows.length >= 3) break;
+    if (used.has(p.key)) continue;
+    used.add(p.key);
+    const pct = Math.round(p.confidence * 100);
+    rows.push(twRow(p, p.leadsInto ? "→" : "←", `<b>${pct}%</b> of the time · ${formatNumber(p.adj)} segues`, "all-time"));
+  }
+  if (!rows.length) return "";
+  const lead = recent.length
+    ? "Songs this one tends to segue with — recent pairings first, all-time bonds where they run deep."
+    : "Songs this one tends to segue with, across every setlist on record.";
+  return `<section class="song-travels">
+        <h2>Travels with</h2>
+        <p class="tw-lead">${lead}</p>
+        <ol class="tw-list">${rows.join("")}</ol>
+      </section>`;
 }
 
 // Alex's "Best Guess" lyric transcription + interpretation, rendered as a distinct
@@ -6736,11 +7384,16 @@ function renderTonightOdds(odds) {
   if (!odds || !odds.songs?.length) return "";
   const tierLabel = { hot: "Hot", warm: "Warm", long: "Long shot" };
   const where = odds.city ? ` in ${odds.city}` : "";
-  const rows = odds.songs.map((song, index) => `<li class="tn-row tn-${song.tier}">
+  const rows = odds.songs.map((song, index) => {
+    const reason = song.reason
+      ? `<small class="tn-reason"><span class="tn-note-icon" aria-hidden="true">🎵</span>${escapeHtml(song.reason)}${Number.isFinite(song.reasonPct) ? ` <span class="tn-reason-pct">${song.reasonPct >= 0 ? "+" : ""}${song.reasonPct}%</span>` : ""}</small>`
+      : "";
+    return `<li class="tn-row tn-${song.tier}${song.reason ? " tn-has-reason" : ""}">
       <span class="tn-rank" aria-hidden="true">${index + 1}</span>
-      <span class="tn-song">${escapeHtml(song.title)}<small class="tn-hint">${escapeHtml(song.hint)}</small></span>
+      <span class="tn-song">${escapeHtml(song.title)}${reason}<small class="tn-hint">${escapeHtml(song.hint)}</small></span>
       <span class="tn-heat"><span class="tn-tier">${tierLabel[song.tier] || ""}</span><b>${song.heat}</b></span>
-    </li>`).join("");
+    </li>`;
+  }).join("");
   return `<div class="tonight-odds" data-tonight>
     <button type="button" class="tonight-toggle" data-tonight-toggle aria-expanded="false" aria-controls="tonight-panel">
       <span class="tn-live"><span class="live-dot" aria-hidden="true"></span>Tonight</span>
@@ -11874,6 +12527,9 @@ body.stagelight .tn-rank { font-family: var(--sl-mono); font-size: 12px; color: 
 body.stagelight .tn-song { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
 body.stagelight .tn-song { font-family: var(--sl-display); font-weight: 600; font-size: 16px; color: var(--sl-ink); }
 body.stagelight .tn-hint { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.03em; font-weight: 400; color: var(--sl-faint); }
+body.stagelight .tn-reason { font-family: var(--sl-display); font-weight: 500; font-size: 12.5px; font-style: italic; color: #e6cf9e; line-height: 1.4; display: block; margin: 1px 0; }
+body.stagelight .tn-note-icon { font-style: normal; font-size: 10px; margin-right: 4px; opacity: 0.85; }
+body.stagelight .tn-reason-pct { font-family: var(--sl-mono); font-style: normal; font-size: 10.5px; color: #e0be7a; opacity: 0.85; }
 body.stagelight .tn-heat { display: inline-flex; align-items: center; gap: 12px; margin-left: auto; }
 body.stagelight .tn-tier { font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .tn-heat b { font-variant-numeric: tabular-nums; font-size: 17px; font-weight: 640; min-width: 30px; text-align: right; }
@@ -12546,6 +13202,25 @@ body.stagelight .song-album-chips a {
 }
 body.stagelight .song-album-chips a:hover { border-color: var(--sl-line-strong); transform: translateY(-2px); }
 body.stagelight .song-album-chips a small { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
+body.stagelight .song-travels { margin: 34px 0 8px; }
+body.stagelight .song-travels h2 { font-family: var(--sl-display); font-size: 21px; font-weight: 640; letter-spacing: -0.01em; margin-bottom: 4px; }
+body.stagelight .tw-lead { margin: 0 0 16px; color: var(--sl-muted); font-size: 14.5px; line-height: 1.5; }
+body.stagelight .tw-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+body.stagelight .tw-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap;
+  padding: 12px 16px; border-radius: var(--sl-r-md); background: var(--sl-glass); border: 1px solid var(--sl-line);
+}
+body.stagelight .tw-pair { display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-family: var(--sl-display); font-size: 15.5px; font-weight: 560; }
+body.stagelight .tw-this { color: var(--sl-muted); }
+body.stagelight .tw-arrow { color: #e0be7a; font-size: 15px; }
+body.stagelight .tw-partner a { color: var(--sl-ink); border-bottom: 1px solid transparent; }
+body.stagelight .tw-partner a:hover { border-bottom-color: rgba(224,190,122,0.6); }
+body.stagelight .tw-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); align-self: center; }
+body.stagelight .tw-tag-recent { color: #e0be7a; border-color: rgba(224,190,122,0.45); background: rgba(224,190,122,0.08); }
+body.stagelight .tw-tag-alltime { color: var(--sl-faint); }
+body.stagelight .tw-stat { font-family: var(--sl-mono); font-size: 12.5px; color: var(--sl-muted); text-align: right; }
+body.stagelight .tw-stat b { color: #e0be7a; font-weight: 600; }
+body.stagelight .tw-era { display: block; font-size: 11px; color: var(--sl-faint); margin-top: 2px; }
 body.stagelight .song-history { margin: 40px 0 8px; }
 body.stagelight .song-history-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--sl-line); }
 body.stagelight .song-history-head h2 { font-family: var(--sl-display); font-size: 21px; font-weight: 640; letter-spacing: -0.01em; }
@@ -13092,6 +13767,10 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
   </url>
   <url>
     <loc>https://burnthday.com/song-origins/</loc>
+  </url>
+  <url>
+    <loc>https://burnthday.com/almanac/</loc>
+    <lastmod>${updated}</lastmod>
   </url>
   ${(data.albums || []).map((album) => `<url>
     <loc>https://burnthday.com/albums/${escapeHtml(album.slug)}/</loc>

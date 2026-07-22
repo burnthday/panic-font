@@ -43,6 +43,7 @@ async function main() {
   await checkArchiveIndex();
   await checkArchivalDecorations();
   await checkBandFaqPage();
+  await checkPredictionLayer(siteData);
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkCommandPalette(allHtmlFiles, allHtml, siteData);
   await checkLaminateRim();
@@ -603,11 +604,11 @@ async function checkSongLearnBlock(siteData) {
 }
 
 function checkNavigation(html, siteData) {
-  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", "Setlists", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
+  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", "Setlists", "The Almanac", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
-  const expectedFooter = ["Setlists", "Tour In Review", "Newsletters", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "Song List", "The Shelf", "About"];
+  const expectedFooter = ["Setlists", "Tour In Review", "Newsletters", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "The Almanac", "Song List", "The Shelf", "About"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerColumns = sectionsByClass(html, "footer-links");
   const footerNav = footerColumns.flatMap((column) => linkTexts(column));
@@ -1424,6 +1425,97 @@ async function checkBandFaqPage() {
   const sitemap = await readText("dist/sitemap.xml").catch(() => "");
   record("Band FAQ page appears in the sitemap",
     sitemap.includes("https://burnthday.com/faq/"), "expected /faq/ in sitemap.xml");
+}
+
+// THE PREDICTION LAYER — the Almanac page, the segue-pair "Travels With" section,
+// the sitemap/nav wiring, and (only when a show is today) the odds panel's 🎵
+// almanac reason. Pair maths exclude the Jam / Drums and Bass pseudo-songs.
+async function checkPredictionLayer(siteData) {
+  const almanac = await readText("dist/almanac/index.html").catch(() => "");
+  record("The Almanac page (/almanac/) exists with its hero and deck",
+    almanac.includes("<h1>The Almanac</h1>") && almanac.includes("class=\"alm-deck\""),
+    almanac ? "rendered" : "missing dist/almanac/index.html");
+
+  // The Knockin' Round the Zoo / Thursday reference entry: 115 Thursday plays and
+  // a plain-language tier badge (Confirmed).
+  record("Almanac shows the Zoo/Thursday entry with 115 and a tier label",
+    almanac.includes("115 of 161 lifetime plays are Thursdays") && /alm-badge-confirmed/.test(almanac),
+    "expected '115 of 161 lifetime plays are Thursdays' + a Confirmed badge");
+
+  // All four tier labels are present, the 🎵 lyric pull-lines render, and the
+  // verbatim Play note carries the — Burnthday attribution.
+  const tiers = ["Confirmed", "Vouched", "Watching", "Curiosity"];
+  const tiersPresent = tiers.filter((t) => almanac.includes(`>${t}<`) || almanac.includes(`${t} pattern`));
+  record("Almanac renders every tier label, a 🎵 lyric pull-line, and a — Burnthday attribution",
+    tiersPresent.length === tiers.length && almanac.includes("alm-lyric") && almanac.includes("— Burnthday"),
+    `tiers=${tiersPresent.join("/")} lyric=${almanac.includes("alm-lyric")} attrib=${almanac.includes("— Burnthday")}`);
+
+  // The Data Whispers section frames curiosities as data-dredged.
+  record("Almanac frames The Data Whispers as data-dredged curiosities",
+    almanac.includes("The Data Whispers") && /by chance/i.test(almanac),
+    "expected a Data Whispers section with a 'by chance' caveat");
+
+  const sitemap = await readText("dist/sitemap.xml").catch(() => "");
+  record("The Almanac appears in the sitemap",
+    sitemap.includes("https://burnthday.com/almanac/"), "expected /almanac/ in sitemap.xml");
+
+  // Lifetime segue pairs: Machine → Barstools and Dreamers at 83%, and the pair
+  // maths never surface the Jam / Drums and Bass pseudo-songs.
+  const machine = await readText("dist/song/machine/index.html").catch(() => "");
+  const machineTw = (machine.match(/<section class="song-travels">[\s\S]*?<\/section>/) || [""])[0];
+  record("Machine's Travels With shows Barstools and Dreamers — 93% recent and 83% all-time",
+    machineTw.includes("Barstools and Dreamers") && /93%/.test(machineTw) && /83% all-time/.test(machineTw),
+    `partner=${machineTw.includes("Barstools and Dreamers")} recent93=${/93%/.test(machineTw)} allTime83=${/83% all-time/.test(machineTw)}`);
+
+  // Recent-window validation targets (window 2023-07-29 → 2026-07-18): a song
+  // that never reversed (Travelin' Man → The Waker, 100%) and one where recency
+  // OVERRIDES lifetime (Stop Breakin' Down Blues now travels with Party At Your
+  // Mama's House). Confirms the last-100-show directional miner.
+  const twMan = (await readText("dist/song/travelin-man/index.html").catch(() => "")).match(/<section class="song-travels">[\s\S]*?<\/section>/)?.[0] || "";
+  record("Travelin' Man's Travels With shows The Waker at 100% (recent window)",
+    /The Waker/.test(twMan) && /100%/.test(twMan) && /9 in last 100/.test(twMan),
+    `waker=${/The Waker/.test(twMan)} pct=${/100%/.test(twMan)} n=${/9 in last 100/.test(twMan)}`);
+
+  const twStop = (await readText("dist/song/stop-breakin-down-blues/index.html").catch(() => "")).match(/<section class="song-travels">[\s\S]*?<\/section>/)?.[0] || "";
+  record("Stop Breakin' Down Blues' Travels With prefers its recent partner (Party At Your Mama's House)",
+    /Party At Your Mama/.test(twStop) && /47%/.test(twStop) && /8 in last 100/.test(twStop),
+    `partner=${/Party At Your Mama/.test(twStop)} pct=${/47%/.test(twStop)} n=${/8 in last 100/.test(twStop)}`);
+
+  // Pseudo-song exclusion, verified against the rendered artifact: no Travels With
+  // partner anywhere may be "Jam" or "Drums and Bass" (the real "Drums" is allowed).
+  const songFiles = await listFiles(path.join(distDir, "song"), (f) => f.endsWith("index.html"));
+  const songHtml = await Promise.all(songFiles.map((f) => readFile(f, "utf8")));
+  const partnerLinks = songHtml.flatMap((h) => [...h.matchAll(/class="tw-partner">\s*(?:<a[^>]*>)?([^<]+)/g)].map((m) => normalizeText(m[1])));
+  const pseudoLeak = partnerLinks.filter((name) => name === "Jam" || /^Drums and Bass$/i.test(name));
+  record("Segue-pair maps exclude the Jam and Drums and Bass pseudo-songs",
+    pseudoLeak.length === 0,
+    `partners scanned=${partnerLinks.length} pseudoLeak=${pseudoLeak.join(", ") || "none"}`);
+
+  record("Lifetime segue-pair mining kept the expected number of strong pairs",
+    Number(siteData.lifetimePairCount) >= 10,
+    `lifetimePairCount=${siteData.lifetimePairCount}`);
+
+  record("Recent-window pair mining ran over the last 100 shows (2023-07-29 → 2026-07-18)",
+    siteData.recentWindow && siteData.recentWindow.shows === 100
+      && siteData.recentWindow.from === "2023-07-29" && siteData.recentWindow.to === "2026-07-18"
+      && Number(siteData.recentPairCount) >= 10,
+    `window=${JSON.stringify(siteData.recentWindow)} recentPairCount=${siteData.recentPairCount}`);
+
+  // Odds panel is only present when the dataset has a show today. When it is,
+  // an almanac day/date match must surface the 🎵 lyric reason.
+  const odds = siteData.tonightOdds;
+  if (odds && Array.isArray(odds.songs)) {
+    const reasoned = odds.songs.filter((s) => s.reason);
+    // A reason should only appear when today matches the entry's day/date. If any
+    // almanac entry matches today, at least one row must carry a 🎵 reason.
+    const home = await readText("dist/index.html").catch(() => "");
+    record("Odds panel surfaces a 🎵 almanac reason when the day matches (show is today)",
+      reasoned.length === 0 || (home.includes("tn-reason") && home.includes("🎵")),
+      `reasonedRows=${reasoned.length} dow=${odds.dowName}`);
+  } else {
+    record("Odds panel almanac-reason check skipped — no show today in the dataset", true,
+      "tonightOdds is null (conditional, as designed)");
+  }
 }
 
 async function listFiles(dir, predicate) {
