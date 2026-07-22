@@ -62,7 +62,7 @@ const navSubLinks = {
     ["Song Possibilities", "/#song-list"],
     ["Song Index", "/songs/"],
     ["Tour Stats", "/#tour-stats"],
-    ["Setlists", "/#setlists"],
+    ["{YEAR} Setlists", "/#setlists"],
     ["The Almanac", "/almanac/"]
   ],
   "Albums": [
@@ -75,7 +75,7 @@ const navSubLinks = {
 // Privacy lives in the bottom bar, not a column.
 const footerColumns = [
   ["Live", [
-    ["Setlists", "/#setlists"],
+    ["{YEAR} Setlists", "/#setlists"],
     ["Tour In Review", "/tour-in-review/"],
     ["Newsletters", "/newsletters/"],
     ["FAQ", "/faq/"],
@@ -2472,7 +2472,7 @@ function renderFaqPage(data) {
         <header class="archive-title">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">FAQ</span></nav>
           <h1>Widespread Panic FAQ</h1>
-          <p class="faq-deck">The questions a new fan actually asks: the name, what happened to Michael Houser, how they started, and where to begin listening. Answered plainly, with sources.</p>
+          <p class="faq-deck">New to the band? The name, the story, the people, and where to start listening.</p>
         </header>
         <div class="faq-list">
         ${items}
@@ -2487,7 +2487,8 @@ function renderFaqPage(data) {
 function renderFaqCss() {
   return `
       .faq-page { max-width: 820px; }
-      .faq-deck { font-size: 1rem; opacity: 0.8; line-height: 1.6; max-width: 66ch; }
+      .faq-deck { margin-top: 18px; font-size: 1rem; opacity: 0.8; line-height: 1.6; max-width: 56ch; }
+      .faq-page .faq-list { margin-top: 34px; }
       .faq-list { margin-top: 1.6rem; }
       .faq-item { border-bottom: 1px solid rgba(255,255,255,.09); padding: .35rem 0; }
       .faq-item summary { cursor: pointer; padding: .7rem 0; font-weight: 600; letter-spacing: .01em; }
@@ -5603,7 +5604,7 @@ function renderSongsIndex(data, slugMap) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Songs</span></nav>
         <h1>Song Index</h1>
-        <p class="songs-deck">Every song in the catalog — search it, and open its full live history.</p>
+        <p class="songs-deck">Every song the band has played.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -6978,7 +6979,7 @@ function renderStagelightHeader(data) {
     const link = `<a class="mega-link" href="${escapeAttr(href)}">${escapeHtml(text)}</a>`;
     const subs = navSubLinks[text];
     if (!subs) return link;
-    return link + subs.map(([label, anchor]) => `<a class="mega-sub" href="${escapeAttr(anchor)}">${escapeHtml(label)}</a>`).join("");
+    return link + subs.map(([label, anchor]) => `<a class="mega-sub" href="${escapeAttr(anchor)}">${escapeHtml(label.replace("{YEAR}", String(data?.site?.year || new Date().getFullYear())))}</a>`).join("");
   }).join("");
   const latestCol = featured ? `<div class="mega-col">
       <div class="mega-col-head"><p class="mega-label">Latest Show</p><a class="mega-more" href="/#latest-setlist">View Setlist</a></div>
@@ -7336,10 +7337,10 @@ function renderFooterSocialRow() {
     </nav>`;
 }
 
-function renderFooterColumns() {
+function renderFooterColumns(year = new Date().getFullYear()) {
   return footerColumns.map(([label, links]) => `<nav class="footer-links" aria-label="${escapeAttr(label)}">
       <strong>${escapeHtml(label)}</strong>
-      ${links.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text)}</a>`).join("")}
+      ${links.map(([text, href]) => `<a href="${escapeAttr(href)}">${escapeHtml(text.replace("{YEAR}", String(year)))}</a>`).join("")}
     </nav>`).join("\n    ");
 }
 
@@ -7366,7 +7367,7 @@ function renderSiteFooter(data, options = {}) {
       <p>The same song list the band uses to make setlists, with ${year} tour data and more.</p>
       ${renderFooterSocialRow()}
     </div>
-    ${renderFooterColumns()}
+    ${renderFooterColumns(year)}
     ${renderFooterBottom(year)}
   </div>
 </footer>`;
@@ -7378,7 +7379,7 @@ function renderSiteFooter(data, options = {}) {
       <p>The working Widespread Panic song list, setlists, and tour data.</p>
       ${renderFooterSocialRow()}
     </div>
-    ${renderFooterColumns()}
+    ${renderFooterColumns(year)}
     ${renderFooterBottom(year)}
   </div>
 </footer>`;
@@ -12327,7 +12328,7 @@ body.stagelight .site-foot-inner {
 }
 body.stagelight .footer-lead { max-width: 340px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
-body.stagelight .footer-mark { height: 78px; width: auto; }
+body.stagelight .footer-mark { width: min(340px, 85%); height: auto; }
 body.stagelight .footer-identity { margin: 14px 0 0; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
 body.stagelight .footer-copy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 8px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }

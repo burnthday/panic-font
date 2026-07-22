@@ -657,11 +657,11 @@ async function checkSongLearnBlock(siteData) {
 }
 
 function checkNavigation(html, siteData) {
-  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", "Setlists", "The Almanac", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
+  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", `${siteData.site.year} Setlists`, "The Almanac", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
-  const expectedFooter = ["Setlists", "Tour In Review", "Newsletters", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "The Almanac", "Song List", "The Shelf", "About"];
+  const expectedFooter = [`${siteData.site.year} Setlists`, "Tour In Review", "Newsletters", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "The Almanac", "Song List", "The Shelf", "About"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerColumns = sectionsByClass(html, "footer-links");
   const footerNav = footerColumns.flatMap((column) => linkTexts(column));
