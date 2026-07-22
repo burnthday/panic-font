@@ -48,6 +48,7 @@ async function main() {
   await checkSocialCard(homeHtml);
   await checkLocalAssets(allHtml);
   await checkStylesheetCacheBusting(allHtmlFiles, allHtml);
+  await checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml);
 
   const failed = checks.filter((check) => !check.passed);
   for (const check of checks) {
@@ -273,12 +274,63 @@ function checkNickJohnsonFeature(html, siteData) {
   record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
 }
 
+// ── Taste-pass round guards ──────────────────────────────────────────────────
+// Structural checks so the owner-reported fixes cannot silently revert again.
+async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
+  const sl = await readText("dist/stagelight.css").catch(() => "");
+
+  // (1) Popup z-order: a sheet overlay must sit above the sticky header. The
+  // header is hidden while a bento sheet is open (bento-open body class).
+  record("Bento sheet hides the sticky header while open (popup above nav)",
+    /\.bento-open\s+\.site-head\s*\{[^}]*visibility:\s*hidden/.test(sl));
+  record("Bento sheet open toggles the bento-open body class",
+    homeHtml.includes('classList.add("bento-open")') && homeHtml.includes('classList.remove("bento-open")'));
+
+  // (2) Round-4 features present and wired (accordion, custom show dropdown,
+  // stable sort state) — the three the owner reported reverted.
+  record("Tour Stats stays a collapsible accordion", homeHtml.includes('class="stats-disclosure"'));
+  record("Highlight-a-show stays the custom dark dropdown", homeHtml.includes("data-show-filter-dd") && homeHtml.includes('class="sf-option is-active"'));
+  record("Custom show dropdown highlights the selected option when open", /sf-option[^"]*is-active/.test(homeHtml) && homeHtml.includes('classList.toggle("is-active"'));
+  record("Tour Stats sort order is tracked as stable state (no reorder on filter)", homeHtml.includes("applyState") && homeHtml.includes("compareRows") && !homeHtml.includes("applyFilters"));
+
+  // (3) Tonight's Odds — the dataset has a show today (07/21 Sacramento).
+  record("Dataset has a show today (Tonight's Odds precondition)", Boolean(siteData.site?.isShowDayPreview));
+  record("Tonight's Odds data is computed when a show is today", Boolean(siteData.tonightOdds && siteData.tonightOdds.songs?.length));
+  record("Tonight's Odds panel is present on the homepage", homeHtml.includes('class="tonight-odds"') && homeHtml.includes("data-tonight-toggle"));
+  record("Tonight's Odds carries its entertainment disclaimer", homeHtml.includes("This is just math having fun"));
+  record("Tonight's Odds lists ranked songs with heat + tier", (homeHtml.match(/class="tn-row/g) || []).length >= 10);
+
+  // (4) Bottom cross-promo band replaced the stray Get Tickets pill.
+  record("Bottom cross-promo band is present", homeHtml.includes('class="cross-promo"') && (homeHtml.match(/class="xp-card/g) || []).length === 2);
+  record("Stray standalone Get Tickets pill is gone from the homepage body", !homeHtml.includes('class="ticket-link"'));
+
+  // (5) One dropdown look sitewide — no native <select> on stagelight pages.
+  const stagelightSelectPages = allHtmlFiles.filter((file, i) => allHtml[i].includes('class="stagelight"') && allHtml[i].includes("<select"));
+  record("No native <select> remains on any Stagelight page", stagelightSelectPages.length === 0, stagelightSelectPages.map((f) => f.replace(distDir, "")).join("\n"));
+
+  // (6) Cross-document view transitions declared + header persistence.
+  record("Cross-document View Transitions are declared", /@view-transition\s*\{[^}]*navigation:\s*auto/.test(sl));
+  record("Header persists across navigations (view-transition-name)", /view-transition-name:\s*site-header/.test(sl));
+  record("View transitions respect prefers-reduced-motion", /prefers-reduced-motion[^}]*view-transition-old\(root\)/s.test(sl) || /view-transition-old\(root\)[^}]*\}\s*\}/.test(sl) && /prefers-reduced-motion/.test(sl));
+
+  // (9) Chords dual-links resolve to real dist files.
+  const hub = await readText("dist/lyrics-chords/index.html").catch(() => "");
+  const tabHrefs = [...hub.matchAll(/class="lr-tab-chip" href="([^"]+)"/g)].map((m) => m[1]);
+  const missingTab = [];
+  for (const href of tabHrefs) {
+    const ok = await stat(distDir + href).then(() => true).catch(() => false);
+    if (!ok) missingTab.push(href);
+  }
+  record("Lyrics hub renders Tab chips for sibling guitar-tab pages", tabHrefs.length > 0);
+  record("Every Tab chip resolves to a real dist page", missingTab.length === 0, missingTab.join("\n"));
+}
+
 function checkTourDates(html, siteData) {
   const feature = sectionHtml(html, "tour-dates");
   const upcoming = siteData.tourDates.filter((date) => !date.isPosted).length;
   assertIncludes(feature, `${upcoming} shows ahead`, "Upcoming block summarizes the remaining schedule");
   record("Upcoming block lists every unplayed show once", (feature.match(/<li class="is-upcoming">/g) || []).length === upcoming);
-  record("Upcoming block gives every row a clear status", (feature.match(/<em>Upcoming<\/em>/g) || []).length === upcoming);
+  record("Upcoming block gives every row a clear status", (feature.match(/<em class="up-flag">Upcoming<\/em>/g) || []).length === upcoming);
   record("Upcoming block omits already-posted shows", !feature.includes('<li class="is-posted">') && !feature.includes("Setlist posted"));
   record("Upcoming shows sit inside the Setlists section, below the archive", indexOf(html, 'id="setlists"') < indexOf(html, 'id="tour-dates"') && indexOf(html, '<details class="setlist-archive-panel"') < indexOf(html, 'id="tour-dates"'));
 }
