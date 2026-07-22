@@ -333,11 +333,15 @@ function checkNickJohnsonFeature(html, siteData) {
     chipCount === rotation.length && feature.includes(">ORIGINAL<") && feature.includes(">COVER<"),
     `${chipCount} chips vs ${rotation.length} rows`);
 
-  // Column headers, styled like the tour-stats sheet.
-  for (const header of ["nrh-type", "nrh-plays", "nrh-last", "nrh-score"]) {
-    assertIncludes(feature, `nrh-col ${header}`, `Ranking header column ${header} present`);
+  // Column headers, styled like the tour-stats sheet; sortable columns are buttons.
+  assertIncludes(feature, 'nrh-col nrh-type', "Ranking header column nrh-type present");
+  for (const header of ["nrh-plays", "nrh-last", "nrh-score"]) {
+    assertIncludes(feature, `nrh-col nrh-sort ${header}`, `Ranking header column ${header} is a sortable button`);
   }
-  assertIncludes(feature, ">Likelihood<", "Ranking has the Likelihood column header");
+  for (const col of ["title", "plays", "recent", "score"]) {
+    assertIncludes(feature, `data-nick-col="${col}"`, `Ranking header sorts by ${col} on click`);
+  }
+  record("Ranking has the Likelihood column header", /data-nick-col="score">Likelihood /.test(feature));
 
   // Likelihood is a plain 0-100 score — digits only, never a percent sign.
   const scoreCells = [...feature.matchAll(/<span class="nick-score">([^<]*)<\/span>/g)].map((match) => match[1]);

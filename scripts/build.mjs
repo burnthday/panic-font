@@ -7395,6 +7395,7 @@ function renderNickRankingScript() {
         if (sort === "plays") return num(b, "nickCount") - num(a, "nickCount") || byTitle(a, b);
         if (sort === "gone") return num(b, "slp") - num(a, "slp") || byTitle(a, b);
         if (sort === "recent") return (b.dataset.last || "").localeCompare(a.dataset.last || "") || byTitle(a, b);
+        if (sort === "title") return byTitle(a, b);
         return num(b, "score") - num(a, "score") || byTitle(a, b); // "likelihood"
       });
       rows.forEach((row) => { row.hidden = true; });
@@ -7414,6 +7415,18 @@ function renderNickRankingScript() {
     };
     viewDd?.addEventListener("cs:change", (event) => { view = event.detail.value; expanded = false; apply(); });
     sortDd?.addEventListener("cs:change", (event) => { sort = event.detail.value; apply(); });
+    // Column headers sort too, keeping the Sort dropdown display in step.
+    const sortLabels = { score: "Likelihood", plays: "Most played", gone: "Longest gone", recent: "Most recently played", title: "Song name" };
+    feature.querySelectorAll("[data-nick-col]").forEach((btn) => btn.addEventListener("click", () => {
+      sort = btn.dataset.nickCol;
+      if (sortDd && sortLabels[sort]) {
+        sortDd.dataset.value = sort;
+        const valueEl = sortDd.querySelector("[data-cs-value]");
+        if (valueEl) valueEl.textContent = sortLabels[sort];
+        sortDd.querySelectorAll(".sf-option").forEach((opt) => opt.classList.toggle("is-active", opt.dataset.value === sort));
+      }
+      apply();
+    }));
     songbook?.addEventListener("click", (event) => {
       event.preventDefault();
       expanded = !expanded;
@@ -8657,13 +8670,13 @@ function renderNickJohnsonFeature(data) {
       ${renderCustomSelect({ hook: "data-nick-view-dd", label: "View", active: "next", options: [{ value: "next", label: "Most likely next" }, { value: "woodshed", label: "Not yet played" }, { value: "played", label: "Played with Nick" }] })}
       ${renderCustomSelect({ hook: "data-nick-sort-dd", label: "Sort", active: "score", options: [{ value: "score", label: "Likelihood" }, { value: "plays", label: "Most played" }, { value: "gone", label: "Longest gone" }, { value: "recent", label: "Most recently played" }] })}
     </div>
-    <div class="nick-ranking-head" role="presentation" aria-hidden="true">
-      <span class="nrh-col">#</span>
-      <span class="nrh-col">Song</span>
+    <div class="nick-ranking-head">
+      <span class="nrh-col" aria-hidden="true">#</span>
+      <button type="button" class="nrh-col nrh-sort" data-nick-col="title">Song <span aria-hidden="true">\u2195</span></button>
       <span class="nrh-col nrh-type">Type</span>
-      <span class="nrh-col nrh-plays">Total plays</span>
-      <span class="nrh-col nrh-last">Last played</span>
-      <span class="nrh-col nrh-score">Likelihood</span>
+      <button type="button" class="nrh-col nrh-sort nrh-plays" data-nick-col="plays">Total plays <span aria-hidden="true">\u2195</span></button>
+      <button type="button" class="nrh-col nrh-sort nrh-last" data-nick-col="recent">Last played <span aria-hidden="true">\u2195</span></button>
+      <button type="button" class="nrh-col nrh-sort nrh-score" data-nick-col="score">Likelihood <span aria-hidden="true">\u2193</span></button>
     </div>
     ${renderNickRanking(rotation)}
     <a class="link-quiet nick-songbook" href="#" role="button" aria-expanded="false" data-nick-songbook data-more-label="Explore Nick&#39;s full songbook" data-fewer-label="Show fewer">Explore Nick&#39;s full songbook <span aria-hidden="true">→</span></a>
@@ -13640,7 +13653,7 @@ body.stagelight .nick-chip { font-family: var(--sl-mono); font-size: 10px; lette
 body.stagelight .nick-chip.is-original { color: #7fbf9b; background: rgba(45, 124, 82, 0.14); border-color: rgba(45, 124, 82, 0.5); }
 body.stagelight .nick-chip.is-cover { color: #8fc0e0; background: rgba(96, 165, 210, 0.12); border-color: rgba(96, 165, 210, 0.45); }
 /* Likelihood score (coral, mono, right-aligned, digits only — never a percent). */
-body.stagelight .nick-score { font-family: var(--sl-mono); font-size: 15px; font-weight: 620; color: #ef8b88; font-variant-numeric: tabular-nums; text-align: right; justify-self: end; }
+body.stagelight .nick-score { font-family: var(--sl-mono); font-size: 15px; font-weight: 620; color: var(--sl-ink); font-variant-numeric: tabular-nums; text-align: right; justify-self: end; }
 body.stagelight .nick-song small { display: block; margin-top: 3px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.02em; color: var(--sl-faint); text-transform: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.stagelight .nick-last { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 body.stagelight .nick-last small { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
@@ -13662,10 +13675,14 @@ body.stagelight .nb-label { font-family: var(--sl-mono); font-size: 11px; letter
 body.stagelight .nb-count { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
 body.stagelight .nick-progress-track i.is-overall { background: var(--sl-ink); }
 /* Ranking: four columns, headers styled like the tour-stats sheet. */
-body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { grid-template-columns: 26px minmax(0, 1fr) 84px 78px 116px 82px; }
+body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { display: grid; grid-template-columns: 26px minmax(0, 1fr) 84px 78px 116px 82px; gap: 12px; align-items: baseline; }
+/* display:grid would override the hidden attribute — never let hidden rows paint. */
+body.stagelight .nick-ranking li[hidden] { display: none; }
 body.stagelight .nick-ranking-head .nrh-plays, body.stagelight .nick-ranking-head .nrh-last, body.stagelight .nick-ranking-head .nrh-score { text-align: right; justify-self: end; }
 body.stagelight .nick-ranking-head { border-bottom: 1px solid var(--sl-line); }
 body.stagelight .nick-ranking-head .nrh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .nrh-sort { padding: 0; border: 0; background: none; text-align: left; cursor: pointer; transition: color 0.15s ease; }
+body.stagelight .nrh-sort:hover { color: var(--sl-ink); }
 body.stagelight .nick-ranking-head .nrh-plays, body.stagelight .nick-plays { text-align: right; justify-self: end; }
 body.stagelight .nick-ranking-head .nrh-last, body.stagelight .nick-last { text-align: right; justify-self: end; }
 body.stagelight .nick-last { font-family: var(--sl-mono); font-size: 12.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
