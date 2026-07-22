@@ -1413,11 +1413,13 @@ async function checkBandFaqPage() {
   const questionCount = (faq.match(/<details class="faq-item"/g) || []).length;
   const faqLdValid = Boolean(faqLd) && Array.isArray(faqLd.mainEntity) && faqLd.mainEntity.length >= 9
     && faqLd.mainEntity.every((q) => q["@type"] === "Question" && q.name && q.acceptedAnswer && q.acceptedAnswer.text);
-  const heldQuestions = ["Who's in the band?", "Can I record their shows, and where can I hear live tapes?", "What are Widespread Panic's big traditions?"];
-  const heldLeak = heldQuestions.filter((q) => faq.includes(escapeHtml(q)));
-  record("Band FAQ page renders with FAQPage JSON-LD, at least 9 questions, and no verify-held entries",
-    faqLdValid && questionCount >= 9 && heldLeak.length === 0,
-    `rendered=${questionCount} faqLd=${Boolean(faqLd)} mainEntity=${faqLd ? faqLd.mainEntity.length : 0} heldLeak=${heldLeak.join("; ") || "none"}`);
+  // All 13 Q&As are published: the formerly verify-held three (lineup, taping,
+  // traditions) were fact-checked by Alex + sourced (official site, Relix) 2026-07-21.
+  const verifiedQuestions = ["Who's in the band?", "Can I record their shows, and where can I hear live tapes?", "What are Widespread Panic's big traditions?"];
+  const missingVerified = verifiedQuestions.filter((q) => !faq.includes(escapeHtml(q)));
+  record("Band FAQ page renders with FAQPage JSON-LD and the full verified question set",
+    faqLdValid && questionCount >= 12 && missingVerified.length === 0,
+    `rendered=${questionCount} faqLd=${Boolean(faqLd)} missing=${missingVerified.join("; ") || "none"}`);
 
   const sitemap = await readText("dist/sitemap.xml").catch(() => "");
   record("Band FAQ page appears in the sitemap",

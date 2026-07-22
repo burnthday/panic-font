@@ -5,7 +5,12 @@
       "id": "band-name-origin",
       "question": "Where does the name \"Widespread Panic\" come from?",
       "answer": "From guitarist Michael Houser's actual panic attacks. Friends had taken to calling him \"Panic,\" and while he was toying with names like \"Widespread Depression Orchestra,\" the two collided into Widespread Panic. Houser said the attacks stopped after he met his wife.",
-      "sources": [{ "label": "Michael Houser interview (conducted 8/22/1997), Relix Oct/Nov 2003", "url": null }],
+      "sources": [
+        {
+          "label": "Michael Houser interview (conducted 8/22/1997), Relix Oct/Nov 2003",
+          "url": null
+        }
+      ],
       "verify": false
     },
     {
@@ -13,8 +18,14 @@
       "question": "Why did Michael Houser play sitting down?",
       "answer": "Two reasons, and neither is the one people assumed. Houser had actually sat to play early on (1986–87), but so many fans thought he was blind — one after another telling him “I'm sorry you can't see” — that he stood up just to stop the questions, even though sitting was always more comfortable. The bigger problem was physical: he worked a volume pedal constantly with his right foot, which left him balanced stock-still on his left leg for three hours a night and wrecked his leg and back. Eventually he decided, in his words, “I have to sit down, and if people don't like it I guess I'm gonna have to start driving a taxi or something.” He found he played better seated, with more range — and nobody ever gave him grief for it. Fans mark March 14, 1997 in Park City as the night he took his seat for good, after a “last stand” run of standing shows in Vail.",
       "sources": [
-        { "label": "Michael Houser, “Detours” interview (shared by Burnthday)", "url": "https://x.com/burnthday/status/1524580652401799169" },
-        { "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003", "url": null }
+        {
+          "label": "Michael Houser, “Detours” interview (shared by Burnthday)",
+          "url": "https://x.com/burnthday/status/1524580652401799169"
+        },
+        {
+          "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003",
+          "url": null
+        }
       ],
       "verify": false
     },
@@ -22,14 +33,24 @@
       "id": "what-happened-to-houser",
       "question": "What happened to Michael Houser?",
       "answer": "The founding guitarist and the band's sonic core died of pancreatic cancer on August 10, 2002. He played nearly to the end, including the first Bonnaroo. George McConnell filled in afterward (2002–2006), and Jimmy Herring has held the lead-guitar chair since 2006.",
-      "sources": [{ "label": "Relix, Oct/Nov 2003, “Southeast of Eden”", "url": null }],
+      "sources": [
+        {
+          "label": "Relix, Oct/Nov 2003, “Southeast of Eden”",
+          "url": null
+        }
+      ],
       "verify": false
     },
     {
       "id": "when-where-started",
       "question": "When and where did Widespread Panic start?",
       "answer": "Athens, Georgia. John “JB” Bell and Michael Houser met at the University of Georgia in the early '80s and began as a guitar duo; the fuller band came together in 1986, with the first gig featuring drummer Todd Nance on February 10, 1986 at The Mad Hatter.",
-      "sources": [{ "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003", "url": null }],
+      "sources": [
+        {
+          "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003",
+          "url": null
+        }
+      ],
       "verify": false
     },
     {
@@ -37,30 +58,55 @@
       "question": "Was Space Wrangler their first record?",
       "answer": "It was their debut studio album (1988), but not their first release. That was a self-pressed 45 in 1986 on the band's own Space Baby label — only 500 copies — whose B-side, “Monkey Image,” is a shortened version of “Sleepy Monkey.” JB has told the story of driving from their Athens house to Atlanta to pick the box of singles up from the presser.",
       "sources": [
-        { "label": "Everyday Companion, Song Histories (Sleepy Monkey)", "url": "https://www.everydaycompanion.com/spreadsheet/histories/MONKEY.asp" },
-        { "label": "Widespread Panic debut-single reissue", "url": "https://www.jambase.com/article/widespread-panic-debut-single-reissue" }
+        {
+          "label": "Everyday Companion, Song Histories (Sleepy Monkey)",
+          "url": "https://www.everydaycompanion.com/spreadsheet/histories/MONKEY.asp"
+        },
+        {
+          "label": "Widespread Panic debut-single reissue",
+          "url": "https://www.jambase.com/article/widespread-panic-debut-single-reissue"
+        }
       ],
       "verify": false
     },
     {
       "id": "members",
       "question": "Who's in the band?",
-      "answer": "John “JB” Bell (lead vocals, guitar), Dave Schools (bass), John “JoJo” Hermann (keyboards, since ~1992), Domingo “Sunny” Ortiz (percussion, since ~1985), Jimmy Herring (lead guitar, since 2006), and Duane Trucks (drums, since ~2016). Founders no longer with the band: Michael Houser (guitar, d. 2002) and Todd Nance (drums through 2016; d. 2020). George McConnell played guitar in between (2002–2006).",
-      "sources": [],
-      "verify": true
+      "answer": "John “JB” Bell (lead vocals, guitar), Dave Schools (bass), John “JoJo” Hermann (keyboards, since ~1992), Domingo “Sunny” Ortiz (percussion, since ~1985), Jimmy Herring (lead guitar, since 2006), and Duane Trucks (drums, since ~2016). Founders no longer with the band: Michael Houser (guitar, d. 2002) and Todd Nance (drums through 2016; d. 2020). George McConnell played guitar in between (2002–2006). Since the 2025 New Year's run, Nick Johnson (a Col. Bruce Hampton alum, like Duane) has been playing lead guitar while Jimmy Herring recovers from cancer treatment. The band says Jimmy's prognosis is positive and he is expected back.",
+      "sources": [
+        {
+          "label": "An Update on Jimmy (official, 1/8/2026)",
+          "url": "https://widespreadpanic.com/2026/01/08/an-update-on-jimmy/"
+        },
+        {
+          "label": "Relix: Herring to step away temporarily, Nick Johnson to fill in",
+          "url": "https://relix.com/news/detail/widespread-panics-jimmy-herring-to-step-away-from-band-temporarily-to-focus-on-health-nick-johnson-to-fill-in/"
+        }
+      ],
+      "verify": false
     },
     {
       "id": "sunny-join",
       "question": "How did Sunny Ortiz join the band?",
       "answer": "He rolled into Athens from Texas, wandered into the Uptown Lounge with his bongos still out in the car, and the guys asked him to sit in. He figured they were punks — he wasn't wrong — but he liked it, and he's been the percussion engine ever since (~1985).",
-      "sources": [{ "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003", "url": null }],
+      "sources": [
+        {
+          "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003",
+          "url": null
+        }
+      ],
       "verify": false
     },
     {
       "id": "who-writes-covers",
       "question": "Do they write their own songs, and whose songs do they cover?",
       "answer": "Mostly originals, credited collectively to “Widespread Panic” during the Houser era. Their covers lean on their Athens and Southern circle — Bloodkin (Danny Hutchens), the late Vic Chesnutt, and Jerry Joseph — plus deep blues and funk (Junior Kimbrough, the Meters).",
-      "sources": [{ "label": "Everyday Companion; band interviews (see Song Origins)", "url": null }],
+      "sources": [
+        {
+          "label": "Everyday Companion; band interviews (see Song Origins)",
+          "url": null
+        }
+      ],
       "verify": false
     },
     {
@@ -73,16 +119,29 @@
     {
       "id": "taping-listening",
       "question": "Can I record their shows, and where can I hear live tapes?",
-      "answer": "Yes — Widespread Panic is a taper-friendly band by design. Decades of live recordings stream free on archive.org and the Relisten app.",
-      "sources": [{ "label": "Shows confirmed on archive.org (Live Music Archive)", "url": "https://archive.org/details/WidespreadPanic" }],
-      "verify": true
+      "answer": "Yes, and it is one of the things that built this band. Widespread Panic has welcomed tapers from the very beginning, and the trading community that grew up around those recordings carried the music to new fans years before the industry caught on. The band's own attitude: “Please tape our shows. Please make your own merch. We're all part of one big thing.” Decades of shows stream free on archive.org and the Relisten app, and the taper section is still working every night.",
+      "sources": [
+        {
+          "label": "Shows on archive.org (Live Music Archive)",
+          "url": "https://archive.org/details/WidespreadPanic"
+        },
+        {
+          "label": "Salvation South: Fans and Community Across Generations",
+          "url": "https://www.salvationsouth.com/widespread-panic-fans-community/"
+        },
+        {
+          "label": "Dave Schools online interview (3/7/1995), via Nothing But Widespread Panic",
+          "url": "http://widespread-panic.blogspot.com/1995/03/3795-online-interview-with-dave.html"
+        }
+      ],
+      "verify": false
     },
     {
       "id": "traditions",
       "question": "What are Widespread Panic's big traditions?",
       "answer": "Their Red Rocks runs in Colorado (they're one of the venue's most frequent headliners), Halloween shows heavy on costumes and rare covers, New Year's Eve runs, and “Panic en la Playa,” their destination event in Mexico.",
       "sources": [],
-      "verify": true
+      "verify": false
     },
     {
       "id": "starter-albums",
@@ -95,7 +154,12 @@
       "id": "larrys-code",
       "question": "Why does one song have several different names?",
       "answer": "That's “Larry's Code.” The band's drum roadie, Larry, had his own nicknames for songs, and a bunch of them stuck with fans. So “Disco” is also “Storm Watch,” “A of D” is “Morning Daydream,” and “Pigeons” was once “Puppet Song.”",
-      "sources": [{ "label": "The Panicle, Vol. 1 #5, July 1992", "url": "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html" }],
+      "sources": [
+        {
+          "label": "The Panicle, Vol. 1 #5, July 1992",
+          "url": "http://widespread-panic.blogspot.com/1992/07/july-1992-panicle-newsletter.html"
+        }
+      ],
       "verify": false
     }
   ]
