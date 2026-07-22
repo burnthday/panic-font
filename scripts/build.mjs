@@ -8059,13 +8059,22 @@ function renderNavLinks(items, className, label, withPipes = false) {
   return `<nav class="${escapeAttr(className)}" aria-label="${escapeAttr(label)}">${html}</nav>`;
 }
 
+// Stripe-style intro line: bold lead, then a greyed continuation naming when and
+// where the next show is ("...for tonight's show at Sacramento's Channel 24.").
 function renderBoardIntro(data) {
-  const catalog = data.catalog || [];
-  const originals = catalog.filter((row) => (row.type || "").toLowerCase() === "original").length;
-  const covers = catalog.filter((row) => (row.type || "").toLowerCase() === "cover").length;
+  const latest = data.setlists?.[0];
+  const upcoming = (data.site.isShowDayPreview ? data.site.featuredShow : null)
+    || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (latest?.isoDate || ""));
+  let where = "the next show";
+  if (upcoming) {
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const days = Math.round((new Date(`${upcoming.isoDate}T12:00:00Z`) - new Date(`${todayIso}T12:00:00Z`)) / 86400000);
+    const when = days <= 0 ? "tonight's" : days === 1 ? "tomorrow's" : days < 7 ? `${weekdayName(upcoming.isoDate)}'s` : "next week's";
+    const city = clean(String(upcoming.location).split(",")[0]) || upcoming.location;
+    where = `${when} show at ${city}'s ${upcoming.venue}`;
+  }
   return `<div class="board-intro">
-    <h2>Song Possibilities</h2>
-    <p class="board-intro-sub">${formatNumber(catalog.length)} CATALOG · ${formatNumber(originals)} ORIGINALS · ${formatNumber(covers)} COVERS · ${formatNumber(data.totals.currentTourSongs)} PLAYED THIS TOUR</p>
+    <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}.</span></h2>
   </div>`;
 }
 
@@ -13835,9 +13844,20 @@ body.stagelight .rarity-cell strong { gap: 6px; }
 body.stagelight .rarity-cell .rarity-symbol { min-width: 0; margin-right: 0; }
 
 /* ---- BOARD INTRO ---- */
-body.stagelight .board-intro { text-align: center; margin-top: 96px; }
-body.stagelight .board-intro h2 { font-family: var(--sl-display); font-size: 34px; font-weight: 640; letter-spacing: -0.01em; }
-body.stagelight .board-intro-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; color: var(--sl-faint); margin-top: 10px; }
+body.stagelight .board-intro { position: relative; margin-top: 96px; }
+/* Stage light: a soft beam falls on the intro, tinted from the hero photo. */
+body.stagelight .board-intro::before {
+  content: ""; position: absolute; left: -12%; top: -170px; width: 74%; height: 340px;
+  background: radial-gradient(52% 58% at 32% 38%, var(--hero-glow, rgba(255,186,128,0.10)), transparent 74%);
+  pointer-events: none;
+}
+body.stagelight .board-intro-line {
+  position: relative; max-width: 52%; font-family: var(--sl-display);
+  font-size: 32px; font-weight: 640; letter-spacing: -0.015em; line-height: 1.28;
+}
+body.stagelight .bi-lead { color: var(--sl-ink); }
+body.stagelight .bi-rest { color: rgba(242,242,240,0.5); }
+@media (max-width: 900px) { body.stagelight .board-intro-line { max-width: 100%; font-size: 26px; } }
 body.stagelight main > .board-intro + section { margin-top: 44px; }
 
 /* ---- SHEET KEY (no bento: one bold line, marker circles, quiet disclosure) ---- */
