@@ -1,0 +1,9 @@
+# Open loops — burnthday redesign
+
+Unchecked items resurface at session start until cleared. Check the box or delete the line when done.
+
+- [ ] 2026-07-22 — Song Index toolbar rethink: always-sortable columns, rarity as a checkbox, kill the pill overload; decide which stats belong on which pages (home vs Song Index vs Lyrics & Chords) and why (raised in: Alex's 7/22 late QA notes, "you need to consider this")
+- [ ] 2026-07-22 — Tab fallback decision (Alex: "Remind me on the fillback"): songs without our 26 hosted tabs show a dash on Lyrics & Chords; option is a Songsterr tab-search fallback link per row like the Song Index MORE column (raised in: lyrics-hub rework flag, 7/22)
+- [ ] 2026-07-22 — Band FAQ images: Alex wants more image density on /faq/; hero + one inline break shipped, review whether more repo assets should go in (raised in: 7/22 FAQ feedback)
+- [ ] 2026-07-22 — Sam Holt / Randall Bramblett specific sit-in date: woven in by role only, no sourced 2026 sit-in date found; add a concrete show if Alex supplies one (raised in: FAQ rework)
+- [ ] 2026-07-22 — Alex reviews round-2 checklist (~/Desktop/qa-pass-checklist.html) — "we'll continue tomorrow"
