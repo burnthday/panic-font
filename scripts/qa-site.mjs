@@ -162,14 +162,14 @@ function checkTourStats(html, siteData) {
   for (const key of ["title", "count", "rarity", "heat", "last"]) {
     assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
   }
-  assertIncludes(feature, "What these mean", "Tour Stats explains its plain-language signals");
+  assertIncludes(feature, 'class="th-tip-pop', "Tour Stats explains its signals via column hover tips");
   assertIncludes(feature, "Rarity", "Tour Stats labels rarity directly");
   assertIncludes(feature, "Hyper Rare", "Tour Stats explains the game-like rarity ladder");
   assertIncludes(feature, '<span class="rarity-symbol" aria-hidden="true"><svg', "Tour Stats renders card-style rarity symbols as inline SVG");
   assertIncludes(feature, "Last / usual gap", "Tour Stats labels timing with plain numbers");
   assertNotIncludes(feature, "In rotation", "Tour Stats avoids the ambiguous In rotation rarity label");
   assertNotIncludes(feature, "Rotation timing", "Tour Stats avoids the ambiguous Rotation timing label");
-  assertIncludes(feature, "It is context, not a prediction", "Timing is not presented as predictive odds");
+  assertIncludes(feature, "not a prediction", "Timing is not presented as predictive odds");
   assertIncludes(feature, "data-show-filter", "Tour Stats can highlight songs from one selected show");
   assertIncludes(feature, "data-mobile-sort", "Tour Stats has a dedicated mobile sort control");
   for (const type of ["all", "original", "cover"]) assertIncludes(feature, `data-type-filter="${type}"`, `Tour Stats includes the ${type} type filter`);

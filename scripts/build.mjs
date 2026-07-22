@@ -8213,6 +8213,15 @@ function renderTourStats(data) {
     const played = new Set(dates);
     return lastFour.filter((mark) => played.has(mark.isoDate)).map((mark) => mark.color.toLowerCase());
   };
+  const songLink = (song) => {
+    const slug = data.songSlugMap?.get(song.key) || "";
+    return slug ? `<a class="tt-song-link" href="/songs/${escapeAttr(slug)}/">${escapeHtml(song.title)}</a>` : escapeHtml(song.title);
+  };
+  // Header tooltips replace the long-winded "What these mean" block: hover on
+  // desktop, tap/focus on touch (the trigger is focusable).
+  const thTip = (text) => `<span class="th-tip"><button type="button" class="th-tip-btn" aria-label="Explain this column"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg></button><span class="th-tip-pop" role="tooltip">${text}</span></span>`;
+  const rarityTip = thTip("Common to Hyper Rare, mostly from plays in the last 100 shows. Back after 200+ shows away is a <b>Bustout</b>; 1,000+ is a <b>Mega Bustout</b>.");
+  const gapTip = thTip("Shows since it was last played against its usual gap. Context, not a prediction.");
 
   return `<section class="tour-stats" id="tour-stats">
   <details class="stats-disclosure" open>
@@ -8254,8 +8263,8 @@ function renderTourStats(data) {
       <thead><tr>
         <th scope="col"><button type="button" data-sort="title">Song <span aria-hidden="true">↕</span></button></th>
         <th scope="col" aria-sort="descending"><button type="button" data-sort="count">Plays <span aria-hidden="true">↓</span></button></th>
-        <th scope="col"><button type="button" data-sort="rarity">Rarity <span aria-hidden="true">↕</span></button></th>
-        <th scope="col"><button type="button" data-sort="heat">Last / usual gap <span aria-hidden="true">↕</span></button></th>
+        <th scope="col"><button type="button" data-sort="rarity">Rarity <span aria-hidden="true">↕</span></button>${rarityTip}</th>
+        <th scope="col"><button type="button" data-sort="heat">Last / usual gap <span aria-hidden="true">↕</span></button>${gapTip}</th>
         <th scope="col"><button type="button" data-sort="last">Last played <span aria-hidden="true">↕</span></button></th>
       </tr></thead>
       <tbody>${songs.map((song) => {
@@ -8267,7 +8276,7 @@ function renderTourStats(data) {
         const railAttr = railColors.length ? ` data-lastfour="${escapeAttr(railColors.join(","))}"` : "";
         const rail = railColors.length ? `<span class="lf-rail" aria-hidden="true">${railColors.map((color) => `<i class="rail-${color}"></i>`).join("")}</span>` : "";
         return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="${escapeAttr(String(song.tourCount))}" data-frequency="${escapeAttr(String(frequency))}" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-rarity-tier="${escapeAttr(rarity.tier)}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="${escapeAttr(showDates.join(","))}"${railAttr} data-played="yes">
-          <th scope="row">${rail}${escapeHtml(song.title)}</th>
+          <th scope="row">${rail}${songLink(song)}</th>
           <td class="plays-cell">${formatNumber(song.tourCount)}</td>
           <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.tier === "new" ? "new this tour" : rarity.tier === "bustout" || rarity.tier === "mega" ? `back after ${formatNumber(song.seedSlp || 0)} shows · LTP ${escapeHtml(song.seedLast || "")}` : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
           <td class="signal-cell heat-cell"><strong>${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} ago</strong><small>usual gap ${heat.expectedGap.toFixed(1)} shows</small></td>
@@ -8277,7 +8286,7 @@ function renderTourStats(data) {
         const rarity = calculateRarity(song);
         const heat = calculateRotationHeat(song, shows);
         return `<tr data-title="${escapeAttr(song.title.toLowerCase())}" data-count="0" data-frequency="0" data-l100="${escapeAttr(String(song.l100 || 0))}" data-rarity="${escapeAttr(String(rarity.sortValue))}" data-rarity-tier="${escapeAttr(rarity.tier)}" data-heat="${escapeAttr(String(heat.score))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-type="${escapeAttr(song.type.toLowerCase())}" data-shows="" data-played="no" hidden>
-          <th scope="row">${escapeHtml(song.title)}</th>
+          <th scope="row">${songLink(song)}</th>
           <td class="plays-cell">0</td>
           <td class="signal-cell rarity-cell"><strong><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><small>${rarity.tier === "new" ? "new this tour" : `${formatNumber(song.l100 || 0)} in last 100; ${formatNumber(song.total || 0)} ever`}</small></td>
           <td class="signal-cell heat-cell"><strong>${song.effectiveSlp ? `${formatNumber(song.effectiveSlp)} ${song.effectiveSlp === 1 ? "show" : "shows"} ago` : "—"}</strong><small>not played this tour</small></td>
@@ -8287,10 +8296,6 @@ function renderTourStats(data) {
     </table>
   </div>
   ${songs.length > 12 ? `<button type="button" class="stats-expand" data-table-expand aria-expanded="false" data-expand-label="Show all ${formatNumber(songs.length)} songs" data-collapse-label="Show fewer">Show all ${formatNumber(songs.length)} songs</button>` : ""}
-  <details class="index-method">
-    <summary><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg><span>What these mean</span></summary>
-    <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Ultra Rare, or Hyper Rare, driven mostly by plays in the last 100 shows with lifetime play count as a small tie-breaker. Two gap tiers outrank them all: a song that returns after 200+ shows away (the Shelf cutoff) is a <strong>Bustout</strong>, and one back after 1,000+ shows is a <strong>Mega Bustout</strong>. The symbols follow trading-card language: a black circle, diamond, or star; two silver stars; three gold stars; a radiant star for a Bustout, doubled for a Mega. A song new this tour gets an open star until it has history.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
-  </details>
   </div>
   </details>
 </section>`;
@@ -8395,9 +8400,15 @@ function calculateRotationHeat(song, shows) {
   return { expectedGap, score, label };
 }
 
-function renderBentoCard(key, label, count, desc, extra) {
+function renderBentoCard(key, label, count, desc, extra, sheetTitles = []) {
+  // The sheet "shows through" the card: a blurred, faint column of the sheet's
+  // real song titles (no sheet photo exists in the repo, so the text IS the sheet).
+  const sheetBg = sheetTitles.length
+    ? `<span class="bc-sheetbg" aria-hidden="true">${sheetTitles.map((title) => escapeHtml(title)).join(" · ")}</span>`
+    : "";
   return `<button type="button" class="bento-card bento-${key}" id="${key}" data-bento="${key}" aria-expanded="false" aria-controls="bento-panel-${key}">
-    <span class="bc-open" aria-hidden="true">+</span>
+    ${sheetBg}
+    <span class="bc-open" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     <span class="bc-name">${escapeHtml(label)}</span>
     <span class="bc-count">${formatNumber(count)}<small>SONGS</small></span>
     <span class="bc-desc">${escapeHtml(desc)}</span>
@@ -8423,12 +8434,17 @@ function renderSheetBentos(data) {
   const rotationCount = (data.boards.rotationOriginals?.length || 0) + (data.boards.rotationCovers?.length || 0);
   const cleared = Math.max(0, rotationCount - woodCount);
   const clearedPct = rotationCount ? Math.round((cleared / rotationCount) * 100) : 0;
-  const topShelf = [...shelfRows].filter((row) => row.total).sort((a, b) => (b.total || 0) - (a.total || 0)).slice(0, 2);
-  const purgSample = purgRows.slice(0, 2);
+  // Five most-wanted per sheet: shelf/woodshed ranked by lifetime plays (the
+  // songs crowds actually call for), purgatory in sheet order (all one-timers).
+  const topShelf = [...shelfRows].filter((row) => row.total).sort((a, b) => (b.total || 0) - (a.total || 0)).slice(0, 5);
+  const purgSample = purgRows.slice(0, 5);
+  const woodRows = [...(data.boards.woodshedOriginals || []), ...(data.boards.woodshedCovers || [])];
+  const topWood = [...woodRows].filter((row) => row.total).sort((a, b) => (b.total || 0) - (a.total || 0)).slice(0, 5);
 
   const shelfFacts = topShelf.map((row) => bentoFact(row.title.toUpperCase(), `${formatNumber(row.total)} PLAYS · LAST ${row.lastDisplay || ""}`)).join("");
   const purgFacts = purgSample.map((row) => bentoFact(row.title.toUpperCase(), `ONE PLAY${row.lastDisplay ? ` · ${row.lastDisplay}` : ""}`)).join("");
-  const woodExtra = `<span class="bc-bar" aria-hidden="true"><i style="width:${clearedPct}%"></i></span>${bentoFact(`${formatNumber(cleared)} OF ${formatNumber(rotationCount)} CLEARED`, `${clearedPct}%`)}`;
+  const woodFacts = topWood.map((row) => bentoFact(row.title.toUpperCase(), `${formatNumber(row.total)} PLAYS · NOT YET`)).join("");
+  const woodExtra = `<span class="bc-bar" aria-hidden="true"><i style="width:${clearedPct}%"></i></span>${bentoFact(`${formatNumber(cleared)} OF ${formatNumber(rotationCount)} CLEARED`, `${clearedPct}%`)}${woodFacts}`;
 
   const shelf = `<section class="laminate shelf-board" id="shelf-sheet">
   ${renderBoardHeader("THE SHELF")}
@@ -8448,9 +8464,9 @@ function renderSheetBentos(data) {
 
   return `${renderSheetKey(data)}
   <div class="bento-grid" aria-label="Reference sheets">
-    ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
-    ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
-    ${renderBentoCard("woodshed", "The Woodshed", woodCount, "In rotation, not yet played with Nick.", woodExtra)}
+    ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts, shelfRows.map((row) => row.title))}
+    ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts, purgRows.map((row) => row.title))}
+    ${renderBentoCard("woodshed", "The Woodshed", woodCount, "In rotation, not yet played with Nick.", woodExtra, woodRows.map((row) => row.title))}
   </div>
   ${renderBentoPanel("shelf", "The Shelf", shelf)}
   ${renderBentoPanel("purgatory", "Purgatory", purgatory)}
@@ -8492,7 +8508,7 @@ function renderShelfWatch(data) {
   return `<section class="shelf-watch" id="shelf-watch">
   <div class="section-heading data-heading">
     <h2>Shelf watch</h2>
-    <span>songs nearing the ${escapeHtml(String(cutoff))}-show cutoff</span>
+    <span>songs nearing the ${escapeHtml(String(cutoff))}-show cutoff <span class="th-tip"><button type="button" class="th-tip-btn" aria-label="What is SLP?"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg></button><span class="th-tip-pop" role="tooltip"><b>SLP</b> — shows since last play. At ${escapeHtml(String(cutoff))}, a song goes to The Shelf.</span></span></span>
   </div>
   <div class="shelf-grid">${songs.map((song) => {
     const remaining = Math.max(0, cutoff - song.effectiveSlp);
@@ -8503,7 +8519,6 @@ function renderShelfWatch(data) {
       <p class="slp">SLP ${formatNumber(song.effectiveSlp)} · LAST ${escapeHtml(song.lastDisplay)}</p>
     </div>`;
   }).join("")}</div>
-  <p class="shelf-note">SLP — shows since last play. At ${escapeHtml(String(cutoff))}, a song goes to The Shelf.</p>
 </section>`;
 }
 
@@ -8599,18 +8614,15 @@ function renderNickRanking(songs) {
 }
 
 function renderSheetKey(data) {
-  // Marker color key lives in the board intro (bi-swipes); this section keeps
-  // only the quiet "what everything means" disclosure.
+  // Marker color key lives in the board intro (bi-swipes); the four explainer
+  // columns sit in the open below the sheet (accordion removed, Alex round 6).
   return `<section class="sheet-key" id="sheet-key">
-    <details class="key-more">
-    <summary class="link-quiet">What everything on the sheets means <svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
     <div class="key-grid">
       <p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't run in the last four shows. The tiny number beside a song counts its plays this tour.</p>
       <p><b>The Shelf holds songs 200 shows gone.</b> When one comes back it's a bustout, the pull every crowd hopes for. This sheet shows how deep the band can reach.</p>
       <p><b>Purgatory keeps the one-timers,</b> songs played exactly once, ever. Some are covers from a single wild night. A second play moves a song out, and it rarely comes.</p>
       <p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. It shrinks every night he digs deeper, and it's the cleanest read on how fast he's learning the book.</p>
     </div>
-  </details>
 </section>`;
 }
 
@@ -13353,10 +13365,18 @@ body.stagelight .tour-table thead th:nth-child(4) { width: 24%; }
 body.stagelight .tour-table thead th:nth-child(5) { width: 15%; }
 body.stagelight .tour-table tbody th[scope="row"] { overflow: hidden; text-overflow: ellipsis; }
 body.stagelight .tour-table .signal-cell small { white-space: normal; }
-body.stagelight .tour-stats, body.stagelight .shelf-watch {
+body.stagelight .shelf-watch {
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
   border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+}
+/* Tour stats: the frame sits on the spreadsheet itself, not the whole section
+   (page-rhythm call, Alex round 6). */
+body.stagelight .tour-stats .tour-table-wrap {
+  background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow);
+  border-bottom: 1px solid var(--sl-line);
 }
 body.stagelight .data-table, body.stagelight .tour-table { color: var(--sl-ink); }
 body.stagelight .tour-table thead th { background: rgba(17,17,20,0.94); }
@@ -13367,6 +13387,25 @@ body.stagelight .data-table th, body.stagelight .tour-table th[scope="col"], bod
 body.stagelight .data-table td, body.stagelight .tour-table td { border-bottom: 1px solid var(--sl-line-faint); }
 body.stagelight .data-table tbody tr:hover, body.stagelight .tour-table tbody tr:hover { background: rgba(255,255,255,0.035); }
 body.stagelight .data-table th[scope="row"], body.stagelight .tour-table th[scope="row"] { color: var(--sl-ink); }
+body.stagelight .tt-song-link { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s ease; }
+body.stagelight .tt-song-link:hover { border-bottom-color: var(--sl-muted); }
+/* Column tooltips: hover on desktop, tap/focus on touch. Anchored right so the
+   pop never overflows the table edge. */
+body.stagelight .th-tip { position: relative; display: inline-block; margin-left: 6px; vertical-align: middle; }
+body.stagelight .th-tip-btn { display: grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; background: none; color: var(--sl-faint); cursor: help; }
+body.stagelight .th-tip-btn:hover, body.stagelight .th-tip-btn:focus-visible { color: var(--sl-ink); }
+body.stagelight .th-tip-pop {
+  position: absolute; right: -8px; top: calc(100% + 8px); z-index: 30; width: 260px;
+  padding: 12px 14px; border: 1px solid var(--sl-line-strong); border-radius: 10px;
+  background: rgba(16,16,19,0.96); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px -16px rgba(0,0,0,0.8);
+  font-family: var(--sl-body, inherit); font-size: 12.5px; font-weight: 400; line-height: 1.55; letter-spacing: 0; text-transform: none;
+  color: var(--sl-muted); text-align: left; white-space: normal;
+  opacity: 0; transform: translateY(-4px); pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+body.stagelight .th-tip-pop b { color: var(--sl-ink); font-weight: 620; }
+body.stagelight .th-tip:hover .th-tip-pop, body.stagelight .th-tip:focus-within .th-tip-pop { opacity: 1; transform: none; pointer-events: auto; }
 body.stagelight .data-table td, body.stagelight .data-table strong { color: var(--sl-ink); }
 body.stagelight .tour-table .tc-num, body.stagelight .data-table .mono, body.stagelight .slp { font-family: var(--sl-mono); }
 body.stagelight .tour-table button { color: var(--sl-muted); font-family: var(--sl-mono); }
@@ -13598,8 +13637,25 @@ body.stagelight .bento-card[aria-expanded="true"] { border-color: var(--sl-line-
 body.stagelight .bento-shelf[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(212,81,79,0.4); }
 body.stagelight .bento-purgatory[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(40,110,158,0.45); }
 body.stagelight .bento-woodshed[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(45,124,82,0.45); }
-body.stagelight .bc-open { position: absolute; top: 22px; right: 24px; color: var(--sl-faint); font-size: 21px; line-height: 1; font-weight: 300; transition: transform 0.2s ease; }
-body.stagelight .bento-card[aria-expanded="true"] .bc-open { transform: rotate(45deg); color: var(--sl-ink); }
+/* Stripe-style open affordance: bordered circle, arrow slides through on hover. */
+body.stagelight .bc-open {
+  position: absolute; top: 20px; right: 22px; z-index: 1;
+  width: 32px; height: 32px; display: grid; place-items: center; overflow: hidden;
+  border: 1px solid var(--sl-line-strong); border-radius: 50%; color: var(--sl-muted);
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+body.stagelight .bc-open svg { transition: transform 0.28s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .bento-card:hover .bc-open { border-color: var(--sl-ink); color: var(--sl-ink); background: rgba(255,255,255,0.06); }
+body.stagelight .bento-card:hover .bc-open svg { transform: translateX(3px); }
+body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink); border-color: var(--sl-ink); }
+/* The sheet ghosting through: blurred faint run of the sheet's real titles. */
+body.stagelight .bc-sheetbg {
+  position: absolute; inset: -12% -6%; z-index: 0; pointer-events: none;
+  font-family: var(--sl-mono); font-size: 15px; line-height: 2.1; text-transform: uppercase; letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.055); filter: blur(2.5px); transform: rotate(-3deg);
+  overflow: hidden; white-space: normal; word-break: break-word;
+}
+body.stagelight .bento-card > span:not(.bc-sheetbg) { position: relative; z-index: 1; }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
@@ -13871,7 +13927,7 @@ body.stagelight .tn-disclaimer { padding: 8px 22px 20px; font-family: var(--sl-m
 body.stagelight .site-credit { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .site-credit:hover { color: var(--sl-ink); }
 
-body.stagelight .tour-stats { padding: 26px 28px 20px; }
+body.stagelight .tour-stats { padding: 0; }
 body.stagelight .tour-table th, body.stagelight .tour-table td,
 body.stagelight .data-table th, body.stagelight .data-table td { padding: 16px 18px; }
 body.stagelight .rarity-symbol { display: inline-flex; align-items: center; min-width: 26px; margin-right: 8px; }
@@ -13925,11 +13981,6 @@ body.stagelight main > .board-intro + section { margin-top: 68px; }
 
 /* ---- SHEET KEY (quiet disclosure only; the color key is the intro's bi-swipes) ---- */
 body.stagelight .sheet-key { margin-bottom: 34px; }
-body.stagelight .key-more { margin-top: 24px; }
-body.stagelight .key-more summary { list-style: none; cursor: pointer; }
-body.stagelight .key-more summary::-webkit-details-marker { display: none; }
-body.stagelight .key-more summary .sc-chev { position: static; align-self: center; transition: transform 0.2s ease; }
-body.stagelight .key-more[open] summary .sc-chev { transform: rotate(180deg); }
 /* Ramp-style explainer: four equal columns, lead words bold, plain language. */
 body.stagelight .key-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px; margin-top: 22px; }
 body.stagelight .key-grid p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--sl-muted); }
