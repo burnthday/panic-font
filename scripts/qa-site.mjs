@@ -557,8 +557,7 @@ async function checkLatestSetlist(html, siteData) {
   const posted = siteData.setlists || [];
   const feat = posted[0];
 
-  // The latest posted show is the default hero; every other night of the same
-  // run is a hidden hero variant plus a bento card. Mirror the build's run scan.
+  // The full run (contiguous same-venue posted shows) mirrors the build's scan.
   const runShows = [];
   for (const show of posted) {
     if (show.venue === feat?.venue && show.location === feat?.location) runShows.push(show);
@@ -566,79 +565,75 @@ async function checkLatestSetlist(html, siteData) {
   }
   const nightShows = runShows.slice(1);
 
-  // ---- Hero shell + accessibility ----
-  assertIncludes(featured, '<div class="hero-shell" id="hero-shell" aria-live="polite">', "Hero is a labelled live region");
-  record("Hero renders one variant for every run night", (featured.match(/class="hero-variant/g) || []).length === runShows.length, `variants vs run=${runShows.length}`);
-  for (const show of runShows) assertIncludes(featured, `data-hero-id="${show.isoDate}"`, `Hero has a server-rendered variant for ${show.isoDate}`);
+  // ---- Sticky home section nav (breadcrumbs) ----
+  assertIncludes(html, '<nav class="home-nav" aria-label="Jump to a section">', "Homepage has a section nav");
+  record("Section nav sits above the hero", indexOf(html, 'class="home-nav"') >= 0 && indexOf(html, 'class="home-nav"') < indexOf(html, 'id="latest-setlist"'));
+  assertIncludes(html, '<a href="/#song-list" data-nav-section="song-list">Song possibilities</a>', "Section nav links to Song possibilities");
+  assertIncludes(html, '<a href="/#tour-stats" data-nav-section="tour-stats">Tour stats</a>', "Section nav links to Tour stats");
+  assertIncludes(html, `<a href="/#setlists" data-nav-section="setlists">${siteData.site.year} setlists</a>`, "Section nav links to the year setlists");
 
-  const activeVariant = heroVariantHtml(featured, feat?.isoDate || "");
-  record("Latest posted show is the default active hero", activeVariant.includes("hero-variant is-active"), feat?.isoDate || "");
-  assertIncludes(activeVariant, `datetime="${feat?.isoDate || ""}"`, "Active hero date matches generated site data");
-  assertIncludes(activeVariant, `<h3 class="sc-city">${escapeHtml(feat?.location || "")}</h3>`, "Active hero city matches generated site data");
-  assertIncludes(activeVariant, '<span class="sc-venue">', "Active hero shows the venue line");
-  record("Active hero keeps the featured show photo as its background", !feat?.image || activeVariant.includes(`class="hero-photo" src="${escapeHtml(feat.image)}"`), feat?.image || "");
+  // ---- Single hero: the latest posted show, no variants, no swap bento ----
+  const heroCount = (featured.match(/<details class="show-entry is-latest/g) || []).length;
+  record("Homepage shows exactly one hero (no variants, no swap bento)", heroCount === 1 && !featured.includes("data-hero-id") && !featured.includes("bento-row") && !featured.includes("night-card"), `is-latest heroes=${heroCount}`);
 
-  // ---- Nav pills ----
-  assertIncludes(activeVariant, '<a class="hero-pill" href="/#song-list">Song possibilities</a>', "Hero offers a Song possibilities nav pill");
-  assertIncludes(activeVariant, `<a class="hero-pill" href="/#setlists">${siteData.site.year} tour setlists</a>`, "Hero offers a tour-setlists nav pill");
+  const stripStart = featured.indexOf('<details class="next-strip');
+  const heroCard = stripStart >= 0 ? featured.slice(0, stripStart) : featured;
+  const strip = stripStart >= 0 ? featured.slice(stripStart, featured.indexOf("</details>", stripStart) + "</details>".length) : "";
 
-  // ---- The setlist lives in the hero (labels + segues), read off the active variant ----
-  const renderedLabels = [...activeVariant.matchAll(/<div class="sc-row"><span class="sc-label">([^<]+)<\/span><p class="sc-prose">/g)].map((match) => decodeHtml(match[1]));
+  assertIncludes(heroCard, `datetime="${feat?.isoDate || ""}"`, "Hero date matches generated site data");
+  assertIncludes(heroCard, `<h3 class="sc-city">${escapeHtml(feat?.location || "")}</h3>`, "Hero city matches generated site data");
+  assertIncludes(heroCard, '<span class="sc-venue">', "Hero shows the venue line");
+  record("Hero keeps a blurred backdrop of the featured photo", heroCard.includes('<span class="sc-bg"') && (!feat?.image || heroCard.includes(`class="sc-bg" aria-hidden="true"><img src="${escapeHtml(feat.image)}"`)), feat?.image || "");
+  record("Hero frames the sharp photo top-right in the lockup", !feat?.image || heroCard.includes('<span class="sc-photo">'), feat?.image || "");
+  record("Hero keeps the listen links", !feat?.streamUrl || heroCard.includes("nugs.net"));
+
+  // ---- The setlist lives in the hero (labels + segues) ----
+  const renderedLabels = [...heroCard.matchAll(/<div class="sc-row"><span class="sc-label">([^<]+)<\/span><p class="sc-prose">/g)].map((match) => decodeHtml(match[1]));
   const sourceSets = (feat?.sets || []).filter((set) => (set.songTitles || []).length || (set.songs || "").trim());
   const sourceSegueCount = sum(sourceSets.map((set) => (set.songs.match(/\s>\s/g) || []).length));
-  const renderedSegueCount = (activeVariant.match(/&gt;/g) || []).length;
+  const renderedSegueCount = (heroCard.match(/&gt;/g) || []).length;
   record("Hero setlist preserves every source segue", sourceSegueCount > 0 && renderedSegueCount >= sourceSegueCount, `source=${sourceSegueCount} rendered=${renderedSegueCount}`);
   const sourceLabels = sourceSets.map((set) => set.label === "1" ? "Set 1" : set.label === "2" ? "Set 2" : /^E$/i.test(set.label) ? "Encore" : set.label);
   record("Hero renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
 
-  // ---- Bento night cards: hero-swap buttons with full aria wiring ----
-  const bentoStart = featured.indexOf('class="bento-row"');
-  const bento = bentoStart >= 0 ? featured.slice(bentoStart) : "";
-  for (const show of nightShows) {
-    const buttonRe = new RegExp(`<button[^>]*class="bento-card night-card"[^>]*data-hero-target="${show.isoDate}"[^>]*aria-pressed="false"[^>]*aria-controls="hero-shell"`);
-    record(`Bento night card for ${show.isoDate} is a wired hero-swap button`, buttonRe.test(bento), show.isoDate);
-  }
-  record("Bento cards carry no setlist rows", bento.length > 0 && !bento.includes('class="sc-label"'));
-
-  // ---- Upcoming / tonight bento slot ----
+  // ---- Slim upcoming / tonight strip under the hero ----
   const preview = siteData.site?.isShowDayPreview ? siteData.site.featuredShow : null;
   const upcoming = preview || (siteData.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (feat?.isoDate || ""));
   if (upcoming) {
-    const upStart = bento.indexOf('class="bento-card upcoming-card"');
-    const upEnd = upStart >= 0 ? bento.indexOf("</span>\n    </", upStart) : -1;
-    const upcomingCard = upStart >= 0 ? bento.slice(upStart, upEnd > upStart ? upEnd + 40 : bento.length) : "";
-    record("Upcoming show fills the final bento slot", upStart >= 0, upcoming.isoDate || "");
-    assertIncludes(upcomingCard, `datetime="${upcoming.isoDate || ""}"`, "Upcoming card shows the next scheduled date");
-    record("Upcoming card does not advertise a post-show Nugs archive", !upcomingCard.includes("Listen at Nugs.net"));
+    record("Upcoming show appears as a strip under the hero", stripStart >= 0, upcoming.isoDate || "");
+    assertIncludes(strip, `datetime="${upcoming.isoDate || ""}"`, "Upcoming strip shows the next scheduled date");
+    record("Upcoming strip has no set rows until songs post", strip.length > 0 && !strip.includes('class="sc-label"'));
+    record("Upcoming strip does not advertise a post-show Nugs archive", !strip.includes("Listen at Nugs.net"));
     if (preview) {
-      record("Upcoming card flags tonight's live show", upcomingCard.includes("bento-flag is-tonight"), upcoming.isoDate || "");
-      if (upcoming.sourceUrl) assertIncludes(upcomingCard, `href="${escapeHtml(upcoming.sourceUrl)}"`, "Tonight links to show details");
+      record("Upcoming strip flags tonight's live show", strip.includes("ns-flag is-tonight"), upcoming.isoDate || "");
+      if (upcoming.sourceUrl) assertIncludes(strip, ">Show Details</a>", "Tonight links to show details");
     } else {
-      record("Upcoming card flags the next scheduled show", upcomingCard.includes('class="bento-flag"') && !upcomingCard.includes("is-tonight"), upcoming.isoDate || "");
+      record("Upcoming strip flags the next scheduled show", strip.includes('class="ns-flag"') && !strip.includes("is-tonight"), upcoming.isoDate || "");
     }
   }
   record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));
 
-  // ---- Old latest-show scaffolding is fully gone ----
+  // ---- Old hero-swap / bento scaffolding is fully gone ----
   record(
-    "Hero replaces the retired latest-show heading and next-show strip",
-    !featured.includes("latest-heading") && !featured.includes("Latest show") && !featured.includes('class="section-heading"') && !featured.includes("next-strip") && !featured.includes("current-stop-setlists")
+    "Hero has no retired heading, variants, or swap bento",
+    !featured.includes("latest-heading") && !featured.includes("Latest show") && !featured.includes('class="section-heading"') && !featured.includes("hero-shell") && !featured.includes("hero-variant") && !featured.includes("bento-row")
   );
 
-  // ---- The run is not duplicated in the older-setlist archive ----
+  // ---- Only the featured show is held out of the feed; the rest of the run flows in ----
   const runArchive = sectionHtml(html, "setlists");
-  for (const show of runShows) {
+  const featHeading = `${feat?.date || ""} ${feat?.venue || ""}, ${feat?.location || ""}`;
+  record("Featured show is not duplicated in the archive", !cardHtml(runArchive, escapeHtml(featHeading)), featHeading);
+  for (const show of nightShows) {
     const runHeading = `${show.date || ""} ${show.venue || ""}, ${show.location || ""}`;
-    record(`Run night ${show.isoDate} is not duplicated in the archive`, !cardHtml(runArchive, escapeHtml(runHeading)), runHeading);
+    record(`Run night ${show.isoDate} flows back into the setlist feed`, Boolean(cardHtml(runArchive, escapeHtml(runHeading))), runHeading);
   }
 
-  // ---- Swap motion + reduced-motion fallback ----
-  record("Hero swap script wires the bento night cards", html.includes(".night-card[data-hero-target]") && html.includes("is-enhanced") && html.includes('aria-pressed'));
-
+  // ---- Sticky nav CSS: rides up with the header on scroll-down ----
   const styles = await readText("dist/styles.css");
-  record("Hero variants crossfade with an eased transition", styles.includes(".hero-shell.is-enhanced .hero-variant") && styles.includes("cubic-bezier(0.22, 1, 0.36, 1)"));
-  record("Hero swap respects reduced-motion", /prefers-reduced-motion: reduce\)\s*\{[\s\S]{0,400}?\.hero-shell\.is-enhanced/.test(styles));
-  record("Bento row is a responsive grid", /\.bento-row \{[^}]*grid-template-columns: repeat\(3/.test(styles));
+  record("Section nav is sticky under the site header", /\.home-nav \{[^}]*position: sticky[^}]*top: 66px[^}]*transition: top 0\.28s ease/.test(styles));
+  record("Section nav rides up when the header hides", /body\.stagelight\.nav-hidden \.home-nav \{ top:/.test(styles));
+  record("Section nav highlights the active section", html.includes('data-nav-section') && html.includes('.home-nav') && html.includes('IntersectionObserver'));
+  record("Latest-show hero keeps its blurred backdrop when open", /\.show-entry\.is-latest\[open\] \.sc-bg img \{[^}]*blur\(/.test(styles));
   const imageRule = styles.match(/\.setlist-image img\s*\{([^}]*)\}/)?.[1] || "";
   record("Setlist photography preserves its natural landscape frame", /height:\s*auto;/.test(imageRule) && /object-fit:\s*contain;/.test(imageRule) && !/object-fit:\s*cover;|aspect-ratio:/.test(imageRule));
   record("Setlist entries are unframed", /\.setlist-card\s*\{[\s\S]*?border:\s*0;[\s\S]*?background:\s*transparent;/.test(styles));
@@ -647,7 +642,7 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(archive, "VIEW OLDER SETLISTS", "Older setlists have one clear mobile disclosure");
   assertIncludes(archive, 'class="setlist-list"', "Older shows use the compact show-index layout");
   assertIncludes(archive, 'aria-label="Listen to', "Shows with audio expose a simple listening action");
-  record("Every archived show is individually expandable", (archive.match(/<details class="show-entry[^"]*"/g) || []).length === siteData.setlists.length - (siteData.site.featuredRunDates || []).filter((date) => siteData.setlists.some((show) => show.isoDate === date)).length);
+  record("Every archived show is individually expandable", (archive.match(/<details class="show-entry[^"]*"/g) || []).length === siteData.setlists.length - 1);
   assertIncludes(html, 'row.classList.toggle("is-selected-show"', "Selected-show songs receive a dedicated highlight state");
   assertIncludes(html, 'rightSelected - leftSelected', "Selected-show songs move ahead of the remaining tour table");
   record("Mobile initialization collapses Nick Stats, Tour Stats, and the older setlist archive", html.includes('.nick-disclosure, .stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
@@ -661,7 +656,7 @@ async function checkLatestSetlist(html, siteData) {
   record("Steve Lopez is not inside bracket notes", !/\[[^\]]*Steve Lopez[^\]]*\]/i.test(stripTags(bend)));
   record("No asterisk guest notation remains on the Bend setlist", !/\*\s*with Steve Lopez/i.test(stripTags(bend)));
 
-  const oakland = heroVariantHtml(featured, "2026-07-16") || cardHtml(html, "07/16/2026 Fox Theater, Oakland, CA");
+  const oakland = cardHtml(html, "07/16/2026 Fox Theater, Oakland, CA");
   assertIncludes(oakland, "Airplane &gt; Rebirtha &gt; Space Wrangler", "Oakland I preserves the opening segues");
   assertIncludes(oakland, "Gradle &gt; You Got Yours &gt; Lawyers Guns And Money", "Oakland I preserves the first-set closing segues");
   assertIncludes(oakland, "Mercy &gt; Good Morning Little School Girl &gt; King Baby &gt; Fishwater", "Oakland I preserves the second-set closing segues");
@@ -1898,16 +1893,6 @@ function sectionHtml(html, id) {
   }
 
   return html.slice(start);
-}
-
-function heroVariantHtml(html, iso) {
-  if (!iso) return "";
-  const marker = `data-hero-id="${iso}"`;
-  const index = html.indexOf(marker);
-  if (index < 0) return "";
-  const start = html.lastIndexOf("<article", index);
-  const end = html.indexOf("</article>", index);
-  return start >= 0 && end > start ? html.slice(start, end + "</article>".length) : "";
 }
 
 function cardHtml(html, heading) {
