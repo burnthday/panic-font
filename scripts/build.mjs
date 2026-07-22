@@ -8503,6 +8503,11 @@ function renderSheetBentos(data) {
         panels.forEach((panel) => { panel.hidden = true; });
         cards.forEach((card) => card.setAttribute("aria-expanded", "false"));
         document.body.style.overflow = "";
+        // Fallback compensation (older Safari without scrollbar-gutter): the
+        // reserved width is exposed as --sbw so full-bleed 100vw elements can
+        // subtract it while the scrollbar is hidden, preventing the reflow that
+        // shifted the sticky breadcrumb.
+        document.documentElement.style.setProperty("--sbw", "0px");
         document.body.classList.remove("bento-open");
       };
       cards.forEach((card) => card.addEventListener("click", () => {
@@ -8511,7 +8516,11 @@ function renderSheetBentos(data) {
         if (!wasOpen) {
           card.setAttribute("aria-expanded", "true");
           const panel = document.getElementById("bento-panel-" + card.getAttribute("data-bento"));
-          if (panel) { panel.hidden = false; document.body.style.overflow = "hidden"; document.body.classList.add("bento-open"); }
+          if (panel) {
+            const sbw = window.innerWidth - document.documentElement.clientWidth;
+            document.documentElement.style.setProperty("--sbw", sbw + "px");
+            panel.hidden = false; document.body.style.overflow = "hidden"; document.body.classList.add("bento-open");
+          }
         }
       }));
       panels.forEach((panel) => panel.addEventListener("click", (event) => {
@@ -9722,6 +9731,11 @@ function renderCss() {
 html {
   background: var(--paper);
   overflow-x: clip;
+  /* Reserve the scrollbar gutter so opening a modal (which sets body
+     overflow:hidden and removes the scrollbar) can't reflow the page — that
+     horizontal jump was moving the sticky breadcrumb every time a bento popup
+     opened. */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -14105,7 +14119,9 @@ body.stagelight .home-nav {
   position: sticky; top: 66px; z-index: 55;
   transition: top 0.28s ease;
   display: flex; flex-wrap: wrap; align-items: center; gap: 2px 7px;
-  width: 100vw; margin: 0 calc(50% - 50vw);
+  /* --sbw (set to the scrollbar width only while a modal hides the scrollbar)
+     keeps this full-bleed bar aligned to the viewport instead of jumping. */
+  width: calc(100vw - var(--sbw, 0px)); margin: 0 calc(50% - 50vw + var(--sbw, 0px) / 2);
   padding: 4px max(28px, calc((100% - 1400px) / 2));
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: rgba(11,11,13,0.62); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
