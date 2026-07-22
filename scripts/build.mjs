@@ -8470,11 +8470,22 @@ function renderSheetBentos(data) {
 </section>`;
 
   const scrawlPool = [...shelfRows, ...purgRows, ...woodRows].map((row) => row.title.toUpperCase());
-  // The visible tail of the sheet: hand-picked greats (Alex), sparse arrows.
-  const greats = "HAVIN' A BALL <span class=\"ss-arrow\">\u2192</span> RAISE THE ROOF &nbsp; BALL OF CONFUSION &nbsp; STIR IT UP <span class=\"ss-arrow\">\u2192</span> SYMPATHY FOR THE DEVIL &nbsp; WEST VIRGINIA &nbsp; L.A. <span class=\"ss-arrow\">\u2192</span> BAND ON THE RUN";
+  // Five sheets pinned side by side. Each column ends in its "encore": the
+  // hand-picked greats (Alex), pinned to the sheet bottom so exactly two rows
+  // surface below the cards. Rendered twice (soft + sharp layers, masked
+  // top/bottom) so one sheet reads blurrier up top and crisper at the base.
+  const encoreSongs = ["HAVIN' A BALL", "RAISE THE ROOF", "BALL OF CONFUSION", "STIR IT UP", "SYMPATHY FOR THE DEVIL", "WEST VIRGINIA", "L.A.", "BAND ON THE RUN"];
+  const encorePer = [2, 2, 2, 1, 1];
+  let encoreAt = 0;
+  const sheetCols = Array.from({ length: 5 }, (unused, index) => {
+    const titles = scrawlPool.slice(index * 26, index * 26 + 26);
+    const encore = encoreSongs.slice(encoreAt, encoreAt + encorePer[index]);
+    encoreAt += encorePer[index];
+    return `<div class="ss-col"><div class="ss-songs">${titles.map((title) => escapeHtml(title)).join("<br>")}</div><div class="ss-encore">${encore.map((title) => escapeHtml(title)).join("<br>")}</div></div>`;
+  }).join("");
   return `${renderSheetKey(data)}
   <div class="bento-region">
-  <div class="sheet-scrawl" aria-hidden="true"><span class="ss-blur">${scrawlPool.slice(0, 150).map((title) => escapeHtml(title)).join("<br>")}</span><span class="ss-focus">${greats}</span></div>
+  <div class="sheet-scrawl" aria-hidden="true"><div class="ss-layer ss-soft">${sheetCols}</div><div class="ss-layer ss-sharp">${sheetCols}</div></div>
   <div class="bento-grid" aria-label="Reference sheets">
     ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
@@ -13722,30 +13733,32 @@ body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink
 /* One continuous sheet behind the three bentos: the scrawl runs under the
    glass (barely there), then its last line comes into focus below the cards
    (the Webflow move). Cards sit above it. */
-body.stagelight .bento-region { position: relative; padding-top: 56px; padding-bottom: 46px; }
+body.stagelight .bento-region { position: relative; padding-top: 60px; padding-bottom: 100px; }
 body.stagelight .bento-region .bento-grid { position: relative; z-index: 1; }
+/* Five setlists at a slight angle behind the bentos. Two identical layers make
+   the vertical focus ramp: the soft copy owns the top (blurred), the sharp
+   copy fades in toward the base, where each sheet's encore surfaces. */
 body.stagelight .sheet-scrawl {
-  position: absolute; inset: 0; z-index: 0; overflow: hidden;
+  position: absolute; inset: -10px -14px; z-index: 0; overflow: hidden;
+  pointer-events: none; user-select: none; transform: rotate(-2deg);
+}
+body.stagelight .ss-layer {
+  position: absolute; inset: 0; display: flex; gap: 46px; padding: 0 16px;
   font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.05em;
-  pointer-events: none; user-select: none;
+  font-size: 17px; line-height: 1.72; color: rgba(255,255,255,0.09);
 }
-/* Five setlists pinned side by side: one song per line, five columns, barely
-   there and blurred — visible above the cards and ghosting behind the glass. */
-body.stagelight .ss-blur {
-  display: block; height: 100%; padding: 0 6px;
-  column-count: 5; column-gap: 44px;
-  font-size: 17px; line-height: 1.72; white-space: normal;
-  color: rgba(255,255,255,0.045); filter: blur(1.6px); transform: rotate(-1deg);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 98%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 98%);
+body.stagelight .ss-col { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+body.stagelight .ss-encore { position: absolute; left: 0; right: 0; bottom: 4px; line-height: 2.35; color: rgba(255,255,255,0.24); }
+body.stagelight .ss-soft {
+  filter: blur(2.2px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 78%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 78%);
 }
-body.stagelight .ss-focus {
-  position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; white-space: nowrap;
-  font-size: 19px; color: rgba(255,255,255,0.26); filter: blur(0.3px);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 86%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 86%, transparent);
+body.stagelight .ss-sharp {
+  filter: blur(0.2px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 32%, #000 74%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 32%, #000 74%, #000 100%);
 }
-body.stagelight .ss-arrow { color: rgba(255,255,255,0.16); margin: 0 7px; }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
