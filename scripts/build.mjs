@@ -13492,7 +13492,11 @@ body.stagelight .current-review-link div { padding: 18px 22px; border-radius: va
 body.stagelight .current-review-link a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---- ALBUMS: index grid ---- */
-body.stagelight .albums-main, body.stagelight .album-main { width: min(1180px, calc(100% - 28px)); }
+/* Albums index rides the full 1400px header rail (like the homepage/stats page),
+   so the grid's left edge lines up under the wordmark. The detail page stays on
+   the narrower reading rail so its cover keeps matching the index card size. */
+body.stagelight .albums-main { width: min(1400px, calc(100% - 56px)); }
+body.stagelight .album-main { width: min(1180px, calc(100% - 28px)); }
 body.stagelight .albums-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
 body.stagelight .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
 body.stagelight .album-tile { display: block; color: var(--sl-ink); }
