@@ -44,7 +44,7 @@ const config = {
     "WHO ARE YOU": "Cover",
     "YOU'RE LOST LITTLE GIRL": "Cover"
   },
-  stripeAssets: ["marker-black.png", "marker-green.png", "marker-blue.png", "marker-red.png"]
+  stripeAssets: ["marker-black.png", "marker-blue.png", "marker-green.png", "marker-red.png"]
 };
 
 const primaryNavItems = [
@@ -737,6 +737,13 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   const catalog = withPlaystatsOnlySongs(withSetlistOnlySongs(baseCatalog, setlistStats, currentTour, playstatsByKey), rawPlaystats);
   const currentTourByKey = new Map(currentTour.map((row) => [normalizeTitle(row.title), row]));
   const lastFourDates = newestUniqueDates(setlists, catalog, currentTour);
+  // Per-date normalized title sets so each song can carry a strike for EVERY one
+  // of the last four shows it appeared in (the sheet stacks markers).
+  const lastFourTitleSets = lastFourDates.map((iso) => new Set(
+    ((setlists.find((show) => show.isoDate === iso) || {}).sets || [])
+      .flatMap((set) => set.songTitles || [])
+      .map((title) => normalizeTitle(title))
+  ));
   const postedShowCount = setlists.length;
   const playstatsAsOfIso = maxIso(rawPlaystats.map((row) => parseDateKey(row.last)));
   const showsAfterPlaystats = setlists.filter((show) => show.isoDate > playstatsAsOfIso).length;
@@ -798,6 +805,9 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       effectiveLastIso,
       lastDisplay,
       stripeAsset: stripeIndex >= 0 ? config.stripeAssets[stripeIndex] : "",
+      strikeAssets: lastFourTitleSets
+        .map((titles, index) => (titles.has(key) ? config.stripeAssets[index] : ""))
+        .filter(Boolean),
       isAddOn: false
     };
   });
@@ -977,7 +987,7 @@ function archiveSummary(entry) {
 
 function buildMarkerLegend(dates, setlists, tourDates) {
   const sortedTourDates = [...tourDates].filter((show) => show.isoDate).sort((a, b) => a.isoDate.localeCompare(b.isoDate));
-  const colorNames = ["Black", "Green", "Blue", "Red"];
+  const colorNames = ["Black", "Blue", "Green", "Red"];
 
   return dates.map((isoDate, index) => {
     const show = setlists.find((entry) => entry.isoDate === isoDate) || tourDates.find((entry) => entry.isoDate === isoDate);
@@ -6904,11 +6914,19 @@ function renderFitScriptBody() {
             row.classList.toggle("is-selected-show", Boolean(selectedShow && matchesShow && visible));
             if (selectedShow && matchesShow && visible) selectedCount += 1;
           });
+          // Recency sort keeps the natural order (black above red) and scrolls to the
+          // selection; every other sort floats the selected show's block to the top.
+          const boostSelected = Boolean(selectedShow) && sortKey !== "last";
           rows.sort((left, right) => {
-            const leftSelected = left.classList.contains("is-selected-show") ? 1 : 0;
-            const rightSelected = right.classList.contains("is-selected-show") ? 1 : 0;
+            const leftSelected = boostSelected && left.classList.contains("is-selected-show") ? 1 : 0;
+            const rightSelected = boostSelected && right.classList.contains("is-selected-show") ? 1 : 0;
             return rightSelected - leftSelected || compareRows(left, right);
           }).forEach((row) => body.appendChild(row));
+          if (selectedShow && sortKey === "last") {
+            const wrap = table.closest("[data-table-scroll]");
+            const firstSelected = body.querySelector("tr.is-selected-show:not([hidden])");
+            if (wrap && firstSelected) wrap.scrollTo({ top: Math.max(firstSelected.offsetTop - 64, 0), behavior: "smooth" });
+          }
           if (rarityActive) {
             rarityActive.hidden = !selectedRarities.length;
             rarityActive.textContent = selectedRarities.length ? String(selectedRarities.length) : "";
@@ -6924,6 +6942,7 @@ function renderFitScriptBody() {
 
         showOptions.forEach((option) => option.addEventListener("click", () => {
           selectedShow = option.dataset.showValue;
+          if (section) section.dataset.hl = selectedShow ? (option.dataset.marker || "white") : "";
           showOptions.forEach((item) => item.classList.toggle("is-active", item === option));
           if (showValue) showValue.textContent = option.textContent;
           showDd?.removeAttribute("open");
@@ -7575,7 +7594,10 @@ function renderTourStats(data) {
       <summary aria-label="Highlight a show"><span>Highlight a show</span><b class="sf-value" data-show-filter-value>All ${formatNumber(shows)} shows</b><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
       <div class="sf-pop">
         <button type="button" class="sf-option is-active" data-show-value="">All ${formatNumber(shows)} shows</button>
-        ${(data.setlists || []).map((show) => `<button type="button" class="sf-option" data-show-value="${escapeAttr(show.isoDate)}">${escapeHtml(`${show.date} · ${show.location}`)}</button>`).join("")}
+        ${(data.setlists || []).map((show) => {
+          const legend = (data.site.markerLegend || []).find((mark) => mark.isoDate === show.isoDate);
+          return `<button type="button" class="sf-option" data-show-value="${escapeAttr(show.isoDate)}" data-marker="${legend ? escapeAttr(legend.color.toLowerCase()) : ""}">${escapeHtml(`${show.date} · ${show.location}`)}</button>`;
+        }).join("")}
       </div>
     </details>
     <div class="type-filter" role="group" aria-label="Filter songs by type">
@@ -8016,13 +8038,14 @@ function strikeHash(value) {
 // Translucent dry-erase swipe covering the whole title, with a chisel/diagonal
 // right end — like the real marker. CSS clip-path (see .marker-ink) keeps the
 // diagonal crisp at any width; the tint comes from the per-show legend color.
-function renderStrikeMark(asset, seed) {
+function renderStrikeMark(asset, seed, stackIndex = 0) {
   const color = STRIKE_COLORS[asset];
   if (!color) return `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(asset)}" alt=""></span>`;
   const h = strikeHash(String(seed || ""));
   const variant = (h % 4) + 1;
   const delay = (h >> 4) % 7;
-  return `<span class="marker-mask sv${variant}" style="--mc:${color};--sd:${delay * 0.04}s"><span class="marker-ink"></span></span>`;
+  const nudge = [0, 4, -4, 7][stackIndex % 4];
+  return `<span class="marker-mask sv${variant}" style="--mc:${color};--sd:${delay * 0.04}s;--dy:${nudge}px"><span class="marker-ink"></span></span>`;
 }
 
 function renderSong(row, options = {}) {
@@ -8033,7 +8056,10 @@ function renderSong(row, options = {}) {
   const title = row.title.toUpperCase();
   const countValue = options.nickMode ? row.nickCount : options.shelfMode ? row.total : row.tourCount;
   const songClasses = ["rotation-song", dateText ? "has-date" : "", countValue > 0 ? "has-count" : "", row.isAddOn ? "is-hand-addon" : ""].filter(Boolean).join(" ");
-  const marker = stripeAsset ? renderStrikeMark(stripeAsset, row.key || row.title) : "";
+  const strikeList = options.shelfMode && !options.woodshedMode && (row.playedFromShelf || row.playedFromPurgatory)
+    ? ["marker-black.png"]
+    : (row.strikeAssets && row.strikeAssets.length ? row.strikeAssets : (stripeAsset ? [stripeAsset] : []));
+  const marker = strikeList.map((asset, index) => renderStrikeMark(asset, `${row.key || row.title}:${index}`, index)).join("");
   const count = countValue > 0 ? `<sup>${countValue}</sup>` : "";
   const date = dateText ? `<span class="date-sup${row.isAddOn ? " add-on-date" : ""}">${row.isAddOn ? `(${escapeHtml(dateText)})` : escapeHtml(dateText)}</span>` : "";
 
@@ -8191,8 +8217,7 @@ function renderSetlists(data, options = {}) {
         <em class="up-flag">Upcoming</em>
       </li>`).join("")}
     </ol>
-    <span class="upcoming-credit">Photo: Andy Tennille</span>
-  </div>` : "";
+  </div><p class="upcoming-credit">Photo: Andy Tennille</p>` : "";
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
     <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>
@@ -12233,9 +12258,9 @@ body.stagelight .upcoming-heading, body.stagelight .upcoming-dates .tour-dates {
 body.stagelight .upcoming-dates .tour-dates { padding-bottom: 20px; }
 /* Quiet photographer credit — band policy is to credit every photographer. */
 body.stagelight .upcoming-credit {
-  position: absolute; right: 14px; bottom: 10px; z-index: 2;
+  display: block; text-align: right; margin: 8px 6px 0 0;
   font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(255,255,255,0.62); text-shadow: 0 1px 6px rgba(0,0,0,0.7); pointer-events: none;
+  color: var(--sl-faint); pointer-events: none;
 }
 body.stagelight .upcoming-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 20px 26px 14px; }
 body.stagelight .upcoming-heading h3 { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; font-weight: 600; color: var(--sl-ink); }
@@ -12570,8 +12595,11 @@ body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin
 /* ---- TOUR-STATS TABLE: capped preview + expand affordance ---- */
 body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; }
 body.stagelight .tour-table thead th { position: sticky; top: 0; z-index: 3; background: #101013; }
-body.stagelight .tour-table tbody tr.is-selected-show { background: rgba(212, 81, 79, 0.10); box-shadow: inset 3px 0 0 #d4514f; }
-body.stagelight .tour-table tbody tr.is-selected-show:hover { background: rgba(212, 81, 79, 0.16); }
+body.stagelight .tour-table tbody tr.is-selected-show { background: rgba(255,255,255,0.08); box-shadow: inset 3px 0 0 #e8e6e1; }
+body.stagelight .tour-stats[data-hl="black"] .tour-table tbody tr.is-selected-show { background: rgba(255,255,255,0.05); box-shadow: inset 4px 0 0 rgba(255,255,255,0.4), inset 3px 0 0 #131313; }
+body.stagelight .tour-stats[data-hl="blue"] .tour-table tbody tr.is-selected-show { background: rgba(70,86,146,0.16); box-shadow: inset 3px 0 0 #465692; }
+body.stagelight .tour-stats[data-hl="green"] .tour-table tbody tr.is-selected-show { background: rgba(71,134,106,0.14); box-shadow: inset 3px 0 0 #47866a; }
+body.stagelight .tour-stats[data-hl="red"] .tour-table tbody tr.is-selected-show { background: rgba(212,81,79,0.12); box-shadow: inset 3px 0 0 #d4514f; }
 body.stagelight .stats-expand {
   display: block; width: 100%; margin: 14px 0 0; padding: 12px; border-radius: var(--sl-r-sm);
   border: 1px solid var(--sl-line-strong); background: transparent; color: var(--sl-muted);
@@ -12776,10 +12804,10 @@ body.stagelight .laminate::after {
   clip-path: polygon(0.6% 12%, 99% 3%, 100% 82%, 93% 100%, 1% 92%);
   transform-origin: left center;
 }
-.marker-mask.sv1 { transform: rotate(-1deg); }
-.marker-mask.sv2 { transform: rotate(0.7deg); }
-.marker-mask.sv3 { transform: rotate(-0.5deg); }
-.marker-mask.sv4 { transform: rotate(1deg); }
+.marker-mask.sv1 { transform: rotate(-1deg) translateY(var(--dy, 0px)); }
+.marker-mask.sv2 { transform: rotate(0.7deg) translateY(var(--dy, 0px)); }
+.marker-mask.sv3 { transform: rotate(-0.5deg) translateY(var(--dy, 0px)); }
+.marker-mask.sv4 { transform: rotate(1deg) translateY(var(--dy, 0px)); }
 .marker-mask.sv2 .marker-ink { clip-path: polygon(0.6% 6%, 99% 12%, 100% 96%, 92% 88%, 1% 98%); }
 .marker-mask.sv4 .marker-ink { clip-path: polygon(0.6% 9%, 99% 4%, 100% 90%, 94% 98%, 1% 95%); }
 /* draw-in: the marker wipes across left-to-right as the board scrolls in */

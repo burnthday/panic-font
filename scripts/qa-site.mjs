@@ -1104,7 +1104,7 @@ function checkEyebrowAudit(files, htmlByFile) {
 }
 
 function checkMarkerLegend(html, siteData) {
-  const colors = ["Black", "Green", "Blue", "Red"];
+  const colors = ["Black", "Blue", "Green", "Red"];
   const legend = siteData.site?.markerLegend || [];
   const latestDates = [...new Set((siteData.setlists || []).map((show) => show.isoDate).filter(Boolean))].slice(0, 4);
   const matchesData = latestDates.every((isoDate, index) => {
