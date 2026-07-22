@@ -26,6 +26,7 @@ async function main() {
   checkShelfWatch(homeHtml, siteData);
   checkNickJohnsonFeature(homeHtml, siteData);
   checkTourDates(homeHtml, siteData);
+  await checkUpcomingBackdrop(homeHtml);
   await checkMobileTourDateCss();
   await checkSetlistImageOrientation(siteData);
   await checkLatestSetlist(homeHtml, siteData);
@@ -43,6 +44,7 @@ async function main() {
   await checkArchiveIndex();
   await checkArchivalDecorations();
   await checkBandFaqPage();
+  await checkFaqAccordions();
   await checkPredictionLayer(siteData);
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkCommandPalette(allHtmlFiles, allHtml, siteData);
@@ -349,6 +351,59 @@ async function checkMobileTourDateCss() {
   );
 }
 
+// Feature 2 — the homepage UPCOMING board carries a full-bleed live-show backdrop
+// (Andy Tennille) behind a dark overlay, a quiet visible photo credit (band policy),
+// and the asset actually ships to dist.
+async function checkUpcomingBackdrop(homeHtml) {
+  const css = await readText("dist/stagelight.css").catch(() => "");
+  record("Upcoming section references the Tennille backdrop asset",
+    /body\.stagelight \.upcoming-dates::before \{[^}]*url\("\/assets\/upcoming-bg-andy-tennille\.jpg"\)/.test(css),
+    "upcoming-dates::before background-image points at the shipped jpg");
+  record("Upcoming backdrop sits under a dark overlay gradient so text keeps contrast",
+    /body\.stagelight \.upcoming-dates::before \{[^}]*linear-gradient\([^)]*rgba\(/.test(css),
+    "overlay gradient layered over the image");
+  record("Upcoming section shows a visible photographer credit",
+    homeHtml.includes('class="upcoming-credit">Photo: Andy Tennille'),
+    "Photo: Andy Tennille credit rendered in the upcoming board");
+  let assetOk = false;
+  try { assetOk = (await stat(path.join(distDir, "assets", "upcoming-bg-andy-tennille.jpg"))).isFile(); } catch { assetOk = false; }
+  record("Upcoming backdrop asset ships to dist", assetOk, "dist/assets/upcoming-bg-andy-tennille.jpg exists");
+}
+
+// Feature 3 — both FAQ surfaces (/faq/ .faq-item and About .about-faq-item) share
+// one accordion treatment: a chevron that rotates 180deg on open plus a smooth
+// ::details-content open/close with graceful degradation on older browsers.
+async function checkFaqAccordions() {
+  const css = await readText("dist/stagelight.css").catch(() => "");
+  const faqHtml = await readText("dist/faq/index.html").catch(() => "");
+  const aboutHtml = await readText("dist/about/index.html").catch(() => "");
+  // Selectors are comma-grouped in the shared rule, so assert each surface's
+  // selector is present AND the grouped rule body carries the right values.
+  const chevronBody = /body\.stagelight \.(?:faq-item|about-faq-item) > summary::after \{[^}]*transform: rotate\(45deg\)[^}]*transition: transform/.test(css)
+    && /\[open\] > summary::after \{ transform: rotate\(225deg\); \}/.test(css);
+  const detailsBody = /body\.stagelight \.(?:faq-item|about-faq-item)::details-content \{[^}]*block-size: 0[^}]*transition: content-visibility [^}]*block-size 0\.25s/.test(css)
+    && /\[open\]::details-content \{ block-size: auto; \}/.test(css);
+  for (const [sel, label] of [[".faq-item", "/faq/ page"], [".about-faq-item", "About page"]]) {
+    record(`FAQ accordion (${label}) has a rotating chevron on its summary`,
+      css.includes(`body.stagelight ${sel} > summary::after`)
+      && css.includes(`body.stagelight ${sel}[open] > summary::after`)
+      && chevronBody,
+      `${sel} chevron rotates 45deg -> 225deg (180deg) on open`);
+    record(`FAQ accordion (${label}) animates open/close via ::details-content`,
+      css.includes(`body.stagelight ${sel}::details-content`)
+      && css.includes(`body.stagelight ${sel}[open]::details-content`)
+      && detailsBody,
+      `${sel}::details-content transitions block-size 0 -> auto`);
+  }
+  record("FAQ accordions enable keyword size interpolation for the animation",
+    /:root \{ interpolate-size: allow-keywords; \}/.test(css),
+    "interpolate-size: allow-keywords on :root");
+  record("Both FAQ surfaces render details/summary items and load the shared stylesheet",
+    faqHtml.includes('class="faq-item"') && faqHtml.includes("stagelight.css")
+    && aboutHtml.includes('class="about-faq-item"') && aboutHtml.includes("stagelight.css"),
+    "faq-item + about-faq-item present and both pages link stagelight.css");
+}
+
 async function checkSetlistImageOrientation(siteData) {
   const failures = [];
   for (const show of siteData.setlists || []) {
@@ -531,16 +586,17 @@ async function checkSongPages(siteData) {
   assertIncludes(index, "data-tour-filter", "Song Index offers the This-tour filter");
   assertIncludes(index, "data-shelf-filter", "Song Index offers the Shelf filter");
   assertIncludes(index, "data-bestguess-filter", "Song Index offers the Transcribed-lyrics filter");
-  record("Song Index rows carry the filter data-* attributes", /class="song-row"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-tier="[a-z]+"[^>]*data-bestguess="(?:yes|no)"/.test(index), "song-row data-type/data-tour/data-tier/data-bestguess present");
+  record("Song Index rows carry the filter data-* attributes", /class="song-row-wrap"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-tier="[a-z]+"[^>]*data-bestguess="(?:yes|no)"/.test(index), "song-row-wrap data-type/data-tour/data-tier/data-bestguess present");
 
   // Owner QA fixes on the Song Index.
   const songIndexCss = await readText("dist/stagelight.css").catch(() => "");
 
   // FIX 2 — sticky column-header row aligned to the row grid. The header and every
   // row share one --sr-cols template, and the header is sticky under the search bar.
-  record("Song Index renders the column-header row (Title/Type/Status/Plays)",
-    index.includes('class="song-index-head"') && (index.match(/class="sih-col[^"]*"/g) || []).length === 4,
-    "song-index-head with four sih-col cells");
+  record("Song Index renders the column-header row (Title/Type/Status/More/Plays)",
+    index.includes('class="song-index-head"') && (index.match(/class="sih-col[^"]*"/g) || []).length === 5
+    && index.includes('class="sih-col sih-more">More<'),
+    "song-index-head with five sih-col cells including the More/resources column");
   record("Song Index header + rows share one grid template",
     /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
     && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)
@@ -549,6 +605,28 @@ async function checkSongPages(siteData) {
   record("Song Index column-header row is sticky",
     /body\.stagelight \.song-index-head \{[^}]*position: sticky/.test(songIndexCss),
     "song-index-head is position:sticky");
+
+  // Feature 1 — per-row resource links (Origin / Lyrics / Tab). The row is one big
+  // <a>, so these MUST be REAL sibling anchors (nested anchors are invalid HTML),
+  // living in the reserved .sr-resources column, each independently tabbable with an
+  // aria-label. Origin + Lyrics light up on a data join; Tab (Songsterr) is universal.
+  const originChipCount = (index.match(/class="sr-chip" href="\/song-origins\//g) || []).length;
+  record("Song Index rows expose Song Origin resource links (30+)", originChipCount >= 30, `${originChipCount} rows link a song origin`);
+  const lyricsChipCount = (index.match(/aria-label="[^"]*lyrics and chords"/g) || []).length;
+  record("Song Index rows expose lyrics/chords resource links", lyricsChipCount >= 1, `${lyricsChipCount} rows link a lyrics/chords page`);
+  const tabChipCount = (index.match(/aria-label="[^"]*guitar tab on Songsterr"/g) || []).length;
+  record("Song Index rows expose Songsterr tab resource links", tabChipCount >= 1, `${tabChipCount} rows link a guitar tab`);
+  record("Song Index resource links are real, separate anchors (not nested inside the row link)",
+    index.includes('class="sr-resources"><a class="sr-chip')
+    && !/<a class="song-row"[^>]*>(?:(?!<\/a>)[\s\S])*?<a\b/.test(index),
+    "the .song-row anchor closes before the sibling .sr-resources links");
+  record("Song Index Songsterr tab link opens in a new tab safely and carries an aria-label",
+    /class="sr-chip sr-chip-ext" href="https:\/\/www\.songsterr\.com\/[^"]*" target="_blank" rel="noopener noreferrer" aria-label="/.test(index),
+    "sr-chip-ext has target=_blank + rel=noopener + aria-label");
+  record("Song Index resource column has a CSS home and hides on mobile",
+    /body\.stagelight \.sr-resources \{[^}]*grid-column: 4/.test(songIndexCss)
+    && /@media \(max-width: 560px\)[\s\S]*?body\.stagelight \.sr-resources \{ display: none/.test(songIndexCss),
+    "sr-resources sits in the reserved column and is hidden <=560px");
 
   // FIX 3 — the "Has Best Guess" jargon chip is renamed to plain language, while
   // the row-level Best Guess badge (matching the song-page section) is kept.

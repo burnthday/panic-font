@@ -1834,8 +1834,8 @@ function renderAboutPage(entry, data, cache) {
       .about-credit h3{margin:0 0 .4rem;font-size:.95rem;letter-spacing:.02em}
       .about-credit p{margin:0;font-size:.86rem;line-height:1.55;opacity:.8}
       .about-faq-item{border-bottom:1px solid rgba(255,255,255,.09);padding:.35rem 0}
-      .about-faq-item summary{cursor:pointer;padding:.65rem 0;font-weight:600;letter-spacing:.01em}
-      .about-faq-item p{margin:.2rem 0 .9rem;line-height:1.7;opacity:.85;max-width:68ch}
+      .about-faq-item summary{cursor:pointer;padding:.8rem 0;font-weight:600;letter-spacing:.01em}
+      .about-faq-item p{margin:0;padding:.1rem 0 1rem;line-height:1.7;opacity:.85;max-width:68ch}
       .about-h2{margin-top:2.6rem;letter-spacing:.02em}
       @media (max-width:560px){.about-portrait{float:none;display:block;margin:0 auto 1.2rem}}
     </style>
@@ -2491,8 +2491,8 @@ function renderFaqCss() {
       .faq-page .faq-list { margin-top: 34px; }
       .faq-list { margin-top: 1.6rem; }
       .faq-item { border-bottom: 1px solid rgba(255,255,255,.09); padding: .35rem 0; }
-      .faq-item summary { cursor: pointer; padding: .7rem 0; font-weight: 600; letter-spacing: .01em; }
-      .faq-answer { margin: .2rem 0 1rem; }
+      .faq-item summary { cursor: pointer; padding: .8rem 0; font-weight: 600; letter-spacing: .01em; }
+      .faq-answer { margin: 0; padding: .1rem 0 1rem; }
       .faq-answer p { margin: 0 0 .6rem; line-height: 1.7; opacity: .85; max-width: 68ch; }
       .faq-sources { display: flex; flex-wrap: wrap; gap: .45rem; align-items: baseline; margin: 0; font-size: .82rem; opacity: .72; }
       .faq-sources-label { text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; opacity: .85; }
@@ -5577,12 +5577,32 @@ function renderSongsIndex(data, slugMap) {
     } else {
       statusMarkup = escapeHtml(rarity.label);
     }
-    return `<a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-tier="${escapeAttr(statusTier)}" data-bestguess="${hasBestGuess ? "yes" : "no"}">
-      <span class="sr-title">${escapeHtml(song.title)}${hasBestGuess ? '<span class="sr-bestguess">Best Guess</span>' : ""}</span>
-      <span class="sr-type">${escapeHtml(song.type)}</span>
-      <span class="sr-tier">${statusMarkup}</span>
-      <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
-    </a>`;
+    // Per-row resource indicators. These are REAL, separate <a> elements — the row
+    // itself is one big <a>, and nested anchors are invalid HTML. They live in a
+    // dedicated grid column (see .song-row-wrap / .sr-resources in renderStagelightCss)
+    // that overlays the reserved RESOURCES track, so the whole row stays clickable
+    // while each chip is independently tabbable with its own aria-label. Origin +
+    // Lyrics light up only when the data join exists; Tab (Songsterr search) mirrors
+    // the /song/ page link and is always available.
+    const resChips = [];
+    const origin = data.originsByTitle?.get(song.key);
+    if (origin && origin.slug) {
+      resChips.push(`<a class="sr-chip" href="/song-origins/${escapeAttr(origin.slug)}/" aria-label="${escapeAttr(song.title)} song origin">Origin</a>`);
+    }
+    const lyricsHref = data.lyricsResourceByKey?.get(song.key);
+    if (lyricsHref) {
+      resChips.push(`<a class="sr-chip" href="${escapeAttr(lyricsHref)}" aria-label="${escapeAttr(song.title)} lyrics and chords">Lyrics</a>`);
+    }
+    resChips.push(`<a class="sr-chip sr-chip-ext" href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(song.title)} guitar tab on Songsterr">Tab</a>`);
+    return `<div class="song-row-wrap" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-tier="${escapeAttr(statusTier)}" data-bestguess="${hasBestGuess ? "yes" : "no"}">
+      <a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" tabindex="0">
+        <span class="sr-title">${escapeHtml(song.title)}${hasBestGuess ? '<span class="sr-bestguess">Best Guess</span>' : ""}</span>
+        <span class="sr-type">${escapeHtml(song.type)}</span>
+        <span class="sr-tier">${statusMarkup}</span>
+        <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
+      </a>
+      <span class="sr-resources">${resChips.join("")}</span>
+    </div>`;
   }).join("");
   return `<!doctype html>
 <html lang="en">
@@ -5625,6 +5645,7 @@ function renderSongsIndex(data, slugMap) {
         <span class="sih-col">Title</span>
         <span class="sih-col">Type</span>
         <span class="sih-col">Status</span>
+        <span class="sih-col sih-more">More</span>
         <span class="sih-col sih-plays">Plays</span>
       </div>
       <div class="song-list" id="song-list">${rows}</div>
@@ -5639,12 +5660,13 @@ function renderSongsIndex(data, slugMap) {
 
 // Client-side search + multi-facet filter for the Song Index. Composes a title
 // search, a Type button group, a "This tour" toggle and a "Has Best Guess" toggle —
-// all reading the data-* attributes on each .song-row. Modeled on the homepage Tour
+// all reading the data-* attributes on each .song-row-wrap (the wrapper carries the
+// facets and the hide toggle so its resource links hide with the row). Modeled on the homepage Tour
 // Stats rarity/type filter interaction.
 function renderSongSearchScript() {
   return `(() => {
     const input = document.getElementById("song-search");
-    const rows = [...document.querySelectorAll(".song-row")];
+    const rows = [...document.querySelectorAll(".song-row-wrap")];
     const count = document.getElementById("song-count");
     const empty = document.getElementById("song-empty");
     const total = rows.length;
@@ -8162,6 +8184,7 @@ function renderSetlists(data, options = {}) {
         <em class="up-flag">Upcoming</em>
       </li>`).join("")}
     </ol>
+    <span class="upcoming-credit">Photo: Andy Tennille</span>
   </div>` : "";
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
@@ -12185,10 +12208,27 @@ body.stagelight .slp-progress i { background: var(--red); }
 
 /* ---- UPCOMING DATES (inside Setlists) ---- */
 body.stagelight .upcoming-dates {
-  margin-top: 16px; border-radius: var(--sl-r); overflow: hidden;
+  position: relative; margin-top: 16px; border-radius: var(--sl-r); overflow: hidden;
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
   border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
+}
+/* Full-bleed live-show backdrop (Andy Tennille). A dark vertical gradient — same
+   overlay idiom as the latest-show card's .sc-bg::after — keeps every mono label
+   and row above WCAG contrast. Image + overlay ride an ::before so the section's
+   own content (heading, rows, credit) stacks cleanly above it. */
+body.stagelight .upcoming-dates::before {
+  content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: linear-gradient(180deg, rgba(9,9,11,0.74) 0%, rgba(10,10,12,0.82) 48%, rgba(11,11,12,0.9) 100%), url("/assets/upcoming-bg-andy-tennille.jpg");
+  background-size: cover, cover; background-position: center, center;
+}
+body.stagelight .upcoming-heading, body.stagelight .upcoming-dates .tour-dates { position: relative; z-index: 1; }
+body.stagelight .upcoming-dates .tour-dates { padding-bottom: 20px; }
+/* Quiet photographer credit — band policy is to credit every photographer. */
+body.stagelight .upcoming-credit {
+  position: absolute; right: 14px; bottom: 10px; z-index: 2;
+  font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.62); text-shadow: 0 1px 6px rgba(0,0,0,0.7); pointer-events: none;
 }
 body.stagelight .upcoming-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 20px 26px 14px; }
 body.stagelight .upcoming-heading h3 { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; font-weight: 600; color: var(--sl-ink); }
@@ -13168,7 +13208,7 @@ body.stagelight .index-select select option { color: #111; }
    row's content independently — columns never lined up. Fixed tracks make every
    independent row resolve identical column edges. Title flexes; type/status/plays
    are fixed; plays right-aligned. Owner QA: columns did not align across rows. */
-body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 96px 168px 88px; --sr-gap: 16px; }
+body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 96px 168px 150px 88px; --sr-gap: 16px; }
 body.stagelight .song-list { display: grid; gap: 1px; }
 /* Column-header row — mono/uppercase label idiom, sticky just under the sticky
    search bar (search sticks at top:78 and is ~48px tall, so ~128px lands it flush
@@ -13183,15 +13223,37 @@ body.stagelight .song-index-head {
 }
 body.stagelight .sih-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .sih-plays { text-align: right; }
-/* The row's own display:grid outweighs the UA [hidden] rule, so filtered/searched
-   rows need an explicit, equal-specificity hide. */
-body.stagelight .song-row[hidden], body.stagelight .lyric-row[hidden] { display: none; }
-body.stagelight .song-row {
-  display: grid; grid-template-columns: var(--sr-cols);
-  align-items: center; gap: var(--sr-gap); padding: 14px 10px; color: var(--sl-ink);
-  border-bottom: 1px solid var(--sl-line-faint);
+/* The wrapper's display:grid outweighs the UA [hidden] rule, so filtered/searched
+   rows need an explicit, equal-specificity hide. The wrap (not the inner row) is
+   what the search script toggles, so its resource links hide with it. */
+body.stagelight .song-row-wrap[hidden], body.stagelight .lyric-row[hidden] { display: none; }
+/* Song Index row = a wrapper grid so the resource links can be REAL sibling <a>
+   elements (nested anchors inside the row link would be invalid HTML). The wrap
+   shares the row's --sr-cols template; the row anchor spans every column and holds
+   an empty RESOURCES track, and .sr-resources overlays that same track on top. */
+body.stagelight .song-row-wrap {
+  position: relative; display: grid; grid-template-columns: var(--sr-cols);
+  align-items: center; gap: var(--sr-gap); border-bottom: 1px solid var(--sl-line-faint);
 }
-body.stagelight .song-row:hover { background: rgba(255,255,255,0.03); }
+body.stagelight .song-row {
+  grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: var(--sr-cols);
+  align-items: center; gap: var(--sr-gap); padding: 14px 10px; color: var(--sl-ink);
+}
+body.stagelight .sr-plays { grid-column: 5; }
+body.stagelight .song-row-wrap:hover { background: rgba(255,255,255,0.03); }
+/* Resource chips: quiet mono pills sitting in the reserved RESOURCES column, layered
+   above the row anchor (z-index) so each stays independently clickable + tabbable. */
+body.stagelight .sr-resources {
+  grid-column: 4; grid-row: 1; z-index: 1; position: relative;
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-self: start;
+}
+body.stagelight .sr-chip {
+  font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--sl-muted); padding: 3px 8px; border-radius: var(--sl-r-pill);
+  border: 1px solid var(--sl-line-strong); white-space: nowrap; transition: color 0.15s ease, border-color 0.15s ease;
+}
+body.stagelight .sr-chip:hover { color: var(--sl-ink); border-color: var(--sl-muted); }
+body.stagelight .sr-chip:focus-visible { outline: 2px solid var(--sl-muted); outline-offset: 2px; }
 body.stagelight .sr-title { font-family: var(--sl-display); font-size: 15px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.stagelight .sr-type { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .sr-tier { display: flex; align-items: center; gap: 8px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-muted); }
@@ -13214,9 +13276,13 @@ body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(-
   body.stagelight .sr-type { display: none; }
   body.stagelight .sr-tier { grid-column: 1; grid-row: 2; }
   body.stagelight .sr-plays { grid-column: 2; grid-row: 1; }
+  /* Resource column is desktop-only — the /song/ pages already link every resource,
+     so mobile drops the chips to keep the two-column row readable. */
+  body.stagelight .sr-resources { display: none; }
   body.stagelight .song-index-head { padding: 9px 4px; }
   body.stagelight .song-index-head .sih-col:nth-child(2),
-  body.stagelight .song-index-head .sih-col:nth-child(3) { display: none; }
+  body.stagelight .song-index-head .sih-col:nth-child(3),
+  body.stagelight .song-index-head .sih-col:nth-child(4) { display: none; }
   body.stagelight .song-count { display: none; }
 }
 
@@ -13710,6 +13776,37 @@ body.stagelight .tour-year-summary strong { font-family: var(--sl-display); font
   body.stagelight .origin-nav .origin-nav-next { text-align: left; margin-left: 0; align-items: flex-start; }
   body.stagelight .archive-main { margin-top: 40px; }
 }
+
+/* ── FAQ ACCORDIONS — shared by /faq/ (.faq-item) and About (.about-faq-item) ──
+   One treatment for both surfaces: a chevron affordance that rotates 180deg on open,
+   and a smooth open/close. interpolate-size lets block-size animate to/from the auto
+   keyword on 2026-baseline browsers; where ::details-content or interpolate-size are
+   unsupported the accordion simply toggles with no animation — still fully functional. */
+:root { interpolate-size: allow-keywords; }
+body.stagelight .faq-item > summary,
+body.stagelight .about-faq-item > summary {
+  display: flex; align-items: center; gap: 16px; list-style: none;
+}
+body.stagelight .faq-item > summary::-webkit-details-marker,
+body.stagelight .about-faq-item > summary::-webkit-details-marker { display: none; }
+/* CSS-triangle chevron (a border corner rotated to a downward "v"). */
+body.stagelight .faq-item > summary::after,
+body.stagelight .about-faq-item > summary::after {
+  content: ""; flex: none; width: 8px; height: 8px; margin-left: auto; margin-right: 3px;
+  border-right: 2px solid var(--sl-muted); border-bottom: 2px solid var(--sl-muted);
+  transform: rotate(45deg); transform-origin: center; transition: transform 0.2s ease;
+}
+body.stagelight .faq-item[open] > summary::after,
+body.stagelight .about-faq-item[open] > summary::after { transform: rotate(225deg); }
+body.stagelight .faq-item > summary:focus-visible,
+body.stagelight .about-faq-item > summary:focus-visible { outline: 2px solid var(--sl-muted); outline-offset: 3px; border-radius: 4px; }
+body.stagelight .faq-item::details-content,
+body.stagelight .about-faq-item::details-content {
+  block-size: 0; overflow: clip;
+  transition: content-visibility 0.25s allow-discrete, block-size 0.25s ease;
+}
+body.stagelight .faq-item[open]::details-content,
+body.stagelight .about-faq-item[open]::details-content { block-size: auto; }
 
 `;
 }
