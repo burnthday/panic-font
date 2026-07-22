@@ -529,8 +529,61 @@ async function checkSongPages(siteData) {
   assertIncludes(index, 'class="index-toolbar"', "Song Index exposes the filter toolbar");
   for (const type of ["all", "original", "cover"]) assertIncludes(index, `data-type-filter="${type}"`, `Song Index offers the ${type} type filter`);
   assertIncludes(index, "data-tour-filter", "Song Index offers the This-tour filter");
-  assertIncludes(index, "data-bestguess-filter", "Song Index offers the Has-Best-Guess filter");
-  record("Song Index rows carry the filter data-* attributes", /class="song-row"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-bestguess="(?:yes|no)"/.test(index), "song-row data-type/data-tour/data-bestguess present");
+  assertIncludes(index, "data-shelf-filter", "Song Index offers the Shelf filter");
+  assertIncludes(index, "data-bestguess-filter", "Song Index offers the Transcribed-lyrics filter");
+  record("Song Index rows carry the filter data-* attributes", /class="song-row"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-tier="[a-z]+"[^>]*data-bestguess="(?:yes|no)"/.test(index), "song-row data-type/data-tour/data-tier/data-bestguess present");
+
+  // Owner QA fixes on the Song Index.
+  const songIndexCss = await readText("dist/stagelight.css").catch(() => "");
+
+  // FIX 2 — sticky column-header row aligned to the row grid. The header and every
+  // row share one --sr-cols template, and the header is sticky under the search bar.
+  record("Song Index renders the column-header row (Title/Type/Status/Plays)",
+    index.includes('class="song-index-head"') && (index.match(/class="sih-col[^"]*"/g) || []).length === 4,
+    "song-index-head with four sih-col cells");
+  record("Song Index header + rows share one grid template",
+    /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
+    && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)
+    && /body\.stagelight \.song-row \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss),
+    "--sr-cols drives .song-index-head and .song-row");
+  record("Song Index column-header row is sticky",
+    /body\.stagelight \.song-index-head \{[^}]*position: sticky/.test(songIndexCss),
+    "song-index-head is position:sticky");
+
+  // FIX 3 — the "Has Best Guess" jargon chip is renamed to plain language, while
+  // the row-level Best Guess badge (matching the song-page section) is kept.
+  assertIncludes(index, "Transcribed lyrics", "Song Index chip uses plain language");
+  assertNotIncludes(index, "Has Best Guess", "Song Index drops the Has-Best-Guess jargon label");
+  assertIncludes(index, 'class="sr-bestguess"', "Song Index keeps the row-level Best Guess badge");
+
+  // FIX 4 — shelved / purgatoried songs show their board status, not a misleading
+  // frequency-rarity tier. Rows carry data-tier + a distinct muted label.
+  const shelfBoard = [...(siteData.boards?.shelfOriginals || []), ...(siteData.boards?.shelfCovers || [])];
+  const purgBoard = [...(siteData.boards?.purgatoryOriginals || []), ...(siteData.boards?.purgatoryCovers || [])];
+  const shelfTierCount = (index.match(/data-tier="shelf"/g) || []).length;
+  record("Song Index marks shelved songs with data-tier=shelf and a Shelf label",
+    shelfTierCount >= 1 && index.includes('class="sr-board sr-board-shelf">Shelf<'),
+    `${shelfTierCount} shelf rows`);
+  if (purgBoard.length > 0) {
+    const purgTierCount = (index.match(/data-tier="purgatory"/g) || []).length;
+    record("Song Index marks purgatory songs with data-tier=purgatory and a Purgatory label",
+      purgTierCount >= 1 && index.includes('class="sr-board sr-board-purgatory">Purgatory<'),
+      `${purgTierCount} purgatory rows`);
+  }
+  // A specific shelf-board song (not played this tour) resolves to the Shelf status.
+  const shelfSample = shelfBoard.find((row) => !row.playedThisTour);
+  if (shelfSample) {
+    const escTitle = escapeAttribute(shelfSample.title.toLowerCase());
+    record(`Shelf song "${shelfSample.title}" shows Shelf status, not a rarity tier`,
+      new RegExp(`data-title="${escTitle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"[^>]*data-tier="shelf"`).test(index),
+      "shelf board song carries data-tier=shelf");
+  }
+
+  // FIX 1 — in-page anchor targets clear the fixed/sticky header on landing.
+  record("Anchor targets carry a scroll-margin so they clear the fixed header",
+    /scroll-margin-top: 96px/.test(songIndexCss)
+    && ["#song-list", "#setlists", "#tour-stats"].every((id) => new RegExp(`${id}[,\\s)]`).test(songIndexCss.replace(/\n/g, " "))),
+    "scroll-margin-top rule covers the nav anchor ids");
 
   const songDirs = await readdir(path.join(distDir, "song"), { withFileTypes: true })
     .then((entries) => entries.filter((entry) => entry.isDirectory()).length)

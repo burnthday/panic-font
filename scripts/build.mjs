@@ -3102,8 +3102,8 @@ function renderShelfInfoPage(data, oldShelfEntry) {
   if (returns.length) statTiles.push(tile(formatNumber(returns.length), "came back this tour", returns.map((row) => row.title).slice(0, 2).join(" · ")));
 
   const neighbors = [
-    { href: "/#purgatory", name: "Purgatory", count: purgCount, desc: "Played once, ever — waiting on a second life." },
-    { href: "/#woodshed", name: "The Woodshed", count: woodCount, desc: "On the current sheet, not yet played with Nick Johnson." }
+    { href: "/#purgatory-sheet", name: "Purgatory", count: purgCount, desc: "Played once, ever — waiting on a second life." },
+    { href: "/#woodshed-sheet", name: "The Woodshed", count: woodCount, desc: "On the current sheet, not yet played with Nick Johnson." }
   ].filter((item) => item.count);
 
   return `<!doctype html>
@@ -5553,13 +5553,33 @@ function renderSongsIndex(data, slugMap) {
   const catalog = [...(data.catalog || [])].sort((a, b) => a.title.localeCompare(b.title));
   const originals = catalog.filter((s) => s.type === "Original").length;
   const covers = catalog.length - originals;
+  // Shelf / Purgatory membership by song key. A shelved or purgatoried song must
+  // NOT show a frequency-rarity tier like HYPER RARE (it misleads — the song is
+  // dormant, not rare-when-played), so board status overrides the tier. Owner QA.
+  const shelfKeys = new Set([...(data.boards?.shelfOriginals || []), ...(data.boards?.shelfCovers || [])].map((row) => row.key));
+  const purgatoryKeys = new Set([...(data.boards?.purgatoryOriginals || []), ...(data.boards?.purgatoryCovers || [])].map((row) => row.key));
   const rows = catalog.map((song) => {
     const rarity = calculateRarity(song);
     const hasBestGuess = data.bestGuessByKey?.has(song.key);
-    return `<a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-bestguess="${hasBestGuess ? "yes" : "no"}">
+    // Status precedence: this-tour keeps its current bustout/rarity treatment;
+    // else Shelf, else Purgatory, else the calculated rarity label.
+    let statusTier = rarity.tier;
+    let statusMarkup;
+    if (song.playedThisTour) {
+      statusMarkup = `<span class="sr-onsheet">this tour</span>${escapeHtml(rarity.label)}`;
+    } else if (shelfKeys.has(song.key)) {
+      statusTier = "shelf";
+      statusMarkup = '<span class="sr-board sr-board-shelf">Shelf</span>';
+    } else if (purgatoryKeys.has(song.key)) {
+      statusTier = "purgatory";
+      statusMarkup = '<span class="sr-board sr-board-purgatory">Purgatory</span>';
+    } else {
+      statusMarkup = escapeHtml(rarity.label);
+    }
+    return `<a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-tier="${escapeAttr(statusTier)}" data-bestguess="${hasBestGuess ? "yes" : "no"}">
       <span class="sr-title">${escapeHtml(song.title)}${hasBestGuess ? '<span class="sr-bestguess">Best Guess</span>' : ""}</span>
       <span class="sr-type">${escapeHtml(song.type)}</span>
-      <span class="sr-tier">${song.playedThisTour ? '<span class="sr-onsheet">this tour</span>' : ""}${escapeHtml(rarity.label)}</span>
+      <span class="sr-tier">${statusMarkup}</span>
       <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
     </a>`;
   }).join("");
@@ -5597,7 +5617,14 @@ function renderSongsIndex(data, slugMap) {
           <button type="button" data-type-filter="cover">Covers</button>
         </div>
         <button type="button" class="index-toggle" data-tour-filter aria-pressed="false">This tour</button>
-        <button type="button" class="index-toggle" data-bestguess-filter aria-pressed="false">Has Best Guess</button>
+        <button type="button" class="index-toggle" data-shelf-filter aria-pressed="false">Shelf</button>
+        <button type="button" class="index-toggle" data-bestguess-filter aria-pressed="false">Transcribed lyrics</button>
+      </div>
+      <div class="song-index-head" role="presentation" aria-hidden="true">
+        <span class="sih-col">Title</span>
+        <span class="sih-col">Type</span>
+        <span class="sih-col">Status</span>
+        <span class="sih-col sih-plays">Plays</span>
       </div>
       <div class="song-list" id="song-list">${rows}</div>
       <p class="song-empty" id="song-empty" hidden>No songs match that search.</p>
@@ -5623,23 +5650,26 @@ function renderSongSearchScript() {
     const baseLabel = count.textContent;
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
     const tourToggle = document.querySelector("[data-tour-filter]");
+    const shelfToggle = document.querySelector("[data-shelf-filter]");
     const bestToggle = document.querySelector("[data-bestguess-filter]");
     let selectedType = "all";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
       const tourOnly = tourToggle && tourToggle.getAttribute("aria-pressed") === "true";
+      const shelfOnly = shelfToggle && shelfToggle.getAttribute("aria-pressed") === "true";
       const bestOnly = bestToggle && bestToggle.getAttribute("aria-pressed") === "true";
       let shown = 0;
       rows.forEach((row) => {
         const hit = (!q || row.dataset.title.includes(q))
           && (selectedType === "all" || row.dataset.type === selectedType)
           && (!tourOnly || row.dataset.tour === "yes")
+          && (!shelfOnly || row.dataset.tier === "shelf")
           && (!bestOnly || row.dataset.bestguess === "yes");
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      const filtered = q || selectedType !== "all" || tourOnly || bestOnly;
+      const filtered = q || selectedType !== "all" || tourOnly || shelfOnly || bestOnly;
       count.textContent = filtered ? shown + " of " + total + " songs" : baseLabel;
     };
     typeButtons.forEach((btn) => btn.addEventListener("click", () => {
@@ -5647,7 +5677,7 @@ function renderSongSearchScript() {
       typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
       apply();
     }));
-    [tourToggle, bestToggle].forEach((btn) => btn && btn.addEventListener("click", () => {
+    [tourToggle, shelfToggle, bestToggle].forEach((btn) => btn && btn.addEventListener("click", () => {
       btn.setAttribute("aria-pressed", btn.getAttribute("aria-pressed") === "true" ? "false" : "true");
       apply();
     }));
@@ -11802,6 +11832,15 @@ body.stagelight .site-head {
 }
 body.stagelight .site-head.is-hidden { transform: translateY(-102%); }
 @media (prefers-reduced-motion: reduce) { body.stagelight .site-head { transition: none; } }
+/* Anchor landings sat behind the fixed, sticky header (66px tall). Every in-page
+   target reachable from the nav / mega-menu / footer / board cards gets a
+   scroll-margin so it lands clear of the bar (header height + breathing room).
+   Owner QA: anchored sections "open behind and under the menu." */
+body.stagelight :is(
+  #song-list, #setlists, #tour-stats, #latest-setlist,
+  #shelf-sheet, #shelf-watch, #nick-johnson,
+  #purgatory-sheet, #woodshed-sheet
+) { scroll-margin-top: 96px; }
 body.stagelight .head-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 body.stagelight .head-cta {
   display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border-radius: var(--sl-r-pill);
@@ -13123,13 +13162,32 @@ body.stagelight .index-select select {
   font-family: var(--sl-display); font-size: 14px; font-weight: 560; cursor: pointer; padding: 0 6px 0 0;
 }
 body.stagelight .index-select select option { color: #111; }
+/* One shared column template drives BOTH the header row and every song row.
+   Each .song-row is its OWN grid, so an auto status track used to size to each
+   row's content independently — columns never lined up. Fixed tracks make every
+   independent row resolve identical column edges. Title flexes; type/status/plays
+   are fixed; plays right-aligned. Owner QA: columns did not align across rows. */
+body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 96px 168px 88px; --sr-gap: 16px; }
 body.stagelight .song-list { display: grid; gap: 1px; }
+/* Column-header row — mono/uppercase label idiom, sticky just under the sticky
+   search bar (search sticks at top:78 and is ~48px tall, so ~128px lands it flush
+   below). z-index sits under the search bar but over the scrolling rows. */
+body.stagelight .song-index-head {
+  display: grid; grid-template-columns: var(--sr-cols); gap: var(--sr-gap);
+  align-items: center; padding: 10px 10px; margin-top: 6px;
+  position: sticky; top: 128px; z-index: 2;
+  background: color-mix(in srgb, var(--sl-glass) 92%, #000);
+  border-bottom: 1px solid var(--sl-line);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+}
+body.stagelight .sih-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .sih-plays { text-align: right; }
 /* The row's own display:grid outweighs the UA [hidden] rule, so filtered/searched
    rows need an explicit, equal-specificity hide. */
 body.stagelight .song-row[hidden], body.stagelight .lyric-row[hidden] { display: none; }
 body.stagelight .song-row {
-  display: grid; grid-template-columns: minmax(0, 1fr) 84px minmax(120px, auto) 92px;
-  align-items: center; gap: 16px; padding: 14px 10px; color: var(--sl-ink);
+  display: grid; grid-template-columns: var(--sr-cols);
+  align-items: center; gap: var(--sr-gap); padding: 14px 10px; color: var(--sl-ink);
   border-bottom: 1px solid var(--sl-line-faint);
 }
 body.stagelight .song-row:hover { background: rgba(255,255,255,0.03); }
@@ -13137,14 +13195,27 @@ body.stagelight .sr-title { font-family: var(--sl-display); font-size: 15px; fon
 body.stagelight .sr-type { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .sr-tier { display: flex; align-items: center; gap: 8px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .sr-onsheet { font-size: 12px; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid rgba(212,81,79,0.5); color: var(--sl-ink); }
+/* Shelf / Purgatory board status — deliberately muted and distinct from the
+   colored rarity ladder, so a dormant song never reads as a rare-when-played one. */
+body.stagelight .sr-board { font-size: 11px; padding: 2px 9px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); }
+body.stagelight .sr-board-shelf { color: var(--sl-muted); background: rgba(255,255,255,0.04); }
+body.stagelight .sr-board-purgatory { color: var(--sl-faint); background: rgba(255,255,255,0.02); border-style: dashed; }
 body.stagelight .sr-title .sr-bestguess { margin-left: 9px; font-family: var(--sl-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); vertical-align: middle; }
 body.stagelight .sr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); }
 body.stagelight .sr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
 body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(--sl-faint); font-size: 15px; }
-@media (max-width: 640px) {
-  body.stagelight .song-row { grid-template-columns: minmax(0, 1fr) 78px; grid-auto-rows: auto; row-gap: 4px; }
-  body.stagelight .sr-tier { grid-column: 1; }
+/* Mobile (<=560px): drop the TYPE column so TITLE + STATUS + PLAYS stay readable
+   and the grid never overflows. Header row collapses to TITLE | PLAYS (status
+   rides inline under each title). Tighter paddings; sticky header stays usable. */
+@media (max-width: 560px) {
+  body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 76px; --sr-gap: 12px; }
+  body.stagelight .song-row { grid-auto-rows: auto; row-gap: 4px; padding: 12px 4px; }
+  body.stagelight .sr-type { display: none; }
+  body.stagelight .sr-tier { grid-column: 1; grid-row: 2; }
   body.stagelight .sr-plays { grid-column: 2; grid-row: 1; }
+  body.stagelight .song-index-head { padding: 9px 4px; }
+  body.stagelight .song-index-head .sih-col:nth-child(2),
+  body.stagelight .song-index-head .sih-col:nth-child(3) { display: none; }
   body.stagelight .song-count { display: none; }
 }
 
