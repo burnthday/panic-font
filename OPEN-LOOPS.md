@@ -9,5 +9,8 @@ Unchecked items resurface at session start until cleared. Check the box or delet
 - [x] 2026-07-22 — Alex reviews round-2 checklist (~/Desktop/qa-pass-checklist.html) — "we'll continue tomorrow"
 - [ ] 2026-07-22 — FAQ facts waiting on Alex: the "synth era" and the Sam Holt ~'99 "gear from a big band" interview were unverifiable from sources; add to the era history if Alex supplies a source or details (raised in: FAQ round 2)
 - [ ] 2026-07-22 — Alex final pass on round-3 checklist (~/Desktop/qa-pass-checklist.html): NEW items + the no-feedback-yet sweep
-- [ ] 2026-07-22 — Highlight-a-show rework (Alex + advice given): add the upcoming show to the dropdown and exclude the last 4 shows from the list so sorting serves "panic pick 5" prediction; advised, awaiting Alex's call (raised in: Tour Stats QA)
+- [ ] 2026-07-22 — Highlight-a-show rework (STILL-OPEN, advice on record) (Alex + advice given): add the upcoming show to the dropdown and exclude the last 4 shows from the list so sorting serves "panic pick 5" prediction; advised, awaiting Alex's call (raised in: Tour Stats QA)
 - [ ] 2026-07-22 — Nick stats section dedicated rework session: labels, filters, sort, look must match the full stats list (Alex: "needs a dedicated session")
+- [ ] 2026-07-22 — Sacramento 7/21 setlist: blocked on setlist.fm data (songs:[] in cache); hero art pre-wired via setlist-overrides; promote + verify 1-night path when songs land (raised in: hero rebuild)
+- [ ] 2026-07-22 — Mobile sweep of the new hero (375px: pager, rail, ticker, stats panel, breadcrumb) before any ship
+- [ ] 2026-07-22 — Handoff written: panic-font/memory/handoff-hero-architecture-2026-07-22.md (next session reads it first)
