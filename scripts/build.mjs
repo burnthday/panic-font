@@ -8527,14 +8527,63 @@ function renderHomeSectionNav(data) {
 // sharp photo framed at the top-right (renderShowCard's `latest` layout). A slim
 // upcoming/next-show strip sits directly beneath it. The other run nights are NOT
 // pinned here — they flow into the 2026 setlist feed below.
+// Purpose-built homepage hero — a full-bleed <section>, NOT the collapsible
+// .show-entry setlist card. Blurred show photo spans the whole viewport; the
+// lockup + sharp framed photo + setlist ride the 1400 rail. No card chrome,
+// no chevron, not collapsible.
+function renderHomeHero(data, show) {
+  const annotations = buildSetlistAnnotations(show);
+  const sets = (show.sets || []).filter((set) => (set.songTitles && set.songTitles.length) || clean(set.songs));
+  const hasSetlist = sets.length > 0;
+  const iso = show.isoDate || "";
+  const weekday = weekdayName(iso);
+  let venueLine = show.venue;
+  try {
+    const run = tourRunInfo(data.tourDates || [], show);
+    if (run && run.length > 1) venueLine = `${show.venue} · Night ${run.number}`;
+  } catch {}
+  const longDate = formatLongDate(iso || show.date);
+  const ariaHeading = escapeAttr(formatSetlistHeading(show));
+  const relistenUrl = (data.relistenDates || new Set()).has(iso) ? relistenUrlFor(iso) : "";
+  const chips = [
+    show.streamUrl ? `<a class="sc-chip sc-chip-primary" href="${escapeAttr(show.streamUrl)}" aria-label="Listen to ${ariaHeading} at Nugs.net"><svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path d="M1.5 1.2c0-.66.72-1.07 1.29-.73l8 4.8a.85.85 0 0 1 0 1.46l-8 4.8A.85.85 0 0 1 1.5 10.8V1.2Z" fill="currentColor"/></svg>nugs.net</a>` : "",
+    relistenUrl ? `<a class="sc-chip sc-chip-glass sc-chip-relisten" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Listen to ${ariaHeading} on Relisten">Listen on Relisten</a>` : "",
+    show.sourceUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(show.sourceUrl)}" aria-label="Official setlist and photos for ${ariaHeading}">Photos</a>` : ""
+  ].filter(Boolean).join("");
+  const setRows = sets.map((set) => `<div class="sc-row"><span class="sc-label">${escapeHtml(formatSetLabel(set.label))}</span><p class="sc-prose">${renderSetSongs(set, annotations)}</p></div>`).join("");
+  const notes = (annotations.guestNotes.length || annotations.bracketNotes.length)
+    ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}${renderSetlistNotes(annotations)}</div></div>`
+    : "";
+  const pullGroups = hasSetlist ? computeShowPulls(data, show) : [];
+  const pullsRow = renderShowPulls(pullGroups);
+  const ltpRow = hasSetlist ? renderShowLastPlayed(data, show) : "";
+  const photo = show.image
+    ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async" fetchpriority="high"></figure>`
+    : "";
+  const bg = show.image ? `<div class="hero-bg" aria-hidden="true"><img src="${escapeAttr(show.image)}" alt="" decoding="async"></div>` : "";
+  return `<section class="home-hero${show.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${ariaHeading}">
+    ${bg}
+    <div class="hero-inner">
+      <div class="hero-lockup">
+        <div class="hero-lock">
+          <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
+          <h2 class="sc-city">${escapeHtml(show.location)}</h2>
+          <span class="sc-venue">${escapeHtml(venueLine)}</span>
+          ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
+        </div>
+        ${photo}
+      </div>
+      <div class="hero-setlist"><div class="sc-sets">${setRows}${notes}${pullsRow}${ltpRow}</div></div>
+    </div>
+  </section>`;
+}
+
 function renderLatestSetlist(data) {
   const posted = data.setlists || [];
   const featured = posted[0];
   if (!featured) return "";
-  return `<section class="latest-setlist" id="latest-setlist">
-  ${renderShowCard(data, featured, { latest: true, open: true, priority: true })}
-  ${renderNextShowStrip(data, featured)}
-</section>`;
+  return `${renderHomeHero(data, featured)}
+  ${renderNextShowStrip(data, featured)}`;
 }
 
 // Slim strip under the hero for the next scheduled show — or tonight's live
@@ -12670,16 +12719,24 @@ body.stagelight .show-entry.is-latest[open] .sc-bg { display: block; overflow: h
 body.stagelight .show-entry.is-latest[open] .sc-bg img { opacity: 0.5; object-position: center 34%; transform: scale(1.35); filter: blur(18px) saturate(1.1); }
 body.stagelight .show-entry.is-latest[open] .sc-bg::after { background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.72) 44%, rgba(11,11,12,0.94) 78%, rgba(11,11,12,1) 100%); }
 body.stagelight .show-entry[open] .sc-lockup, body.stagelight .sc-body { position: relative; z-index: 1; }
-/* Full-bleed hero: the blurred backdrop spans the entire viewport edge to edge;
-   content rides the same 1400 rail as the header, so the photo's right edge lines
-   up with the hamburger. */
-body.stagelight .show-entry.is-latest { width: 100vw; margin-left: calc(50% - 50vw); border-radius: 0; border-left: 0; border-right: 0; }
-body.stagelight .show-entry.is-latest[open] .sc-lockup {
-  padding: 56px max(28px, calc((100% - 1400px) / 2)) 0;
-  grid-template-columns: 1fr 1.18fr; gap: 56px;
-}
-body.stagelight .show-entry.is-latest .sc-city { text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
-body.stagelight .show-entry.is-latest .sc-sets { border-top: none; }
+/* ---- HOMEPAGE HERO (dedicated section, not the setlist card) ---- */
+body.stagelight .home-hero { position: relative; width: 100vw; margin-left: calc(50% - 50vw); overflow: hidden; isolation: isolate; }
+body.stagelight main > .home-hero { margin-top: 0; }
+body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
+body.stagelight .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; object-position: center 32%; transform: scale(1.4); filter: blur(22px) saturate(1.1); }
+body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.34) 0%, rgba(10,10,12,0.72) 46%, rgba(11,11,12,0.95) 82%, #0b0b0d 100%); }
+body.stagelight .hero-inner { position: relative; z-index: 1; padding: 60px max(28px, calc((100% - 1400px) / 2)) 44px; }
+body.stagelight .hero-lockup { display: grid; grid-template-columns: 1fr 1.14fr; gap: 56px; align-items: center; }
+body.stagelight .home-hero.no-image .hero-lockup { grid-template-columns: 1fr; }
+body.stagelight .hero-lock { min-width: 0; }
+body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .home-hero .sc-city { margin: 14px 0 0; font-family: var(--sl-display); font-size: 60px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
+body.stagelight .home-hero .sc-venue { display: block; margin-top: 12px; font-size: 17px; color: var(--sl-muted); }
+body.stagelight .home-hero .sc-chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+body.stagelight .hero-photo { margin: 0; justify-self: end; width: 100%; border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
+body.stagelight .hero-photo img { display: block; width: 100%; height: auto; }
+body.stagelight .hero-setlist { margin-top: 40px; }
+body.stagelight .hero-setlist .sc-sets { display: grid; gap: 18px; }
 body.stagelight .sc-closed { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; min-height: 84px; padding: 18px 70px 18px 28px; }
 body.stagelight .show-entry[open] .sc-closed { display: none; }
 body.stagelight .sc-date { font-family: var(--sl-mono); font-size: 13.5px; letter-spacing: 0.08em; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -12728,11 +12785,13 @@ body.stagelight .setlist-archive-panel > summary { display: none; }
   body.stagelight .brand-wordmark { font-size: 17px; }
 }
 @media (max-width: 900px) {
-  body.stagelight .show-entry[open] .sc-lockup,
-  body.stagelight .show-entry.is-latest[open] .sc-lockup { grid-template-columns: 1fr; gap: 24px; padding: 26px 22px 0; }
+  body.stagelight .show-entry[open] .sc-lockup { grid-template-columns: 1fr; gap: 24px; padding: 26px 22px 0; }
   body.stagelight .sc-city { font-size: 28px; }
-  body.stagelight .show-entry.is-latest .sc-city { font-size: 38px; }
-  body.stagelight .sc-body, body.stagelight .show-entry.is-latest .sc-body { padding: 0 22px 26px; }
+  body.stagelight .hero-lockup { grid-template-columns: 1fr; gap: 22px; }
+  body.stagelight .hero-inner { padding: 30px 22px 26px; }
+  body.stagelight .home-hero .sc-city { font-size: 38px; }
+  body.stagelight .hero-photo { order: -1; }
+  body.stagelight .sc-body { padding: 0 22px 26px; }
   body.stagelight .sc-row { grid-template-columns: 1fr; gap: 6px; }
   body.stagelight .sc-label { padding-top: 0; }
   body.stagelight .sc-closed { padding: 16px 56px 16px 20px; gap: 12px; flex-wrap: wrap; }

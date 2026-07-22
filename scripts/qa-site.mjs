@@ -106,7 +106,7 @@ function checkNoPublicPanicStreamLinks(files, htmlByFile) {
 function checkCorePageState(html, siteData) {
   assertIncludes(html, `<h1 class="sr-only">WIDESPREAD PANIC ${siteData.site.year} TOUR</h1>`, "Homepage keeps the tour title for assistive tech");
   for (const anchor of ["song-list", "tour-stats", "shelf", "purgatory", "nick-johnson", "setlists"]) assertIncludes(html, `id="${anchor}"`, `Homepage keeps the #${anchor} section anchor`);
-  assertIncludes(html, '<section class="latest-setlist" id="latest-setlist">', "Homepage has top-of-page setlist section");
+  assertIncludes(html, '<section class="home-hero" id="latest-setlist"', "Homepage has a dedicated top-of-page hero section");
   assertIncludes(html, '<section class="laminate primary-board" id="song-list">', "Homepage has song-list laminate");
   const boardTitle = [siteData.site?.boardShow?.location, siteData.site?.boardShow?.runLabel].filter(Boolean).join(" ").toUpperCase();
   assertIncludes(html, `<h1>${escapeHtml(boardTitle)}</h1>`, `Song List title matches board show: ${boardTitle}`);
@@ -573,18 +573,21 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(html, `<a href="/#setlists" data-nav-section="setlists">${siteData.site.year} setlists</a>`, "Section nav links to the year setlists");
 
   // ---- Single hero: the latest posted show, no variants, no swap bento ----
-  const heroCount = (featured.match(/<details class="show-entry is-latest/g) || []).length;
-  record("Homepage shows exactly one hero (no variants, no swap bento)", heroCount === 1 && !featured.includes("data-hero-id") && !featured.includes("bento-row") && !featured.includes("night-card"), `is-latest heroes=${heroCount}`);
+  const heroCount = (html.match(/<section class="home-hero/g) || []).length;
+  record("Homepage shows exactly one hero (dedicated section, not the setlist card, no bento)", heroCount === 1 && !featured.includes("data-hero-id") && !featured.includes("bento-row") && !featured.includes("night-card") && !featured.includes('class="show-entry') && !featured.includes('class="sc-chev'), `home-hero sections=${heroCount}`);
 
-  const stripStart = featured.indexOf('<details class="next-strip');
-  const heroCard = stripStart >= 0 ? featured.slice(0, stripStart) : featured;
-  const strip = stripStart >= 0 ? featured.slice(stripStart, featured.indexOf("</details>", stripStart) + "</details>".length) : "";
+  const heroCard = featured;
+  const afterHero = html.indexOf(featured) >= 0 ? html.slice(html.indexOf(featured) + featured.length) : html;
+  const stripStart = afterHero.indexOf('<details class="next-strip');
+  const strip = stripStart >= 0 ? afterHero.slice(stripStart, afterHero.indexOf("</details>", stripStart) + "</details>".length) : "";
 
   assertIncludes(heroCard, `datetime="${feat?.isoDate || ""}"`, "Hero date matches generated site data");
-  assertIncludes(heroCard, `<h3 class="sc-city">${escapeHtml(feat?.location || "")}</h3>`, "Hero city matches generated site data");
+  assertIncludes(heroCard, `<h2 class="sc-city">${escapeHtml(feat?.location || "")}</h2>`, "Hero city matches generated site data");
   assertIncludes(heroCard, '<span class="sc-venue">', "Hero shows the venue line");
-  record("Hero keeps a blurred backdrop of the featured photo", heroCard.includes('<span class="sc-bg"') && (!feat?.image || heroCard.includes(`class="sc-bg" aria-hidden="true"><img src="${escapeHtml(feat.image)}"`)), feat?.image || "");
-  record("Hero frames the sharp photo top-right in the lockup", !feat?.image || heroCard.includes('<span class="sc-photo">'), feat?.image || "");
+  record("Hero keeps a full-bleed blurred backdrop of the featured photo", heroCard.includes('<div class="hero-bg"') && (!feat?.image || heroCard.includes(`class="hero-bg" aria-hidden="true"><img src="${escapeHtml(feat.image)}"`)), feat?.image || "");
+  record("Hero frames the sharp photo top-right in the lockup", !feat?.image || heroCard.includes('<figure class="hero-photo">'), feat?.image || "");
+  const heroOnly = heroCard.slice(heroCard.indexOf('<section class="home-hero'), heroCard.indexOf('</section>') + '</section>'.length);
+  record("Hero is a section, not the collapsible setlist card", heroOnly.startsWith('<section class="home-hero') && !heroOnly.includes('class="show-entry') && !heroOnly.includes('sc-chev'), "no card chrome (the inner Song-stats <details> is fine)");
   record("Hero keeps the listen links", !feat?.streamUrl || heroCard.includes("nugs.net"));
 
   // ---- The setlist lives in the hero (labels + segues) ----
