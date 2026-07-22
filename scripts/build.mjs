@@ -13212,9 +13212,26 @@ body.stagelight .hero-stats-panel .ltp-item .rarity-symbol { flex: none; min-wid
 body.stagelight .hero-stats-panel .ltp-song { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px) { body.stagelight .hero-stats-panel .ltp-list { grid-template-columns: 1fr; } }
 @media (max-width: 900px) {
-  body.stagelight .hero-inner { grid-template-columns: 1fr; row-gap: 26px; }
-  body.stagelight .hero-right { order: -1; }
+  /* Single column: the 2x2 slots keep desktop grid-column/row placements, so
+     they MUST be reset here or the 1fr grid grows a phantom second column
+     (the "hero-right" selector this replaced was stale — no such element). */
+  body.stagelight .hero-inner { grid-template-columns: 1fr; grid-template-rows: none; row-gap: 26px; }
+  body.stagelight .hero-lockwrap,
+  body.stagelight .hero-media-slot,
+  body.stagelight .hero-music-slot,
+  body.stagelight .hero-rail { grid-column: 1; grid-row: auto; }
+  body.stagelight .hero-lockwrap { order: 1; align-self: start; }
+  body.stagelight .hero-media-slot { order: 2; }
+  body.stagelight .hero-music-slot { order: 3; }
+  body.stagelight .hero-rail { order: 4; }
   body.stagelight .hero-photo { height: clamp(200px, 30vh, 300px); }
+  body.stagelight .hero-media { height: auto; min-height: clamp(200px, 30vh, 300px); }
+}
+@media (max-width: 560px) {
+  body.stagelight .home-hero .sc-city { font-size: 30px; }
+  body.stagelight .hero-inner { padding-top: calc(66px + var(--sl-breadcrumb-h, 37px) + 18px); padding-bottom: 28px; row-gap: 20px; }
+  body.stagelight .hero-photo, body.stagelight .hero-media { height: clamp(180px, 26vh, 240px); min-height: 0; }
+  body.stagelight .hero-card { gap: 12px; padding: 11px 14px; }
 }
 body.stagelight .sc-closed { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; min-height: 84px; padding: 18px 70px 18px 28px; }
 body.stagelight .show-entry[open] .sc-closed { display: none; }
