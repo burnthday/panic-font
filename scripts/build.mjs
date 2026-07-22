@@ -2488,13 +2488,36 @@ function renderFaqPage(data) {
     return `<p class="faq-sources"><span class="faq-sources-label">Sources</span>${parts.join('<span class="faq-sep" aria-hidden="true">·</span>')}</p>`;
   };
 
-  const items = faqs.map((faq) => `<details class="faq-item"${faq.id ? ` id="${escapeAttr(faq.id)}"` : ""}>
+  const renderItem = (faq) => `<details class="faq-item"${faq.id ? ` id="${escapeAttr(faq.id)}"` : ""}>
           <summary>${escapeHtml(faq.question)}</summary>
           <div class="faq-answer">
             <p>${escapeHtml(faq.answer)}</p>
             ${sourcesLine(faq)}
           </div>
-        </details>`).join("\n        ");
+        </details>`;
+
+  // Group the rendered questions under mono-label section headers, preserving the
+  // order sections first appear in the data. A single inline photo break rides
+  // just before the "Right Now" group (the Posse banner, an in-house Burnthday mark).
+  const sectionOrder = [];
+  for (const faq of faqs) {
+    const name = faq.section || "More";
+    if (!sectionOrder.includes(name)) sectionOrder.push(name);
+  }
+  const items = sectionOrder.map((name) => {
+    const groupFaqs = faqs.filter((faq) => (faq.section || "More") === name);
+    const count = groupFaqs.length;
+    const isRightNow = /right now/i.test(name);
+    const breakImg = isRightNow
+      ? `<figure class="faq-break">
+          <img src="/assets/PosseFacebookBanner.png" alt="Jimmy Herring Has a Posse banner" loading="lazy" decoding="async" width="820" height="312">
+        </figure>\n        `
+      : "";
+    return `${breakImg}<section class="faq-group" aria-labelledby="grp-${slugify(name)}">
+          <h2 class="faq-group-label" id="grp-${slugify(name)}">${escapeHtml(name)}<span class="faq-group-count" aria-hidden="true">${count}</span></h2>
+          ${groupFaqs.map(renderItem).join("\n          ")}
+        </section>`;
+  }).join("\n        ");
 
   const faqJsonLd = JSON.stringify({
     "@context": "https://schema.org",
@@ -2530,10 +2553,12 @@ function renderFaqPage(data) {
     <!-- ${held} FAQ entr${held === 1 ? "y is" : "ies are"} held back for human verification (verify:true) and not rendered. -->
     <main class="archive-main">
       <article class="archive-page faq-page">
-        <header class="archive-title">
+        <header class="faq-hero">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">FAQ</span></nav>
-          <h1>Widespread Panic FAQ</h1>
-          <p class="faq-deck">New to the band? The name, the story, the people, and where to start listening.</p>
+          <p class="faq-eyebrow">Widespread Panic</p>
+          <h1>The questions we actually get</h1>
+          <p class="faq-deck">New to the band? Here's the name, the story, the people, where they stand right now, and where to start listening. Written by fans who've been in the room.</p>
+          <p class="faq-credit">Photo: Andy Tennille</p>
         </header>
         <div class="faq-list">
         ${items}
@@ -2547,16 +2572,70 @@ function renderFaqPage(data) {
 
 function renderFaqCss() {
   return `
-      .faq-page { max-width: 820px; }
-      .faq-deck { margin-top: 18px; font-size: 1rem; opacity: 0.8; line-height: 1.6; max-width: 56ch; }
-      .faq-page .faq-list { margin-top: 34px; }
-      .faq-list { margin-top: 1.6rem; }
-      .faq-item { border-bottom: 1px solid rgba(255,255,255,.09); padding: .35rem 0; }
-      .faq-item summary { cursor: pointer; padding: .8rem 0; font-weight: 600; letter-spacing: .01em; }
-      .faq-answer { margin: 0; padding: .1rem 0 1rem; }
-      .faq-answer p { margin: 0 0 .6rem; line-height: 1.7; opacity: .85; max-width: 68ch; }
-      .faq-sources { display: flex; flex-wrap: wrap; gap: .45rem; align-items: baseline; margin: 0; font-size: .82rem; opacity: .72; }
-      .faq-sources-label { text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; opacity: .85; }
+      .faq-page { max-width: 840px; }
+
+      /* Hero: full-bleed live-show backdrop (Andy Tennille) behind a dark vertical
+         gradient, same overlay idiom as the upcoming board. Crumbs, title, deck and
+         the visible photo credit all ride above the ::before on z-index. */
+      .faq-hero {
+        position: relative; overflow: hidden; isolation: isolate;
+        border: 1px solid var(--sl-line); border-radius: var(--sl-r);
+        padding: clamp(30px, 6vw, 60px) clamp(22px, 5vw, 44px) clamp(24px, 4vw, 34px);
+        box-shadow: var(--sl-glass-shadow);
+      }
+      .faq-hero::before {
+        content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+        background-image: linear-gradient(180deg, rgba(9,9,11,0.68) 0%, rgba(10,10,12,0.80) 52%, rgba(11,11,12,0.94) 100%), url("/assets/upcoming-bg-andy-tennille.jpg");
+        background-size: cover, cover; background-position: center, center top;
+      }
+      .faq-hero .crumbs { position: relative; }
+      .faq-eyebrow {
+        margin: 18px 0 8px; font-family: var(--sl-mono); text-transform: uppercase;
+        letter-spacing: 0.22em; font-size: 11px; color: var(--sl-faint);
+      }
+      .faq-hero h1 {
+        margin: 0; line-height: 1.04; letter-spacing: -0.01em;
+        font-size: clamp(1.9rem, 5.4vw, 3rem);
+      }
+      .faq-deck {
+        margin: 16px 0 0; font-size: 1.02rem; line-height: 1.6; color: var(--sl-muted);
+        max-width: 58ch;
+      }
+      .faq-credit {
+        margin: 20px 0 0; font-family: var(--sl-mono); font-size: 9.5px;
+        letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint);
+      }
+
+      .faq-page .faq-list { margin-top: clamp(30px, 5vw, 46px); }
+
+      /* Section groups with a mono label header, a running count, and a hairline. */
+      .faq-group { margin-top: 44px; }
+      .faq-group:first-child { margin-top: 0; }
+      .faq-group-label {
+        display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+        margin: 0; padding: 0 0 12px; border-bottom: 1px solid var(--sl-line-strong);
+        font-family: var(--sl-mono); text-transform: uppercase; letter-spacing: 0.2em;
+        font-size: 12px; font-weight: 600; color: var(--sl-ink);
+      }
+      .faq-group-count {
+        font-size: 11px; letter-spacing: 0.12em; color: var(--sl-faint); font-weight: 400;
+      }
+
+      /* Inline photo break (in-house Posse banner). */
+      .faq-break { margin: 40px 0 0; }
+      .faq-break img {
+        display: block; width: 100%; height: auto; border-radius: var(--sl-r-md);
+        border: 1px solid var(--sl-line); opacity: 0.92;
+      }
+
+      .faq-item { border-bottom: 1px solid var(--sl-line); padding: .2rem 0; }
+      .faq-item:last-child { border-bottom: none; }
+      .faq-item summary { cursor: pointer; padding: 1rem 0; font-weight: 600; letter-spacing: .005em; font-size: 1.04rem; }
+      .faq-answer { margin: 0; padding: .1rem 0 1.15rem; }
+      .faq-answer p { margin: 0 0 .7rem; line-height: 1.72; color: var(--sl-muted); max-width: 68ch; }
+      .faq-sources { display: flex; flex-wrap: wrap; gap: .45rem; align-items: baseline; margin: .35rem 0 0; font-size: .82rem; color: var(--sl-faint); }
+      .faq-sources a { color: var(--sl-muted); }
+      .faq-sources-label { font-family: var(--sl-mono); text-transform: uppercase; letter-spacing: .1em; font-size: .66rem; opacity: .9; }
       .faq-sep { opacity: .5; }
   `;
 }
