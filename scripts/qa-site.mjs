@@ -1002,8 +1002,7 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   // just the ~53 songs with an internal transcription.
   const rowCount = (hub.match(/class="lyric-row"/g) || []).length;
   record("Lyrics & Chords hub lists the full catalog", catalog.length > 0 && rowCount === catalog.length, `${rowCount} lyric rows vs ${catalog.length} catalog songs`);
-  assertIncludes(hub, "on Burnthday · ", "Lyrics & Chords hub reports songs + on-Burnthday count");
-  assertIncludes(hub, " with chords", "Lyrics & Chords hub reports the with-chords count");
+  assertIncludes(hub, "link out to Everyday Companion", "Lyrics & Chords hub credits Everyday Companion for untranscribed songs");
 
   // PART 3: the redundant hub eyebrow (duplicate of the H1 + breadcrumb crumb) is
   // gone. It stays on the categorizing lyric SUBPAGES (checked below).
@@ -1097,7 +1096,7 @@ function checkEyebrowAudit(files, htmlByFile) {
   record("Song Origin detail pages keep the SONG ORIGIN eyebrow", anyMatch(`${path.sep}song-origins${path.sep}`, /class="origin-eyebrow">SONG ORIGIN</), "origin-eyebrow present");
   record("Best Guess sections keep the BEST GUESS eyebrow", anyMatch(`${path.sep}song${path.sep}`, /class="bg-eyebrow"[^>]*>BEST GUESS</), "bg-eyebrow present");
   record("Tour In Review detail pages keep the Tour In Review eyebrow", anyMatch(`${path.sep}tour-in-review${path.sep}`, /class="tour-eyebrow">Tour In Review</), "tour-eyebrow present");
-  record("Album detail pages keep the Studio Album eyebrow", anyMatch(`${path.sep}albums${path.sep}`, /class="album-eyebrow">Studio Album/), "album-eyebrow present");
+  record("Album detail pages omit the Studio Album eyebrow (removed per owner)", !anyMatch(`${path.sep}albums${path.sep}`, /class="album-eyebrow"/), "eyebrow should not render");
   // Lyric SUBPAGES keep their categorizing eyebrow (verified in checkLyricsChords too).
   record("Lyric subpages keep the LYRICS & CHORDS eyebrow", files.some((file, index) => /lyrics\.html$/.test(file) && htmlByFile[index].includes('class="archive-eyebrow">LYRICS &amp; CHORDS')), "lyric subpage eyebrow kept");
 }

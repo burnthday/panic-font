@@ -1912,7 +1912,7 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
       </a>${tabChip}
     </div>`;
   }).join("");
-  const count = `${formatNumber(total)} song${total === 1 ? "" : "s"} · ${formatNumber(matched)} on Burnthday · ${formatNumber(withChords)} with chords`;
+  const count = `${formatNumber(total)} song${total === 1 ? "" : "s"}`;
   const albumSelectOptions = [{ value: "", label: "All albums" }, ...albums.map((title) => ({ value: title, label: title }))];
   return `<!doctype html>
 <html lang="en">
@@ -1934,7 +1934,7 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Lyrics &amp; Chords</span></nav>
         <h1>Lyrics &amp; Chords</h1>
-        <p class="songs-deck">Every song in the catalog and where to find its words and chords — our own transcriptions where they exist, Everyday Companion for the rest. ${count}.</p>
+        <p class="songs-deck">The full songbook: lyrics for every song, and guitar chords wherever they exist. Songs we have not transcribed link out to Everyday Companion, which has nearly all of them.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -1979,7 +1979,7 @@ function renderLyricsSearchScript() {
     const chordsToggle = document.querySelector("[data-chords-filter]");
     const albumSelect = document.querySelector("[data-album-filter]");
     let selectedType = "all";
-    const base = total + " songs · " + matched + " on Burnthday · " + chorded + " with chords";
+    const base = total + " songs";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
       const transOnly = transToggle && transToggle.getAttribute("aria-pressed") === "true";
@@ -6422,7 +6422,7 @@ function renderAlbumsIndex(albums, data) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Albums</span></nav>
         <h1>Albums</h1>
-        <p class="albums-deck">The modern studio records, and how each one still lives on stage.</p>
+        <p class="albums-deck">Every studio album, and what the band still plays from each.</p>
       </header>
       <div class="album-grid">
         ${albums.map((album) => `<a class="album-tile" href="/albums/${escapeAttr(album.slug)}/">
@@ -6462,7 +6462,7 @@ function renderAlbumPage(album, albums, data) {
       : "";
     return `<li class="album-track${track.row ? "" : " no-data"}">
       <span class="track-n">${String(i + 1).padStart(2, "0")}</span>
-      <span class="track-title">${escapeHtml(track.title)}${track.writtenBy ? `<small>${escapeHtml(track.writtenBy)}</small>` : ""}</span>
+      <span class="track-title">${track.row && data.songSlugMap?.get(track.row.key) ? `<a href="/song/${escapeAttr(data.songSlugMap.get(track.row.key))}/">${escapeHtml(track.title)}</a>` : escapeHtml(track.title)}${track.writtenBy ? `<small>${escapeHtml(track.writtenBy)}</small>` : ""}</span>
       ${stat}
     </li>`;
   }).join("");
@@ -6492,7 +6492,6 @@ function renderAlbumPage(album, albums, data) {
     <main class="archive-main album-main">
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/albums/">Albums</a></nav>
-        <p class="album-eyebrow">Studio Album${year ? ` · ${escapeHtml(year)}` : ""}</p>
         <h1>${escapeHtml(album.title)}</h1>
       </header>
 
@@ -13038,7 +13037,7 @@ body.stagelight .current-review-link div { padding: 18px 22px; border-radius: va
 body.stagelight .current-review-link a { color: var(--sl-ink); text-decoration: underline; text-underline-offset: 3px; }
 
 /* ---- ALBUMS: index grid ---- */
-body.stagelight .albums-main, body.stagelight .album-main { width: min(1120px, calc(100% - 48px)); }
+body.stagelight .albums-main, body.stagelight .album-main { width: min(1180px, calc(100% - 28px)); }
 body.stagelight .albums-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
 body.stagelight .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
 body.stagelight .album-tile { display: block; color: var(--sl-ink); }
@@ -13074,7 +13073,7 @@ body.stagelight.album-page-body .album-cover-lg { box-shadow: 0 40px 90px -30px 
 
 /* ---- ALBUMS: single album page ---- */
 body.stagelight .album-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 10px; }
-body.stagelight .album-layout { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 48px; align-items: start; margin-top: 8px; }
+body.stagelight .album-layout { display: grid; grid-template-columns: calc((100% - 66px) / 4) minmax(0, 1fr); gap: 48px; align-items: start; margin-top: 8px; }
 body.stagelight .album-aside { position: sticky; top: 92px; display: grid; gap: 20px; }
 body.stagelight .album-cover-lg { aspect-ratio: 1 / 1; border-radius: var(--sl-r); }
 body.stagelight .album-meta-label { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); }
@@ -13116,7 +13115,7 @@ body.stagelight .album-nav a:hover strong { color: #fff; }
 }
 
 /* song index + per-song history */
-body.stagelight .songs-main { width: min(1000px, calc(100% - 48px)); }
+body.stagelight .songs-main { width: min(1180px, calc(100% - 28px)); }
 body.stagelight .song-main { width: min(820px, calc(100% - 48px)); }
 body.stagelight .shelf-main { width: min(1000px, calc(100% - 48px)); }
 body.stagelight .songs-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
