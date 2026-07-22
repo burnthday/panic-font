@@ -6472,15 +6472,15 @@ function renderSongPerformanceLog(song, data) {
         <span class="perf-venue">${escapeHtml(perf.venue || "Unknown venue")}</span>
         <span class="perf-loc">${escapeHtml(loc)}</span>
         ${tags ? `<span class="perf-tags">${tags}</span>` : ""}`;
-    // Relisten link is a sibling of the setlist.fm anchor, never nested inside it.
+    // One action per row: Listen on Relisten when a recording exists. The whole row
+    // is the Relisten link (big target, chip inline after the location); rows with
+    // no recording render static on the same grid so alignment never shifts. The
+    // per-row setlist.fm links are gone — the footer link covers the full archive.
     const relistenUrl = relistenDates.has(perf.date) ? relistenUrlFor(perf.date) : "";
-    const relisten = relistenUrl
-      ? `<a class="perf-relisten" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer">Listen <span aria-hidden="true">↗</span></a>`
-      : "";
-    const main = perf.url
-      ? `<a href="${escapeAttr(perf.url)}" target="_blank" rel="noopener noreferrer">${inner}<span class="perf-go" aria-hidden="true">↗</span></a>`
+    const main = relistenUrl
+      ? `<a href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Listen to ${escapeAttr(`${perf.date} ${perf.venue || ""}`)} on Relisten">${inner}<span class="perf-listen">Listen <span aria-hidden="true">↗</span></span></a>`
       : `<span class="perf-static">${inner}</span>`;
-    return `<li class="perf${relisten ? " has-relisten" : ""}">${main}${relisten}</li>`;
+    return `<li class="perf">${main}</li>`;
   }).join("");
   return `<section class="song-history">
         <div class="song-history-head">
@@ -13894,8 +13894,10 @@ body.stagelight .song-history-head { display: flex; align-items: baseline; justi
 body.stagelight .song-history-head h2 { font-family: var(--sl-display); font-size: 21px; font-weight: 640; letter-spacing: -0.01em; }
 body.stagelight .song-history-head span { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); white-space: nowrap; }
 body.stagelight .perf-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; }
+/* Row grid: DATE | VENUE | LOCATION | LISTEN. Static rows share the same template
+   (empty last track) so nothing shifts when a show has no recording. */
 body.stagelight .perf > a, body.stagelight .perf > .perf-static {
-  display: grid; grid-template-columns: 150px minmax(0, 1fr) auto 14px; align-items: baseline; gap: 6px 16px;
+  display: grid; grid-template-columns: 150px minmax(0, 1fr) auto 84px; align-items: baseline; gap: 6px 16px;
   padding: 12px 8px; color: var(--sl-ink); border-bottom: 1px solid var(--sl-line-faint);
 }
 body.stagelight .perf > a:hover { background: rgba(255,255,255,0.03); }
@@ -13904,17 +13906,17 @@ body.stagelight .perf-venue { grid-column: 2; grid-row: 1; font-size: 15px; font
 body.stagelight .perf-loc { grid-column: 3; grid-row: 1; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); text-align: right; }
 body.stagelight .perf-tags { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
 body.stagelight .perf-tag { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-muted); border: 1px solid var(--sl-line); border-radius: var(--sl-r-pill); padding: 2px 8px; }
-body.stagelight .perf-go { grid-column: 4; grid-row: 1; align-self: center; text-align: right; color: var(--sl-faint); }
-body.stagelight .perf > a:hover .perf-go { color: var(--sl-ink); }
+body.stagelight .perf-listen { grid-column: 4; grid-row: 1; align-self: center; text-align: right; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-muted); white-space: nowrap; }
+body.stagelight .perf > a:hover .perf-listen { color: var(--sl-ink); }
 body.stagelight .perf-more { margin-top: 16px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.03em; color: var(--sl-faint); }
 body.stagelight .perf-more a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
 body.stagelight .perf-more a:hover { color: var(--sl-ink); }
 @media (max-width: 640px) {
-  body.stagelight .perf > a, body.stagelight .perf > .perf-static { grid-template-columns: minmax(0, 1fr) 14px; gap: 2px 12px; }
+  body.stagelight .perf > a, body.stagelight .perf > .perf-static { grid-template-columns: minmax(0, 1fr) 72px; gap: 2px 12px; }
   body.stagelight .perf-date { grid-column: 1 / -1; grid-row: 1; }
   body.stagelight .perf-venue { grid-column: 1; grid-row: 2; }
   body.stagelight .perf-loc { grid-column: 1; grid-row: 3; text-align: left; }
-  body.stagelight .perf-go { grid-column: 2; grid-row: 2; }
+  body.stagelight .perf-listen { grid-column: 2; grid-row: 2; }
   body.stagelight .perf-tags { grid-column: 1 / -1; }
 }
 /* "Learn It" resource row — guitarist-facing, styled to match .song-album-chips */
@@ -13963,10 +13965,6 @@ body.stagelight .origin-body .yt-lite { margin: 18px 0; }
 body.stagelight .song-watch { margin: 0 0 30px; }
 body.stagelight .song-watch-eyebrow { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 14px; }
 /* Relisten link on a performance row — compact, sits after the setlist.fm anchor */
-body.stagelight .perf.has-relisten { display: flex; align-items: center; gap: 14px; }
-body.stagelight .perf.has-relisten > a:first-child, body.stagelight .perf.has-relisten > .perf-static { flex: 1 1 auto; min-width: 0; }
-body.stagelight .perf-relisten { flex: 0 0 auto; padding-right: 8px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
-body.stagelight .perf-relisten:hover { color: var(--sl-ink); }
 /* "Best Guess" — Alex's verbatim lyric transcription + interpretation, editorial */
 body.stagelight .song-bestguess { margin: 0 0 34px; }
 body.stagelight .bg-eyebrow { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 8px; }

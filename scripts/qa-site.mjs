@@ -1283,12 +1283,12 @@ async function checkMusicLayer(files, htmlByFile) {
   // Per-performance song-history rows are gated on the cache: with 2000+ dates
   // committed, matching rows must render the perf-relisten Listen link, and every
   // relisten.net link outside origin Picks must be one of those gated links.
-  const perfRelistenPages = files.filter((file, index) => /class="perf-relisten"/.test(htmlByFile[index])).length;
-  record("Song-history rows render gated Relisten Listen links", perfRelistenPages >= 1, `${perfRelistenPages} pages with perf-relisten links`);
+  const perfRelistenPages = files.filter((file, index) => /class="perf"><a href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?class="perf-listen"/.test(htmlByFile[index])).length;
+  record("Song-history rows render gated Relisten Listen links", perfRelistenPages >= 1, `${perfRelistenPages} pages with perf-row Listen links`);
   const relistenOffenders = files.filter((file, index) => {
     const stripped = htmlByFile[index]
       .replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
-      .replace(/<a class="perf-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      .replace(/<li class="perf"><a href="https:\/\/relisten\.net\/[^"]*"[^>]*aria-label="Listen to [^"]*"[^>]*>[\s\S]*?<\/a><\/li>/g, "")
       .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
       // Porch Songs archival listen links: curated Relisten URLs supplied by the
       // band's own Porch Songs data, rendered on the Tour In Review hub.
@@ -1393,7 +1393,7 @@ async function checkCommandPalette(files, htmlByFile, siteData) {
   const staticLeak = files.filter((file, i) => {
     const stripped = htmlByFile[i]
       .replace(/<a class="origin-pick-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
-      .replace(/<a class="perf-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
+      .replace(/<li class="perf"><a href="https:\/\/relisten\.net\/[^"]*"[^>]*aria-label="Listen to [^"]*"[^>]*>[\s\S]*?<\/a><\/li>/g, "")
       .replace(/<a class="sc-chip sc-chip-glass sc-chip-relisten" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "")
       .replace(/<a class="porch-listen" href="https:\/\/relisten\.net\/[^"]*"[^>]*>[\s\S]*?<\/a>/g, "");
     return /relisten\.net/.test(stripped);
