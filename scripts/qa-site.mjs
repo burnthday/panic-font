@@ -279,9 +279,10 @@ function checkNickJohnsonFeature(html, siteData) {
     "no nick-disclosure / summary heading");
 
   // Headline with both coral accent spans and the computed show count.
-  assertIncludes(feature, 'class="nick-headline"', "Nick feature leads with the headline");
-  assertIncludes(feature, '<em class="nick-accent">just over half</em>', "Headline accents \"just over half\"");
-  assertIncludes(feature, `<em class="nick-accent">${fmt(nickShows)}</em> shows`, "Headline accents the computed show count");
+  assertIncludes(feature, 'class="sw-lead nick-headline"', "Nick headline reuses the Shelf Watch two-tone headline style");
+  assertIncludes(feature, '<b>Nick Johnson has played just over half</b>', "Headline lead is the white bolded phrase");
+  assertIncludes(feature, `${fmt(nickShows)} shows. Here`, "Headline carries the computed show count");
+  record("Headline has no coral accent spans", !feature.includes("nick-accent"), "coral accents removed");
   assertIncludes(feature, "most likely to come next", "Headline keeps the exact closing copy");
 
   // Single grouped summary panel: lead "PLAYED of ROTATION", caption, three bars, three
@@ -298,12 +299,11 @@ function checkNickJohnsonFeature(html, siteData) {
     [nickPlays, "song plays"],
     [woodshed.length, "still in the Woodshed"]
   ]) {
-    assertIncludes(feature, `<strong>${fmt(value)}</strong> ${label}`, `Panel inline stat reports ${label}`);
+    assertIncludes(feature, `<strong>${fmt(value)}</strong><span>${label}</span>`, `Panel tile reports ${label}`);
   }
-  record("Nick feature drops the duplicate 4-tile summary block",
-    !feature.includes("nick-summary") && !feature.includes("data-metrics"),
-    "no data-metrics.nick-summary");
-  assertIncludes(feature, "Stats current through", "Panel shows the stats-current-through note");
+  record("Nick totals render as the three centered tour-stats tiles (no 4-tile block, no stats-through note)",
+    feature.includes('class="data-metrics nick-tiles"') && !feature.includes("nick-summary") && !feature.includes("Stats current through"),
+    "nick-tiles present, old blocks gone");
 
   assertIncludes(feature, 'class="nick-ranking"', "Nick Johnson feature presents a ranked most-likely-next view");
 
@@ -343,11 +343,11 @@ function checkNickJohnsonFeature(html, siteData) {
   }
   record("Ranking has the Likelihood column header", /data-nick-col="score">Likelihood /.test(feature));
 
-  // Likelihood is a plain 0-100 score — digits only, never a percent sign.
-  const scoreCells = [...feature.matchAll(/<span class="nick-score">([^<]*)<\/span>/g)].map((match) => match[1]);
+  // Likelihood reads like Tonight's Odds: tier word + digit-only number, never a percent.
+  const scoreCells = [...feature.matchAll(/class="nick-score tn-heat (nk-\w+)"><span class="tn-tier">([^<]+)<\/span><b>(\d+)<\/b>/g)];
   record(
-    "Likelihood renders as a digit-only score with no percent sign",
-    scoreCells.length === rotation.length && scoreCells.every((value) => /^\d+$/.test(value)) && !/%<\/?/.test(feature),
+    "Likelihood renders Tonight's-Odds style: tier word + digit-only score, no percent sign",
+    scoreCells.length === rotation.length && scoreCells.every((match) => ["Hot", "Warm", "Long shot"].includes(match[2])) && !/%<\/?/.test(feature),
     `${scoreCells.length} score cells`
   );
 
@@ -356,12 +356,12 @@ function checkNickJohnsonFeature(html, siteData) {
   assertIncludes(feature, 'data-nick-sort-dd', "Nick ranking renders the Sort dropdown");
   record("Old Show dropdown is gone", !feature.includes("data-nick-show-dd"), "data-nick-show-dd removed");
 
-  // Quiet songbook link replaces the big expand button + capped scroll wrapper.
-  assertIncludes(feature, 'data-nick-songbook', "Nick feature has the quiet songbook link");
-  assertIncludes(feature, 'link-quiet nick-songbook', "Songbook link uses the quiet link style");
-  record("Old capped-scroll expand button is gone",
-    !feature.includes("stats-expand") && !feature.includes("data-nick-scroll") && !feature.includes("data-nick-expand"),
-    "expand button + scroll wrapper removed");
+  // Songbook control matches the tour-stats "Show all N songs" expand treatment.
+  assertIncludes(feature, 'class="stats-expand" aria-expanded="false" data-nick-songbook', "Songbook button uses the stats-expand treatment");
+  assertIncludes(feature, "Explore Nick&#39;s full songbook", "Songbook button carries the songbook copy");
+  record("Old capped-scroll wrapper is gone",
+    !feature.includes("data-nick-scroll") && !feature.includes("data-nick-expand"),
+    "scroll wrapper removed");
 
   // Default "most likely next" view: recently played rows (data-slp <= 4) ship hidden,
   // exactly the top six of the rest render visible, and every visible row is slp > 4.

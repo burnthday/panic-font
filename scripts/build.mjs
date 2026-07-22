@@ -7409,8 +7409,7 @@ function renderNickRankingScript() {
         const collapsible = visible.length > CAP;
         songbook.hidden = !collapsible;
         songbook.setAttribute("aria-expanded", String(expanded));
-        const label = expanded ? songbook.dataset.fewerLabel : songbook.dataset.moreLabel;
-        songbook.firstChild.textContent = label + " ";
+        songbook.textContent = expanded ? songbook.dataset.fewerLabel : songbook.dataset.moreLabel;
       }
     };
     viewDd?.addEventListener("cs:change", (event) => { view = event.detail.value; expanded = false; apply(); });
@@ -8643,12 +8642,11 @@ function renderNickJohnsonFeature(data) {
   const overallWidth = rotation.length ? (played.length / rotation.length) * 100 : 0;
   const originalWidth = originals.length ? (playedOriginals / originals.length) * 100 : 0;
   const coverWidth = covers.length ? (playedCovers / covers.length) * 100 : 0;
-  const through = data.setlists?.[0]?.isoDate ? formatLongDate(data.setlists[0].isoDate) : "";
 
   return `<section class="nick-feature" id="nick-johnson">
   <div class="nick-feature-body nick-two-col">
   <div class="nick-left">
-    <p class="nick-headline">Nick Johnson has played <em class="nick-accent">just over half</em> of the band&#39;s current rotation in <em class="nick-accent">${formatNumber(shows)}</em> shows. Here&#39;s what is most likely to come next.</p>
+    <h2 class="sw-lead nick-headline"><b>Nick Johnson has played just over half</b> of the band&#39;s current rotation in ${formatNumber(shows)} shows. Here&#39;s what is most likely to come next.</h2>
     <div class="nick-panel">
       <div class="nick-lead"><strong>${formatNumber(played.length)}</strong><span> of ${formatNumber(rotation.length)}</span></div>
       <p class="nick-caption">Songs played with Nick</p>
@@ -8657,12 +8655,11 @@ function renderNickJohnsonFeature(data) {
         <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
         <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${coverWidth}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
       </div>
-      <div class="nick-inline-stats">
-        <span class="nis"><strong>${formatNumber(shows)}</strong> shows</span>
-        <span class="nis"><strong>${formatNumber(plays)}</strong> song plays</span>
-        <span class="nis"><strong>${formatNumber(woodshed)}</strong> still in the Woodshed</span>
+      <div class="data-metrics nick-tiles" aria-label="Nick Johnson tour totals">
+        ${renderNickStat(shows, "shows")}
+        ${renderNickStat(plays, "song plays")}
+        ${renderNickStat(woodshed, "still in the Woodshed")}
       </div>
-      ${through ? `<p class="nick-through">Stats current through ${escapeHtml(through)}</p>` : ""}
     </div>
   </div>
   <div class="nick-right">
@@ -8679,7 +8676,7 @@ function renderNickJohnsonFeature(data) {
       <button type="button" class="nrh-col nrh-sort nrh-score" data-nick-col="score">Likelihood <span aria-hidden="true">\u2193</span></button>
     </div>
     ${renderNickRanking(rotation)}
-    <a class="link-quiet nick-songbook" href="#" role="button" aria-expanded="false" data-nick-songbook data-more-label="Explore Nick&#39;s full songbook" data-fewer-label="Show fewer">Explore Nick&#39;s full songbook <span aria-hidden="true">→</span></a>
+    <button type="button" class="stats-expand" aria-expanded="false" data-nick-songbook data-more-label="Explore Nick&#39;s full songbook \u2192" data-fewer-label="Show fewer">Explore Nick&#39;s full songbook \u2192</button>
   </div>
   </div>
 </section>`;
@@ -8733,11 +8730,11 @@ function renderNickRanking(songs) {
     const agoSub = played && slp > 0 && slp <= 40 ? `<small>(${formatNumber(slp)} show${slp === 1 ? "" : "s"} ago)</small>` : "";
     return `<li class="nick-row${played ? "" : " is-zero"}" data-type="${type}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-slp="${escapeAttr(String(slp))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-score="${escapeAttr(String(entry.score))}" data-played="${played ? "yes" : "no"}"${visible ? "" : " hidden"}>
     <span class="nick-rank" aria-hidden="true">${index + 1}</span>
-    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong>${usualGap ? `<small>Usually played every ${usualGap} shows</small>` : ""}</span>
+    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong>${usualGap ? `<small>Played every ${usualGap} shows</small>` : ""}</span>
     <span class="nick-type"><span class="nick-chip is-${type}">${type === "cover" ? "COVER" : "ORIGINAL"}</span></span>
     <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong></span>
     <span class="nick-last">${escapeHtml(played && song.lastDisplay ? song.lastDisplay : "—")}${agoSub}</span>
-    <span class="nick-score">${entry.score}</span>
+    <span class="nick-score tn-heat ${entry.score >= 75 ? "nk-hot" : entry.score >= 45 ? "nk-warm" : "nk-long"}"><span class="tn-tier">${entry.score >= 75 ? "Hot" : entry.score >= 45 ? "Warm" : "Long shot"}</span><b>${entry.score}</b></span>
   </li>`;
   }).join("")}</ol>`;
 }
@@ -13634,26 +13631,29 @@ body.stagelight .key-block { border-color: var(--sl-line); }
 /* ---- NICK FEATURE ---- */
 /* Nick stats: no bento frame — the section sits open on the page (Alex round 6). */
 body.stagelight .nick-feature { background: none; border: 0; box-shadow: none; padding: 0; color: var(--sl-ink); }
-/* Headline (left column). "just over half" + the show count read coral. */
-body.stagelight .nick-headline { font-family: var(--sl-display); font-size: 29px; line-height: 1.35; font-weight: 640; color: var(--sl-ink); margin: 0 0 26px; max-width: 26ch; }
-body.stagelight .nick-accent { font-style: normal; color: #ef8b88; }
+body.stagelight .nick-feature h2.nick-headline { margin: 0 0 26px; max-width: none; color: var(--sl-muted); }
 /* Grouped glass summary panel. */
 body.stagelight .nick-panel { background: var(--sl-glass); -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4); border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow); padding: 26px 28px 22px; }
 body.stagelight .nick-lead { display: flex; align-items: baseline; gap: 8px; }
-body.stagelight .nick-lead strong { font-family: var(--sl-mono); font-size: 46px; line-height: 1; font-weight: 640; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
-body.stagelight .nick-lead span { font-family: var(--sl-mono); font-size: 22px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-lead strong { font-family: var(--sl-display); font-size: 46px; line-height: 1; font-weight: 640; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-lead span { font-family: var(--sl-display); font-size: 21px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
 body.stagelight .nick-caption { margin: 8px 0 22px; font-size: 14.5px; color: var(--sl-muted); }
-body.stagelight .nick-inline-stats { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--sl-line); }
-body.stagelight .nis { font-size: 13px; color: var(--sl-muted); }
-body.stagelight .nis strong { font-family: var(--sl-mono); font-size: 15px; font-weight: 640; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
-body.stagelight .nick-through { margin: 16px 0 0; font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); }
+/* Three totals as centered tour-stats tiles inside the panel. */
+body.stagelight .nick-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0 0; }
+body.stagelight .nick-tiles .nick-stat { text-align: center; }
+body.stagelight .nick-tiles .nick-stat strong { display: block; }
+body.stagelight .nick-tiles .nick-stat span { display: block; margin-top: 4px; }
 /* Type chips (own column). */
 body.stagelight .nick-type { display: flex; align-items: center; }
 body.stagelight .nick-chip { font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--sl-r-pill); border: 1px solid transparent; white-space: nowrap; }
 body.stagelight .nick-chip.is-original { color: #7fbf9b; background: rgba(45, 124, 82, 0.14); border-color: rgba(45, 124, 82, 0.5); }
 body.stagelight .nick-chip.is-cover { color: #8fc0e0; background: rgba(96, 165, 210, 0.12); border-color: rgba(96, 165, 210, 0.45); }
 /* Likelihood score (coral, mono, right-aligned, digits only — never a percent). */
-body.stagelight .nick-score { font-family: var(--sl-mono); font-size: 15px; font-weight: 620; color: var(--sl-ink); font-variant-numeric: tabular-nums; text-align: right; justify-self: end; }
+body.stagelight .nick-score { justify-self: end; gap: 8px; }
+body.stagelight .nick-score b { font-variant-numeric: tabular-nums; font-size: 16px; font-weight: 640; }
+body.stagelight .nk-hot .tn-tier, body.stagelight .nk-hot b { color: #e5726f; }
+body.stagelight .nk-warm .tn-tier, body.stagelight .nk-warm b { color: #e5b3b1; }
+body.stagelight .nk-long b { color: var(--sl-muted); }
 body.stagelight .nick-song small { display: block; margin-top: 3px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.02em; color: var(--sl-faint); text-transform: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.stagelight .nick-last { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 body.stagelight .nick-last small { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
@@ -13663,7 +13663,7 @@ body.stagelight .nick-songbook { margin-top: 20px; }
   body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { grid-template-columns: 24px minmax(0, 1fr) 62px 64px; }
   body.stagelight .nrh-type, body.stagelight .nick-type,
   body.stagelight .nrh-last, body.stagelight .nick-last { display: none; }
-  body.stagelight .nick-headline { font-size: 24px; }
+
   body.stagelight .nick-panel { padding: 22px 20px 20px; }
   body.stagelight .nick-lead strong { font-size: 40px; }
 }
