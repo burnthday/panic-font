@@ -8280,7 +8280,13 @@ function renderLatestSetlist(data) {
     else break;
   }
   const completedRunShows = run.slice(1);
+  const runLabel = run.length > 1 ? "Latest Shows" : "Latest Show";
+  const runMeta = run.length > 1 ? `${run.length}-night run · ${featured.venue}` : featured.venue;
   return `<section class="latest-setlist" id="latest-setlist">
+  <div class="section-heading latest-heading">
+    <h2>${escapeHtml(runLabel.toUpperCase())}</h2>
+    <span class="latest-heading-meta">${escapeHtml(runMeta)}</span>
+  </div>
   ${renderShowCard(data, featured, { latest: true, open: true, priority: true })}
   ${completedRunShows.length ? `<div class="current-stop-setlists">${completedRunShows.map((show) => renderShowCard(data, show, { lazy: true })).join("")}</div>` : ""}
   ${renderNextShowStrip(data, featured)}
@@ -12435,6 +12441,9 @@ body.stagelight .sc-lockup { display: none; }
 body.stagelight .show-entry[open] .sc-lockup,
 body.stagelight .show-entry.is-latest[open] .sc-lockup { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: center; padding: 44px 84px 0 44px; }
 body.stagelight .show-entry.no-image[open] .sc-lockup { grid-template-columns: 1fr; padding-right: 84px; }
+/* Featured card: drop the photo so its bottom edge rests on the divider below the hero. */
+body.stagelight .show-entry.is-latest[open] .sc-photo { transform: translateY(32px); }
+@media (max-width: 900px) { body.stagelight .show-entry.is-latest[open] .sc-photo { transform: none; } }
 body.stagelight .sc-lock { display: block; }
 body.stagelight .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .sc-city { display: block; font-family: var(--sl-display); font-weight: 720; font-size: 40px; letter-spacing: -0.015em; line-height: 1.05; margin: 12px 0 0; color: var(--sl-ink); }
@@ -12547,7 +12556,7 @@ body.stagelight .upcoming-heading, body.stagelight .upcoming-dates .tour-dates {
 body.stagelight .upcoming-dates .tour-dates { padding-bottom: 20px; }
 /* Quiet photographer credit — band policy is to credit every photographer. */
 body.stagelight .upcoming-credit {
-  display: block; text-align: right; margin: -8px 6px 0 0;
+  display: block; text-align: right; margin: 10px 6px 0 0; position: relative; z-index: 1;
   font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--sl-faint); pointer-events: none;
 }
@@ -12897,8 +12906,10 @@ body.stagelight .tour-table-wrap.is-capped thead th:first-child { border-top-lef
 body.stagelight .tour-table-wrap.is-capped thead th:last-child { border-top-right-radius: var(--sl-r-md); }
 /* Color-coded last-four rail on the song name cell */
 body.stagelight .tour-table tbody th[scope="row"] { position: relative; }
-body.stagelight .lf-rail { position: absolute; left: 0; top: 50%; transform: translateY(-50%); display: flex; gap: 2px; height: 60%; }
-body.stagelight .lf-rail i { display: block; width: 3px; border-radius: 2px; background: currentColor; }
+/* Full row height with no radius so consecutive rows' bars read as continuous
+   vertical strips; multiple shows stack side by side, never overlapping. */
+body.stagelight .lf-rail { position: absolute; left: 0; top: 0; bottom: 0; display: flex; gap: 2px; }
+body.stagelight .lf-rail i { display: block; width: 3px; background: currentColor; }
 body.stagelight .lf-rail .rail-black { color: #131313; box-shadow: 0 0 0 1px rgba(255,255,255,0.28); }
 body.stagelight .lf-rail .rail-blue { color: #465692; }
 body.stagelight .lf-rail .rail-green { color: #47866a; }
@@ -12908,11 +12919,15 @@ body.stagelight .tour-table tbody th[scope="row"] { padding-left: 18px; }
 body.stagelight .np-toggle { height: 40px; padding: 0 16px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04); color: var(--sl-muted); font-size: 13px; font-weight: 560; cursor: pointer; }
 body.stagelight .np-toggle:hover { color: var(--sl-ink); }
 body.stagelight .np-toggle[aria-pressed="true"], body.stagelight .np-toggle.is-active { background: var(--sl-ink); color: #111; border-color: var(--sl-ink); }
+/* Highlight-a-show: rows wash in the show's tint. For the last four shows the
+   always-on left rail already carries the marker color at full height, so no
+   inset bar (it collided with the rail and read as a glitch). Older shows have
+   no rail, so the white highlight keeps its inset bar. */
 body.stagelight .tour-table tbody tr.is-selected-show { background: rgba(255,255,255,0.08); box-shadow: inset 3px 0 0 #e8e6e1; }
-body.stagelight .tour-stats[data-hl="black"] .tour-table tbody tr.is-selected-show { background: rgba(255,255,255,0.05); box-shadow: inset 4px 0 0 rgba(255,255,255,0.4), inset 3px 0 0 #131313; }
-body.stagelight .tour-stats[data-hl="blue"] .tour-table tbody tr.is-selected-show { background: rgba(70,86,146,0.16); box-shadow: inset 3px 0 0 #465692; }
-body.stagelight .tour-stats[data-hl="green"] .tour-table tbody tr.is-selected-show { background: rgba(71,134,106,0.14); box-shadow: inset 3px 0 0 #47866a; }
-body.stagelight .tour-stats[data-hl="red"] .tour-table tbody tr.is-selected-show { background: rgba(212,81,79,0.12); box-shadow: inset 3px 0 0 #d4514f; }
+body.stagelight .tour-stats[data-hl="black"] .tour-table tbody tr.is-selected-show { background: rgba(255,255,255,0.06); box-shadow: none; }
+body.stagelight .tour-stats[data-hl="blue"] .tour-table tbody tr.is-selected-show { background: rgba(70,86,146,0.16); box-shadow: none; }
+body.stagelight .tour-stats[data-hl="green"] .tour-table tbody tr.is-selected-show { background: rgba(71,134,106,0.14); box-shadow: none; }
+body.stagelight .tour-stats[data-hl="red"] .tour-table tbody tr.is-selected-show { background: rgba(212,81,79,0.12); box-shadow: none; }
 body.stagelight .stats-expand {
   display: block; width: 100%; margin: 14px 0 0; padding: 12px; border-radius: var(--sl-r-sm);
   border: 1px solid var(--sl-line-strong); background: transparent; color: var(--sl-muted);
