@@ -7029,7 +7029,7 @@ function renderHtml(data) {
       ${renderTourStats(data)}
       ${renderShelfWatch(data)}
       ${renderNickJohnsonFeature(data)}
-      ${renderSetlists(data, { skipFeaturedRun: true })}
+      ${renderSetlists(data)}
       ${renderCommunityLinks()}
     </main>
 
@@ -8769,11 +8769,9 @@ function renderHeroView(data, show, opts = {}) {
   const hasSetlist = sets.length > 0;
   const iso = show.isoDate || "";
   const weekday = weekdayName(iso);
-  let venueLine = show.venue;
-  try {
-    const run = tourRunInfo(data.tourDates || [], show);
-    if (run && run.length > 1) venueLine = `${show.venue} · Night ${run.number}`;
-  } catch {}
+  const venueLine = show.venue;
+  // Long state names get a short display form in the feed ("Riviera Maya, MX").
+  const displayLocation = String(show.location || "").replace(", Quintana Roo", ", MX");
   const longDate = formatLongDate(iso || show.date);
   const ariaHeading = escapeAttr(formatSetlistHeading(show));
   const relistenUrl = (data.relistenDates || new Set()).has(iso) ? relistenUrlFor(iso) : "";
@@ -9064,11 +9062,9 @@ function renderShowCard(data, show, options = {}) {
   const hasSetlist = sets.length > 0;
   const iso = show.isoDate || "";
   const weekday = weekdayName(iso);
-  let venueLine = show.venue;
-  try {
-    const run = tourRunInfo(data.tourDates || [], show);
-    if (run && run.length > 1) venueLine = `${show.venue} · Night ${run.number}`;
-  } catch {}
+  const venueLine = show.venue;
+  // Long state names get a short display form in the feed ("Riviera Maya, MX").
+  const displayLocation = String(show.location || "").replace(", Quintana Roo", ", MX");
   const longDate = formatLongDate(iso || show.date);
   const heading = options.latest ? "h3" : "h4";
   const ariaHeading = escapeAttr(formatSetlistHeading(show));
@@ -9099,18 +9095,18 @@ function renderShowCard(data, show, options = {}) {
     ? `<span class="sc-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async"${loading}${priority}></span>`
     : "";
   const bg = show.image ? `<span class="sc-bg" aria-hidden="true"><img src="${escapeAttr(show.image)}" alt="" loading="lazy" decoding="async"></span>` : "";
-  return `<details class="show-entry${options.latest ? " is-latest" : ""}${show.image ? "" : " no-image"}"${options.latest || options.open ? " open" : ""}${show.isoDate ? ` id="setlist-${escapeAttr(show.isoDate)}"` : ""} style="scroll-margin-top: 120px">
+  return `<details class="show-entry${options.latest ? " is-latest" : ""}${options.lead ? " is-lead" : ""}${show.image ? "" : " no-image"}"${options.latest || options.open ? " open" : ""}${show.isoDate ? ` id="setlist-${escapeAttr(show.isoDate)}"` : ""} style="scroll-margin-top: 120px">
     <summary>
       ${bg}
       <span class="sc-closed">
         <time class="sc-date" datetime="${escapeAttr(iso)}">${escapeHtml(show.date)}</time>
-        <span class="sc-place"><strong>${escapeHtml(show.location)}</strong><small>${escapeHtml(venueLine)}</small></span>
+        <span class="sc-place"><strong>${escapeHtml(displayLocation)}</strong><small>${escapeHtml(venueLine)}</small></span>
         ${miniPulls}
       </span>
       <span class="sc-lockup">
         <span class="sc-lock">
           <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
-          <${heading} class="sc-city">${escapeHtml(show.location)}</${heading}>
+          <${heading} class="sc-city">${escapeHtml(displayLocation)}</${heading}>
           <span class="sc-venue">${escapeHtml(venueLine)}</span>
           ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
         </span>
@@ -9149,7 +9145,7 @@ function renderSetlists(data, options = {}) {
   <details class="setlist-archive-panel" open>
     <summary><span>VIEW OLDER SETLISTS</span><strong>${formatNumber(setlists.length)}</strong></summary>
     <div class="setlist-list">
-      ${setlists.map((show) => renderShowCard(data, show, { lazy: true })).join("")}
+      ${setlists.map((show, index) => renderShowCard(data, show, { lazy: true, lead: setlists.length % 2 === 1 && index === 0 })).join("")}
     </div>
   </details>
   ${upcomingBlock}
@@ -13341,9 +13337,15 @@ body.stagelight .sc-pull b { font-weight: 600; white-space: nowrap; color: var(-
 body.stagelight .sc-pull [fill="#111111"] { fill: #f2f2f0; }
 body.stagelight .sc-pull [stroke="#111111"] { stroke: #f2f2f0; }
 /* Two-up feed: closed cards pair per row; the open card takes the full row
-   (view transitions animate the reflow — Stripe case-study language). */
-body.stagelight .setlist-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+   (view transitions animate the reflow — Stripe case-study language). Rows
+   stretch so a two-line title never breaks its pair. */
+body.stagelight .setlist-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
 body.stagelight .setlist-list .show-entry[open] { grid-column: 1 / -1; }
+body.stagelight .setlist-list .show-entry:not([open]) .sc-closed { min-height: 96px; height: 100%; }
+/* Odd count: the newest show leads full-width and a touch taller. */
+body.stagelight .setlist-list .show-entry.is-lead { grid-column: 1 / -1; }
+body.stagelight .setlist-list .show-entry.is-lead:not([open]) .sc-closed { min-height: 116px; }
+body.stagelight .setlist-list .show-entry.is-lead:not([open]) .sc-place strong { font-size: 20px; }
 @media (max-width: 760px) { body.stagelight .setlist-list { grid-template-columns: 1fr; } }
 body.stagelight .up-tickets {
   display: inline-flex; align-items: center; gap: 7px; margin-left: auto; flex: none;

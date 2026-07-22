@@ -661,10 +661,13 @@ async function checkLatestSetlist(html, siteData) {
     !featured.includes("latest-heading") && !featured.includes("Latest show") && !featured.includes('class="section-heading"') && !featured.includes("hero-shell") && !featured.includes("hero-variant") && !featured.includes("bento-row")
   );
 
-  // ---- Only the featured show is held out of the feed; the rest of the run flows in ----
+  // ---- Every posted show is in the feed, featured included (Alex round 6):
+  // the newest leads full-width when the count is odd ----
   const runArchive = sectionHtml(html, "setlists");
-  const featHeading = `${feat?.date || ""} ${feat?.venue || ""}, ${feat?.location || ""}`;
-  record("Featured show is not duplicated in the archive", !cardHtml(runArchive, escapeHtml(featHeading)), featHeading);
+  record("Featured show appears in the feed as a card",
+    new RegExp(`id="setlist-${feat?.isoDate}"`).test(runArchive), feat?.isoDate || "");
+  record("Odd feed count promotes the newest card to the full-width lead",
+    (siteData.setlists.length % 2 === 0) || runArchive.includes('class="show-entry is-lead'), `${siteData.setlists.length} posted`);
   for (const show of nightShows) {
     const runHeading = `${show.date || ""} ${show.venue || ""}, ${show.location || ""}`;
     record(`Run night ${show.isoDate} flows back into the setlist feed`, Boolean(cardHtml(runArchive, escapeHtml(runHeading))), runHeading);
@@ -684,7 +687,7 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(archive, "VIEW OLDER SETLISTS", "Older setlists have one clear mobile disclosure");
   assertIncludes(archive, 'class="setlist-list"', "Older shows use the compact show-index layout");
   assertIncludes(archive, 'aria-label="Listen to', "Shows with audio expose a simple listening action");
-  record("Every archived show is individually expandable", (archive.match(/<details class="show-entry[^"]*"/g) || []).length === siteData.setlists.length - 1);
+  record("Every posted show is individually expandable in the feed", (archive.match(/<details class="show-entry[^"]*"/g) || []).length === siteData.setlists.length);
   assertIncludes(html, 'row.classList.toggle("is-selected-show"', "Selected-show songs receive a dedicated highlight state");
   assertIncludes(html, 'rightSelected - leftSelected', "Selected-show songs move ahead of the remaining tour table");
   record("Mobile initialization collapses Nick Stats, Tour Stats, and the older setlist archive", html.includes('.nick-disclosure, .stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
