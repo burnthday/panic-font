@@ -235,7 +235,7 @@ function checkShelfWatch(html, siteData) {
     feature.includes("data-sw-prev") && feature.includes("data-sw-next") && !feature.includes("th-tip") && !feature.includes("SLP \u2014"),
     "arrows present, tooltip removed");
   record("Shelf Watch cards carry the archival photos with one credit line",
-    (feature.match(/class="sw-img"/g) || []).length >= 4 && feature.includes("Photos by") && feature.includes("Thomas G. Smith") && feature.includes("widespreadpanic.com/galleries"),
+    (feature.match(/class="sw-img"/g) || []).length >= 4 && feature.includes("Photos by") && feature.includes("Thomas G. Smith") && feature.includes("2000-10-28-new-orleans") && !feature.includes("New Orleans, "),
     "photo backgrounds + single linked credit");
   record(
     "Shelf Watch is derived from the closest eligible SLP values",
@@ -254,9 +254,9 @@ function checkShelfWatch(html, siteData) {
     const rowStart = feature.indexOf(`data-song-title="${escapeAttribute(song.title)}"`);
     const rowEnd = (() => { const next = feature.indexOf('data-song-title="', rowStart + 20); return next >= 0 ? next : feature.length; })();
     const row = rowStart >= 0 && rowEnd > rowStart ? feature.slice(rowStart, rowEnd) : "";
-    assertIncludes(row, `shows since last played`, `Shelf Watch gives ${song.title}'s plain-language last-played line`);
+    assertIncludes(row, `hasn&rsquo;t been played since`, `Shelf Watch gives ${song.title}'s plain-language last-played line`);
     assertIncludes(row, `<span class="sw-n">${remaining}</span>`, `Shelf Watch gives ${song.title}'s distance to Shelf`);
-    assertIncludes(row, `to the Shelf`, `Shelf Watch pairs ${song.title}'s number with the full phrase`);
+    assertIncludes(row, `til the shelf`, `Shelf Watch pairs ${song.title}'s number with the full phrase`);
   }
 }
 

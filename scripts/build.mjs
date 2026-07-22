@@ -8536,23 +8536,28 @@ function renderSheetBentos(data) {
 // archival full-bleed photos (band's own gallery CDN, Thomas G. Smith, New
 // Orleans 1999–2000) rotate by POSITION — never claiming to depict the song —
 // under a heavy scrim; plain-language copy; arrows top-right; no hover motion.
+// Position is the per-image facial focus (verified by eye) so the subject
+// survives the tall crop instead of being sliced off.
 const SHELF_WATCH_PHOTOS = [
-  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-3.jpg",
-  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-1.jpg",
-  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-2.jpg",
-  "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000.jpg"
+  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-3.jpg", pos: "44% 30%" },
+  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000.jpg", pos: "52% 26%" },
+  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-2.jpg", pos: "50% 32%" },
+  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-4.jpg", pos: "40% 45%" },
+  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-5.jpg", pos: "34% 46%" },
+  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-1.jpg", pos: "60% 42%" }
 ];
+const SHELF_WATCH_GALLERY = "https://widespreadpanic.com/galleries/2000-10-28-new-orleans-la-uno-lakefront-arena/";
 
 function renderShelfWatch(data) {
   const songs = data.boards.shelfWatch || [];
   if (!songs.length) return "";
 
   const cutoff = data.rules.rotationSlpLimit;
-  const shortDate = (song) => {
+  const longDate = (song) => {
     const iso = song.effectiveLastIso || "";
     if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return song.lastDisplay || "";
     const [year, month, day] = iso.split("-").map(Number);
-    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date(Date.UTC(year, month - 1, day)));
+    return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(Date.UTC(year, month - 1, day)));
   };
   const cards = songs.map((song, index) => {
     const remaining = Math.max(0, cutoff - song.effectiveSlp);
@@ -8560,14 +8565,13 @@ function renderShelfWatch(data) {
     const photo = SHELF_WATCH_PHOTOS[index % SHELF_WATCH_PHOTOS.length];
     const pct = Math.min(100, Math.round((song.effectiveSlp / cutoff) * 100));
     const hot = remaining <= 10;
-    const inner = `<span class="sw-img" style="background-image:url('${photo}')" aria-hidden="true"></span>
+    const inner = `<span class="sw-img" style="background-image:url('${photo.url}'); background-position:${photo.pos}" aria-hidden="true"></span>
       <span class="sw-body">
         <span class="sw-n">${formatNumber(remaining)}</span>
-        <span class="sw-to">show${remaining === 1 ? "" : "s"} to the Shelf</span>
-        <strong class="sw-song">${escapeHtml(song.title)}</strong>
-        <span class="sw-meta"><b>${formatNumber(song.effectiveSlp)}</b> shows since last played · ${escapeHtml(shortDate(song))}</span>
-        <span class="sw-rule" aria-hidden="true"><i style="width:${pct}%"></i></span>
-        <span class="sw-count"><b>${formatNumber(song.effectiveSlp)}</b> / ${formatNumber(cutoff)} shows</span>
+        <span class="sw-to">show${remaining === 1 ? "" : "s"} &rsquo;til the shelf</span>
+        <p class="sw-line"><b class="sw-song">${escapeHtml(song.title)}</b> hasn&rsquo;t been played since ${escapeHtml(longDate(song))} &mdash; ${formatNumber(song.effectiveSlp)} shows.</p>
+        <span class="nick-progress-track sw-bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
+        <span class="sw-count">${formatNumber(song.effectiveSlp)} / ${formatNumber(cutoff)}</span>
       </span>`;
     const attrs = `class="sw-card${hot ? " is-hot" : ""}" data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}"`;
     return slug ? `<a ${attrs} href="/songs/${escapeAttr(slug)}/">${inner}</a>` : `<div ${attrs}>${inner}</div>`;
@@ -8582,7 +8586,7 @@ function renderShelfWatch(data) {
     </div>
   </div>
   <div class="sw-rail" data-sw-rail>${cards}</div>
-  <p class="sw-credit">Photos by <a href="https://widespreadpanic.com/galleries/1999-10-30-new-orleans-la-uno-lakefront-arena/">Thomas G. Smith</a> · New Orleans, <a href="https://widespreadpanic.com/galleries/1999-10-30-new-orleans-la-uno-lakefront-arena/">1999</a>–<a href="https://widespreadpanic.com/galleries/2000-10-27-new-orleans-la-uno-lakefront-arena/">2000</a></p>
+  <p class="sw-credit">Photos by <a href="${SHELF_WATCH_GALLERY}">Thomas G. Smith</a></p>
   <script>
     (() => {
       const rail = document.querySelector("[data-sw-rail]");
@@ -14203,7 +14207,7 @@ body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; bo
    block). No section frame; the cards carry the design. Static on hover. ---- */
 body.stagelight .shelf-watch { background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; }
 body.stagelight .sw-head { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; }
-body.stagelight .sw-lead { margin: 0; font-family: var(--sl-display); font-size: 32px; font-weight: 400; line-height: 1.15; letter-spacing: -0.01em; color: var(--sl-muted); }
+body.stagelight .sw-lead { margin: 0; max-width: 30ch; font-family: var(--sl-display); font-size: 27px; font-weight: 400; line-height: 1.42; letter-spacing: -0.01em; color: var(--sl-muted); }
 body.stagelight .sw-lead b { font-weight: 640; color: var(--sl-ink); }
 body.stagelight .sw-arrows { margin-left: auto; display: flex; gap: 8px; flex: none; }
 body.stagelight .sw-arrow {
@@ -14222,34 +14226,34 @@ body.stagelight .sw-rail::-webkit-scrollbar { display: none; }
 body.stagelight .sw-card {
   flex: 0 0 calc((100% - 32px) / 3.15); min-width: 0; scroll-snap-align: start;
   position: relative; display: flex; flex-direction: column; justify-content: flex-end;
-  min-height: 480px; border-radius: var(--sl-r); overflow: hidden;
+  min-height: 560px; border-radius: var(--sl-r); overflow: hidden;
   border: 1px solid var(--sl-line); text-decoration: none; color: var(--sl-ink); cursor: pointer;
 }
 body.stagelight .sw-img { position: absolute; inset: 0; background-size: cover; background-position: center 22%; }
 /* Heavy scrim: the photo reads at ~25-35%, data always wins. */
 body.stagelight .sw-img::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(9,9,11,0.6) 0%, rgba(9,9,11,0.42) 34%, rgba(9,9,11,0.82) 64%, rgba(9,9,11,0.95) 100%);
+  background: linear-gradient(180deg, rgba(9,9,11,0.55) 0%, rgba(9,9,11,0.32) 40%, rgba(9,9,11,0.8) 68%, rgba(9,9,11,0.96) 100%);
 }
-body.stagelight .sw-body { position: relative; display: flex; flex-direction: column; padding: 22px 24px 20px; }
-body.stagelight .sw-n { font-family: var(--sl-mono); font-size: 44px; font-weight: 640; line-height: 1; font-variant-numeric: tabular-nums; }
-body.stagelight .sw-to { font-size: 14px; color: var(--sl-muted); margin-top: 6px; }
-body.stagelight .sw-song { font-family: var(--sl-display); font-size: 22px; font-weight: 640; letter-spacing: -0.01em; margin-top: 14px; line-height: 1.25; }
-body.stagelight .sw-meta { font-size: 13.5px; color: var(--sl-muted); margin-top: 8px; }
-body.stagelight .sw-meta b { color: var(--sl-ink); font-weight: 620; }
-body.stagelight .sw-rule { display: block; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.14); margin-top: 18px; overflow: hidden; }
-body.stagelight .sw-rule i { display: block; height: 100%; background: rgba(255,255,255,0.55); }
+body.stagelight .sw-body { position: relative; display: flex; flex-direction: column; padding: 24px 24px 22px; }
+/* Number matches the bento count; sub-line, sentence, and count all sit on the
+   existing type scale (34 / 16 / 12) so nothing invents a size. */
+body.stagelight .sw-n { font-family: var(--sl-mono); font-size: 34px; font-weight: 640; line-height: 1; font-variant-numeric: tabular-nums; }
+body.stagelight .sw-to { font-size: 13.5px; color: var(--sl-muted); margin-top: 6px; }
+body.stagelight .sw-line { font-size: 16px; line-height: 1.5; color: var(--sl-muted); margin: 16px 0 0; }
+body.stagelight .sw-song { font-family: var(--sl-display); font-weight: 640; color: var(--sl-ink); letter-spacing: -0.005em; }
+body.stagelight .sw-bar { display: flex; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; margin: 18px 0 0; }
+body.stagelight .sw-bar i { display: block; height: 100%; background: var(--sl-ink); }
 body.stagelight .sw-count { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); margin-top: 10px; font-variant-numeric: tabular-nums; }
-body.stagelight .sw-count b { color: var(--sl-muted); }
 /* Warm red urgency only inside ~10 shows of the Shelf; others stay neutral. */
-body.stagelight .sw-card.is-hot .sw-n, body.stagelight .sw-card.is-hot .sw-meta b, body.stagelight .sw-card.is-hot .sw-count b { color: #ef8b88; }
-body.stagelight .sw-card.is-hot .sw-rule i { background: #d4514f; }
+body.stagelight .sw-card.is-hot .sw-n { color: #ef8b88; }
+body.stagelight .sw-card.is-hot .sw-bar i { background: #d4514f; }
 body.stagelight .sw-credit { margin: 16px 0 0; font-family: var(--sl-mono); font-size: 12.5px; color: rgba(255,255,255,0.55); }
 body.stagelight .sw-credit a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.22); }
 body.stagelight .sw-credit a:hover { color: var(--sl-ink); }
 @media (max-width: 900px) {
   body.stagelight .sw-lead { font-size: 24px; }
-  body.stagelight .sw-card { flex-basis: 86%; min-height: 420px; }
+  body.stagelight .sw-card { flex-basis: 86%; min-height: 500px; }
 }
 
 body.stagelight .ticket-link { text-decoration: none; }
