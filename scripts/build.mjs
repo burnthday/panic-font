@@ -7879,7 +7879,7 @@ function renderNickJohnsonFeature(data) {
   return `<section class="nick-feature" id="nick-johnson">
   <details class="nick-disclosure" open>
   <summary class="section-heading data-heading">
-    <h2>NICK STATS</h2>
+    <h2>MOST PLAYED WITH NICK JOHNSON</h2>
     <span>${escapeHtml(String(data.site.year))} tour</span>
   </summary>
   <div class="nick-feature-body">
@@ -7894,7 +7894,7 @@ function renderNickJohnsonFeature(data) {
     <span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i><i class="is-cover" style="width:${coverWidth}%"></i></span>
     <div class="progress-key"><span><i class="key-original"></i>Originals ${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span><span><i class="key-cover"></i>Covers ${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span><span><i class="key-unplayed"></i>${formatNumber(played.length)}/${formatNumber(rotation.length)} overall</span></div>
   </div>
-  <div class="nick-ranking-heading"><h3>MOST PLAYED WITH NICK</h3><span>plays per show</span></div>
+  <div class="nick-ranking-heading"><span>plays per show</span></div>
   ${renderNickRanking(featuredSongs)}
   ${remainingSongs.length ? `<details class="nick-played-panel">
     <summary><span>VIEW ALL SONGS, INCLUDING ZERO PLAYS</span><strong>${formatNumber(remainingSongs.length)}</strong></summary>
@@ -7914,7 +7914,7 @@ function renderNickRanking(songs, options = {}) {
   const classes = options.compact ? "nick-ranking is-compact" : "nick-ranking";
   return `<ol class="${classes}" start="${start}">${songs.map((song, index) => `<li class="${song.nickCount === 0 ? "is-zero" : ""}" value="${start + index}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}">
     <span class="nick-rank" aria-hidden="true">${start + index}</span>
-    <span class="nick-song"><strong>${escapeHtml(song.title.toUpperCase())}</strong><small>${escapeHtml(song.type)}</small></span>
+    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong><small>${escapeHtml(song.type)}</small></span>
     <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong><small>${song.nickCount === 1 ? "play" : "plays"}</small></span>
   </li>`).join("")}</ol>`;
 }
@@ -12258,8 +12258,8 @@ body.stagelight .upcoming-heading, body.stagelight .upcoming-dates .tour-dates {
 body.stagelight .upcoming-dates .tour-dates { padding-bottom: 20px; }
 /* Quiet photographer credit — band policy is to credit every photographer. */
 body.stagelight .upcoming-credit {
-  display: block; text-align: right; margin: 8px 6px 0 0;
-  font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  display: block; text-align: right; margin: -8px 6px 0 0;
+  font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--sl-faint); pointer-events: none;
 }
 body.stagelight .upcoming-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 20px 26px 14px; }

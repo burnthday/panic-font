@@ -245,7 +245,7 @@ function checkNickJohnsonFeature(html, siteData) {
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
 
-  assertIncludes(feature, "<h2>NICK STATS</h2>", "Homepage has the restrained Nick Stats feature");
+  assertIncludes(feature, "<h2>MOST PLAYED WITH NICK JOHNSON</h2>", "Homepage has the Most Played with Nick Johnson feature");
   assertIncludes(feature, '<details class="nick-disclosure" open>', "Nick Stats uses one desktop-open disclosure");
   for (const [value, label] of [
     [nickShows, "shows on guitar"],
@@ -256,7 +256,7 @@ function checkNickJohnsonFeature(html, siteData) {
     assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Nick Johnson summary reports ${label}`);
   }
 
-  assertIncludes(feature, "<h3>MOST PLAYED WITH NICK</h3>", "Nick Johnson feature presents a ranked most-played view");
+  assertIncludes(feature, 'class="nick-ranking"', "Nick Johnson feature presents a ranked most-played view");
   const completion = Math.round((played.length / rotation.length) * 100);
   assertIncludes(feature, `<strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span>`, "Nick Johnson feature shows rotation completion");
   assertIncludes(feature, 'class="is-original"', "Nick completion bar separates played originals");
