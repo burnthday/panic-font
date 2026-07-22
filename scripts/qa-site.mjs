@@ -127,7 +127,7 @@ function checkCorePageState(html, siteData) {
   record("Song List laminate contains no website-stat ledger", !ledger.includes("board-ledger") && !ledger.includes("songs per show"));
 
   assertIncludes(html, "The tiny number beside a song counts its plays this tour", "Sheet key explains the tiny number");
-  assertIncludes(html, "the last four shows marked out in color", "Board intro subline explains the marker color code");
+  assertIncludes(html, "the last 4 shows marked out in colors", "Board intro line explains the marker color code");
   assertIncludes(html, "The Woodshed", "Sheet key includes The Woodshed");
   record("The Woodshed explains the Nick Johnson logic", html.includes("The Woodshed lists rotation songs") && html.includes("hasn&#39;t played yet") || html.includes("The Woodshed lists rotation songs"), "Woodshed Ramp column present");
   record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed-sheet").includes("songs not yet played with Nick Johnson"));

@@ -8070,8 +8070,7 @@ function renderBoardIntro(data) {
     const todayIso = new Date().toISOString().slice(0, 10);
     const days = Math.round((new Date(`${upcoming.isoDate}T12:00:00Z`) - new Date(`${todayIso}T12:00:00Z`)) / 86400000);
     const when = days <= 0 ? "tonight's" : days === 1 ? "tomorrow's" : days < 7 ? `${weekdayName(upcoming.isoDate)}'s` : "next week's";
-    const city = clean(String(upcoming.location).split(",")[0]) || upcoming.location;
-    where = `${when} show at ${city}'s ${upcoming.venue}`;
+    where = `${when} show at ${upcoming.venue}`;
   }
   const legend = data.site.markerLegend || [];
   // Right-edge "dry-out" angle varies per stroke so the row reads hand-made.
@@ -8085,12 +8084,12 @@ function renderBoardIntro(data) {
     const location = item.label.startsWith(shortDate) ? item.label.slice(shortDate.length).trim() : item.label;
     const city = clean(String(location).split(",")[0]) || location;
     const numeral = (location.match(/\b([IVX]+)$/) || [])[1] || "";
-    const run = numeral ? ` ${romanToNumber(numeral)}` : "";
+    const run = numeral ? ` ${numeral}` : "";
     return `<li class="bi-swipe" style="--mc:${color}; --cut:${cuts[index] || "96%"}" data-date="${escapeAttr(item.isoDate)}"><b>${escapeHtml(city)}${run}</b></li>`;
   }).join("");
   return `<div class="board-intro">
     <div class="bi-copy">
-      <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}. Every song on the table, the last four shows marked out in color, and how many times each has been played this year.</span></h2>
+      <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}. Learn what songs are available with the last 4 shows marked out in colors and how many times each song has been played this year.</span></h2>
     </div>
     ${legend.length ? `<ol class="bi-swipes" aria-label="Marker colors, most recent show first">${swipes}</ol>` : ""}
   </div>`;
@@ -8834,6 +8833,10 @@ function renderHeroView(data, show, opts = {}) {
   const photo = show.image
     ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" crossorigin="anonymous" decoding="async"${opts.eager ? ' fetchpriority="high"' : ' loading="lazy"'}>${credit}</figure>`
     : "";
+  // Mobile: the button floats on the photo itself (tap swaps photo for stats).
+  const statsOverlay = photo && ltpRows.length
+    ? `<button type="button" class="hero-stats-btn hero-stats-overlay" data-stats-open="${escapeAttr(iso)}" aria-expanded="false" aria-controls="hero-stats-panel-${escapeAttr(iso)}">Song stats</button>`
+    : "";
   return {
     iso,
     ariaHeading,
@@ -8842,7 +8845,7 @@ function renderHeroView(data, show, opts = {}) {
         <span class="sc-venue">${escapeHtml(venueLine)}</span>
         ${chips ? `<span class="sc-chips">${chips}</span>` : ""}`,
     music: `<div class="hero-sets sc-sets">${setRows}${annotations.guestNotes.length ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}</div></div>` : ""}</div>${footnote}${statsButton}`,
-    media: `<div class="hero-media">${photo}${statsPanel}</div>`,
+    media: `<div class="hero-media">${photo}${statsOverlay}${statsPanel}</div>`,
     ticker
   };
 }
@@ -13121,7 +13124,7 @@ body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; o
 body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
 body.stagelight main > *:not(.hero-echo) { position: relative; z-index: 1; }
 body.stagelight main > .home-nav { position: sticky; z-index: 55; }
-body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) max(28px, calc((100% - 1400px) / 2)) 38px; }
+body.stagelight .hero-inner { --hero-pad: max(28px, calc((100vw - 1400px) / 2)); position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) var(--hero-pad) 38px; }
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
    setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
    below the image line so the left column breathes. */
@@ -13138,7 +13141,7 @@ body.stagelight .hero-page {
 body.stagelight .hero-page:hover:not(:disabled) { color: var(--sl-ink); border-color: var(--sl-muted); background: rgba(255,255,255,0.05); }
 body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
 body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
-body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; }
+body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; margin-top: -34px; }
 body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
 /* View crossfade: the swap script fades each slot, switches the active view, fades back. */
 body.stagelight .hero-slot { transition: opacity 0.22s ease; }
@@ -13166,6 +13169,12 @@ body.stagelight .hero-stats-btn {
 }
 body.stagelight .hero-stats-btn span { color: var(--sl-faint); letter-spacing: 0.04em; text-transform: none; font-size: 11.5px; }
 body.stagelight .hero-stats-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--sl-muted); }
+/* Mobile-only twin of the stats button, floating on the photo. */
+body.stagelight .hero-stats-overlay {
+  display: none; position: absolute; left: 14px; bottom: 12px; z-index: 2; margin: 0;
+  padding: 8px 14px; background: rgba(10,10,12,0.62);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
 /* Trippy-but-subtle: a faint glint orbits the button outline clockwise (18s);
    on hover it locks to the cursor's angle. Static under reduced motion. */
 @property --hsb-a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
@@ -13179,10 +13188,11 @@ body.stagelight .hsb-ring {
 body.stagelight .hero-stats-btn:hover .hsb-ring { animation-play-state: paused; }
 @keyframes hsb-orbit { to { --hsb-a: 360deg; } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .hsb-ring { animation: none; } }
-body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(300px, 44vh, 460px); border-radius: 0 0 var(--sl-r-md) var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); border-top: 0; box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
+body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(300px, 44vh, 460px); border-radius: 0; overflow: hidden; border: 0; box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
 body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-/* The photo rises flush to the bar above (square top, no top border). */
-body.stagelight .hero-media-slot { margin-top: -30px; }
+/* The photo bleeds: flush to the bar above, left edge on the page's center
+   mark (eating half the column gap), right edge off the viewport. */
+body.stagelight .hero-media-slot { margin-top: -30px; margin-left: -32px; margin-right: calc(-1 * var(--hero-pad)); }
 body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
 /* Ticker: slow continuous crawl, pauses on hover; static scroll under 900px / reduced motion. */
 body.stagelight .hero-ticker { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
@@ -13235,9 +13245,13 @@ body.stagelight .hero-media { position: relative; height: clamp(300px, 44vh, 460
 body.stagelight .hero-media .hero-photo { position: absolute; inset: 0; height: 100%; transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hero-stats-panel {
   position: absolute; inset: 0; display: flex; flex-direction: column;
-  padding: 18px 22px 16px; border-radius: var(--sl-r-md); border: 1px solid var(--sl-line-strong);
-  background: rgba(16,16,19,0.88); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
-  box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85);
+  padding: 20px 26px 18px; border: 0; border-radius: 0;
+  background:
+    radial-gradient(70% 55% at 12% 108%, var(--hero-glow, rgba(255,186,128,0.14)), transparent 70%),
+    radial-gradient(55% 45% at 96% -6%, var(--hero-glow, rgba(255,186,128,0.1)), transparent 74%),
+    rgba(13,13,16,0.84);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: 0 0 120px -30px var(--hero-glow, rgba(255,186,128,0.22)), 0 40px 80px -28px rgba(0,0,0,0.85);
   opacity: 0; transform: translateY(14px); pointer-events: none;
   transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1);
 }
@@ -13257,21 +13271,27 @@ body.stagelight .hero-stats-panel .ltp-item .rarity-symbol { flex: none; min-wid
 body.stagelight .hero-stats-panel .ltp-song { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px) { body.stagelight .hero-stats-panel .ltp-list { grid-template-columns: 1fr; } }
 @media (max-width: 900px) {
-  /* Single column: the 2x2 slots keep desktop grid-column/row placements, so
-     they MUST be reset here or the 1fr grid grows a phantom second column
-     (the "hero-right" selector this replaced was stale — no such element). */
-  body.stagelight .hero-inner { grid-template-columns: 1fr; grid-template-rows: none; row-gap: 26px; }
+  /* Single column, logical read order: identity, photo, ticker, sets, cards.
+     The rail dissolves (display: contents) so its ticker can sit above Set 1.
+     Slots MUST reset their desktop grid-column/row placements or the 1fr grid
+     grows a phantom second column. */
+  body.stagelight .hero-inner { grid-template-columns: 1fr; grid-template-rows: none; row-gap: 22px; }
   body.stagelight .hero-lockwrap,
   body.stagelight .hero-media-slot,
   body.stagelight .hero-music-slot,
-  body.stagelight .hero-rail { grid-column: 1; grid-row: auto; }
+  body.stagelight .hero-ticker-slot,
+  body.stagelight .hero-cards { grid-column: 1; grid-row: auto; }
+  body.stagelight .hero-rail { display: contents; }
   body.stagelight .hero-lockwrap { order: 1; align-self: start; }
-  body.stagelight .hero-media-slot { order: 2; margin-top: 0; }
-  body.stagelight .hero-photo { border-radius: var(--sl-r-md); border-top: 1px solid var(--sl-line); }
-  body.stagelight .hero-music-slot { order: 3; }
-  body.stagelight .hero-rail { order: 4; }
-  body.stagelight .hero-photo { height: clamp(200px, 30vh, 300px); }
-  body.stagelight .hero-media { height: auto; min-height: clamp(200px, 30vh, 300px); }
+  body.stagelight .hero-media-slot { order: 2; margin: 0; }
+  body.stagelight .hero-ticker-slot { order: 3; }
+  body.stagelight .hero-music-slot { order: 4; margin-top: 0; }
+  body.stagelight .hero-cards { order: 5; margin-top: 4px; }
+  body.stagelight .hero-photo { height: clamp(220px, 34vh, 320px); }
+  body.stagelight .hero-media { height: auto; min-height: clamp(220px, 34vh, 320px); }
+  /* Song stats rides the photo; the inline button under the sets hides. */
+  body.stagelight .hero-music-slot .hero-stats-btn { display: none; }
+  body.stagelight .hero-stats-overlay { display: inline-flex; }
 }
 @media (max-width: 560px) {
   body.stagelight .home-hero .sc-city { font-size: 30px; }
@@ -14014,7 +14034,7 @@ body.stagelight .bi-swipe::after {
   background: linear-gradient(100deg, rgba(255,255,255,0.12), transparent 34%, rgba(0,0,0,0.16) 90%);
 }
 body.stagelight .bi-swipe:hover { filter: brightness(1.12); }
-body.stagelight .bi-swipe b { font-family: "PanicHand", "MilkRun", var(--sl-display), sans-serif; font-size: 26px; font-weight: 400; letter-spacing: 0.01em; color: rgba(255,255,255,0.96); line-height: 1.05; }
+body.stagelight .bi-swipe b { font-family: "PanicHand", "MilkRun", var(--sl-display), sans-serif; font-size: 26px; font-weight: 400; letter-spacing: 0.03em; text-transform: uppercase; color: rgba(255,255,255,0.96); line-height: 1.05; }
 @media (max-width: 900px) {
   body.stagelight .board-intro { grid-template-columns: 1fr; gap: 28px; }
   body.stagelight .board-intro-line { font-size: 26px; }
@@ -15580,10 +15600,6 @@ function romanNumeral(value) {
   return numerals[value] || String(value);
 }
 
-function romanToNumber(numeral) {
-  const index = ["", "I", "II", "III", "IV", "V", "VI"].indexOf(numeral);
-  return index > 0 ? index : numeral;
-}
 
 function formatBoardShowTitle(show) {
   if (!show?.location) return "";
