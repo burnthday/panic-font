@@ -161,7 +161,7 @@ function checkTourStats(html, siteData) {
   for (const key of ["title", "count", "rarity", "heat", "last"]) {
     assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
   }
-  assertIncludes(feature, "WHAT THESE MEAN", "Tour Stats explains its plain-language signals");
+  assertIncludes(feature, "What these mean", "Tour Stats explains its plain-language signals");
   assertIncludes(feature, "Rarity", "Tour Stats labels rarity directly");
   assertIncludes(feature, "Hyper Rare", "Tour Stats explains the game-like rarity ladder");
   assertIncludes(feature, '<span class="rarity-symbol" aria-hidden="true"><svg', "Tour Stats renders card-style rarity symbols as inline SVG");
@@ -264,7 +264,7 @@ function checkNickJohnsonFeature(html, siteData) {
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
 
-  assertIncludes(feature, "<h2>Most played with Nick Johnson</h2>", "Homepage has the Most Played with Nick Johnson feature");
+  assertIncludes(feature, "<h2>Nick stats</h2>", "Homepage has the Nick stats feature");
   assertIncludes(feature, '<details class="nick-disclosure" open>', "Nick Stats uses one desktop-open disclosure");
   for (const [value, label] of [
     [nickShows, "shows on guitar"],
@@ -889,11 +889,11 @@ async function checkSongLearnBlock(siteData) {
 }
 
 function checkNavigation(html, siteData) {
-  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", `${siteData.site.year} Setlists`, "The Almanac", "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
+  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", `${siteData.site.year} Setlists`, "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
-  const expectedFooter = [`${siteData.site.year} Setlists`, "Tour In Review", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "The Almanac", "Song List", "The Shelf", "About"];
+  const expectedFooter = [`${siteData.site.year} Setlists`, "Tour In Review", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "Song List", "The Shelf", "About"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerColumns = sectionsByClass(html, "footer-links");
   const footerNav = footerColumns.flatMap((column) => linkTexts(column));
@@ -1736,33 +1736,12 @@ async function checkBandFaqPage() {
 // the sitemap/nav wiring, and (only when a show is today) the odds panel's 🎵
 // almanac reason. Pair maths exclude the Jam / Drums and Bass pseudo-songs.
 async function checkPredictionLayer(siteData) {
+  // The Almanac is parked (hidden from the site 2026-07-22; code kept to restore).
   const almanac = await readText("dist/almanac/index.html").catch(() => "");
-  record("The Almanac page (/almanac/) exists with its hero and deck",
-    almanac.includes("<h1>The Almanac</h1>") && almanac.includes("class=\"alm-deck\""),
-    almanac ? "rendered" : "missing dist/almanac/index.html");
-
-  // The Knockin' Round the Zoo / Thursday reference entry: 115 Thursday plays and
-  // a plain-language tier badge (Confirmed).
-  record("Almanac shows the Zoo/Thursday entry with 115 and a tier label",
-    almanac.includes("115 of 161 lifetime plays are Thursdays") && /alm-badge-confirmed/.test(almanac),
-    "expected '115 of 161 lifetime plays are Thursdays' + a Confirmed badge");
-
-  // All four tier labels are present, the 🎵 lyric pull-lines render, and the
-  // verbatim Play note carries the — Burnthday attribution.
-  const tiers = ["Confirmed", "Vouched", "Watching", "Curiosity"];
-  const tiersPresent = tiers.filter((t) => almanac.includes(`>${t}<`) || almanac.includes(`${t} pattern`));
-  record("Almanac renders every tier label, a 🎵 lyric pull-line, and a — Burnthday attribution",
-    tiersPresent.length === tiers.length && almanac.includes("alm-lyric") && almanac.includes("— Burnthday"),
-    `tiers=${tiersPresent.join("/")} lyric=${almanac.includes("alm-lyric")} attrib=${almanac.includes("— Burnthday")}`);
-
-  // The Data Whispers section frames curiosities as data-dredged.
-  record("Almanac frames The Data Whispers as data-dredged curiosities",
-    almanac.includes("The Data Whispers") && /by chance/i.test(almanac),
-    "expected a Data Whispers section with a 'by chance' caveat");
-
+  record("The Almanac page is parked (not generated)", almanac === "", "dist/almanac/index.html absent");
   const sitemap = await readText("dist/sitemap.xml").catch(() => "");
-  record("The Almanac appears in the sitemap",
-    sitemap.includes("https://burnthday.com/almanac/"), "expected /almanac/ in sitemap.xml");
+  record("The Almanac is absent from the sitemap (parked)",
+    !sitemap.includes("https://burnthday.com/almanac/"), "/almanac/ correctly absent from sitemap.xml");
 
   // Lifetime segue pairs: Machine → Barstools and Dreamers at 83%, and the pair
   // maths never surface the Jam / Drums and Bass pseudo-songs.

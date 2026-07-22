@@ -97,17 +97,14 @@
       "title": "Loose Monday",
       "day": "Monday",
       "claim": "dredged",
-      "songs": ["The Other One", "Little Wing", "Werewolves of London", "Let It Rock", "Low Rider"],
+      "songs": [
+        "The Other One",
+        "Little Wing",
+        "Werewolves of London",
+        "Let It Rock",
+        "Low Rider"
+      ],
       "note": "On the band's rare Monday shows, the covers come out to play. These five all turn up on Mondays far more than their overall rate — a loose, off-night streak the numbers happen to like."
-    },
-    {
-      "id": "coconut-halloween",
-      "kind": "curiosity",
-      "song": "Coconut",
-      "date": "10-31",
-      "occasion": "Halloween",
-      "claim": "dredged",
-      "note": "Harry Nilsson's novelty tune has a soft spot for Halloween — a fun costume of a cover for the spookiest night on the tour calendar."
     },
     {
       "id": "may-your-glass-be-filled-sunday",

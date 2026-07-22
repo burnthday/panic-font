@@ -62,8 +62,7 @@ const navSubLinks = {
     ["Song Possibilities", "/#song-list"],
     ["Song Index", "/songs/"],
     ["Tour Stats", "/#tour-stats"],
-    ["{YEAR} Setlists", "/#setlists"],
-    ["The Almanac", "/almanac/"]
+    ["{YEAR} Setlists", "/#setlists"]
   ],
   "Albums": [
     ["Lyrics & Chords", "/lyrics-chords/"],
@@ -84,8 +83,7 @@ const footerColumns = [
     ["Song Index", "/songs/"],
     ["Albums", "/albums/"],
     ["Lyrics & Chords", "/lyrics-chords/"],
-    ["Song Origins", "/song-origins/"],
-    ["The Almanac", "/almanac/"]
+    ["Song Origins", "/song-origins/"]
   ]],
   ["The Sheet", [
     ["Song List", "/"],
@@ -157,7 +155,8 @@ async function main() {
   attachSeguePairs(siteData);
   attachAlmanac(siteData, await loadAlmanac());
   attachTonightOdds(siteData);
-  await writeAlmanacPage(siteData);
+  // Almanac parked (hidden from the site 2026-07-22; code kept to restore).
+  // await writeAlmanacPage(siteData);
   siteData.songVideosByKey = await loadSongVideos();
   siteData.relistenDates = await loadRelistenDates();
   attachBestGuesses(siteData, await loadBestGuesses());
@@ -7155,6 +7154,7 @@ function renderNickRankingScript() {
       const capped = nickScroll?.classList.toggle("is-capped");
       nickExpand.setAttribute("aria-expanded", String(!capped));
       nickExpand.textContent = capped ? nickExpand.dataset.expandLabel : nickExpand.dataset.collapseLabel;
+      nickExpand.classList.toggle("is-pinned", !capped);
       if (capped) window.scrollBy(0, nickExpand.getBoundingClientRect().top - before);
     });
     apply();
@@ -7353,6 +7353,7 @@ function renderFitScriptBody() {
           const capped = tableScroll?.classList.toggle("is-capped");
           tableExpand.setAttribute("aria-expanded", String(!capped));
           tableExpand.textContent = capped ? tableExpand.dataset.expandLabel : tableExpand.dataset.collapseLabel;
+          tableExpand.classList.toggle("is-pinned", !capped);
           if (capped) window.scrollBy(0, tableExpand.getBoundingClientRect().top - before);
         });
         const tonight = section?.querySelector("[data-tonight]");
@@ -7952,7 +7953,6 @@ function renderTourStats(data) {
   <details class="stats-disclosure" open>
   <summary class="section-heading data-heading">
     <h2>Tour stats</h2>
-    <span>${escapeHtml(String(data.site.year))} through ${escapeHtml(data.site.latestShow?.date || "the latest posted show")}</span>
     <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </summary>
   <div class="stats-body">
@@ -8023,7 +8023,7 @@ function renderTourStats(data) {
   </div>
   ${songs.length > 12 ? `<button type="button" class="stats-expand" data-table-expand aria-expanded="false" data-expand-label="Show all ${formatNumber(songs.length)} songs" data-collapse-label="Show fewer">Show all ${formatNumber(songs.length)} songs</button>` : ""}
   <details class="index-method">
-    <summary>WHAT THESE MEAN</summary>
+    <summary><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.8" r="0.9" fill="currentColor"/></svg><span>What these mean</span></summary>
     <div><p><strong>Rarity</strong> is a simple tour-view badge for how unusual a song is right now: Common, Uncommon, Rare, Ultra Rare, or Hyper Rare, driven mostly by plays in the last 100 shows with lifetime play count as a small tie-breaker. Two gap tiers outrank them all: a song that returns after 200+ shows away (the Shelf cutoff) is a <strong>Bustout</strong>, and one back after 1,000+ shows is a <strong>Mega Bustout</strong>. The symbols follow trading-card language: a black circle, diamond, or star; two silver stars; three gold stars; a radiant star for a Bustout, doubled for a Mega. A song new this tour gets an open star until it has history.</p><p><strong>Last / usual gap</strong> compares how many shows ago the song was last played with its recent average gap. It is context, not a prediction.</p></div>
   </details>
   </div>
@@ -8261,7 +8261,7 @@ function renderNickJohnsonFeature(data) {
   return `<section class="nick-feature" id="nick-johnson">
   <details class="nick-disclosure" open>
   <summary class="section-heading data-heading">
-    <h2>Most played with Nick Johnson</h2>
+    <h2>Nick stats</h2>
     <span>${escapeHtml(String(data.site.year))} tour</span>
   </summary>
   <div class="nick-feature-body">
@@ -13239,6 +13239,27 @@ body.stagelight .stats-expand {
   transition: background 0.15s ease, color 0.15s ease;
 }
 body.stagelight .stats-expand:hover { background: rgba(255,255,255,0.05); color: var(--sl-ink); }
+/* When a capped list is expanded, its collapse control pins to the bottom of the
+   viewport so you can close it from anywhere in the long list. */
+body.stagelight .stats-expand.is-pinned { position: sticky; bottom: 14px; z-index: 4; background: rgba(20,20,23,0.92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 10px 40px -12px rgba(0,0,0,0.7); }
+
+/* "What these mean" — quiet footnote toggle, not a bolted-on bar. */
+body.stagelight .index-method { border-bottom: 0; margin-top: 6px; }
+body.stagelight .index-method > summary {
+  min-height: 44px; justify-content: flex-start; gap: 8px;
+  font-family: var(--sl-mono); font-size: 11px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--sl-faint); transition: color 0.15s ease;
+}
+body.stagelight .index-method > summary:hover { color: var(--sl-muted); }
+body.stagelight .index-method > summary svg { flex: none; opacity: 0.7; }
+body.stagelight .index-method > summary::after { content: none; }
+body.stagelight .index-method[open] > summary { color: var(--sl-muted); }
+body.stagelight .index-method > div {
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); background: var(--sl-glass);
+  padding: 18px 20px; margin-bottom: 8px;
+}
+body.stagelight .index-method p { color: var(--sl-muted); font-size: 13.5px; line-height: 1.6; }
+body.stagelight .index-method strong { color: var(--sl-ink); }
 
 /* ---- SONGS NOT PLAYED (expandable) ---- */
 body.stagelight .not-played { margin-top: 16px; border-top: 1px solid var(--sl-line); }
@@ -14789,10 +14810,6 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
   </url>
   <url>
     <loc>https://burnthday.com/song-origins/</loc>
-  </url>
-  <url>
-    <loc>https://burnthday.com/almanac/</loc>
-    <lastmod>${updated}</lastmod>
   </url>
   ${(data.albums || []).map((album) => `<url>
     <loc>https://burnthday.com/albums/${escapeHtml(album.slug)}/</loc>
