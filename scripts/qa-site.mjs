@@ -312,8 +312,8 @@ function checkNickJohnsonFeature(html, siteData) {
 
   // State toggles: Played (default) / Not yet played (Woodshed) / Everything.
   assertIncludes(feature, '<button type="button" class="is-active" data-nick-state="played">Played</button>', "Nick ranking renders the Played state toggle (default active)");
-  assertIncludes(feature, 'data-nick-state="woodshed">Not yet played</button>', "Nick ranking renders the Not yet played (Woodshed) state toggle");
-  assertIncludes(feature, 'data-nick-state="everything">Everything</button>', "Nick ranking renders the Everything state toggle");
+  assertIncludes(feature, 'data-nick-state="woodshed">Not yet</button>', "Nick ranking renders the Not-yet (Woodshed) state toggle");
+  assertIncludes(feature, 'data-nick-state="everything">All</button>', "Nick ranking renders the everything state toggle");
 
   // Sort control: plays (default) / A–Z.
   assertIncludes(feature, '<button type="button" class="is-active" data-nick-sort="plays">Plays</button>', "Nick ranking renders the plays sort control (default active)");

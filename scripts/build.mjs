@@ -7133,54 +7133,100 @@ function renderHeroModalScript() {
     // View swap. Card stack animates with FLIP: remaining cards slide into the
     // vacated spot, the returning card fades in.
     let swapping = false;
+    // rAF with a timeout fallback: frame-accurate when visible, never wedges when
+    // the tab is throttled (backgrounded) and rAF stalls.
+    const nextFrame = (fn) => {
+      let done = false;
+      const go = () => { if (done) return; done = true; fn(); };
+      requestAnimationFrame(() => requestAnimationFrame(go));
+      setTimeout(go, 140);
+    };
+    const afterFade = (el, fn) => {
+      let done = false;
+      const fin = () => { if (done) return; done = true; el.removeEventListener("transitionend", fin); fn(); };
+      el.addEventListener("transitionend", fin);
+      setTimeout(fin, 320);
+    };
     const showView = (iso) => {
       if (swapping) return;
       swapping = true;
       closeStats();
       const firstRects = new Map(cards.map((card) => [card, card.getBoundingClientRect()]));
-      slots.forEach((slot) => slot.classList.add("is-fading"));
-      setTimeout(() => {
-        slots.forEach((slot) => {
-          slot.querySelectorAll(".hv").forEach((view) => {
-            const on = view.dataset.view === iso;
-            view.classList.toggle("is-active", on);
-            view.hidden = !on;
+      // Two frames guarantee the fade-out actually paints before the DOM swap.
+      nextFrame(() => {
+        slots.forEach((slot) => slot.classList.add("is-fading"));
+        afterFade(slots[0], () => {
+          slots.forEach((slot) => {
+            slot.querySelectorAll(".hv").forEach((view) => {
+              const on = view.dataset.view === iso;
+              view.classList.toggle("is-active", on);
+              view.hidden = !on;
+            });
+          });
+          updateCards(iso, firstRects);
+          hero.querySelectorAll("[data-view-bg]").forEach((layer) => {
+            const on = layer.dataset.viewBg === iso;
+            layer.classList.toggle("is-active", on);
+            if (on && layer.complete && layer.naturalWidth) tintFrom(layer);
+            else if (on) layer.addEventListener("load", () => tintFrom(layer), { once: true });
+          });
+          void hero.offsetHeight;
+          hero.dispatchEvent(new CustomEvent("viewchange"));
+          nextFrame(() => {
+            slots.forEach((slot) => slot.classList.remove("is-fading"));
+            afterFade(slots[0], () => { swapping = false; });
           });
         });
-        cards.forEach((card) => {
-          const on = card.dataset.viewBtn === iso;
-          card.hidden = on;
-          card.setAttribute("aria-pressed", String(on));
-        });
-        hero.querySelectorAll("[data-view-bg]").forEach((layer) => {
-          const on = layer.dataset.viewBg === iso;
-          layer.classList.toggle("is-active", on);
-          if (on && layer.complete && layer.naturalWidth) tintFrom(layer);
-          else if (on) layer.addEventListener("load", () => tintFrom(layer), { once: true });
-        });
-        void hero.offsetHeight;
+      });
+    };
+    // Rail rule: top two slots are the nearest shows before the active one
+    // (fill forward when history runs out); the upcoming show is always the
+    // bottom slot. Cards FLIP into their new positions.
+    const upcomingCardEl = hero.querySelector(".hero-card-upcoming");
+    const upcomingIso = upcomingCardEl?.dataset.viewBtn;
+    const cardByIso = new Map(cards.map((card) => [card.dataset.viewBtn, card]));
+    const updateCards = (activeIso, firstRects) => {
+      const order = hero.querySelector(".hero-pager")?.dataset.pagerOrder.split(",") || [];
+      const posted = order.filter((iso) => iso !== upcomingIso);
+      const activeIndex = posted.indexOf(activeIso);
+      let picks = [];
+      if (activeIndex < 0) {
+        picks = posted.slice(-2).reverse();
+      } else {
+        const before = posted.slice(Math.max(0, activeIndex - 2), activeIndex).reverse();
+        const after = posted.slice(activeIndex + 1, activeIndex + 1 + (2 - before.length));
+        picks = [...before, ...after];
+      }
+      const stack = hero.querySelector(".hero-cards");
+      const visible = new Set(picks);
+      cards.forEach((card) => {
+        const iso = card.dataset.viewBtn;
+        if (iso === upcomingIso) { card.hidden = activeIso === upcomingIso; }
+        else card.hidden = !visible.has(iso);
+        card.setAttribute("aria-pressed", String(iso === activeIso));
+      });
+      // Order: pick 1, pick 2, upcoming, quiet link (keep DOM order for FLIP)
+      picks.forEach((iso) => { const card = cardByIso.get(iso); if (card) stack.insertBefore(card, upcomingCardEl); });
+      if (firstRects) {
         cards.forEach((card) => {
           if (card.hidden) return;
           const first = firstRects.get(card);
           const last = card.getBoundingClientRect();
-          const dy = first.top - last.top;
-          const appeared = first.width === 0 && first.height === 0;
-          if (appeared) {
-            card.style.opacity = "0"; card.style.transform = "translateY(-8px)";
-          } else if (Math.abs(dy) > 1) {
-            card.style.transform = "translateY(" + dy + "px)";
-          } else return;
+          const appeared = !first || (first.width === 0 && first.height === 0);
+          const dy = appeared ? 0 : first.top - last.top;
+          if (appeared) { card.style.opacity = "0"; card.style.transform = "translateY(-8px)"; }
+          else if (Math.abs(dy) > 1) { card.style.transform = "translateY(" + dy + "px)"; }
+          else return;
           card.style.transition = "none";
           void card.offsetHeight;
           card.style.transition = "transform 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.4s cubic-bezier(0.22,1,0.36,1)";
           card.style.opacity = ""; card.style.transform = "";
           card.addEventListener("transitionend", () => { card.style.transition = ""; }, { once: true });
         });
-        slots.forEach((slot) => slot.classList.remove("is-fading"));
-        setTimeout(() => { swapping = false; }, 260);
-      }, 230);
+      }
     };
     cards.forEach((card) => card.addEventListener("click", () => showView(card.dataset.viewBtn)));
+    updateCards(hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view || "", null);
 
     // Date pager: walk every posted show chronologically (upcoming at the end).
     const pager = hero.querySelector(".hero-pager");
@@ -7192,15 +7238,16 @@ function renderHeroModalScript() {
       const currentIso = () => hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view;
       const syncPager = () => {
         const index = order.indexOf(currentIso());
-        if (prevBtn) prevBtn.disabled = index <= 0;
-        if (nextBtn) nextBtn.disabled = index < 0 || index >= order.length - 1;
         if (count && index >= 0) count.textContent = (index + 1) + " of " + order.length;
       };
       const step = (delta) => {
         const index = order.indexOf(currentIso());
-        const target = order[index + delta];
-        if (target) { showView(target); setTimeout(syncPager, 260); }
+        if (index < 0) return;
+        // Wraps: past the last show it loops back to show one, and vice versa.
+        const target = order[(index + delta + order.length) % order.length];
+        showView(target);
       };
+      hero.addEventListener("viewchange", syncPager);
       prevBtn?.addEventListener("click", () => step(-1));
       nextBtn?.addEventListener("click", () => step(1));
       document.addEventListener("keydown", (event) => {
@@ -7209,7 +7256,6 @@ function renderHeroModalScript() {
         if (event.key === "ArrowLeft") { step(-1); }
         else if (event.key === "ArrowRight") { step(1); }
       });
-      hero.addEventListener("click", (event) => { if (event.target.closest("[data-view-btn]")) setTimeout(syncPager, 260); });
       syncPager();
     }
 
@@ -8470,44 +8516,48 @@ function renderNickJohnsonFeature(data) {
     <h2>Nick stats</h2>
     <span>${escapeHtml(String(data.site.year))} tour</span>
   </summary>
-  <div class="nick-feature-body">
-  <div class="data-metrics nick-summary" aria-label="Nick Johnson tour stats">
-    ${renderNickStat(shows, "shows on guitar")}
-    ${renderNickStat(played.length, "unique songs")}
-    ${renderNickStat(plays, "song plays")}
-    ${renderNickStat(woodshed, "still in The Woodshed")}
-  </div>
-  <div class="nick-progress" aria-label="${completion}% of current song possibilities played with Nick Johnson">
-    <div><strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span></div>
-    <span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i><i class="is-cover" style="width:${coverWidth}%"></i></span>
-    <div class="progress-key"><span><i class="key-original"></i>Originals ${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span><span><i class="key-cover"></i>Covers ${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span><span><i class="key-unplayed"></i>${formatNumber(played.length)}/${formatNumber(rotation.length)} overall</span></div>
-  </div>
-  <div class="nick-controls" role="group" aria-label="Filter and sort songs played with Nick Johnson">
-    <div class="type-filter nick-chip-group" role="group" aria-label="Filter by song type">
-      <button type="button" class="is-active" data-nick-type="all">All</button>
-      <button type="button" data-nick-type="original">Originals</button>
-      <button type="button" data-nick-type="cover">Covers</button>
+  <div class="nick-feature-body nick-two-col">
+  <div class="nick-left">
+    <div class="data-metrics nick-summary" aria-label="Nick Johnson tour stats">
+      ${renderNickStat(shows, "shows on guitar")}
+      ${renderNickStat(played.length, "unique songs")}
+      ${renderNickStat(plays, "song plays")}
+      ${renderNickStat(woodshed, "still in The Woodshed")}
     </div>
-    <div class="type-filter nick-chip-group" role="group" aria-label="Filter by play state">
-      <button type="button" class="is-active" data-nick-state="played">Played</button>
-      <button type="button" data-nick-state="woodshed">Not yet played</button>
-      <button type="button" data-nick-state="everything">Everything</button>
+    <div class="nick-progress" aria-label="${completion}% of current song possibilities played with Nick Johnson">
+      <div><strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span></div>
+      <span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i><i class="is-cover" style="width:${coverWidth}%"></i></span>
+      <div class="progress-key"><span><i class="key-original"></i>Originals ${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span><span><i class="key-cover"></i>Covers ${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span><span><i class="key-unplayed"></i>${formatNumber(played.length)}/${formatNumber(rotation.length)} overall</span></div>
     </div>
-    <div class="type-filter nick-chip-group" role="group" aria-label="Sort songs">
-      <button type="button" class="is-active" data-nick-sort="plays">Plays</button>
-      <button type="button" data-nick-sort="title">A–Z</button>
+  </div>
+  <div class="nick-right">
+    <div class="nick-controls" role="group" aria-label="Filter and sort songs played with Nick Johnson">
+      <div class="type-filter nick-chip-group" role="group" aria-label="Filter by song type">
+        <button type="button" class="is-active" data-nick-type="all">All</button>
+        <button type="button" data-nick-type="original">Originals</button>
+        <button type="button" data-nick-type="cover">Covers</button>
+      </div>
+      <div class="type-filter nick-chip-group" role="group" aria-label="Filter by play state">
+        <button type="button" class="is-active" data-nick-state="played">Played</button>
+        <button type="button" data-nick-state="woodshed">Not yet</button>
+        <button type="button" data-nick-state="everything">All</button>
+      </div>
+      <div class="type-filter nick-chip-group" role="group" aria-label="Sort songs">
+        <button type="button" class="is-active" data-nick-sort="plays">Plays</button>
+        <button type="button" data-nick-sort="title">A–Z</button>
+      </div>
+      <span class="nick-ranking-status" data-nick-status aria-live="polite"></span>
     </div>
-    <span class="nick-ranking-status" data-nick-status aria-live="polite"></span>
+    <div class="nick-ranking-head" role="presentation" aria-hidden="true">
+      <span class="nrh-col">#</span>
+      <span class="nrh-col">Song</span>
+      <span class="nrh-col nrh-plays">Plays</span>
+    </div>
+    <div class="nick-ranking-wrap is-capped" data-nick-scroll>
+    ${renderNickRanking(rotation)}
+    </div>
+    <button type="button" class="stats-expand" data-nick-expand aria-expanded="false" data-expand-label="Show the full list" data-collapse-label="Show fewer">Show the full list</button>
   </div>
-  <div class="nick-ranking-head" role="presentation" aria-hidden="true">
-    <span class="nrh-col">#</span>
-    <span class="nrh-col">Song</span>
-    <span class="nrh-col nrh-plays">Plays</span>
-  </div>
-  <div class="nick-ranking-wrap is-capped" data-nick-scroll>
-  ${renderNickRanking(rotation)}
-  </div>
-  <button type="button" class="stats-expand" data-nick-expand aria-expanded="false" data-expand-label="Show the full list" data-collapse-label="Show fewer">Show the full list</button>
   </div>
   </details>
 </section>`;
@@ -8827,12 +8877,6 @@ function renderHomeHero(data) {
   const posted = data.setlists || [];
   const featured = posted[0];
   if (!featured) return "";
-  const runShows = [featured];
-  for (const entry of posted.slice(1)) {
-    if (entry.venue === featured.venue && entry.location === featured.location) runShows.push(entry);
-    else break;
-  }
-  const runIsos = new Set(runShows.map((entry) => entry.isoDate));
   // Every posted setlist is a hero view, so the date pager can walk the whole tour.
   const views = posted.map((entry, index) => ({ show: entry, view: renderHeroView(data, entry, { eager: index === 0 }), kind: "night" }));
   const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
@@ -8849,7 +8893,10 @@ function renderHomeHero(data) {
 
   // One card per view (featured included, hidden while active): the rail always
   // shows "the other nights" plus the upcoming show.
-  const cards = views.filter(({ show: entry, kind }) => kind === "upcoming" || runIsos.has(entry.isoDate)).map(({ show: entry, view, kind }, index) => {
+  // A card exists for every view (the client picks which three show); server
+  // default = the two nights before the featured show + the upcoming slot.
+  const defaultPicks = new Set(posted.slice(1, 3).map((entry) => entry.isoDate));
+  const cards = views.map(({ show: entry, view, kind }, index) => {
     if (kind === "upcoming") {
       const upDow = weekdayName(entry.isoDate || "").slice(0, 3).toUpperCase();
       return `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false">
@@ -8860,7 +8907,7 @@ function renderHomeHero(data) {
     }
     let night = "";
     try { const run = tourRunInfo(data.tourDates || [], entry); if (run && run.length > 1) night = `Night ${run.number}`; } catch {}
-    return `<button type="button" class="hero-card" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false"${index === 0 ? " hidden" : ""}>
+    return `<button type="button" class="hero-card" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false"${defaultPicks.has(entry.isoDate) ? "" : " hidden"}>
       <time class="sc-date" datetime="${escapeAttr(entry.isoDate)}">${escapeHtml(entry.date)}</time>
       <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${night ? ` · ${night}` : ""}</small></span>
       <span class="hc-go" aria-hidden="true">→</span>
@@ -13029,10 +13076,12 @@ body.stagelight .hero-bg img.is-active { opacity: 0.55; }
 body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.6) 52%, rgba(11,11,12,0.92) 84%, #0b0b0d 100%); }
 /* Mirrored continuation of the hero backdrop under the fold + tinted spotlight. */
 body.stagelight .hero-bg::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(58% 46% at 68% 18%, var(--hero-glow, rgba(255,186,128,0.10)), transparent 72%); }
-body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 320px; margin-bottom: -320px; overflow: hidden; pointer-events: none; z-index: 0; }
-body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.35; }
-body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,11,13,0.55) 0%, rgba(11,11,13,0.85) 55%, #0b0b0d 100%); }
-body.stagelight main > section { position: relative; z-index: 1; }
+/* Seamless: solid page color at the seam (no line), the mirrored light ghosts
+   through just below it, then fades back to solid. Content always sits above. */
+body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 380px; margin-bottom: -380px; overflow: hidden; pointer-events: none; z-index: 0; }
+body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.3; }
+body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
+body.stagelight main > *:not(.hero-echo) { position: relative; z-index: 1; }
 body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) max(28px, calc((100% - 1400px) / 2)) 38px; }
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
    setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
@@ -13647,6 +13696,14 @@ body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin
 
 /* ---- TOUR-STATS TABLE: capped preview + expand affordance ---- */
 body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; border-radius: var(--sl-r-md); -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+/* Nick stats: stat tiles + progress on the left; a slim, simply-filtered list on
+   the right. Kills the second full-width spreadsheet on the page. */
+body.stagelight .nick-two-col { display: grid; grid-template-columns: 1fr 1.35fr; gap: 44px 56px; align-items: start; }
+body.stagelight .nick-two-col .nick-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.stagelight .nick-two-col .nick-progress { margin: 26px 0 0; }
+body.stagelight .nick-two-col .nick-controls { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+body.stagelight .nick-two-col .nick-chip-group button { padding: 7px 13px; font-size: 12.5px; }
+@media (max-width: 900px) { body.stagelight .nick-two-col { grid-template-columns: 1fr; gap: 26px; } }
 /* Nick's ranking gets the same capped-scroll treatment as the Tour Stats table. */
 body.stagelight .nick-ranking-wrap.is-capped { max-height: 520px; overflow-y: auto; -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
 body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar { width: 8px; }
