@@ -13118,7 +13118,9 @@ body.stagelight .hero-bg::before { content: ""; position: absolute; inset: 0; z-
 body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 380px; margin-bottom: -380px; overflow: hidden; pointer-events: none; z-index: 0; }
 body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.3; }
 body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
-body.stagelight main > *:not(.hero-echo) { position: relative; z-index: 1; }
+/* Blanket stacking rule — MUST exclude anything that positions itself (this
+   silently flattened the fixed bento popups once already). */
+body.stagelight main > *:not(.hero-echo):not(.bento-panel) { position: relative; z-index: 1; }
 body.stagelight main > .home-nav { position: sticky; z-index: 55; }
 body.stagelight .hero-inner { --hero-pad: max(28px, calc((100vw - 1400px) / 2)); position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) var(--hero-pad) 38px; }
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
