@@ -12568,7 +12568,10 @@ body.stagelight .stats-disclosure[open] > summary .sc-chev { transform: rotate(1
 body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin-bottom: 0; }
 
 /* ---- TOUR-STATS TABLE: capped preview + expand affordance ---- */
-body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow: hidden; position: relative; -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent); mask-image: linear-gradient(180deg, #000 82%, transparent); }
+body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; }
+body.stagelight .tour-table thead th { position: sticky; top: 0; z-index: 3; background: #101013; }
+body.stagelight .tour-table tbody tr.is-selected-show { background: rgba(212, 81, 79, 0.10); box-shadow: inset 3px 0 0 #d4514f; }
+body.stagelight .tour-table tbody tr.is-selected-show:hover { background: rgba(212, 81, 79, 0.16); }
 body.stagelight .stats-expand {
   display: block; width: 100%; margin: 14px 0 0; padding: 12px; border-radius: var(--sl-r-sm);
   border: 1px solid var(--sl-line-strong); background: transparent; color: var(--sl-muted);
