@@ -616,7 +616,11 @@ async function checkLatestSetlist(html, siteData) {
     assertIncludes(html, `id="setlist-${night.isoDate}"`, `Feed card carries the #setlist-${night.isoDate} anchor`);
   }
   record("Cards are flat glass (photo backdrops reverted per owner)", !/data-view-btn="[^"]+"[^>]*style="background-image/.test(heroOnly), "no card background-image");
-  record("Featured night has its own card, hidden while active", new RegExp(`data-view-btn="${feat?.isoDate}"[^>]* hidden`).test(heroOnly), "featured card present + hidden");
+  record("Latest show is a pinned card carrying the red current-ring while active",
+    new RegExp(`hero-card-latest is-current"[^>]*data-view-btn="${feat?.isoDate}"`).test(heroOnly), "pinned latest card with is-current");
+  record("Rail is four fixed slots (two context + latest + upcoming)",
+    heroOnly.includes('data-card-slot="a"') && heroOnly.includes('data-card-slot="b"') && heroOnly.includes('data-card-slot="latest"') && heroOnly.includes("hero-card-upcoming") && heroOnly.includes('id="hero-card-meta"'),
+    "slots a/b/latest/upcoming + card meta present");
   record("Hero right rail closes with the quiet all-setlists link",
     heroOnly.includes('class="link-quiet hero-all"') && heroOnly.includes(`All ${siteData.site.year} setlists`), "link-quiet hero-all present");
   record("Song stats expands in place: trigger button + per-view panel with rarity symbols + shimmer ring",

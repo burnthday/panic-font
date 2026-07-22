@@ -7100,7 +7100,6 @@ function renderHeroModalScript() {
     const hero = document.querySelector(".home-hero");
     if (!hero) return;
     const slots = [...hero.querySelectorAll(".hero-slot")];
-    const cards = [...hero.querySelectorAll("[data-view-btn]")];
 
     const activePanel = () => hero.querySelector(".hero-media-slot .hv.is-active .hero-stats-panel");
     const closeStats = () => {
@@ -7151,7 +7150,6 @@ function renderHeroModalScript() {
       if (swapping) return;
       swapping = true;
       closeStats();
-      const firstRects = new Map(cards.map((card) => [card, card.getBoundingClientRect()]));
       // Two frames guarantee the fade-out actually paints before the DOM swap.
       nextFrame(() => {
         slots.forEach((slot) => slot.classList.add("is-fading"));
@@ -7163,7 +7161,6 @@ function renderHeroModalScript() {
               view.hidden = !on;
             });
           });
-          updateCards(iso, firstRects);
           hero.querySelectorAll("[data-view-bg]").forEach((layer) => {
             const on = layer.dataset.viewBg === iso;
             layer.classList.toggle("is-active", on);
@@ -7179,85 +7176,59 @@ function renderHeroModalScript() {
         });
       });
     };
-    // Rail rule: top two slots are the nearest shows before the active one
-    // (fill forward when history runs out); the upcoming show is always the
-    // bottom slot. Cards FLIP into their new positions.
+    // Fixed rail: slots never move. The two context slots refill (quick content
+    // fade) with the nearest shows before the active view; latest + upcoming
+    // are pinned. The card matching the active view carries the current-ring.
+    const meta = JSON.parse(document.getElementById("hero-card-meta")?.textContent || "{}");
+    const slotA = hero.querySelector('[data-card-slot="a"]');
+    const slotB = hero.querySelector('[data-card-slot="b"]');
+    const latestCard = hero.querySelector('[data-card-slot="latest"]');
     const upcomingCardEl = hero.querySelector(".hero-card-upcoming");
     const upcomingIso = upcomingCardEl?.dataset.viewBtn;
-    const cardByIso = new Map(cards.map((card) => [card.dataset.viewBtn, card]));
-    const updateCards = (activeIso, firstRects) => {
+    const latestIso = latestCard?.dataset.viewBtn;
+    const fillSlot = (slotEl, iso) => {
+      if (!slotEl) return;
+      if (!iso || !meta[iso]) { slotEl.hidden = true; return; }
+      slotEl.hidden = false;
+      if (slotEl.dataset.viewBtn === iso) return;
+      slotEl.classList.add("is-refilling");
+      const paint = () => {
+        slotEl.dataset.viewBtn = iso;
+        const m = meta[iso];
+        const time = slotEl.querySelector(".sc-date");
+        time.textContent = m.d; time.setAttribute("datetime", iso);
+        slotEl.querySelector(".hc-place strong").textContent = m.c;
+        slotEl.querySelector(".hc-place small").textContent = m.v + (m.n ? " · " + m.n : "");
+        slotEl.classList.remove("is-refilling");
+      };
+      setTimeout(paint, 160);
+    };
+    const updateCards = (activeIso) => {
       const order = hero.querySelector(".hero-pager")?.dataset.pagerOrder.split(",") || [];
       const posted = order.filter((iso) => iso !== upcomingIso);
-      const activeIndex = posted.indexOf(activeIso);
-      let picks = [];
-      if (activeIndex < 0) {
-        picks = posted.slice(-2).reverse();
-      } else {
-        const before = posted.slice(Math.max(0, activeIndex - 2), activeIndex).reverse();
-        const after = posted.slice(activeIndex + 1, activeIndex + 1 + (2 - before.length));
-        picks = [...before, ...after];
-      }
-      const stack = hero.querySelector(".hero-cards");
-      const visible = new Set(picks);
-      cards.forEach((card) => {
-        const iso = card.dataset.viewBtn;
-        if (iso === upcomingIso) { card.hidden = activeIso === upcomingIso; }
-        else card.hidden = !visible.has(iso);
-        card.setAttribute("aria-pressed", String(iso === activeIso));
+      const anchorIndex = posted.indexOf(activeIso === upcomingIso ? latestIso : activeIso);
+      // Context = the two shows before the active one, skipping the pinned latest.
+      const pool = posted.filter((iso) => iso !== latestIso);
+      const anchorPos = activeIso === upcomingIso || activeIso === latestIso
+        ? pool.length
+        : pool.indexOf(activeIso);
+      const before = pool.slice(Math.max(0, anchorPos - 2), anchorPos).reverse();
+      const fill = [...before, ...pool.slice(anchorPos + 1, anchorPos + 1 + (2 - before.length))];
+      fillSlot(slotA, fill[0]);
+      fillSlot(slotB, fill[1]);
+      [slotA, slotB, latestCard, upcomingCardEl].forEach((card) => {
+        if (!card) return;
+        const on = card.dataset.viewBtn === activeIso;
+        card.classList.toggle("is-current", on);
+        card.setAttribute("aria-pressed", String(on));
       });
-      // Order: pick 1, pick 2, upcoming, quiet link (keep DOM order for FLIP)
-      picks.forEach((iso) => { const card = cardByIso.get(iso); if (card) stack.insertBefore(card, upcomingCardEl); });
-      if (firstRects) {
-        cards.forEach((card) => {
-          if (card.hidden) return;
-          const first = firstRects.get(card);
-          const last = card.getBoundingClientRect();
-          const appeared = !first || (first.width === 0 && first.height === 0);
-          const dy = appeared ? 0 : first.top - last.top;
-          if (appeared) { card.style.opacity = "0"; card.style.transform = "translateY(-8px)"; }
-          else if (Math.abs(dy) > 1) { card.style.transform = "translateY(" + dy + "px)"; }
-          else return;
-          card.style.transition = "none";
-          void card.offsetHeight;
-          card.style.transition = "transform 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.4s cubic-bezier(0.22,1,0.36,1)";
-          card.style.opacity = ""; card.style.transform = "";
-          card.addEventListener("transitionend", () => { card.style.transition = ""; }, { once: true });
-        });
-      }
     };
-    cards.forEach((card) => card.addEventListener("click", () => showView(card.dataset.viewBtn)));
-    updateCards(hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view || "", null);
-
-    // Date pager: walk every posted show chronologically (upcoming at the end).
-    const pager = hero.querySelector(".hero-pager");
-    if (pager) {
-      const order = pager.dataset.pagerOrder.split(",");
-      const prevBtn = pager.querySelector("[data-page-prev]");
-      const nextBtn = pager.querySelector("[data-page-next]");
-      const count = pager.querySelector("[data-page-count]");
-      const currentIso = () => hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view;
-      const syncPager = () => {
-        const index = order.indexOf(currentIso());
-        if (count && index >= 0) count.textContent = (index + 1) + " of " + order.length;
-      };
-      const step = (delta) => {
-        const index = order.indexOf(currentIso());
-        if (index < 0) return;
-        // Wraps: past the last show it loops back to show one, and vice versa.
-        const target = order[(index + delta + order.length) % order.length];
-        showView(target);
-      };
-      hero.addEventListener("viewchange", syncPager);
-      prevBtn?.addEventListener("click", () => step(-1));
-      nextBtn?.addEventListener("click", () => step(1));
-      document.addEventListener("keydown", (event) => {
-        const target = event.target instanceof Element ? event.target : null;
-        if (target && target.closest("input, textarea, select, [contenteditable]")) return;
-        if (event.key === "ArrowLeft") { step(-1); }
-        else if (event.key === "ArrowRight") { step(1); }
-      });
-      syncPager();
-    }
+    hero.querySelector(".hero-cards")?.addEventListener("click", (event) => {
+      const card = event.target.closest("[data-view-btn]");
+      if (card && !card.classList.contains("is-current")) showView(card.dataset.viewBtn);
+    });
+    hero.addEventListener("viewchange", () => updateCards(hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view || ""));
+    updateCards(hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view || "");
 
     // Glint follows the cursor while hovering the stats button.
     hero.addEventListener("pointermove", (event) => {
@@ -8900,28 +8871,37 @@ function renderHomeHero(data) {
     `<div class="hv${index === 0 ? " is-active" : ""}" data-view="${escapeAttr(view.iso)}"${index === 0 ? "" : " hidden"}>${view[kind]}</div>`
   ).join("");
 
-  // One card per view (featured included, hidden while active): the rail always
-  // shows "the other nights" plus the upcoming show.
-  // A card exists for every view (the client picks which three show); server
-  // default = the two nights before the featured show + the upcoming slot.
-  const defaultPicks = new Set(posted.slice(1, 3).map((entry) => entry.isoDate));
-  const cards = views.map(({ show: entry, view, kind }, index) => {
-    if (kind === "upcoming") {
-      const upDow = weekdayName(entry.isoDate || "").slice(0, 3).toUpperCase();
-      return `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false">
-        <time class="sc-date" datetime="${escapeAttr(entry.isoDate || "")}">${escapeHtml(entry.date)}</time>
-        <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}</small></span>
-        <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
-      </button>`;
-    }
-    let night = "";
-    try { const run = tourRunInfo(data.tourDates || [], entry); if (run && run.length > 1) night = `Night ${run.number}`; } catch {}
-    return `<button type="button" class="hero-card" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false"${defaultPicks.has(entry.isoDate) ? "" : " hidden"}>
+  // Fixed four-slot rail: two contextual slots (content swaps, position never
+  // moves), the latest show pinned third, tonight/upcoming pinned fourth. The
+  // card matching the active view gets the red current-ring instead of hiding.
+  const nightFor = (entry) => {
+    try { const run = tourRunInfo(data.tourDates || [], entry); if (run && run.length > 1) return `Night ${run.number}`; } catch {}
+    return "";
+  };
+  const cardMeta = {};
+  for (const { show: entry, kind } of views) {
+    if (kind === "upcoming") continue;
+    cardMeta[entry.isoDate] = { d: entry.date, c: entry.location, v: entry.venue, n: nightFor(entry) };
+  }
+  const slotCard = (entry, extraClass = "", slotName = "") => `<button type="button" class="hero-card${extraClass}"${slotName ? ` data-card-slot="${slotName}"` : ""} data-view-btn="${escapeAttr(entry.isoDate)}" aria-pressed="false">
       <time class="sc-date" datetime="${escapeAttr(entry.isoDate)}">${escapeHtml(entry.date)}</time>
-      <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${night ? ` · ${night}` : ""}</small></span>
+      <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${nightFor(entry) ? ` · ${nightFor(entry)}` : ""}</small></span>
       <span class="hc-go" aria-hidden="true">→</span>
     </button>`;
-  }).join("");
+  const contextShows = posted.slice(1, 3);
+  const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
+  const upcomingCard = upcoming ? `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(upcoming.isoDate)}" aria-pressed="false">
+        <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
+        <span class="hc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
+        <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
+      </button>` : "";
+  const cards = [
+    contextShows[0] ? slotCard(contextShows[0], "", "a") : "",
+    contextShows[1] ? slotCard(contextShows[1], "", "b") : "",
+    slotCard(featured, " hero-card-latest is-current", "latest"),
+    upcomingCard
+  ].join("");
+  const cardMetaJson = `<script type="application/json" id="hero-card-meta">${JSON.stringify(cardMeta).replace(/</g, "\\u003c")}</script>`;
 
   const bgFor = (entry) => entry.bgImage || entry.image || "";
   const bgLayers = views.map(({ show: entry, view }, index) => {
@@ -8951,6 +8931,7 @@ function renderHomeHero(data) {
           ${cards}
           <a class="link-quiet hero-all" href="/#setlists">All ${escapeHtml(String(data.site.year))} setlists <span aria-hidden="true">→</span></a>
         </div>
+        ${cardMetaJson}
       </div>
     </div>
   </section>${echo}`;
@@ -13171,6 +13152,11 @@ body.stagelight .tk-sep { color: var(--sl-faint); opacity: 0.5; }
 /* Right-rail cards */
 body.stagelight .hero-cards { margin-top: 12px; display: grid; gap: 10px; }
 body.stagelight .hero-card[hidden] { display: none; }
+body.stagelight .hero-card.is-refilling time, body.stagelight .hero-card.is-refilling .hc-place { opacity: 0; transition: opacity 0.16s ease; }
+body.stagelight .hero-card time, body.stagelight .hero-card .hc-place { transition: opacity 0.2s ease; }
+/* The card for the view you're on: red current-ring (shelf-watch language). */
+body.stagelight .hero-card.is-current { border-color: rgba(212,81,79,0.55); box-shadow: 0 0 0 1px rgba(212,81,79,0.35), 0 0 24px -8px rgba(212,81,79,0.3); cursor: default; }
+body.stagelight .hero-card.is-current:hover { transform: none; background: rgba(255,255,255,0.035); }
 body.stagelight .hero-card {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
   width: 100%; text-align: left; cursor: pointer; font: inherit;
