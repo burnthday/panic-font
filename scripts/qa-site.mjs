@@ -1011,12 +1011,14 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   // Internal-transcription rows carry the badge AND link a real dist file; EC rows
   // point at everydaycompanion.com (verified deep link or safe homepage fallback —
   // never a guessed 404). Assert both populations exist and resolve correctly.
-  const internalCount = (hub.match(/class="lr-badge lr-badge-internal"/g) || []).length;
+  const internalCount = (hub.match(/data-transcription="yes"/g) || []).length;
   record("Lyrics & Chords hub badges internal transcriptions", internalCount > 0, `${internalCount} Burnthday-transcription rows`);
   // Content-type indicator: internal rows show LYRICS + CHORDS when a chord/tab page
   // exists for the song, else LYRICS. Both populations must be present.
-  const chordKind = (hub.match(/class="lr-kind">Lyrics \+ Chords</g) || []).length;
-  const lyricsOnlyKind = (hub.match(/class="lr-kind">Lyrics</g) || []).length;
+  const chordKind = (hub.match(/class="lr-words">Lyrics \+ chords</g) || []).length;
+  const lyricsOnlyKind = (hub.match(/class="lr-words">Lyrics<\/span>/g) || []).length;
+  record("Lyrics hub rows carry no source-name pills", !/lr-badge/.test(hub) && !/Burnthday transcription/.test(hub), "source pills should be gone");
+  record("Lyrics hub renders a sticky column-header row", /class="lyric-head"/.test(hub) && (hub.match(/class="lh-col/g) || []).length === 5, "lyric-head with 5 columns");
   record("Lyrics & Chords hub shows the LYRICS + CHORDS content-type indicator", chordKind > 0, `${chordKind} rows marked Lyrics + Chords`);
   record("Lyrics & Chords hub shows the LYRICS content-type indicator", lyricsOnlyKind > 0, `${lyricsOnlyKind} rows marked Lyrics-only`);
   record("Every internal row carries a content-type indicator", chordKind + lyricsOnlyKind === internalCount, `${chordKind + lyricsOnlyKind} indicators vs ${internalCount} internal rows`);

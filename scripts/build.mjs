@@ -1894,20 +1894,21 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
     const plays = row.total > 0 ? `${formatNumber(row.total)}<small>plays</small>` : "";
     const href = row.internal || row.ecHref;
     const ext = !row.internal;
-    // Internal (badged) rows get a mono content-type indicator; EC rows keep the
-    // "Everyday Companion ↗" treatment (their chord status is unknowable).
-    const badge = row.internal
-      ? `<span class="lr-badge lr-badge-internal">Burnthday transcription</span><span class="lr-kind">${row.hasChords ? "Lyrics + Chords" : "Lyrics"}</span>`
-      : `<span class="lr-badge lr-ext">Everyday Companion<span class="lr-ext-arrow" aria-hidden="true">↗</span></span>`;
-    const sub = row.album || row.type || "Lyrics &amp; chords";
+    // No source names in rows: the WORDS cell says what the click opens; external
+    // destinations get the arrow and open in a new window.
+    const words = row.internal
+      ? (row.hasChords ? "Lyrics + chords" : "Lyrics")
+      : `Lyrics<span class="lr-ext-arrow" aria-hidden="true"> ↗</span>`;
+    const sub = row.album || "";
     // When the chords live on a sibling guitar-tab page, the row title still links
     // the lyrics page; a small Tab chip carries the reader to the tab. The chip is
     // a real link nested beside the row (the row itself is the lyrics link).
     const tabChip = row.tabHref ? `<a class="lr-tab-chip" href="${escapeAttr(row.tabHref)}" aria-label="Guitar tab for ${escapeAttr(row.title)}">Tab<span aria-hidden="true"> →</span></a>` : "";
     return `<div class="lyric-row-wrap${row.tabHref ? " has-tab" : ""}">
       <a class="lyric-row" href="${escapeAttr(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""} data-title="${escapeAttr(row.title.toLowerCase())}" data-transcription="${row.internal ? "yes" : "no"}" data-haschords="${row.hasChords ? "yes" : "no"}" data-hastab="${row.tabHref ? "yes" : "no"}" data-type="${escapeAttr(row.type.toLowerCase())}" data-album="${escapeAttr(row.album)}">
-        <span class="lr-title">${escapeHtml(row.title)}${badge}</span>
+        <span class="lr-title">${escapeHtml(row.title)}</span>
         <span class="lr-sub">${escapeHtml(sub)}</span>
+        <span class="lr-words">${words}</span>
         <span class="lr-plays">${plays}</span>
       </a>${tabChip}
     </div>`;
@@ -1950,6 +1951,13 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
         <button type="button" class="index-toggle" data-transcription-filter aria-pressed="false">On Burnthday</button>
         <button type="button" class="index-toggle" data-chords-filter aria-pressed="false">Has chords</button>
         ${renderCustomSelect({ hook: "data-album-filter", label: "Album", active: "", options: albumSelectOptions })}
+      </div>
+      <div class="lyric-head" aria-hidden="true">
+        <span class="lh-col">Song</span>
+        <span class="lh-col">Album</span>
+        <span class="lh-col">Words</span>
+        <span class="lh-col lh-plays">Plays</span>
+        <span class="lh-col lh-tab">Tab</span>
       </div>
       <div class="song-list lyrics-list" id="lyric-list">${rows}</div>
       <p class="song-empty" id="lyric-empty" hidden>No songs match those filters.</p>
@@ -13287,9 +13295,24 @@ body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(-
 
 /* Lyrics & Chords hub — a row per lyric page, modeled on the Song Index row. */
 body.stagelight .archive-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 4px 0 12px; }
+body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1.6fr) minmax(0, 1fr) 150px 96px; }
 body.stagelight .lyric-row {
-  display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) 96px; align-items: center; gap: 18px;
+  display: grid; grid-template-columns: var(--lr-cols); align-items: center; gap: 18px;
   padding: 15px 16px; border-radius: var(--sl-r-sm); color: var(--sl-ink); text-decoration: none; transition: background 0.16s ease;
+}
+body.stagelight .lyric-head {
+  display: grid; grid-template-columns: var(--lr-cols) 92px; align-items: center; gap: 18px;
+  padding: 10px 16px 8px; position: sticky; top: 128px; z-index: 4; background: var(--sl-bg, #0b0b0d);
+  border-bottom: 1px solid var(--sl-line);
+}
+body.stagelight .lh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .lh-plays { text-align: right; }
+body.stagelight .lr-words { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-muted); }
+body.stagelight .lr-ext-arrow { color: var(--sl-faint); }
+@media (max-width: 560px) {
+  body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1fr) 96px; }
+  body.stagelight .lyric-row .lr-sub, body.stagelight .lyric-row .lr-words,
+  body.stagelight .lyric-head .lh-col:nth-child(2), body.stagelight .lyric-head .lh-col:nth-child(3) { display: none; }
 }
 body.stagelight .lyric-row:hover { background: rgba(255,255,255,0.03); }
 /* Rows whose chords live on a sibling tab page carry a separate Tab chip. */
@@ -13297,7 +13320,7 @@ body.stagelight .lyric-row-wrap { display: flex; align-items: center; }
 body.stagelight .lyric-row-wrap[hidden] { display: none; }
 body.stagelight .lyric-row-wrap .lyric-row { flex: 1; min-width: 0; }
 body.stagelight .lr-tab-chip {
-  flex: none; margin: 0 6px 0 2px; padding: 6px 12px; border-radius: var(--sl-r-pill);
+  flex: none; width: 74px; justify-content: center; text-align: center; margin: 0 6px 0 2px; padding: 6px 12px; border-radius: var(--sl-r-pill);
   border: 1px solid rgba(212,81,79,0.5); color: var(--sl-ink); text-decoration: none;
   font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
   transition: background 0.15s ease;
