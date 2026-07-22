@@ -196,13 +196,26 @@ function warnForClassificationGaps(siteData) {
 
 async function loadSourceData() {
   const setlists = await loadSetlists();
-  const [spreadsheet, playstats, priorSongStats, venuePreviews] = await Promise.all([
+  const [spreadsheet, playstats, priorSongStats, venuePreviews, showOverrides] = await Promise.all([
     loadSpreadsheetData(inferSetlistYear(setlists)),
     loadPlaystats(),
     loadPriorSongStats(),
-    loadVenuePreviews()
+    loadVenuePreviews(),
+    loadShowOverrides(inferSetlistYear(setlists))
   ]);
-  return { ...spreadsheet, setlists, playstats, priorSongStats, venuePreviews };
+  // Per-show hero art (image / blurred bgImage / photoCredit) applies to posted
+  // setlists and, crucially, to shows that have not posted yet (tonight preview).
+  for (const show of [...(setlists.setlists || []), ...(setlists.tourDates || [])]) {
+    const extra = showOverrides[show.isoDate];
+    if (extra) Object.assign(show, { image: extra.image || show.image, bgImage: extra.bgImage || show.bgImage, photoCredit: extra.photoCredit || show.photoCredit });
+  }
+  return { ...spreadsheet, setlists, playstats, priorSongStats, venuePreviews, showOverrides };
+}
+
+async function loadShowOverrides(year) {
+  try {
+    return JSON.parse(await readFile(path.join(root, "data", "source", `setlist-overrides-${year}.json`), "utf8"));
+  } catch { return {}; }
 }
 
 async function loadVenuePreviews() {
@@ -758,11 +771,12 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
   );
   const latestRunDates = latestShow ? tourStopDates(tourDates, latestShow) : [];
   const previewMetadata = source.venuePreviews?.[venuePreviewKey(boardShow)] || {};
+  const showOverride = source.showOverrides?.[boardShow?.isoDate] || {};
   const tourImages = setlists.map((show) => show.image).filter(Boolean);
   const previewFallbackImage = deterministicItem(tourImages, boardShow?.isoDate) || "";
   const previewImage = previewMetadata.firstVisit ? previewMetadata.image || previewFallbackImage : previewFallbackImage;
   let featuredShow = isShowDayPreview
-    ? { ...boardShow, image: boardShow.image || previewImage, sets: blankSetlist(), notes: [] }
+    ? { ...boardShow, image: showOverride.image || boardShow.image || previewImage, bgImage: showOverride.bgImage || boardShow.bgImage, photoCredit: showOverride.photoCredit || boardShow.photoCredit, sets: blankSetlist(), notes: [] }
     : latestShow;
 
   const songs = catalog.map((row) => {
@@ -852,6 +866,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       featuredRunDates: latestRunDates,
       isShowDayPreview
     },
+    showOverrides: source.showOverrides || {},
     rules: {
       rotationSlpLimit: config.rotationSlpLimit,
       shelfWatchWindow: config.shelfWatchWindow,
@@ -7078,17 +7093,14 @@ function renderSetlistExpandScript() {
 
 // Sticky home section-nav: highlight the link whose section is in view. Subtle
 // IntersectionObserver, guarded so no-IO visitors just get plain links.
-// Hero interactions: (1) Song stats in-place expansion per view; (2) night-card
-// view swap (crossfades every slot to the picked show, toggling back to the
-// featured night when the active card is clicked again); (3) the stats button's
-// glint follows the cursor on hover.
+// Hero interactions: stats expansion, card view-swap with FLIP motion on the
+// card stack, cursor-tracking glint, and a spotlight tinted from the photo.
 function renderHeroModalScript() {
   return `(() => {
     const hero = document.querySelector(".home-hero");
     if (!hero) return;
     const slots = [...hero.querySelectorAll(".hero-slot")];
     const cards = [...hero.querySelectorAll("[data-view-btn]")];
-    const defaultView = hero.querySelector(".hero-lock-slot .hv")?.dataset.view;
 
     const activePanel = () => hero.querySelector(".hero-media-slot .hv.is-active .hero-stats-panel");
     const closeStats = () => {
@@ -7118,11 +7130,14 @@ function renderHeroModalScript() {
     });
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeStats(); });
 
+    // View swap. Card stack animates with FLIP: remaining cards slide into the
+    // vacated spot, the returning card fades in.
     let swapping = false;
     const showView = (iso) => {
       if (swapping) return;
       swapping = true;
       closeStats();
+      const firstRects = new Map(cards.map((card) => [card, card.getBoundingClientRect()]));
       slots.forEach((slot) => slot.classList.add("is-fading"));
       setTimeout(() => {
         slots.forEach((slot) => {
@@ -7134,18 +7149,38 @@ function renderHeroModalScript() {
         });
         cards.forEach((card) => {
           const on = card.dataset.viewBtn === iso;
-          card.classList.toggle("is-active", on);
+          card.hidden = on;
           card.setAttribute("aria-pressed", String(on));
         });
+        hero.querySelectorAll("[data-view-bg]").forEach((layer) => {
+          const on = layer.dataset.viewBg === iso;
+          layer.classList.toggle("is-active", on);
+          if (on && layer.complete && layer.naturalWidth) tintFrom(layer);
+          else if (on) layer.addEventListener("load", () => tintFrom(layer), { once: true });
+        });
         void hero.offsetHeight;
+        cards.forEach((card) => {
+          if (card.hidden) return;
+          const first = firstRects.get(card);
+          const last = card.getBoundingClientRect();
+          const dy = first.top - last.top;
+          const appeared = first.width === 0 && first.height === 0;
+          if (appeared) {
+            card.style.opacity = "0"; card.style.transform = "translateY(-8px)";
+          } else if (Math.abs(dy) > 1) {
+            card.style.transform = "translateY(" + dy + "px)";
+          } else return;
+          card.style.transition = "none";
+          void card.offsetHeight;
+          card.style.transition = "transform 0.4s cubic-bezier(0.22,1,0.36,1), opacity 0.4s cubic-bezier(0.22,1,0.36,1)";
+          card.style.opacity = ""; card.style.transform = "";
+          card.addEventListener("transitionend", () => { card.style.transition = ""; }, { once: true });
+        });
         slots.forEach((slot) => slot.classList.remove("is-fading"));
-        setTimeout(() => { swapping = false; }, 240);
+        setTimeout(() => { swapping = false; }, 260);
       }, 230);
     };
-    cards.forEach((card) => card.addEventListener("click", () => {
-      const iso = card.dataset.viewBtn;
-      showView(card.classList.contains("is-active") ? defaultView : iso);
-    }));
+    cards.forEach((card) => card.addEventListener("click", () => showView(card.dataset.viewBtn)));
 
     // Glint follows the cursor while hovering the stats button.
     hero.addEventListener("pointermove", (event) => {
@@ -7157,6 +7192,31 @@ function renderHeroModalScript() {
       const angle = Math.atan2(event.clientY - (rect.top + rect.height / 2), event.clientX - (rect.left + rect.width / 2));
       ring.style.setProperty("--hsb-a", ((angle * 180 / Math.PI) + 450) % 360 + "deg");
     });
+
+    // Spotlight tint: average the hero photo's color and warm/cool the glow to
+    // match. Cross-origin-safe (falls back to the default tint on taint).
+    function tintFrom(img) {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 8; canvas.height = 8;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0, 8, 8);
+        const px = ctx.getImageData(0, 0, 8, 8).data;
+        let r = 0, g = 0, b = 0;
+        for (let i = 0; i < px.length; i += 4) { r += px[i]; g += px[i + 1]; b += px[i + 2]; }
+        const n = px.length / 4;
+        r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+        const max = Math.max(r, g, b, 1);
+        const boost = 200 / max;
+        document.documentElement.style.setProperty("--hero-glow",
+          "rgba(" + Math.min(255, Math.round(r * boost)) + "," + Math.min(255, Math.round(g * boost)) + "," + Math.min(255, Math.round(b * boost)) + ",0.12)");
+      } catch (err) { /* tainted canvas: keep the default glow */ }
+    }
+    const heroImg = hero.querySelector(".hero-bg img");
+    if (heroImg) {
+      if (heroImg.complete && heroImg.naturalWidth) tintFrom(heroImg);
+      else heroImg.addEventListener("load", () => tintFrom(heroImg), { once: true });
+    }
   })();`;
 }
 
@@ -8699,6 +8759,56 @@ function renderHeroView(data, show) {
   };
 }
 
+// Overdue regulars for the upcoming show's "on the table" teaser: songs that
+// usually run every N shows and are now well past that. Pure data, no invention.
+function computeOnTheTable(data) {
+  // "Plays about 1-in-N shows and it's been well past N": recent-frequency
+  // regulars (last-100 rate) sitting far beyond their usual gap.
+  return (data.catalog || [])
+    .filter((song) => (song.l100 || 0) >= 6 && (song.effectiveSlp || 0) >= 20)
+    .map((song) => ({ song, usualGap: 100 / song.l100, ratio: song.effectiveSlp / (100 / song.l100) }))
+    .filter((entry) => entry.ratio >= 2)
+    .sort((a, b) => b.ratio - a.ratio)
+    .slice(0, 3);
+}
+
+// The upcoming show as a hero view: identity + stream links on the left, a
+// data-driven "on the table" paragraph where the setlist will land, the show
+// photo (when the venue shot exists) on the right.
+function renderUpcomingHeroView(data, upcoming, isTonight) {
+  const iso = upcoming.isoDate || "";
+  const weekday = weekdayName(iso);
+  const longDate = formatLongDate(iso || upcoming.date);
+  const ariaHeading = escapeAttr(`${upcoming.date} ${upcoming.venue}, ${upcoming.location}`);
+  const chips = [
+    `<a class="sc-chip sc-chip-primary" href="https://nugs.net/widespreadpanic" target="_blank" rel="noopener noreferrer"><svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path d="M1.5 1.2c0-.66.72-1.07 1.29-.73l8 4.8a.85.85 0 0 1 0 1.46l-8 4.8A.85.85 0 0 1 1.5 10.8V1.2Z" fill="currentColor"/></svg>Watch on nugs.net</a>`,
+    `<a class="sc-chip sc-chip-glass" href="https://twitch.tv/widespreadpanichq" target="_blank" rel="noopener noreferrer">Twitch audio</a>`,
+    `<a class="sc-chip sc-chip-glass" href="https://www.youtube.com/user/WidespreadPanicMusic" target="_blank" rel="noopener noreferrer">YouTube</a>`,
+    upcoming.sourceUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(upcoming.sourceUrl)}">Official page</a>` : ""
+  ].filter(Boolean).join("");
+  const table = computeOnTheTable(data);
+  const tableSentences = table.map(({ song, usualGap }) =>
+    `<b>${escapeHtml(song.title)}</b> runs about every ${Math.round(usualGap)} shows and it's been ${formatNumber(song.effectiveSlp)}`);
+  const tableProse = table.length
+    ? `<p class="hero-table-note"><span class="sc-label">On the table</span>${tableSentences.join(". ")}. The setlist posts here after the show, verified against the official page.</p>`
+    : `<p class="hero-table-note"><span class="sc-label">On deck</span>The setlist posts here after the show, verified against the official page.</p>`;
+  const credit = upcoming.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(upcoming.photoCredit)}</figcaption>` : "";
+  const photo = upcoming.image
+    ? `<figure class="hero-photo"><img src="${escapeAttr(upcoming.image)}" alt="${escapeAttr(`${upcoming.date} ${upcoming.location}`)}" crossorigin="anonymous" decoding="async">${credit}</figure>`
+    : "";
+  return {
+    iso,
+    ariaHeading,
+    lock: `<time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}${isTonight ? ' · <span class="hero-tonight">Tonight</span>' : ""}</time>
+        <h2 class="sc-city">${escapeHtml(upcoming.location)}</h2>
+        <span class="sc-venue">${escapeHtml(upcoming.venue)}</span>
+        <span class="sc-chips">${chips}</span>`,
+    music: tableProse,
+    media: `<div class="hero-media">${photo}</div>`,
+    ticker: ""
+  };
+}
+
 function renderHomeHero(data) {
   const posted = data.setlists || [];
   const featured = posted[0];
@@ -8708,34 +8818,49 @@ function renderHomeHero(data) {
     if (entry.venue === featured.venue && entry.location === featured.location) runShows.push(entry);
     else break;
   }
-  const views = runShows.map((entry) => ({ show: entry, view: renderHeroView(data, entry) }));
+  const views = runShows.map((entry) => ({ show: entry, view: renderHeroView(data, entry), kind: "night" }));
+  const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
+  let upcoming = preview || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (featured.isoDate || ""));
+  if (upcoming) {
+    const extra = data.showOverrides?.[upcoming.isoDate] || {};
+    upcoming = { ...upcoming, image: extra.image || upcoming.image, bgImage: extra.bgImage || upcoming.bgImage, photoCredit: extra.photoCredit || upcoming.photoCredit };
+    views.push({ show: upcoming, view: renderUpcomingHeroView(data, upcoming, Boolean(preview)), kind: "upcoming" });
+  }
+
   const slot = (kind) => views.map(({ view }, index) =>
     `<div class="hv${index === 0 ? " is-active" : ""}" data-view="${escapeAttr(view.iso)}"${index === 0 ? "" : " hidden"}>${view[kind]}</div>`
   ).join("");
 
-  // Night cards (every non-featured run night) swap that show's view into the hero.
-  const nightCards = views.slice(1).map(({ show: entry, view }) => {
+  // One card per view (featured included, hidden while active): the rail always
+  // shows "the other nights" plus the upcoming show.
+  const cards = views.map(({ show: entry, view, kind }, index) => {
+    if (kind === "upcoming") {
+      const upDow = weekdayName(entry.isoDate || "").slice(0, 3).toUpperCase();
+      return `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false">
+        <time class="sc-date" datetime="${escapeAttr(entry.isoDate || "")}">${escapeHtml(entry.date)}</time>
+        <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}</small></span>
+        <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
+      </button>`;
+    }
     let night = "";
     try { const run = tourRunInfo(data.tourDates || [], entry); if (run && run.length > 1) night = `Night ${run.number}`; } catch {}
-    const bgStyle = entry.image ? ` style="background-image: linear-gradient(90deg, rgba(10,10,12,0.88) 30%, rgba(10,10,12,0.55)), url('${escapeAttr(entry.image)}')"` : "";
-    return `<button type="button" class="hero-card${entry.image ? " has-photo" : ""}" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false"${bgStyle}>
+    return `<button type="button" class="hero-card" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false"${index === 0 ? " hidden" : ""}>
       <time class="sc-date" datetime="${escapeAttr(entry.isoDate)}">${escapeHtml(entry.date)}</time>
       <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${night ? ` · ${night}` : ""}</small></span>
       <span class="hc-go" aria-hidden="true">→</span>
     </button>`;
   }).join("");
-  const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
-  const upcoming = preview || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (featured.isoDate || ""));
-  const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
-  const upBg = upcoming && upcoming.image ? ` style="background-image: linear-gradient(90deg, rgba(10,10,12,0.88) 30%, rgba(10,10,12,0.55)), url('${escapeAttr(upcoming.image)}')"` : "";
-  const upcomingCard = upcoming ? `<a class="hero-card hero-card-upcoming${upcoming.image ? " has-photo" : ""}" href="${escapeAttr(upcoming.sourceUrl || "/#tour-dates")}"${upBg}>
-      <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
-      <span class="hc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
-      <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
-    </a>` : "";
 
-  const bgSrc = featured.bgImage || featured.image;
-  const bg = bgSrc ? `<div class="hero-bg" aria-hidden="true"><img src="${escapeAttr(bgSrc)}" alt="" decoding="async"></div>` : "";
+  const bgFor = (entry) => entry.bgImage || entry.image || "";
+  const bgLayers = views.map(({ show: entry, view }, index) => {
+    const src = bgFor(entry) || bgFor(featured);
+    return src ? `<img class="hero-bg-layer${index === 0 ? " is-active" : ""}" data-view-bg="${escapeAttr(view.iso)}" src="${escapeAttr(src)}" alt="" crossorigin="anonymous"${index === 0 ? "" : ' loading="lazy"'} decoding="async">` : "";
+  }).join("");
+  const bg = bgLayers ? `<div class="hero-bg" aria-hidden="true">${bgLayers}</div>` : "";
+  const bgSrc = bgFor(featured);
+  // The blurred backdrop continues past the hero as a mirrored echo, so the next
+  // section fades out of the same light instead of cutting to flat black.
+  const echo = bgSrc ? `<div class="hero-echo" aria-hidden="true"><img src="${escapeAttr(bgSrc)}" alt="" crossorigin="anonymous" loading="lazy" decoding="async"></div>` : "";
   return `<section class="home-hero${featured.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${views[0].view.ariaHeading}">
     ${bg}
     <div class="hero-inner">
@@ -8745,13 +8870,12 @@ function renderHomeHero(data) {
       <div class="hero-rail">
         <div class="hero-slot hero-ticker-slot">${slot("ticker")}</div>
         <div class="hero-cards">
-          ${nightCards}
-          ${upcomingCard}
-          <a class="hero-all" href="/#setlists">All ${escapeHtml(String(data.site.year))} setlists <span aria-hidden="true">→</span></a>
+          ${cards}
+          <a class="link-quiet hero-all" href="/#setlists">All ${escapeHtml(String(data.site.year))} setlists <span aria-hidden="true">→</span></a>
         </div>
       </div>
     </div>
-  </section>`;
+  </section>${echo}`;
 }
 
 function renderLatestSetlist(data) {
@@ -12878,13 +13002,20 @@ body.stagelight .show-entry[open] .sc-lockup, body.stagelight .sc-body { positio
    two-column setlist + pulls) without dynamic text shrinking. */
 body.stagelight .home-hero { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: calc(-1 * (66px + var(--sl-breadcrumb-h, 37px))); overflow: hidden; isolation: isolate; }
 body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
-body.stagelight .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.55; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); }
+body.stagelight .hero-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); transition: opacity 0.6s ease; }
+body.stagelight .hero-bg img.is-active { opacity: 0.55; }
 body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.6) 52%, rgba(11,11,12,0.92) 84%, #0b0b0d 100%); }
+/* Mirrored continuation of the hero backdrop under the fold + tinted spotlight. */
+body.stagelight .hero-bg::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(58% 46% at 68% 18%, var(--hero-glow, rgba(255,186,128,0.10)), transparent 72%); }
+body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 320px; margin-bottom: -320px; overflow: hidden; pointer-events: none; z-index: 0; }
+body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.35; }
+body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(11,11,13,0.55) 0%, rgba(11,11,13,0.85) 55%, #0b0b0d 100%); }
+body.stagelight main > section { position: relative; z-index: 1; }
 body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) max(28px, calc((100% - 1400px) / 2)) 38px; }
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
    setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
    below the image line so the left column breathes. */
-body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 26px; align-items: start; }
+body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 20px; align-items: start; }
 body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
 body.stagelight .hero-slot, body.stagelight .hero-rail { min-width: 0; }
 body.stagelight .hero-lock-slot { grid-column: 1; grid-row: 1; align-self: center; }
@@ -12900,6 +13031,13 @@ body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-di
 body.stagelight .home-hero .sc-venue { display: block; margin-top: 10px; font-size: 16px; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
 body.stagelight .hero-sets { display: grid; gap: 12px; }
+/* No divider: the base .sc-sets card styling doesn't apply in the hero — the two
+   columns start on one shared line and alignment does the separating. */
+body.stagelight .home-hero .sc-sets { border-top: 0; margin-top: 0; padding-top: 0; }
+body.stagelight .hero-table-note { margin: 0; max-width: 56ch; font-size: 15.5px; line-height: 1.65; color: var(--sl-muted); }
+body.stagelight .hero-table-note b { color: var(--sl-ink); font-weight: 620; }
+body.stagelight .hero-table-note .sc-label { display: block; margin-bottom: 10px; }
+body.stagelight .hero-tonight { color: #d4514f; }
 body.stagelight .home-hero .sc-row { grid-template-columns: 52px minmax(0, 1fr); gap: 14px; }
 body.stagelight .hero-footnote { margin: 14px 0 0; font-size: 13px; color: var(--sl-faint); }
 body.stagelight .hero-stats-btn {
@@ -12928,34 +13066,41 @@ body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; obj
 body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
 /* Ticker: slow continuous crawl, pauses on hover; static scroll under 900px / reduced motion. */
 body.stagelight .hero-ticker { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
-body.stagelight .tk-track { display: inline-flex; align-items: center; gap: 18px; padding: 6px 2px; white-space: nowrap; width: max-content; animation: tk-crawl 46s linear infinite; }
+body.stagelight .tk-track { display: inline-flex; align-items: center; gap: 18px; padding: 4px 2px 8px; white-space: nowrap; width: max-content; animation: tk-crawl 46s linear infinite; }
 body.stagelight .hero-ticker:hover .tk-track { animation-play-state: paused; }
 @keyframes tk-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 body.stagelight .tk-item { display: inline-flex; align-items: baseline; gap: 7px; font-size: 13px; }
 body.stagelight .tk-item em { font-style: normal; font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .tk-item b { font-weight: 600; color: var(--sl-ink); }
-body.stagelight .tk-item .rarity-symbol { margin-right: 0; }
+body.stagelight .tk-item svg { width: 15px; height: auto; flex: none; align-self: center; }
+body.stagelight .tk-item svg polygon, body.stagelight .tk-item svg circle { fill: var(--sl-muted); }
+body.stagelight .tk-item svg.rarity-ultra polygon { fill: #b9c0cc; }
+body.stagelight .tk-item svg.rarity-hyper polygon, body.stagelight .tk-item svg.rarity-bustout polygon, body.stagelight .tk-item svg.rarity-mega polygon { fill: #d9a84e; }
 body.stagelight .tk-note b { font-weight: 500; color: var(--sl-muted); }
 body.stagelight .tk-sep { color: var(--sl-faint); opacity: 0.5; }
 @media (prefers-reduced-motion: reduce) { body.stagelight .tk-track { animation: none; } body.stagelight .hero-ticker { overflow-x: auto; } }
 /* Right-rail cards */
-body.stagelight .hero-cards { margin-top: 14px; display: grid; gap: 10px; }
+body.stagelight .hero-cards { margin-top: 12px; display: grid; gap: 10px; }
+body.stagelight .hero-card[hidden] { display: none; }
 body.stagelight .hero-card {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
   width: 100%; text-align: left; cursor: pointer; font: inherit;
   padding: 13px 18px; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md);
   background: rgba(255,255,255,0.035); color: var(--sl-ink); transition: border-color 0.15s ease, transform 0.18s ease, filter 0.18s ease;
 }
-body.stagelight .hero-card.has-photo { background-size: cover; background-position: center 30%; }
-body.stagelight .hero-card:hover { border-color: var(--sl-line-strong); transform: translateY(-1px); filter: brightness(1.15); }
-body.stagelight .hero-card.is-active { border-color: var(--sl-muted); box-shadow: 0 0 0 1px var(--sl-muted); }
+body.stagelight .hero-card:hover { background: rgba(255,255,255,0.07); border-color: var(--sl-line-strong); transform: translateY(-1px); }
+
 body.stagelight .hc-place { display: flex; flex-direction: column; min-width: 0; }
 body.stagelight .hc-place strong { font-size: 15px; font-weight: 620; }
 body.stagelight .hc-place small { font-size: 12.5px; color: var(--sl-faint); }
 body.stagelight .hc-go { color: var(--sl-faint); }
 body.stagelight .hero-card-upcoming { border-style: dashed; }
-body.stagelight .hero-all { display: flex; justify-content: center; gap: 8px; padding: 10px; border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-md); font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); transition: color 0.15s ease, background 0.15s ease; }
-body.stagelight .hero-all:hover { color: var(--sl-ink); background: rgba(255,255,255,0.05); }
+/* Quiet link utility — bare text action, used sparingly (tertiary actions only). */
+body.stagelight .link-quiet { display: inline-flex; align-items: baseline; gap: 7px; font-size: 14px; color: var(--sl-muted); transition: color 0.15s ease; }
+body.stagelight .link-quiet span { transition: transform 0.18s ease; }
+body.stagelight .link-quiet:hover { color: var(--sl-ink); }
+body.stagelight .link-quiet:hover span { transform: translateX(2px); }
+body.stagelight .hero-all { justify-self: end; margin-top: 4px; }
 /* Song stats: in-place expansion. The photo and the stats panel share one slot
    (.hero-media, sized by the photo cap); toggling .stats-open crossfades the
    photo away and slides the panel up into its place — cards stay put, hero
@@ -13648,13 +13793,13 @@ body.stagelight .home-nav {
   transition: top 0.28s ease;
   display: flex; flex-wrap: wrap; align-items: center; gap: 2px 7px;
   width: 100vw; margin: 0 calc(50% - 50vw);
-  padding: 7px max(28px, calc((100% - 1400px) / 2));
+  padding: 4px max(28px, calc((100% - 1400px) / 2));
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: rgba(11,11,13,0.62); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
 }
 body.stagelight.nav-hidden .home-nav { top: 0; }
 body.stagelight .home-nav a {
-  font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--sl-faint); text-decoration: none; padding: 3px 0;
   transition: color 0.16s ease;
 }

@@ -584,7 +584,10 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(heroCard, `datetime="${feat?.isoDate || ""}"`, "Hero date matches generated site data");
   assertIncludes(heroCard, `<h2 class="sc-city">${escapeHtml(feat?.location || "")}</h2>`, "Hero city matches generated site data");
   assertIncludes(heroCard, '<span class="sc-venue">', "Hero shows the venue line");
-  record("Hero keeps a full-bleed blurred backdrop of the featured photo", heroCard.includes('<div class="hero-bg"') && (!feat?.image || heroCard.includes(`class="hero-bg" aria-hidden="true"><img src="${escapeHtml(feat.image)}"`)), feat?.image || "");
+  record("Hero keeps a full-bleed blurred backdrop with one layer per view",
+    heroCard.includes('<div class="hero-bg"') && heroCard.includes('hero-bg-layer is-active')
+    && (!feat?.image || new RegExp(`hero-bg-layer is-active" data-view-bg="${feat.isoDate}"`).test(heroCard)),
+    feat?.image || "");
   record("Hero frames the sharp photo top-right in the lockup", !feat?.image || heroCard.includes('<figure class="hero-photo">'), feat?.image || "");
   const heroOnly = heroCard.slice(heroCard.indexOf('<section class="home-hero'), heroCard.indexOf('</section>') + '</section>'.length);
   record("Hero is a section, not the collapsible setlist card", heroOnly.startsWith('<section class="home-hero') && !heroOnly.includes('class="show-entry') && !heroOnly.includes('sc-chev'), "no card chrome (the inner Song-stats <details> is fine)");
@@ -612,9 +615,10 @@ async function checkLatestSetlist(html, siteData) {
     assertIncludes(heroOnly, `data-view="${night.isoDate}"`, `Hero carries a full view for run night ${night.isoDate}`);
     assertIncludes(html, `id="setlist-${night.isoDate}"`, `Feed card carries the #setlist-${night.isoDate} anchor`);
   }
-  record("Night cards carry an opaque photo backdrop", runNights.length === 0 || /data-view-btn="[^"]+"[^>]*style="background-image/.test(heroOnly), "night-card photo bg present");
-  record("Hero right rail closes with the All-setlists button",
-    heroOnly.includes('class="hero-all"') && heroOnly.includes(`All ${siteData.site.year} setlists`), "hero-all present");
+  record("Cards are flat glass (photo backdrops reverted per owner)", !/data-view-btn="[^"]+"[^>]*style="background-image/.test(heroOnly), "no card background-image");
+  record("Featured night has its own card, hidden while active", new RegExp(`data-view-btn="${feat?.isoDate}"[^>]* hidden`).test(heroOnly), "featured card present + hidden");
+  record("Hero right rail closes with the quiet all-setlists link",
+    heroOnly.includes('class="link-quiet hero-all"') && heroOnly.includes(`All ${siteData.site.year} setlists`), "link-quiet hero-all present");
   record("Song stats expands in place: trigger button + per-view panel with rarity symbols + shimmer ring",
     heroOnly.includes("data-stats-open") && new RegExp(`id="hero-stats-panel-${feat?.isoDate}"`).test(heroOnly) && heroOnly.includes('class="hero-media"')
     && heroOnly.includes('class="ltp-list"') && /hero-stats-panel[\s\S]*?rarity-symbol/.test(heroOnly) && heroOnly.includes('class="hsb-ring"'),
@@ -630,7 +634,10 @@ async function checkLatestSetlist(html, siteData) {
       record("Upcoming card flags the next scheduled show", heroOnly.includes('class="ns-flag"') && !heroOnly.includes("is-tonight"), upcoming.isoDate || "");
     }
   }
-  record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));
+  record("Upcoming view features the official stream links (nugs / Twitch / YouTube)",
+    heroOnly.includes("https://nugs.net/widespreadpanic") && heroOnly.includes("https://twitch.tv/widespreadpanichq") && heroOnly.includes("youtube.com/user/WidespreadPanicMusic"),
+    "official stream links present");
+  record("Twitch appears only as the official widespreadpanichq channel", !html.replace(/twitch\.tv\/widespreadpanichq/g, "").includes("twitch.tv"), "no stray twitch links");
 
   // ---- Old hero-swap / bento scaffolding is fully gone ----
   record(
