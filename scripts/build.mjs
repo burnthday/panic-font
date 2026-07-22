@@ -8470,22 +8470,25 @@ function renderSheetBentos(data) {
 </section>`;
 
   const scrawlPool = [...shelfRows, ...purgRows, ...woodRows].map((row) => row.title.toUpperCase());
-  // Five sheets pinned side by side. Each column ends in its "encore": the
-  // hand-picked greats (Alex), pinned to the sheet bottom so exactly two rows
-  // surface below the cards. Rendered twice (soft + sharp layers, masked
-  // top/bottom) so one sheet reads blurrier up top and crisper at the base.
-  const encoreSongs = ["HAVIN' A BALL", "RAISE THE ROOF", "BALL OF CONFUSION", "STIR IT UP", "SYMPATHY FOR THE DEVIL", "WEST VIRGINIA", "L.A.", "BAND ON THE RUN"];
+  // ONE element: five handwritten setlists (20 real songs each, drawn from the
+  // Shelf/Purgatory/Woodshed), each ending in its "encore" — Alex's greats
+  // written as the trailing lines so they hang off the bottom of that column.
+  const encorePerCol = [
+    ["RAISE THE ROOF", "WEST VIRGINIA"],
+    ["L.A.", "STIR IT UP"],
+    ["SYMPATHY FOR THE DEVIL"],
+    ["HAVIN' A BALL"],
+    ["BALL OF CONFUSION"]
+  ];
   const sheetCols = Array.from({ length: 5 }, (unused, index) => {
-    const titles = scrawlPool.slice(index * 26, index * 26 + 26);
-    return `<div class="ss-col">${titles.map((title) => escapeHtml(title)).join("<br>")}</div>`;
+    const titles = scrawlPool.slice(index * 20, index * 20 + 20);
+    const body = titles.map((title) => `<span class="ss-song">${escapeHtml(title)}</span>`).join("");
+    const hang = encorePerCol[index].map((title) => `<span class="ss-song ss-hang">${escapeHtml(title)}</span>`).join("");
+    return `<div class="ss-col">${body}${hang}</div>`;
   }).join("");
-  // The encore (Alex's greats) is one full-width band of two rows at the foot of
-  // the sheet — never overlaid per-column (that overlapped songs and wrapped).
-  const encoreBand = [encoreSongs.slice(0, 4), encoreSongs.slice(4, 8)]
-    .map((row) => `<div class="ss-enc-row">${row.map((title) => `<span>${escapeHtml(title)}</span>`).join("")}</div>`).join("");
   return `${renderSheetKey(data)}
   <div class="bento-region">
-  <div class="sheet-scrawl" aria-hidden="true"><div class="ss-layer ss-soft">${sheetCols}</div><div class="ss-layer ss-sharp">${sheetCols}</div><div class="ss-encore">${encoreBand}</div></div>
+  <div class="sheet-scrawl" aria-hidden="true">${sheetCols}</div>
   <div class="bento-grid" aria-label="Reference sheets">
     ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
@@ -13738,43 +13741,30 @@ body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink
 /* One continuous sheet behind the three bentos: the scrawl runs under the
    glass (barely there), then its last line comes into focus below the cards
    (the Webflow move). Cards sit above it. */
-body.stagelight .bento-region { position: relative; padding-top: 60px; padding-bottom: 100px; }
+body.stagelight .bento-region { position: relative; padding-top: 64px; padding-bottom: 118px; }
 body.stagelight .bento-region .bento-grid { position: relative; z-index: 1; }
-/* Five setlists at a slight angle behind the bentos. Two identical layers make
-   the vertical focus ramp: the soft copy owns the top (blurred), the sharp
-   copy fades in toward the base, where each sheet's encore surfaces. */
+/* ONE element: five handwritten setlists at a slight angle behind the bentos.
+   Spans the whole region so it shows above, below, and (the cards being glass)
+   faintly through them. Columns are staggered; the greats hang off the bottom. */
 body.stagelight .sheet-scrawl {
-  position: absolute; inset: -10px -14px; z-index: 0; overflow: hidden;
+  position: absolute; inset: -6px -14px -6px -14px; z-index: 0; overflow: hidden;
+  display: flex; gap: 44px; padding: 0 18px; align-items: flex-start;
+  font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.04em;
   pointer-events: none; user-select: none; transform: rotate(-2deg);
+  filter: blur(1.5px);
 }
-body.stagelight .ss-layer {
-  position: absolute; inset: 0; display: flex; gap: 46px; padding: 0 16px;
-  font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.05em;
-  font-size: 17px; line-height: 1.72; color: rgba(255,255,255,0.09);
-}
-body.stagelight .ss-col { position: relative; flex: 1; min-width: 0; overflow: hidden; }
-/* Both column layers fade OUT before the base so the encore band below has clear
-   space — no more songs printing on top of the encore. */
-body.stagelight .ss-soft {
-  filter: blur(2.2px);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 66%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 66%);
-}
-body.stagelight .ss-sharp {
-  filter: blur(0.2px);
-  -webkit-mask-image: linear-gradient(180deg, transparent 30%, #000 58%, transparent 82%);
-  mask-image: linear-gradient(180deg, transparent 30%, #000 58%, transparent 82%);
-}
-/* Encore band: two full-width rows of Alex's greats at the foot of the sheet.
-   Straight (counter-rotated out of the sheet's tilt), crisp, spaced, no wrap. */
-body.stagelight .ss-encore {
-  position: absolute; left: 0; right: 0; bottom: 8px; z-index: 1;
-  display: flex; flex-direction: column; gap: 12px; align-items: center;
-  transform: rotate(2deg);
-  font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.05em;
-}
-body.stagelight .ss-enc-row { display: flex; justify-content: center; gap: clamp(22px, 4vw, 60px); white-space: nowrap; }
-body.stagelight .ss-enc-row span { font-size: 21px; color: rgba(255,255,255,0.32); }
+body.stagelight .ss-col { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+body.stagelight .ss-song { display: block; font-size: 17px; line-height: 1.74; white-space: nowrap; color: rgba(255,255,255,0.085); }
+/* The encore lines hang off the bottom: brighter, a touch bigger, pushed down. */
+body.stagelight .ss-hang { color: rgba(255,255,255,0.24); font-size: 19px; margin-top: 8px; }
+body.stagelight .ss-hang:first-of-type { margin-top: 22px; }
+/* Stagger the five sheets so their bottoms (and the hanging greats) trail at
+   different heights, like five sheets pinned at slightly different levels. */
+body.stagelight .ss-col:nth-child(1) { transform: translateY(6px); }
+body.stagelight .ss-col:nth-child(2) { transform: translateY(30px); }
+body.stagelight .ss-col:nth-child(3) { transform: translateY(-4px); }
+body.stagelight .ss-col:nth-child(4) { transform: translateY(44px); }
+body.stagelight .ss-col:nth-child(5) { transform: translateY(18px); }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
