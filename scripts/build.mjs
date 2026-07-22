@@ -8475,17 +8475,17 @@ function renderSheetBentos(data) {
   // surface below the cards. Rendered twice (soft + sharp layers, masked
   // top/bottom) so one sheet reads blurrier up top and crisper at the base.
   const encoreSongs = ["HAVIN' A BALL", "RAISE THE ROOF", "BALL OF CONFUSION", "STIR IT UP", "SYMPATHY FOR THE DEVIL", "WEST VIRGINIA", "L.A.", "BAND ON THE RUN"];
-  const encorePer = [2, 2, 2, 1, 1];
-  let encoreAt = 0;
   const sheetCols = Array.from({ length: 5 }, (unused, index) => {
     const titles = scrawlPool.slice(index * 26, index * 26 + 26);
-    const encore = encoreSongs.slice(encoreAt, encoreAt + encorePer[index]);
-    encoreAt += encorePer[index];
-    return `<div class="ss-col"><div class="ss-songs">${titles.map((title) => escapeHtml(title)).join("<br>")}</div><div class="ss-encore">${encore.map((title) => escapeHtml(title)).join("<br>")}</div></div>`;
+    return `<div class="ss-col">${titles.map((title) => escapeHtml(title)).join("<br>")}</div>`;
   }).join("");
+  // The encore (Alex's greats) is one full-width band of two rows at the foot of
+  // the sheet — never overlaid per-column (that overlapped songs and wrapped).
+  const encoreBand = [encoreSongs.slice(0, 4), encoreSongs.slice(4, 8)]
+    .map((row) => `<div class="ss-enc-row">${row.map((title) => `<span>${escapeHtml(title)}</span>`).join("")}</div>`).join("");
   return `${renderSheetKey(data)}
   <div class="bento-region">
-  <div class="sheet-scrawl" aria-hidden="true"><div class="ss-layer ss-soft">${sheetCols}</div><div class="ss-layer ss-sharp">${sheetCols}</div></div>
+  <div class="sheet-scrawl" aria-hidden="true"><div class="ss-layer ss-soft">${sheetCols}</div><div class="ss-layer ss-sharp">${sheetCols}</div><div class="ss-encore">${encoreBand}</div></div>
   <div class="bento-grid" aria-label="Reference sheets">
     ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
@@ -13131,7 +13131,12 @@ body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; o
 body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
 /* Blanket stacking rule — MUST exclude anything that positions itself (this
    silently flattened the fixed bento popups once already). */
-body.stagelight main > *:not(.hero-echo):not(.bento-panel) { position: relative; z-index: 1; }
+/* Blanket stacking rule — MUST exclude every element that positions itself, or
+   it silently out-specifies their own rules. This has flattened the sticky
+   breadcrumb THREE times now (blanket wins the specificity race and forces
+   position:relative). .home-nav and .bento-panel are excluded for exactly that
+   reason; do not remove them. */
+body.stagelight main > *:not(.hero-echo):not(.bento-panel):not(.home-nav) { position: relative; z-index: 1; }
 body.stagelight main > .home-nav { position: sticky; z-index: 55; }
 body.stagelight .hero-inner { --hero-pad: max(28px, calc((100vw - 1400px) / 2)); position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) var(--hero-pad) 38px; }
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
@@ -13748,17 +13753,28 @@ body.stagelight .ss-layer {
   font-size: 17px; line-height: 1.72; color: rgba(255,255,255,0.09);
 }
 body.stagelight .ss-col { position: relative; flex: 1; min-width: 0; overflow: hidden; }
-body.stagelight .ss-encore { position: absolute; left: 0; right: 0; bottom: 4px; line-height: 2.35; color: rgba(255,255,255,0.24); }
+/* Both column layers fade OUT before the base so the encore band below has clear
+   space — no more songs printing on top of the encore. */
 body.stagelight .ss-soft {
   filter: blur(2.2px);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 78%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 78%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 66%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 66%);
 }
 body.stagelight .ss-sharp {
   filter: blur(0.2px);
-  -webkit-mask-image: linear-gradient(180deg, transparent 32%, #000 74%, #000 100%);
-  mask-image: linear-gradient(180deg, transparent 32%, #000 74%, #000 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 30%, #000 58%, transparent 82%);
+  mask-image: linear-gradient(180deg, transparent 30%, #000 58%, transparent 82%);
 }
+/* Encore band: two full-width rows of Alex's greats at the foot of the sheet.
+   Straight (counter-rotated out of the sheet's tilt), crisp, spaced, no wrap. */
+body.stagelight .ss-encore {
+  position: absolute; left: 0; right: 0; bottom: 8px; z-index: 1;
+  display: flex; flex-direction: column; gap: 12px; align-items: center;
+  transform: rotate(2deg);
+  font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.05em;
+}
+body.stagelight .ss-enc-row { display: flex; justify-content: center; gap: clamp(22px, 4vw, 60px); white-space: nowrap; }
+body.stagelight .ss-enc-row span { font-size: 21px; color: rgba(255,255,255,0.32); }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
