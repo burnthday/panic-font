@@ -5563,24 +5563,37 @@ function renderSongsIndex(data, slugMap) {
   // dormant, not rare-when-played), so board status overrides the tier. Owner QA.
   const shelfKeys = new Set([...(data.boards?.shelfOriginals || []), ...(data.boards?.shelfCovers || [])].map((row) => row.key));
   const purgatoryKeys = new Set([...(data.boards?.purgatoryOriginals || []), ...(data.boards?.purgatoryCovers || [])].map((row) => row.key));
+  const rotationKeys = new Set([...(data.boards?.rotationOriginals || []), ...(data.boards?.rotationCovers || [])].map((row) => row.key));
+  const rotationLimit = data.rules?.rotationSlpLimit || 200;
   const rows = catalog.map((song) => {
     const rarity = calculateRarity(song);
     const hasBestGuess = data.bestGuessByKey?.has(song.key);
-    // Status precedence: this-tour keeps its current bustout/rarity treatment;
-    // else Shelf, else Purgatory, else the calculated rarity label.
-    let statusTier = rarity.tier;
-    let statusMarkup;
-    if (song.playedThisTour) {
-      statusMarkup = `<span class="sr-onsheet">this tour</span>${escapeHtml(rarity.label)}`;
-    } else if (shelfKeys.has(song.key)) {
-      statusTier = "shelf";
-      statusMarkup = '<span class="sr-board sr-board-shelf">Shelf</span>';
-    } else if (purgatoryKeys.has(song.key)) {
-      statusTier = "purgatory";
-      statusMarkup = '<span class="sr-board sr-board-purgatory">Purgatory</span>';
-    } else {
-      statusMarkup = escapeHtml(rarity.label);
-    }
+    // Two independent axes now, per owner feedback:
+    //   STATUS  = board state (In Rotation / Shelf / Purgatory) — where the song lives.
+    //   RARITY  = frequency tier (Common…Hyper Rare, or a Bustout) — how rare when played.
+    // Shelf/Purgatory intentionally suppress the RARITY column: a dormant song is not
+    // "rare when played", it's parked, so a frequency tier there misleads (owner QA).
+    // Precedence: In Rotation (active or on this tour's sheet) wins, then Shelf, then
+    // Purgatory; the field fallback keeps Unclassified-type songs classified too.
+    let statusTier;
+    if (song.playedThisTour || rotationKeys.has(song.key)) statusTier = "rotation";
+    else if (shelfKeys.has(song.key)) statusTier = "shelf";
+    else if (purgatoryKeys.has(song.key)) statusTier = "purgatory";
+    else if ((song.effectiveSlp ?? Infinity) < rotationLimit) statusTier = "rotation";
+    else if ((song.total || 0) === 1) statusTier = "purgatory";
+    else if ((song.total || 0) > 1) statusTier = "shelf";
+    else statusTier = "rotation";
+    const statusLabel = statusTier === "shelf" ? "Shelf" : statusTier === "purgatory" ? "Purgatory" : "In Rotation";
+    const statusMarkup = `<span class="sr-status sr-status-${statusTier}">${statusLabel}</span>`;
+    // RARITY: symbol + label, but only for In Rotation songs. Shelf/Purgatory show a
+    // muted dash — no frequency tier on a parked song.
+    const rarityMarkup = statusTier === "rotation"
+      ? `<span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}`
+      : '<span class="sr-none" aria-hidden="true">—</span><span class="sr-sr-only">No rarity — parked</span>';
+    // THIS TOUR: play count when it's on the current sheet, otherwise a muted dash.
+    const tourMarkup = song.playedThisTour
+      ? `${formatNumber(song.tourCount || 0)}<small>this tour</small>`
+      : '<span class="sr-none" aria-hidden="true">—</span><span class="sr-sr-only">Not played this tour</span>';
     // Per-row resource indicators. These are REAL, separate <a> elements — the row
     // itself is one big <a>, and nested anchors are invalid HTML. They live in a
     // dedicated grid column (see .song-row-wrap / .sr-resources in renderStagelightCss)
@@ -5602,7 +5615,9 @@ function renderSongsIndex(data, slugMap) {
       <a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" tabindex="0">
         <span class="sr-title">${escapeHtml(song.title)}</span>
         <span class="sr-type">${escapeHtml(song.type)}</span>
-        <span class="sr-tier">${statusMarkup}</span>
+        <span class="sr-status-cell">${statusMarkup}</span>
+        <span class="sr-rarity">${rarityMarkup}</span>
+        <span class="sr-tour">${tourMarkup}</span>
         <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
       </a>
       <span class="sr-resources">${resChips.join("")}</span>
@@ -5628,7 +5643,7 @@ function renderSongsIndex(data, slugMap) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Songs</span></nav>
         <h1>Song Index</h1>
-        <p class="songs-deck">Every song the band has played.</p>
+        <p class="songs-deck">The master catalog. Every song the band has played, with its live status, rarity, and where to go deeper.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -5643,11 +5658,14 @@ function renderSongsIndex(data, slugMap) {
         </div>
         <button type="button" class="index-toggle" data-tour-filter aria-pressed="false">This tour</button>
         <button type="button" class="index-toggle" data-shelf-filter aria-pressed="false">Shelf</button>
+        <button type="button" class="index-toggle" data-purgatory-filter aria-pressed="false">Purgatory</button>
       </div>
       <div class="song-index-head" role="presentation" aria-hidden="true">
         <span class="sih-col">Title</span>
-        <span class="sih-col">Type</span>
-        <span class="sih-col">Status</span>
+        <span class="sih-col sih-type">Type</span>
+        <span class="sih-col sih-status">Status</span>
+        <span class="sih-col sih-rarity">Rarity</span>
+        <span class="sih-col sih-tour">This Tour</span>
         <span class="sih-col sih-more">More</span>
         <span class="sih-col sih-plays">Plays</span>
       </div>
@@ -5677,12 +5695,14 @@ function renderSongSearchScript() {
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
     const tourToggle = document.querySelector("[data-tour-filter]");
     const shelfToggle = document.querySelector("[data-shelf-filter]");
+    const purgatoryToggle = document.querySelector("[data-purgatory-filter]");
     const bestToggle = document.querySelector("[data-bestguess-filter]");
     let selectedType = "all";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
       const tourOnly = tourToggle && tourToggle.getAttribute("aria-pressed") === "true";
       const shelfOnly = shelfToggle && shelfToggle.getAttribute("aria-pressed") === "true";
+      const purgatoryOnly = purgatoryToggle && purgatoryToggle.getAttribute("aria-pressed") === "true";
       const bestOnly = bestToggle && bestToggle.getAttribute("aria-pressed") === "true";
       let shown = 0;
       rows.forEach((row) => {
@@ -5690,12 +5710,13 @@ function renderSongSearchScript() {
           && (selectedType === "all" || row.dataset.type === selectedType)
           && (!tourOnly || row.dataset.tour === "yes")
           && (!shelfOnly || row.dataset.tier === "shelf")
+          && (!purgatoryOnly || row.dataset.tier === "purgatory")
           && (!bestOnly || row.dataset.bestguess === "yes");
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      const filtered = q || selectedType !== "all" || tourOnly || shelfOnly || bestOnly;
+      const filtered = q || selectedType !== "all" || tourOnly || shelfOnly || purgatoryOnly || bestOnly;
       count.textContent = filtered ? shown + " of " + total + " songs" : baseLabel;
     };
     typeButtons.forEach((btn) => btn.addEventListener("click", () => {
@@ -5703,7 +5724,7 @@ function renderSongSearchScript() {
       typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
       apply();
     }));
-    [tourToggle, shelfToggle, bestToggle].forEach((btn) => btn && btn.addEventListener("click", () => {
+    [tourToggle, shelfToggle, purgatoryToggle, bestToggle].forEach((btn) => btn && btn.addEventListener("click", () => {
       btn.setAttribute("aria-pressed", btn.getAttribute("aria-pressed") === "true" ? "false" : "true");
       apply();
     }));
@@ -13492,7 +13513,11 @@ body.stagelight .index-select select option { color: #111; }
    row's content independently — columns never lined up. Fixed tracks make every
    independent row resolve identical column edges. Title flexes; type/status/plays
    are fixed; plays right-aligned. Owner QA: columns did not align across rows. */
-body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 96px 168px 150px 88px; --sr-gap: 16px; }
+/* Seven shared columns: TITLE | TYPE | STATUS | RARITY | THIS TOUR | RESOURCES | PLAYS.
+   STATUS (board state) and RARITY (frequency tier) are now separate axes per owner
+   feedback. RESOURCES is a reserved empty track in the row anchor that .sr-resources
+   overlays, so the whole row stays one clickable <a> while the chips are real siblings. */
+body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 82px 128px 148px 96px 138px 84px; --sr-gap: 16px; }
 body.stagelight .song-list { display: grid; gap: 1px; }
 /* Column-header row — mono/uppercase label idiom, sticky just under the sticky
    search bar (search sticks at top:78 and is ~48px tall, so ~128px lands it flush
@@ -13523,12 +13548,12 @@ body.stagelight .song-row {
   grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: var(--sr-cols);
   align-items: center; gap: var(--sr-gap); padding: 14px 10px; color: var(--sl-ink);
 }
-body.stagelight .sr-plays { grid-column: 5; }
+body.stagelight .sr-plays { grid-column: 7; }
 body.stagelight .song-row-wrap:hover { background: rgba(255,255,255,0.03); }
-/* Resource chips: quiet mono pills sitting in the reserved RESOURCES column, layered
-   above the row anchor (z-index) so each stays independently clickable + tabbable. */
+/* Resource chips: quiet mono pills sitting in the reserved RESOURCES column (6),
+   layered above the row anchor (z-index) so each stays independently clickable + tabbable. */
 body.stagelight .sr-resources {
-  grid-column: 4; grid-row: 1; z-index: 1; position: relative;
+  grid-column: 6; grid-row: 1; z-index: 1; position: relative;
   display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-self: start;
 }
 body.stagelight .sr-chip {
@@ -13540,25 +13565,43 @@ body.stagelight .sr-chip:hover { color: var(--sl-ink); border-color: var(--sl-mu
 body.stagelight .sr-chip:focus-visible { outline: 2px solid var(--sl-muted); outline-offset: 2px; }
 body.stagelight .sr-title { font-family: var(--sl-display); font-size: 15px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.stagelight .sr-type { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .sr-tier { display: flex; align-items: center; gap: 8px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-muted); }
-body.stagelight .sr-onsheet { font-size: 12px; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid rgba(212,81,79,0.5); color: var(--sl-ink); }
-/* Shelf / Purgatory board status — deliberately muted and distinct from the
-   colored rarity ladder, so a dormant song never reads as a rare-when-played one. */
-body.stagelight .sr-board { font-size: 11px; padding: 2px 9px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); }
-body.stagelight .sr-board-shelf { color: var(--sl-muted); background: rgba(255,255,255,0.04); }
-body.stagelight .sr-board-purgatory { color: var(--sl-faint); background: rgba(255,255,255,0.02); border-style: dashed; }
+/* STATUS column — board state pill. In Rotation carries the stage-red accent; Shelf
+   and Purgatory are deliberately muted so a parked song never reads as active. */
+body.stagelight .sr-status-cell { display: flex; align-items: center; }
+body.stagelight .sr-status { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); white-space: nowrap; }
+body.stagelight .sr-status-rotation { color: var(--sl-ink); border-color: rgba(212,81,79,0.5); }
+body.stagelight .sr-status-shelf { color: var(--sl-muted); background: rgba(255,255,255,0.04); }
+body.stagelight .sr-status-purgatory { color: var(--sl-faint); background: rgba(255,255,255,0.02); border-style: dashed; }
+/* RARITY column — frequency tier symbol + label, shown only for In Rotation songs;
+   Shelf/Purgatory show a muted dash (no frequency tier on a parked song). */
+body.stagelight .sr-rarity { display: flex; align-items: center; gap: 6px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .sr-rarity .rarity-symbol { min-width: 0; margin-right: 0; flex: none; }
+/* THIS TOUR column — play count when on the sheet, else a muted dash. */
+body.stagelight .sr-tour { font-family: var(--sl-mono); font-size: 14px; color: var(--sl-ink); }
+body.stagelight .sr-tour small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
+body.stagelight .sr-none { color: var(--sl-faint); }
+body.stagelight .sr-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 body.stagelight .sr-title .sr-bestguess { margin-left: 9px; font-family: var(--sl-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); vertical-align: middle; }
 body.stagelight .sr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); }
 body.stagelight .sr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
 body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(--sl-faint); font-size: 15px; }
-/* Mobile (<=560px): drop the TYPE column so TITLE + STATUS + PLAYS stay readable
-   and the grid never overflows. Header row collapses to TITLE | PLAYS (status
-   rides inline under each title). Tighter paddings; sticky header stays usable. */
-@media (max-width: 560px) {
+/* Tablet (641–950px): drop the TYPE and RESOURCES columns so the seven-column grid
+   never overflows. Collapses to TITLE | STATUS | RARITY | THIS TOUR | PLAYS — both
+   header and rows share the reduced --sr-cols, and plays re-anchors to the 5th track.
+   Resources fold away (the /song/ pages carry every link anyway). */
+@media (min-width: 641px) and (max-width: 950px) {
+  body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 116px 132px 80px 76px; }
+  body.stagelight .sr-type, body.stagelight .sih-type,
+  body.stagelight .sr-resources, body.stagelight .sih-more { display: none; }
+  body.stagelight .sr-plays { grid-column: 5; }
+}
+/* Mobile (<=640px): collapse to TITLE + PLAYS, with STATUS riding inline under each
+   title. Header collapses to TITLE | PLAYS. Tighter paddings; sticky header stays. */
+@media (max-width: 640px) {
   body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 76px; --sr-gap: 12px; }
   body.stagelight .song-row { grid-auto-rows: auto; row-gap: 4px; padding: 12px 4px; }
-  body.stagelight .sr-type { display: none; }
-  body.stagelight .sr-tier { grid-column: 1; grid-row: 2; }
+  body.stagelight .sr-type, body.stagelight .sr-rarity, body.stagelight .sr-tour { display: none; }
+  body.stagelight .sr-status-cell { grid-column: 1; grid-row: 2; }
   body.stagelight .sr-plays { grid-column: 2; grid-row: 1; }
   /* Resource column is desktop-only — the /song/ pages already link every resource,
      so mobile drops the chips to keep the two-column row readable. */
@@ -13566,7 +13609,9 @@ body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(-
   body.stagelight .song-index-head { padding: 9px 4px; }
   body.stagelight .song-index-head .sih-col:nth-child(2),
   body.stagelight .song-index-head .sih-col:nth-child(3),
-  body.stagelight .song-index-head .sih-col:nth-child(4) { display: none; }
+  body.stagelight .song-index-head .sih-col:nth-child(4),
+  body.stagelight .song-index-head .sih-col:nth-child(5),
+  body.stagelight .song-index-head .sih-col:nth-child(6) { display: none; }
   body.stagelight .song-count { display: none; }
 }
 
