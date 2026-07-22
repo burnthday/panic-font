@@ -1958,7 +1958,6 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
           <button type="button" data-type-filter="original">Originals</button>
           <button type="button" data-type-filter="cover">Covers</button>
         </div>
-        <button type="button" class="index-toggle" data-transcription-filter aria-pressed="false">On Burnthday</button>
         <button type="button" class="index-toggle" data-chords-filter aria-pressed="false">Has chords</button>
         ${renderCustomSelect({ hook: "data-album-filter", label: "Album", active: "", options: albumSelectOptions })}
       </div>
@@ -1990,31 +1989,27 @@ function renderLyricsSearchScript() {
     const count = document.getElementById("lyric-count");
     const empty = document.getElementById("lyric-empty");
     const total = rows.length;
-    const matched = rows.filter((row) => row.dataset.transcription === "yes").length;
     const chorded = rows.filter((row) => row.dataset.haschords === "yes").length;
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
-    const transToggle = document.querySelector("[data-transcription-filter]");
     const chordsToggle = document.querySelector("[data-chords-filter]");
     const albumSelect = document.querySelector("[data-album-filter]");
     let selectedType = "all";
     const base = total + " songs";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
-      const transOnly = transToggle && transToggle.getAttribute("aria-pressed") === "true";
       const chordsOnly = chordsToggle && chordsToggle.getAttribute("aria-pressed") === "true";
       const album = albumSelect ? (albumSelect.dataset.value || "") : "";
       let shown = 0;
       rows.forEach((row) => {
         const hit = (!q || row.dataset.title.includes(q))
           && (selectedType === "all" || row.dataset.type === selectedType)
-          && (!transOnly || row.dataset.transcription === "yes")
           && (!chordsOnly || row.dataset.haschords === "yes")
           && (!album || row.dataset.album === album);
         (row.closest(".lyric-row-wrap") || row).hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      const filtered = q || selectedType !== "all" || transOnly || chordsOnly || album;
+      const filtered = q || selectedType !== "all" || chordsOnly || album;
       count.textContent = filtered ? shown + " of " + total + " songs" : base;
     };
     typeButtons.forEach((btn) => btn.addEventListener("click", () => {
@@ -2022,10 +2017,6 @@ function renderLyricsSearchScript() {
       typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
       apply();
     }));
-    if (transToggle) transToggle.addEventListener("click", () => {
-      transToggle.setAttribute("aria-pressed", transToggle.getAttribute("aria-pressed") === "true" ? "false" : "true");
-      apply();
-    });
     if (chordsToggle) chordsToggle.addEventListener("click", () => {
       chordsToggle.setAttribute("aria-pressed", chordsToggle.getAttribute("aria-pressed") === "true" ? "false" : "true");
       apply();
@@ -2978,12 +2969,8 @@ function renderArchiveHeader(entry, data) {
   // Lyric/chord pages get a song-specific eyebrow so they read as part of the
   // Lyrics & Chords section rather than an anonymous Blogger post. Framing only —
   // the breadcrumb, title and verbatim body are untouched.
-  const eyebrow = !isLanding && isLyricArchivePage(entry)
-    ? `<p class="archive-eyebrow">LYRICS &amp; CHORDS</p>`
-    : "";
   return `<header class="archive-title">
     <nav class="crumbs" aria-label="Breadcrumb">${trail.join('<span class="crumb-sep" aria-hidden="true">›</span>')}</nav>
-    ${eyebrow}
     <h1>${escapeHtml(title)}</h1>
     ${entry.categories && entry.categories.length ? `<div class="archive-tags">${entry.categories.map((category) => `<span>${escapeHtml(category)}</span>`).join("")}</div>` : ""}
   </header>`;
@@ -3010,10 +2997,6 @@ function renderLyricCrosslinks(entry, data) {
   // above stays the primary content; this is a courtesy exit. Rendered ONLY when EC
   // actually knows the song: an exclusive Burnthday page (a brand-new song EC has no
   // entry for) omits the cross-reference rather than dead-ending at the EC homepage.
-  if (song && ecKnownFor(song, data)) {
-    const ec = ecLinkFor(song, data);
-    links.push(`<a class="origin-xlink origin-xlink-ext" href="${escapeAttr(ec.href)}" target="_blank" rel="noopener noreferrer"><span class="oxl-label">Also on Everyday Companion</span><span class="oxl-go" aria-hidden="true">↗</span></a>`);
-  }
   if (!links.length) return "";
   return `<nav class="origin-crosslinks" aria-label="Related pages">${links.join("")}</nav>`;
 }
@@ -5617,7 +5600,7 @@ function renderSongsIndex(data, slugMap) {
     resChips.push(`<a class="sr-chip sr-chip-ext" href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(song.title)} guitar tab on Songsterr">Tab</a>`);
     return `<div class="song-row-wrap" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-tier="${escapeAttr(statusTier)}" data-bestguess="${hasBestGuess ? "yes" : "no"}">
       <a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" tabindex="0">
-        <span class="sr-title">${escapeHtml(song.title)}${hasBestGuess ? '<span class="sr-bestguess">Best Guess</span>' : ""}</span>
+        <span class="sr-title">${escapeHtml(song.title)}</span>
         <span class="sr-type">${escapeHtml(song.type)}</span>
         <span class="sr-tier">${statusMarkup}</span>
         <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
@@ -5660,7 +5643,6 @@ function renderSongsIndex(data, slugMap) {
         </div>
         <button type="button" class="index-toggle" data-tour-filter aria-pressed="false">This tour</button>
         <button type="button" class="index-toggle" data-shelf-filter aria-pressed="false">Shelf</button>
-        <button type="button" class="index-toggle" data-bestguess-filter aria-pressed="false">Transcribed lyrics</button>
       </div>
       <div class="song-index-head" role="presentation" aria-hidden="true">
         <span class="sih-col">Title</span>
@@ -6227,7 +6209,7 @@ function renderSongPage(song, data, albums, slugMap) {
     <main class="archive-main song-main">
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/songs/">Songs</a></nav>
-        <p class="song-eyebrow">${escapeHtml(eyebrow)}</p>
+        ${song.type === "Cover" ? `<p class="song-eyebrow">${escapeHtml(eyebrow)}</p>` : ""}
         <h1>${escapeHtml(song.title)}</h1>
       </header>
       <div class="song-stat-grid">${tiles.join("")}</div>
@@ -6358,7 +6340,7 @@ function renderSongPerformanceLog(song, data) {
   return `<section class="song-history">
         <div class="song-history-head">
           <h2>Every performance</h2>
-          <span>${formatNumber(performances.length)} on setlist.fm</span>
+          <span>${formatNumber(performances.length)} total</span>
         </div>
         <ol class="perf-list">${rows}</ol>
         ${performances.length > SHOWN
@@ -6479,7 +6461,7 @@ function renderAlbumPage(album, albums, data) {
 
   const trackRows = stats.tracks.map((track, i) => {
     const stat = track.row
-      ? `<span class="track-stat">${track.onSheet ? `<span class="track-live">On the current sheet</span>` : ""}<span class="track-plays">${formatNumber(track.total)} live</span></span>`
+      ? `<span class="track-stat">${track.onSheet ? `<span class="track-live">In Rotation</span>` : ""}<span class="track-plays">${formatNumber(track.total)} live</span></span>`
       : "";
     return `<li class="album-track${track.row ? "" : " no-data"}">
       <span class="track-n">${String(i + 1).padStart(2, "0")}</span>
@@ -6790,6 +6772,7 @@ function renderHtml(data) {
       ${renderFitScriptBody()}
       ${renderNickRankingScript()}
       ${renderSetlistExpandScript()}
+      ${renderStatsAutoCollapseScript()}
       ${renderStrikeScriptBody()}
       ${renderCustomSelectScript()}
     </script>
@@ -6836,6 +6819,27 @@ function renderSetlistExpandScript() {
       btn.setAttribute("aria-expanded", String(anyClosed));
       if (label) label.textContent = anyClosed ? "Collapse all" : "Open all setlists";
     });
+  })();`;
+}
+
+// Auto-collapse an expanded per-card "Song stats" box once it scrolls out of view,
+// compensating scroll so the page doesn't jump when a box above the viewport shrinks.
+function renderStatsAutoCollapseScript() {
+  return `(() => {
+    const stats = [...document.querySelectorAll("[data-sc-stats]")];
+    if (!stats.length || !("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const el = entry.target;
+        if (!el.open || entry.isIntersecting) continue;
+        const rect = el.getBoundingClientRect();
+        const before = el.offsetHeight;
+        el.open = false;
+        const delta = el.offsetHeight - before;
+        if (rect.bottom < 0) window.scrollBy(0, delta);
+      }
+    }, { threshold: 0 });
+    stats.forEach((el) => io.observe(el));
   })();`;
 }
 
@@ -8275,15 +8279,15 @@ function renderShowLastPlayed(data, show) {
     const name = r.slug ? `<a href="/song/${escapeAttr(r.slug)}/">${escapeHtml(r.title)}</a>` : escapeHtml(r.title);
     return `<li class="ltp-item"><span class="ltp-song">${name}</span><span class="ltp-gap${r.gap === null || (r.gap || 0) >= 40 ? " is-rare" : ""}">${g}</span></li>`;
   };
-  const shown = rows.slice(0, 8);
-  const rest = rows.slice(8);
-  return `<div class="sc-row sc-ltp">
-    <span class="sc-label">Last time played</span>
-    <div class="ltp-wrap">
-      <ol class="ltp-list">${shown.map(cell).join("")}</ol>
-      ${rest.length ? `<details class="ltp-more"><summary><span>Show all ${formatNumber(rows.length)}</span></summary><ol class="ltp-list">${rest.map(cell).join("")}</ol></details>` : ""}
+  if (!rows.length) return "";
+  const rare = rows.filter((r) => r.gap === null || (r.gap || 0) >= 40).length;
+  return `<details class="sc-stats" data-sc-stats>
+    <summary><span class="sc-stats-title">Song stats</span><span class="sc-stats-meta">${formatNumber(rows.length)} song${rows.length === 1 ? "" : "s"}${rare ? ` · ${rare} deep pull${rare === 1 ? "" : "s"}` : ""}</span><span class="sc-stats-chev" aria-hidden="true">›</span></summary>
+    <div class="sc-stats-body">
+      <p class="sc-stats-head"><span>Song</span><span>Last time played, before this show</span></p>
+      <ol class="ltp-list">${rows.map(cell).join("")}</ol>
     </div>
-  </div>`;
+  </details>`;
 }
 
 function renderShowPulls(groups) {
@@ -8324,7 +8328,7 @@ function renderShowCard(data, show, options = {}) {
     ? `<span class="sc-mini-pulls">${renderRaritySymbol(pullGroups[0].tier)}<b>${escapeHtml(pullGroups[0].songs[0])}</b>${pullCount > 1 ? `<span class="sc-more">+${pullCount - 1} MORE</span>` : ""}</span>`
     : "";
   const previewNote = hasSetlist ? "" : `<div class="sc-row"><span class="sc-label" aria-hidden="true"></span><p class="sc-preview-note">The setlist posts here after the show, verified against the official page.</p></div>`;
-  const ltpRow = (options.latest && hasSetlist) ? renderShowLastPlayed(data, show) : "";
+  const ltpRow = hasSetlist ? renderShowLastPlayed(data, show) : "";
   const body = setRows || previewNote || pullsRow || notes || ltpRow
     ? `<div class="sc-body"><div class="sc-sets">${setRows}${notes}${previewNote}${pullsRow}${ltpRow}</div></div>`
     : "";
@@ -12321,16 +12325,23 @@ body.stagelight .setlist-expand-all { display: inline-flex; align-items: center;
 body.stagelight .setlist-expand-all:hover { color: var(--sl-ink); border-color: var(--sl-line-strong); }
 body.stagelight .setlist-expand-all .sea-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
 body.stagelight .setlist-expand-all .sea-count { font-weight: 700; color: var(--sl-ink); }
-body.stagelight .sc-ltp .ltp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2px 28px; }
+body.stagelight .sc-stats { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); }
+body.stagelight .sc-stats > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 12px; padding: 12px 2px 2px; }
+body.stagelight .sc-stats > summary::-webkit-details-marker { display: none; }
+body.stagelight .sc-stats-title { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .sc-stats[open] .sc-stats-title { color: var(--sl-ink); }
+body.stagelight .sc-stats-meta { font-size: 12px; color: var(--sl-faint); }
+body.stagelight .sc-stats-chev { margin-left: auto; color: var(--sl-faint); transition: transform 0.2s ease; font-size: 16px; line-height: 1; }
+body.stagelight .sc-stats[open] .sc-stats-chev { transform: rotate(90deg); }
+body.stagelight .sc-stats-body { padding: 8px 0 6px; }
+body.stagelight .sc-stats-head { display: flex; justify-content: space-between; gap: 16px; margin: 0 0 4px; font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .sc-stats .ltp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
 body.stagelight .ltp-item { display: flex; justify-content: space-between; gap: 16px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
 body.stagelight .ltp-song a { color: var(--sl-ink); text-decoration: none; }
 body.stagelight .ltp-song a:hover { text-decoration: underline; }
 body.stagelight .ltp-gap { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.03em; color: var(--sl-faint); white-space: nowrap; }
 body.stagelight .ltp-gap.is-rare { color: #e0a24a; }
-body.stagelight .ltp-more { grid-column: 1 / -1; margin-top: 6px; }
-body.stagelight .ltp-more > summary { cursor: pointer; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); padding: 6px 0; }
-body.stagelight .ltp-more[open] > summary { color: var(--sl-ink); }
-@media (max-width: 560px) { body.stagelight .sc-ltp .ltp-list { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { body.stagelight .sc-stats .ltp-list { grid-template-columns: 1fr; } body.stagelight .sc-stats-head span:last-child { display: none; } }
 body.stagelight .sc-bg { position: absolute; inset: 0; z-index: 0; display: block; }
 body.stagelight .sc-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
 body.stagelight .sc-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,9,11,0.95) 24%, rgba(9,9,11,0.68) 58%, rgba(9,9,11,0.4)); }
@@ -12606,12 +12617,12 @@ body.stagelight .site-foot-inner {
 body.stagelight .footer-lead { max-width: 340px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
 body.stagelight .footer-mark { width: min(340px, 85%); height: auto; }
-body.stagelight .footer-identity { margin: 14px 0 0; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
+body.stagelight .footer-lead p.footer-identity { margin: 14px 0 0; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
 body.stagelight .footer-copy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 8px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }
 body.stagelight .footer-links { gap: 9px; }
 body.stagelight .footer-links strong { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); text-transform: uppercase; letter-spacing: 0.16em; margin-bottom: 8px; }
-body.stagelight .footer-links a { color: var(--sl-muted); font-size: 13.5px; transition: color 0.15s ease, transform 0.15s ease; }
+body.stagelight .footer-links a { color: var(--sl-muted); font-size: 17px; transition: color 0.15s ease, transform 0.15s ease; }
 body.stagelight .footer-links a:hover { color: var(--sl-ink); transform: translateX(2px); }
 body.stagelight .social-links { display: flex; flex-direction: row; align-items: center; gap: 12px; margin-top: 22px; }
 body.stagelight .social-links a { display: inline-flex; }

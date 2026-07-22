@@ -722,11 +722,11 @@ async function checkSongPages(siteData) {
     && /@media \(max-width: 560px\)[\s\S]*?body\.stagelight \.sr-resources \{ display: none/.test(songIndexCss),
     "sr-resources sits in the reserved column and is hidden <=560px");
 
-  // FIX 3 — the "Has Best Guess" jargon chip is renamed to plain language, while
-  // the row-level Best Guess badge (matching the song-page section) is kept.
-  assertIncludes(index, "Transcribed lyrics", "Song Index chip uses plain language");
+  // The Best Guess concept is retired from the Song Index: no jargon chip and no
+  // row-level badge (Alex: "that's dumb" / remove Best Guess entirely).
+  assertNotIncludes(index, "Transcribed lyrics", "Song Index drops the Transcribed-lyrics chip");
   assertNotIncludes(index, "Has Best Guess", "Song Index drops the Has-Best-Guess jargon label");
-  assertIncludes(index, 'class="sr-bestguess"', "Song Index keeps the row-level Best Guess badge");
+  assertNotIncludes(index, 'class="sr-bestguess"', "Song Index drops the row-level Best Guess badge");
 
   // FIX 4 — shelved / purgatoried songs show their board status, not a misleading
   // frequency-rarity tier. Rows carry data-tier + a distinct muted label.
@@ -1124,8 +1124,8 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   // PART 2: the multi-select filters (Type / Has transcription / Album) compose
   // with the search box; the controls are real and the rows carry the data-*.
   assertIncludes(hub, 'class="index-toolbar"', "Lyrics & Chords hub exposes the filter toolbar");
-  assertIncludes(hub, "data-transcription-filter", "Lyrics & Chords hub offers the On Burnthday (source) filter");
-  assertIncludes(hub, ">On Burnthday<", "Lyrics & Chords source filter is relabelled 'On Burnthday'");
+  assertNotIncludes(hub, "data-transcription-filter", "Lyrics & Chords drops the On Burnthday (source) filter");
+  assertNotIncludes(hub, ">On Burnthday<", "Lyrics & Chords drops the 'On Burnthday' selector");
   assertIncludes(hub, "data-chords-filter", "Lyrics & Chords hub offers the Has chords filter");
   assertIncludes(hub, ">Has chords<", "Lyrics & Chords hub Has-chords filter is labelled");
   assertIncludes(hub, "data-album-filter", "Lyrics & Chords hub offers the album filter");
@@ -1145,13 +1145,12 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
     const html = await readText(known.path).catch(() => "");
     if (!html) continue;
     checkedOne = true;
-    assertIncludes(html, 'class="archive-eyebrow">LYRICS &amp; CHORDS', `${known.path} keeps the categorizing LYRICS & CHORDS eyebrow`);
+    assertNotIncludes(html, 'class="archive-eyebrow">LYRICS &amp; CHORDS', `${known.path} drops the redundant LYRICS & CHORDS eyebrow`);
     const liveHref = html.match(/class="origin-xlink" href="(\/song\/[^"]+)"/)?.[1] || "";
     const targetExists = liveHref ? files.some((f) => f.endsWith(path.join(liveHref.replace(/^\//, "").replace(/\/$/, ""), "index.html"))) : false;
     record(`${known.path} links Live history to a real /song/ page in dist`, liveHref === known.song && targetExists, `${liveHref || "no link"} → ${targetExists ? "exists" : "missing"}`);
-    // The "Also on Everyday Companion" cross-reference points at everydaycompanion.com.
-    const ecHref = html.match(/class="origin-xlink origin-xlink-ext" href="([^"]+)"/)?.[1] || "";
-    record(`${known.path} adds the "Also on Everyday Companion" cross-reference`, /^https?:\/\/(?:www\.)?everydaycompanion\.com\//.test(ecHref) && html.includes("Also on Everyday Companion"), ecHref || "no EC cross-ref");
+    // The "Also on Everyday Companion" cross-reference has been removed from lyric pages.
+    record(`${known.path} drops the "Also on Everyday Companion" cross-reference`, !html.includes("Also on Everyday Companion"), html.includes("Also on Everyday Companion") ? "EC cross-ref still present" : "EC cross-ref removed");
     // Body is verbatim: the distinctive lyric line is present unchanged, on the
     // shared prose plate, and this check never rewrites it.
     assertIncludes(html, 'class="archive-content prose-plate"', `${known.path} keeps the verbatim body on the prose plate`);
@@ -1194,7 +1193,7 @@ function checkEyebrowAudit(files, htmlByFile) {
   record("Tour In Review detail pages keep the Tour In Review eyebrow", anyMatch(`${path.sep}tour-in-review${path.sep}`, /class="tour-eyebrow">Tour In Review</), "tour-eyebrow present");
   record("Album detail pages omit the Studio Album eyebrow (removed per owner)", !anyMatch(`${path.sep}albums${path.sep}`, /class="album-eyebrow"/), "eyebrow should not render");
   // Lyric SUBPAGES keep their categorizing eyebrow (verified in checkLyricsChords too).
-  record("Lyric subpages keep the LYRICS & CHORDS eyebrow", files.some((file, index) => /lyrics\.html$/.test(file) && htmlByFile[index].includes('class="archive-eyebrow">LYRICS &amp; CHORDS')), "lyric subpage eyebrow kept");
+  record("Lyric subpages drop the redundant LYRICS & CHORDS eyebrow", !files.some((file, index) => /lyrics\.html$/.test(file) && htmlByFile[index].includes('class="archive-eyebrow">LYRICS &amp; CHORDS')), "lyric subpage eyebrow removed");
 }
 
 function checkMarkerLegend(html, siteData) {
@@ -1878,7 +1877,7 @@ async function checkBestGuessSection(siteData) {
   record("A song without a Best Guess file has no section", chilly.length > 0 && !chilly.includes('class="song-bestguess"'));
 
   // The songs index badges rows that have a transcription.
-  record("Songs index shows the Best Guess badge", index.includes('class="sr-bestguess"'));
+  record("Songs index drops the Best Guess badge", !index.includes('class="sr-bestguess"'));
 }
 
 function sectionByClass(html, className) {
