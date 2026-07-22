@@ -7078,33 +7078,85 @@ function renderSetlistExpandScript() {
 
 // Sticky home section-nav: highlight the link whose section is in view. Subtle
 // IntersectionObserver, guarded so no-IO visitors just get plain links.
-// Song stats in-place expansion: the photo crossfades away and the panel slides
-// up into its slot. hidden attr is lifted a frame before the class toggles so the
-// transition plays; restored after the close transition ends.
+// Hero interactions: (1) Song stats in-place expansion per view; (2) night-card
+// view swap (crossfades every slot to the picked show, toggling back to the
+// featured night when the active card is clicked again); (3) the stats button's
+// glint follows the cursor on hover.
 function renderHeroModalScript() {
   return `(() => {
-    const panel = document.getElementById("hero-stats-panel");
-    const media = panel?.closest(".hero-media");
-    const openBtn = document.querySelector("[data-stats-open]");
-    if (!panel || !media || !openBtn) return;
-    const open = () => {
-      panel.hidden = false;
-      void panel.offsetHeight; // force reflow so the transition always plays (rAF can stall in background tabs)
-      media.classList.add("stats-open");
-      openBtn.setAttribute("aria-expanded", "true");
-      panel.querySelector(".hero-modal-x")?.focus();
-    };
-    const close = () => {
+    const hero = document.querySelector(".home-hero");
+    if (!hero) return;
+    const slots = [...hero.querySelectorAll(".hero-slot")];
+    const cards = [...hero.querySelectorAll("[data-view-btn]")];
+    const defaultView = hero.querySelector(".hero-lock-slot .hv")?.dataset.view;
+
+    const activePanel = () => hero.querySelector(".hero-media-slot .hv.is-active .hero-stats-panel");
+    const closeStats = () => {
+      const panel = activePanel();
+      const media = panel?.closest(".hero-media");
+      if (!panel || !media || !media.classList.contains("stats-open")) return;
       media.classList.remove("stats-open");
-      openBtn.setAttribute("aria-expanded", "false");
       const done = () => { panel.hidden = true; panel.removeEventListener("transitionend", done); };
       panel.addEventListener("transitionend", done);
       setTimeout(done, 500);
-      openBtn.focus();
+      hero.querySelectorAll("[data-stats-open]").forEach((btn) => btn.setAttribute("aria-expanded", "false"));
     };
-    openBtn.addEventListener("click", () => (media.classList.contains("stats-open") ? close() : open()));
-    panel.querySelectorAll("[data-stats-close]").forEach((el) => el.addEventListener("click", close));
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && media.classList.contains("stats-open")) close(); });
+    hero.addEventListener("click", (event) => {
+      const openBtn = event.target.closest("[data-stats-open]");
+      const closeBtn = event.target.closest("[data-stats-close]");
+      if (closeBtn) { closeStats(); return; }
+      if (!openBtn) return;
+      const panel = activePanel();
+      const media = panel?.closest(".hero-media");
+      if (!panel || !media) return;
+      if (media.classList.contains("stats-open")) { closeStats(); openBtn.focus(); return; }
+      panel.hidden = false;
+      void panel.offsetHeight;
+      media.classList.add("stats-open");
+      openBtn.setAttribute("aria-expanded", "true");
+      panel.querySelector(".hero-modal-x")?.focus();
+    });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeStats(); });
+
+    let swapping = false;
+    const showView = (iso) => {
+      if (swapping) return;
+      swapping = true;
+      closeStats();
+      slots.forEach((slot) => slot.classList.add("is-fading"));
+      setTimeout(() => {
+        slots.forEach((slot) => {
+          slot.querySelectorAll(".hv").forEach((view) => {
+            const on = view.dataset.view === iso;
+            view.classList.toggle("is-active", on);
+            view.hidden = !on;
+          });
+        });
+        cards.forEach((card) => {
+          const on = card.dataset.viewBtn === iso;
+          card.classList.toggle("is-active", on);
+          card.setAttribute("aria-pressed", String(on));
+        });
+        void hero.offsetHeight;
+        slots.forEach((slot) => slot.classList.remove("is-fading"));
+        setTimeout(() => { swapping = false; }, 240);
+      }, 230);
+    };
+    cards.forEach((card) => card.addEventListener("click", () => {
+      const iso = card.dataset.viewBtn;
+      showView(card.classList.contains("is-active") ? defaultView : iso);
+    }));
+
+    // Glint follows the cursor while hovering the stats button.
+    hero.addEventListener("pointermove", (event) => {
+      const btn = event.target.closest(".hero-stats-btn");
+      if (!btn) return;
+      const ring = btn.querySelector(".hsb-ring");
+      if (!ring) return;
+      const rect = btn.getBoundingClientRect();
+      const angle = Math.atan2(event.clientY - (rect.top + rect.height / 2), event.clientX - (rect.left + rect.width / 2));
+      ring.style.setProperty("--hsb-a", ((angle * 180 / Math.PI) + 450) % 360 + "deg");
+    });
   })();`;
 }
 
@@ -8560,7 +8612,11 @@ function renderHomeSectionNav(data) {
 // .show-entry setlist card. Blurred show photo spans the whole viewport; the
 // lockup + sharp framed photo + setlist ride the 1400 rail. No card chrome,
 // no chevron, not collapsible.
-function renderHomeHero(data, show) {
+// Per-show hero pieces: identity lock, music (setlist + footnote + stats button),
+// media (photo + stats panel), and the highlights ticker. Each run night gets a
+// full view; the night cards crossfade a view into place (never a half-swap where
+// one show's setlist sits under another's title).
+function renderHeroView(data, show) {
   const annotations = buildSetlistAnnotations(show);
   const sets = (show.sets || []).filter((set) => (set.songTitles && set.songTitles.length) || clean(set.songs));
   const hasSetlist = sets.length > 0;
@@ -8580,13 +8636,10 @@ function renderHomeHero(data, show) {
     show.sourceUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(show.sourceUrl)}" aria-label="Official setlist and photos for ${ariaHeading}">Photos</a>` : ""
   ].filter(Boolean).join("");
   const setRows = sets.map((set) => `<div class="sc-row"><span class="sc-label">${escapeHtml(formatSetLabel(set.label))}</span><p class="sc-prose">${renderSetSongs(set, annotations)}</p></div>`).join("");
-  const notes = (annotations.guestNotes.length || annotations.bracketNotes.length)
-    ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}${renderSetlistNotes(annotations)}</div></div>`
-    : "";
   const pullGroups = hasSetlist ? computeShowPulls(data, show) : [];
   const ltpRows = hasSetlist ? computeLastPlayedRows(data, show) : [];
 
-  // ---- TICKER: pulls + 30-show-plus gaps + editorial notes (no lineup boilerplate) ----
+  // Ticker: pulls + 30-show-plus gaps + live debuts + editorial notes (no lineup boilerplate).
   const tickerItems = [];
   for (const group of pullGroups) {
     for (const song of group.songs) tickerItems.push(`<span class="tk-item">${renderRaritySymbol(group.tier)}<em>${escapeHtml(group.label)}</em><b>${escapeHtml(song)}</b></span>`);
@@ -8602,12 +8655,10 @@ function renderHomeHero(data, show) {
     if (text && !isLineupNote(text)) tickerItems.push(`<span class="tk-item tk-note"><b>${escapeHtml(text)}</b></span>`);
   }
   const tickerSeq = tickerItems.length ? tickerItems.join('<span class="tk-sep" aria-hidden="true">·</span>') + '<span class="tk-sep" aria-hidden="true">·</span>' : "";
-  // Track content is doubled so the -50% crawl loops seamlessly.
   const ticker = tickerItems.length
     ? `<div class="hero-ticker" aria-label="Show highlights"><div class="tk-track">${tickerSeq}${tickerSeq}</div></div>`
     : "";
 
-  // Lineup boilerplate stays as the quiet footnote under the setlist.
   const lineupNotes = [...annotations.guestNotes, ...annotations.bracketNotes]
     .map(noteText)
     .filter((text) => text && isLineupNote(text));
@@ -8615,33 +8666,6 @@ function renderHomeHero(data, show) {
     ? `<p class="hero-footnote">${lineupNotes.map((text) => `[${escapeHtml(text)}]`).join(" ")}</p>`
     : "";
 
-  // ---- RIGHT-RAIL CARDS: other run nights + upcoming + all-setlists ----
-  const posted = data.setlists || [];
-  const runShows = [];
-  for (const entry of posted) {
-    if (entry.venue === show.venue && entry.location === show.location) { if (entry.isoDate !== show.isoDate) runShows.push(entry); }
-    else break;
-  }
-  const nightCards = runShows.map((entry) => {
-    let night = "";
-    try { const run = tourRunInfo(data.tourDates || [], entry); if (run && run.length > 1) night = `Night ${run.number}`; } catch {}
-    return `<a class="hero-card" href="#setlist-${escapeAttr(entry.isoDate)}">
-      <time class="sc-date" datetime="${escapeAttr(entry.isoDate)}">${escapeHtml(entry.date)}</time>
-      <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${night ? ` · ${night}` : ""}</small></span>
-      <span class="hc-go" aria-hidden="true">↓</span>
-    </a>`;
-  }).join("");
-  const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
-  const upcoming = preview || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (show.isoDate || ""));
-  const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
-  const upcomingCard = upcoming ? `<a class="hero-card hero-card-upcoming" href="${escapeAttr(upcoming.sourceUrl || "/#tour-dates")}">
-      <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
-      <span class="hc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
-      <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
-    </a>` : "";
-
-  // ---- SONG STATS: in-place expansion — the photo gives way and the stats panel
-  // takes over its slot in the right rail (cards stay visible, hero height holds). ----
   const statCell = (r) => {
     const g = r.gap === null ? "Live debut" : r.gap === 0 ? "Also last show" : `${formatNumber(r.gap)} show${r.gap === 1 ? "" : "s"} ago`;
     const name = r.slug ? `<a href="/song/${escapeAttr(r.slug)}/">${escapeHtml(r.title)}</a>` : escapeHtml(r.title);
@@ -8650,39 +8674,76 @@ function renderHomeHero(data, show) {
   };
   const rareCount = ltpRows.filter((r) => r.gap === null || (r.gap || 0) >= 40).length;
   const statsButton = ltpRows.length
-    ? `<button type="button" class="hero-stats-btn" data-stats-open aria-expanded="false" aria-controls="hero-stats-panel">Song stats<span>${formatNumber(ltpRows.length)} songs${rareCount ? ` · ${rareCount} deep pull${rareCount === 1 ? "" : "s"}` : ""}</span></button>`
+    ? `<button type="button" class="hero-stats-btn" data-stats-open="${escapeAttr(iso)}" aria-expanded="false" aria-controls="hero-stats-panel-${escapeAttr(iso)}">Song stats<span>${formatNumber(ltpRows.length)} songs${rareCount ? ` · ${rareCount} deep pull${rareCount === 1 ? "" : "s"}` : ""}</span><i class="hsb-ring" aria-hidden="true"></i></button>`
     : "";
   const statsPanel = ltpRows.length
-    ? `<div class="hero-stats-panel" id="hero-stats-panel" role="region" aria-label="Song stats for ${ariaHeading}" hidden>
+    ? `<div class="hero-stats-panel" id="hero-stats-panel-${escapeAttr(iso)}" role="region" aria-label="Song stats for ${ariaHeading}" hidden>
         <div class="hero-modal-head"><h3>Song stats</h3><span>${escapeHtml(show.date)} · ${escapeHtml(show.location)}</span><button type="button" class="hero-modal-x" data-stats-close aria-label="Close song stats">✕</button></div>
         <ol class="ltp-list">${ltpRows.map(statCell).join("")}</ol>
       </div>`
     : "";
-
-  const bgSrc = show.bgImage || show.image;
   const credit = show.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(show.photoCredit)}</figcaption>` : "";
   const photo = show.image
     ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async" fetchpriority="high">${credit}</figure>`
     : "";
-  const bg = bgSrc ? `<div class="hero-bg" aria-hidden="true"><img src="${escapeAttr(bgSrc)}" alt="" decoding="async"></div>` : "";
-  return `<section class="home-hero${show.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${ariaHeading}">
-    ${bg}
-    <div class="hero-inner">
-      <div class="hero-left">
-        <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
+  return {
+    iso,
+    ariaHeading,
+    lock: `<time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
         <h2 class="sc-city">${escapeHtml(show.location)}</h2>
         <span class="sc-venue">${escapeHtml(venueLine)}</span>
-        ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
-        <div class="hero-sets sc-sets">${setRows}</div>
-        ${footnote}
-        ${statsButton}
-      </div>
-      <div class="hero-right">
-        <div class="hero-media">
-          ${photo}
-          ${statsPanel}
-        </div>
-        ${ticker}
+        ${chips ? `<span class="sc-chips">${chips}</span>` : ""}`,
+    music: `<div class="hero-sets sc-sets">${setRows}</div>${footnote}${statsButton}`,
+    media: `<div class="hero-media">${photo}${statsPanel}</div>`,
+    ticker
+  };
+}
+
+function renderHomeHero(data) {
+  const posted = data.setlists || [];
+  const featured = posted[0];
+  if (!featured) return "";
+  const runShows = [featured];
+  for (const entry of posted.slice(1)) {
+    if (entry.venue === featured.venue && entry.location === featured.location) runShows.push(entry);
+    else break;
+  }
+  const views = runShows.map((entry) => ({ show: entry, view: renderHeroView(data, entry) }));
+  const slot = (kind) => views.map(({ view }, index) =>
+    `<div class="hv${index === 0 ? " is-active" : ""}" data-view="${escapeAttr(view.iso)}"${index === 0 ? "" : " hidden"}>${view[kind]}</div>`
+  ).join("");
+
+  // Night cards (every non-featured run night) swap that show's view into the hero.
+  const nightCards = views.slice(1).map(({ show: entry, view }) => {
+    let night = "";
+    try { const run = tourRunInfo(data.tourDates || [], entry); if (run && run.length > 1) night = `Night ${run.number}`; } catch {}
+    const bgStyle = entry.image ? ` style="background-image: linear-gradient(90deg, rgba(10,10,12,0.88) 30%, rgba(10,10,12,0.55)), url('${escapeAttr(entry.image)}')"` : "";
+    return `<button type="button" class="hero-card${entry.image ? " has-photo" : ""}" data-view-btn="${escapeAttr(view.iso)}" aria-pressed="false"${bgStyle}>
+      <time class="sc-date" datetime="${escapeAttr(entry.isoDate)}">${escapeHtml(entry.date)}</time>
+      <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${night ? ` · ${night}` : ""}</small></span>
+      <span class="hc-go" aria-hidden="true">→</span>
+    </button>`;
+  }).join("");
+  const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
+  const upcoming = preview || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (featured.isoDate || ""));
+  const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
+  const upBg = upcoming && upcoming.image ? ` style="background-image: linear-gradient(90deg, rgba(10,10,12,0.88) 30%, rgba(10,10,12,0.55)), url('${escapeAttr(upcoming.image)}')"` : "";
+  const upcomingCard = upcoming ? `<a class="hero-card hero-card-upcoming${upcoming.image ? " has-photo" : ""}" href="${escapeAttr(upcoming.sourceUrl || "/#tour-dates")}"${upBg}>
+      <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
+      <span class="hc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
+      <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
+    </a>` : "";
+
+  const bgSrc = featured.bgImage || featured.image;
+  const bg = bgSrc ? `<div class="hero-bg" aria-hidden="true"><img src="${escapeAttr(bgSrc)}" alt="" decoding="async"></div>` : "";
+  return `<section class="home-hero${featured.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${views[0].view.ariaHeading}">
+    ${bg}
+    <div class="hero-inner">
+      <div class="hero-slot hero-lock-slot">${slot("lock")}</div>
+      <div class="hero-slot hero-media-slot">${slot("media")}</div>
+      <div class="hero-slot hero-music-slot">${slot("music")}</div>
+      <div class="hero-rail">
+        <div class="hero-slot hero-ticker-slot">${slot("ticker")}</div>
         <div class="hero-cards">
           ${nightCards}
           ${upcomingCard}
@@ -8694,10 +8755,7 @@ function renderHomeHero(data, show) {
 }
 
 function renderLatestSetlist(data) {
-  const posted = data.setlists || [];
-  const featured = posted[0];
-  if (!featured) return "";
-  return renderHomeHero(data, featured);
+  return renderHomeHero(data);
 }
 
 function weekdayName(isoDate) {
@@ -12537,7 +12595,7 @@ body.stagelight .site-head {
   display: flex; align-items: center; gap: 28px; min-height: 66px;
   padding: 0 max(28px, calc((100% - 1400px) / 2));
   position: sticky; top: 0; z-index: 60;
-  background: linear-gradient(180deg, rgba(14,14,16,0.52), rgba(12,12,14,0.36));
+  background: linear-gradient(180deg, rgba(13,13,15,0.72), rgba(11,11,13,0.58));
   -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
   border-bottom: 1px solid var(--sl-line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
   transition: transform 0.3s ease;
@@ -12823,18 +12881,26 @@ body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
 body.stagelight .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.55; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); }
 body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.6) 52%, rgba(11,11,12,0.92) 84%, #0b0b0d 100%); }
 body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) max(28px, calc((100% - 1400px) / 2)) 38px; }
-/* Strict 50/50: one center gutter, nothing crosses it. Left = identity + setlist.
-   Right = photo + ticker + cards. Right column is fixed-height content, so the
-   hero fits ~one viewport without dynamic text scaling. */
-body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; align-items: start; }
+/* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
+   setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
+   below the image line so the left column breathes. */
+body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 26px; align-items: start; }
 body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
-body.stagelight .hero-left, body.stagelight .hero-right { min-width: 0; }
+body.stagelight .hero-slot, body.stagelight .hero-rail { min-width: 0; }
+body.stagelight .hero-lock-slot { grid-column: 1; grid-row: 1; align-self: center; }
+body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
+body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; }
+body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
+/* View crossfade: the swap script fades each slot, switches the active view, fades back. */
+body.stagelight .hero-slot { transition: opacity 0.22s ease; }
+body.stagelight .hero-slot.is-fading { opacity: 0; }
+body.stagelight .hv[hidden] { display: none; }
 body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-display); font-size: 52px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
 body.stagelight .home-hero .sc-venue { display: block; margin-top: 10px; font-size: 16px; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-body.stagelight .hero-sets { margin-top: 30px; display: grid; gap: 14px; }
-body.stagelight .home-hero .sc-row { grid-template-columns: 64px minmax(0, 1fr); }
+body.stagelight .hero-sets { display: grid; gap: 12px; }
+body.stagelight .home-hero .sc-row { grid-template-columns: 52px minmax(0, 1fr); gap: 14px; }
 body.stagelight .hero-footnote { margin: 14px 0 0; font-size: 13px; color: var(--sl-faint); }
 body.stagelight .hero-stats-btn {
   display: inline-flex; align-items: baseline; gap: 10px; margin-top: 22px; padding: 10px 16px;
@@ -12844,12 +12910,25 @@ body.stagelight .hero-stats-btn {
 }
 body.stagelight .hero-stats-btn span { color: var(--sl-faint); letter-spacing: 0.04em; text-transform: none; font-size: 11.5px; }
 body.stagelight .hero-stats-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--sl-muted); }
+/* Trippy-but-subtle: a faint glint orbits the button outline clockwise (18s);
+   on hover it locks to the cursor's angle. Static under reduced motion. */
+@property --hsb-a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+body.stagelight .hero-stats-btn { position: relative; }
+body.stagelight .hsb-ring {
+  position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  background: conic-gradient(from var(--hsb-a), transparent 0deg 318deg, rgba(255,255,255,0.55) 338deg, transparent 358deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  padding: 1px; animation: hsb-orbit 18s linear infinite;
+}
+body.stagelight .hero-stats-btn:hover .hsb-ring { animation-play-state: paused; }
+@keyframes hsb-orbit { to { --hsb-a: 360deg; } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .hsb-ring { animation: none; } }
 body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(260px, 36vh, 380px); border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
 body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 28%; }
 body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
 /* Ticker: slow continuous crawl, pauses on hover; static scroll under 900px / reduced motion. */
-body.stagelight .hero-ticker { margin-top: 14px; overflow: hidden; border: 1px solid var(--sl-line); border-radius: var(--sl-r-sm); background: rgba(255,255,255,0.035); -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
-body.stagelight .tk-track { display: inline-flex; align-items: center; gap: 18px; padding: 9px 18px; white-space: nowrap; width: max-content; animation: tk-crawl 46s linear infinite; }
+body.stagelight .hero-ticker { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+body.stagelight .tk-track { display: inline-flex; align-items: center; gap: 18px; padding: 6px 2px; white-space: nowrap; width: max-content; animation: tk-crawl 46s linear infinite; }
 body.stagelight .hero-ticker:hover .tk-track { animation-play-state: paused; }
 @keyframes tk-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 body.stagelight .tk-item { display: inline-flex; align-items: baseline; gap: 7px; font-size: 13px; }
@@ -12863,10 +12942,13 @@ body.stagelight .tk-sep { color: var(--sl-faint); opacity: 0.5; }
 body.stagelight .hero-cards { margin-top: 14px; display: grid; gap: 10px; }
 body.stagelight .hero-card {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
-  padding: 12px 18px; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md);
-  background: rgba(255,255,255,0.035); color: var(--sl-ink); transition: background 0.15s ease, border-color 0.15s ease, transform 0.18s ease;
+  width: 100%; text-align: left; cursor: pointer; font: inherit;
+  padding: 13px 18px; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md);
+  background: rgba(255,255,255,0.035); color: var(--sl-ink); transition: border-color 0.15s ease, transform 0.18s ease, filter 0.18s ease;
 }
-body.stagelight .hero-card:hover { background: rgba(255,255,255,0.07); border-color: var(--sl-line-strong); transform: translateY(-1px); }
+body.stagelight .hero-card.has-photo { background-size: cover; background-position: center 30%; }
+body.stagelight .hero-card:hover { border-color: var(--sl-line-strong); transform: translateY(-1px); filter: brightness(1.15); }
+body.stagelight .hero-card.is-active { border-color: var(--sl-muted); box-shadow: 0 0 0 1px var(--sl-muted); }
 body.stagelight .hc-place { display: flex; flex-direction: column; min-width: 0; }
 body.stagelight .hc-place strong { font-size: 15px; font-weight: 620; }
 body.stagelight .hc-place small { font-size: 12.5px; color: var(--sl-faint); }
@@ -13568,7 +13650,7 @@ body.stagelight .home-nav {
   width: 100vw; margin: 0 calc(50% - 50vw);
   padding: 7px max(28px, calc((100% - 1400px) / 2));
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  background: rgba(12,12,14,0.34); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+  background: rgba(11,11,13,0.62); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
 }
 body.stagelight.nav-hidden .home-nav { top: 0; }
 body.stagelight .home-nav a {

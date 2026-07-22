@@ -590,8 +590,12 @@ async function checkLatestSetlist(html, siteData) {
   record("Hero is a section, not the collapsible setlist card", heroOnly.startsWith('<section class="home-hero') && !heroOnly.includes('class="show-entry') && !heroOnly.includes('sc-chev'), "no card chrome (the inner Song-stats <details> is fine)");
   record("Hero keeps the listen links", !feat?.streamUrl || heroCard.includes("nugs.net"));
 
-  // ---- The setlist lives in the hero (labels + segues) ----
-  const renderedLabels = [...heroCard.matchAll(/<div class="sc-row"><span class="sc-label">([^<]+)<\/span><p class="sc-prose">/g)].map((match) => decodeHtml(match[1]));
+  // ---- The setlist lives in the hero (labels + segues; active view only) ----
+  const musicSlotStart = heroOnly.indexOf('hero-music-slot');
+  const musicActiveStart = heroOnly.indexOf('<div class="hv is-active"', musicSlotStart);
+  const musicNextView = heroOnly.indexOf('<div class="hv"', musicActiveStart + 1);
+  const activeMusic = heroOnly.slice(musicActiveStart, musicNextView > 0 ? musicNextView : undefined);
+  const renderedLabels = [...activeMusic.matchAll(/<div class="sc-row"><span class="sc-label">([^<]+)<\/span><p class="sc-prose">/g)].map((match) => decodeHtml(match[1]));
   const sourceSets = (feat?.sets || []).filter((set) => (set.songTitles || []).length || (set.songs || "").trim());
   const sourceSegueCount = sum(sourceSets.map((set) => (set.songs.match(/\s>\s/g) || []).length));
   const renderedSegueCount = (heroCard.match(/&gt;/g) || []).length;
@@ -604,15 +608,17 @@ async function checkLatestSetlist(html, siteData) {
     heroOnly.includes('class="hero-ticker"') && heroOnly.includes('class="tk-track"'), "hero-ticker present");
   const runNights = (siteData.setlists || []).slice(1).filter((entry) => entry.venue === feat?.venue && entry.location === feat?.location);
   for (const night of runNights) {
-    assertIncludes(heroOnly, `href="#setlist-${night.isoDate}"`, `Hero card links run night ${night.isoDate} to its feed entry`);
+    assertIncludes(heroOnly, `data-view-btn="${night.isoDate}"`, `Hero card swaps run night ${night.isoDate} into the hero`);
+    assertIncludes(heroOnly, `data-view="${night.isoDate}"`, `Hero carries a full view for run night ${night.isoDate}`);
     assertIncludes(html, `id="setlist-${night.isoDate}"`, `Feed card carries the #setlist-${night.isoDate} anchor`);
   }
+  record("Night cards carry an opaque photo backdrop", runNights.length === 0 || /data-view-btn="[^"]+"[^>]*style="background-image/.test(heroOnly), "night-card photo bg present");
   record("Hero right rail closes with the All-setlists button",
     heroOnly.includes('class="hero-all"') && heroOnly.includes(`All ${siteData.site.year} setlists`), "hero-all present");
-  record("Song stats expands in place: trigger button + panel in the photo slot with rarity symbols",
-    heroOnly.includes("data-stats-open") && heroOnly.includes('id="hero-stats-panel"') && heroOnly.includes('class="hero-media"')
-    && heroOnly.includes('class="ltp-list"') && /hero-stats-panel[\s\S]*?rarity-symbol/.test(heroOnly),
-    "stats button + in-place panel + rarity symbols present");
+  record("Song stats expands in place: trigger button + per-view panel with rarity symbols + shimmer ring",
+    heroOnly.includes("data-stats-open") && new RegExp(`id="hero-stats-panel-${feat?.isoDate}"`).test(heroOnly) && heroOnly.includes('class="hero-media"')
+    && heroOnly.includes('class="ltp-list"') && /hero-stats-panel[\s\S]*?rarity-symbol/.test(heroOnly) && heroOnly.includes('class="hsb-ring"'),
+    "stats button + in-place panel + rarity symbols + ring present");
   const preview = siteData.site?.isShowDayPreview ? siteData.site.featuredShow : null;
   const upcoming = preview || (siteData.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (feat?.isoDate || ""));
   if (upcoming) {
@@ -1909,11 +1915,16 @@ function sectionHtml(html, id) {
 }
 
 function cardHtml(html, heading) {
-  const entryAnchor = html.indexOf(heading);
-  if (entryAnchor >= 0) {
+  // The heading can also appear inside the hero's stacked views, so walk every
+  // occurrence until one sits inside a real .show-entry feed card.
+  let entryAnchor = html.indexOf(heading);
+  while (entryAnchor >= 0) {
     const entryStart = html.lastIndexOf('<details class="show-entry', entryAnchor);
     const entryEnd = html.indexOf("</details>", entryAnchor);
-    if (entryStart >= 0 && entryEnd > entryStart) return html.slice(entryStart, entryEnd + "</details>".length);
+    if (entryStart >= 0 && entryEnd > entryStart && html.indexOf("</details>", entryStart) >= entryAnchor) {
+      return html.slice(entryStart, entryEnd + "</details>".length);
+    }
+    entryAnchor = html.indexOf(heading, entryAnchor + 1);
   }
   const headingIndex = html.indexOf(`<h3>${heading}</h3>`);
   if (headingIndex >= 0) {
