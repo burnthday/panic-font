@@ -1426,6 +1426,14 @@ function collectLyricRows(data) {
     // the Tab chip does.
     const tabHref = chordInfo && chordInfo.tabHref && chordInfo.tabHref !== internal ? chordInfo.tabHref : "";
     const hasChords = Boolean(chordInfo && (chordInfo.onLyricsPage || tabHref));
+    // ARTIST column: the original artist/writer for COVERS where curated origin data
+    // exists (song-origins-curated.json — all 51 carry composer, 11 covers carry
+    // originalArtist). Originals and songs with no curated origin stay blank — we
+    // never invent an attribution. For a WSP original the "artist" is self-evidently
+    // the band, so only covers get a value.
+    const originRec = data.originsByTitle?.get(song.key) || null;
+    const isCover = (song.type || "").toLowerCase() === "cover";
+    const artist = (originRec && isCover) ? (originRec.originalArtist || originRec.composer || "") : "";
     return {
       song,
       title: song.title,
@@ -1435,6 +1443,7 @@ function collectLyricRows(data) {
       internal,
       hasChords,
       tabHref,
+      artist,
       ecHref: ec ? ec.href : ""
     };
   }).sort((a, b) => a.title.localeCompare(b.title, "en", { sensitivity: "base" }));
@@ -1896,10 +1905,8 @@ function renderAboutPage(entry, data, cache) {
 function renderLyricsChordsIndex(entries, data, hubEntry) {
   const rowsData = collectLyricRows(data);
   const total = rowsData.length;
-  const matched = rowsData.filter((row) => row.internal).length;
   const albums = [...new Set(rowsData.map((row) => row.album).filter(Boolean))]
     .sort((a, b) => a.localeCompare(b, "en", { sensitivity: "base" }));
-  const withChords = rowsData.filter((row) => row.hasChords).length;
   const rows = rowsData.map((row) => {
     const plays = row.total > 0 ? `${formatNumber(row.total)}<small>plays</small>` : "";
     const href = row.internal || row.ecHref;
@@ -1909,18 +1916,28 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
     const words = row.internal
       ? (row.hasChords ? "Lyrics + chords" : "Lyrics")
       : `Lyrics<span class="lr-ext-arrow" aria-hidden="true"> ↗</span>`;
-    const sub = row.album || "";
-    // When the chords live on a sibling guitar-tab page, the row title still links
-    // the lyrics page; a small Tab chip carries the reader to the tab. The chip is
-    // a real link nested beside the row (the row itself is the lyrics link).
-    const tabChip = row.tabHref ? `<a class="lr-tab-chip" href="${escapeAttr(row.tabHref)}" aria-label="Guitar tab for ${escapeAttr(row.title)}">Tab<span aria-hidden="true"> →</span></a>` : "";
-    return `<div class="lyric-row-wrap${row.tabHref ? " has-tab" : ""}">
-      <a class="lyric-row" href="${escapeAttr(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""} data-title="${escapeAttr(row.title.toLowerCase())}" data-transcription="${row.internal ? "yes" : "no"}" data-haschords="${row.hasChords ? "yes" : "no"}" data-hastab="${row.tabHref ? "yes" : "no"}" data-type="${escapeAttr(row.type.toLowerCase())}" data-album="${escapeAttr(row.album)}">
+    const artistCell = row.artist ? escapeHtml(row.artist) : `<span class="lr-none" aria-hidden="true">—</span>`;
+    const albumCell = row.album ? escapeHtml(row.album) : `<span class="lr-none" aria-hidden="true">—</span>`;
+    // TAB column: a real sibling <a> overlaying the reserved 5th grid track (nested
+    // anchors inside the row link would be invalid HTML — mirrors .sr-resources on
+    // the Song Index). Only lights up where we HOST a sibling guitar-tab page; there
+    // is no external tab source in the data, so absent tabs show a muted dash rather
+    // than a guessed link.
+    const tabCell = row.tabHref
+      ? `<a class="lr-tab" href="${escapeAttr(row.tabHref)}" aria-label="Guitar tab for ${escapeAttr(row.title)}">Tab</a>`
+      : `<span class="lr-tab lr-tab-empty" aria-hidden="true">—</span>`;
+    // Facets + sort keys ride on the WRAPPER so the whole row (and its sibling Tab
+    // link) hide/reorder together. data-plays is the numeric sort key; data-transcription
+    // and data-hastab double as the Lyrics/Tab has-resource sort keys.
+    return `<div class="lyric-row-wrap" data-title="${escapeAttr(row.title.toLowerCase())}" data-artist="${escapeAttr((row.artist || "").toLowerCase())}" data-transcription="${row.internal ? "yes" : "no"}" data-haschords="${row.hasChords ? "yes" : "no"}" data-hastab="${row.tabHref ? "yes" : "no"}" data-type="${escapeAttr(row.type.toLowerCase())}" data-album="${escapeAttr(row.album)}" data-plays="${row.total}">
+      <a class="lyric-row" href="${escapeAttr(href)}"${ext ? ' target="_blank" rel="noopener noreferrer"' : ""}>
         <span class="lr-title">${escapeHtml(row.title)}</span>
-        <span class="lr-sub">${escapeHtml(sub)}</span>
+        <span class="lr-artist">${artistCell}</span>
+        <span class="lr-sub">${albumCell}</span>
         <span class="lr-words">${words}</span>
         <span class="lr-plays">${plays}</span>
-      </a>${tabChip}
+      </a>
+      ${tabCell}
     </div>`;
   }).join("");
   const count = `${formatNumber(total)} song${total === 1 ? "" : "s"}`;
@@ -1961,12 +1978,13 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
         <button type="button" class="index-toggle" data-chords-filter aria-pressed="false">Has chords</button>
         ${renderCustomSelect({ hook: "data-album-filter", label: "Album", active: "", options: albumSelectOptions })}
       </div>
-      <div class="lyric-head" aria-hidden="true">
-        <span class="lh-col">Song</span>
-        <span class="lh-col">Album</span>
-        <span class="lh-col">Words</span>
-        <span class="lh-col lh-plays">Plays</span>
-        <span class="lh-col lh-tab">Tab</span>
+      <div class="lyric-head" role="row">
+        <button type="button" class="lh-col lh-sort lh-title" data-sort="title" aria-sort="none">Song <span class="lh-arrow" aria-hidden="true">↕</span></button>
+        <button type="button" class="lh-col lh-sort lh-artist" data-sort="artist" aria-sort="none">Artist <span class="lh-arrow" aria-hidden="true">↕</span></button>
+        <span class="lh-col lh-album">Album</span>
+        <button type="button" class="lh-col lh-sort lh-words" data-sort="transcription" aria-sort="none">Lyrics <span class="lh-arrow" aria-hidden="true">↕</span></button>
+        <button type="button" class="lh-col lh-sort lh-tab" data-sort="hastab" aria-sort="none">Tab <span class="lh-arrow" aria-hidden="true">↕</span></button>
+        <button type="button" class="lh-col lh-sort lh-plays" data-sort="plays" aria-sort="none">Plays <span class="lh-arrow" aria-hidden="true">↕</span></button>
       </div>
       <div class="song-list lyrics-list" id="lyric-list">${rows}</div>
       <p class="song-empty" id="lyric-empty" hidden>No songs match those filters.</p>
@@ -1985,11 +2003,11 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
 function renderLyricsSearchScript() {
   return `(() => {
     const input = document.getElementById("lyric-search");
-    const rows = [...document.querySelectorAll(".lyric-row")];
+    const list = document.getElementById("lyric-list");
+    const rows = [...list.querySelectorAll(".lyric-row-wrap")];
     const count = document.getElementById("lyric-count");
     const empty = document.getElementById("lyric-empty");
     const total = rows.length;
-    const chorded = rows.filter((row) => row.dataset.haschords === "yes").length;
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
     const chordsToggle = document.querySelector("[data-chords-filter]");
     const albumSelect = document.querySelector("[data-album-filter]");
@@ -2005,13 +2023,47 @@ function renderLyricsSearchScript() {
           && (selectedType === "all" || row.dataset.type === selectedType)
           && (!chordsOnly || row.dataset.haschords === "yes")
           && (!album || row.dataset.album === album);
-        (row.closest(".lyric-row-wrap") || row).hidden = !hit;
+        row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
       const filtered = q || selectedType !== "all" || chordsOnly || album;
       count.textContent = filtered ? shown + " of " + total + " songs" : base;
     };
+    // Column sort: click a header to sort by that key; click again to flip direction.
+    // PLAYS is numeric; LYRICS (data-transcription) and TAB (data-hastab) sort by
+    // has-resource ("yes" > "no"), surfacing our own transcriptions / hosted tabs
+    // first. Title breaks every tie. Sort reorders the wraps; filtering is unaffected.
+    const sortButtons = [...document.querySelectorAll(".lyric-head [data-sort]")];
+    const numeric = { plays: true };
+    let sortKey = "";
+    let sortDir = "asc";
+    const compare = (a, b) => {
+      const av = a.dataset[sortKey] || "";
+      const bv = b.dataset[sortKey] || "";
+      let c = numeric[sortKey] ? (Number(av) - Number(bv)) : av.localeCompare(bv);
+      if (!c) c = a.dataset.title.localeCompare(b.dataset.title);
+      return sortDir === "asc" ? c : -c;
+    };
+    const runSort = () => {
+      [...list.querySelectorAll(".lyric-row-wrap")].sort(compare).forEach((w) => list.appendChild(w));
+    };
+    sortButtons.forEach((btn) => btn.addEventListener("click", () => {
+      const key = btn.dataset.sort;
+      if (sortKey === key) {
+        sortDir = sortDir === "asc" ? "desc" : "asc";
+      } else {
+        sortKey = key;
+        sortDir = (key === "title" || key === "artist") ? "asc" : "desc";
+      }
+      sortButtons.forEach((b) => {
+        const on = b.dataset.sort === sortKey;
+        b.setAttribute("aria-sort", on ? (sortDir === "asc" ? "ascending" : "descending") : "none");
+        const arrow = b.querySelector(".lh-arrow");
+        if (arrow) arrow.textContent = on ? (sortDir === "asc" ? "↑" : "↓") : "↕";
+      });
+      runSort();
+    }));
     typeButtons.forEach((btn) => btn.addEventListener("click", () => {
       selectedType = btn.dataset.typeFilter;
       typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
@@ -13535,7 +13587,7 @@ body.stagelight .sih-plays { text-align: right; }
 /* The wrapper's display:grid outweighs the UA [hidden] rule, so filtered/searched
    rows need an explicit, equal-specificity hide. The wrap (not the inner row) is
    what the search script toggles, so its resource links hide with it. */
-body.stagelight .song-row-wrap[hidden], body.stagelight .lyric-row[hidden] { display: none; }
+body.stagelight .song-row-wrap[hidden], body.stagelight .lyric-row-wrap[hidden] { display: none; }
 /* Song Index row = a wrapper grid so the resource links can be REAL sibling <a>
    elements (nested anchors inside the row link would be invalid HTML). The wrap
    shares the row's --sr-cols template; the row anchor spans every column and holds
@@ -13615,55 +13667,81 @@ body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(-
   body.stagelight .song-count { display: none; }
 }
 
-/* Lyrics & Chords hub — a row per lyric page, modeled on the Song Index row. */
+/* Lyrics & Chords hub — SONG | ARTIST | ALBUM | LYRICS | TAB | PLAYS. One shared
+   column template drives BOTH the sticky header and every row so columns line up at
+   every width (owner QA: header/rows must share one grid). Mirrors .song-row-wrap:
+   each row is a wrapper grid, the row anchor (the LYRICS link) spans all six tracks,
+   and the TAB link overlays the reserved 5th track as a real sibling <a>. */
 body.stagelight .archive-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); margin: 4px 0 12px; }
-body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1.6fr) minmax(0, 1fr) 150px 96px; }
-body.stagelight .lyric-row {
-  display: grid; grid-template-columns: var(--lr-cols); align-items: center; gap: 18px;
-  padding: 15px 16px; border-radius: var(--sl-r-sm); color: var(--sl-ink); text-decoration: none; transition: background 0.16s ease;
-}
+body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) 128px 84px 100px; }
+body.stagelight .song-list.lyrics-list { display: grid; gap: 1px; }
+/* Column-header row — mono/uppercase labels; sortable columns are buttons. Sticky
+   just under the sticky search bar, matching the Song Index head. */
 body.stagelight .lyric-head {
-  display: grid; grid-template-columns: var(--lr-cols) 92px; align-items: center; gap: 18px;
-  padding: 10px 16px 8px; position: sticky; top: 128px; z-index: 4; background: var(--sl-bg, #0b0b0d);
+  display: grid; grid-template-columns: var(--lr-cols); gap: 16px;
+  align-items: center; padding: 10px 12px; margin-top: 6px;
+  position: sticky; top: 128px; z-index: 2;
+  background: color-mix(in srgb, var(--sl-glass) 92%, #000);
   border-bottom: 1px solid var(--sl-line);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
 }
 body.stagelight .lh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .lh-plays { text-align: right; }
-body.stagelight .lr-words { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-muted); }
-body.stagelight .lr-ext-arrow { color: var(--sl-faint); }
-@media (max-width: 560px) {
-  body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1fr) 96px; }
-  body.stagelight .lyric-row .lr-sub, body.stagelight .lyric-row .lr-words,
-  body.stagelight .lyric-head .lh-col:nth-child(2), body.stagelight .lyric-head .lh-col:nth-child(3) { display: none; }
-  /* Drop the TAB header track too — most rows carry no Tab chip at this width,
-     so keeping it left the SONG/PLAYS labels floating out of line with the rows. */
-  body.stagelight .lyric-head { grid-template-columns: var(--lr-cols); }
-  body.stagelight .lyric-head .lh-tab { display: none; }
+body.stagelight button.lh-sort { background: transparent; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 0; text-align: left; transition: color 0.15s ease; }
+body.stagelight button.lh-sort:hover { color: var(--sl-muted); }
+body.stagelight button.lh-sort[aria-sort="ascending"], body.stagelight button.lh-sort[aria-sort="descending"] { color: var(--sl-ink); }
+body.stagelight .lh-arrow { font-size: 10px; color: var(--sl-line-strong); }
+body.stagelight button.lh-sort[aria-sort="ascending"] .lh-arrow, body.stagelight button.lh-sort[aria-sort="descending"] .lh-arrow { color: rgba(212,81,79,0.95); }
+body.stagelight .lh-plays { text-align: right; justify-self: end; }
+body.stagelight button.lh-plays { justify-content: flex-end; }
+/* The wrapper grid outweighs the UA [hidden] rule, so filtered rows need an explicit,
+   equal-specificity hide (declared with .song-row-wrap above; the wrap is what the
+   search script toggles, so its Tab link hides with it). */
+body.stagelight .lyric-row-wrap {
+  position: relative; display: grid; grid-template-columns: var(--lr-cols);
+  align-items: center; gap: 16px; border-bottom: 1px solid var(--sl-line-faint);
 }
-body.stagelight .lyric-row:hover { background: rgba(255,255,255,0.03); }
-/* Rows whose chords live on a sibling tab page carry a separate Tab chip. */
-body.stagelight .lyric-row-wrap { display: flex; align-items: center; }
-body.stagelight .lyric-row-wrap[hidden] { display: none; }
-body.stagelight .lyric-row-wrap .lyric-row { flex: 1; min-width: 0; }
-body.stagelight .lr-tab-chip {
-  flex: none; width: 74px; justify-content: center; text-align: center; margin: 0 6px 0 2px; padding: 6px 12px; border-radius: var(--sl-r-pill);
-  border: 1px solid rgba(212,81,79,0.5); color: var(--sl-ink); text-decoration: none;
-  font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
-  transition: background 0.15s ease;
+body.stagelight .lyric-row {
+  grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: var(--lr-cols);
+  align-items: center; gap: 16px; padding: 15px 12px; color: var(--sl-ink); text-decoration: none;
 }
-body.stagelight .lr-tab-chip:hover { background: rgba(212,81,79,0.16); }
+/* Plays skips the reserved TAB track (5) so the Tab link can overlay it. */
+body.stagelight .lr-plays { grid-column: 6; }
+body.stagelight .lyric-row-wrap:hover { background: rgba(255,255,255,0.03); }
+/* TAB overlay — real sibling <a> in track 5, layered above the row anchor so it stays
+   independently clickable + tabbable. Empty rows show a muted dash (no external tab
+   source exists in the data, so absent tabs are never a guessed link). */
+body.stagelight .lr-tab {
+  grid-column: 5; grid-row: 1; z-index: 1; position: relative; justify-self: start;
+  font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: var(--sl-r-pill); white-space: nowrap; text-decoration: none;
+}
+body.stagelight a.lr-tab { border: 1px solid rgba(212,81,79,0.5); color: var(--sl-ink); transition: background 0.15s ease; }
+body.stagelight a.lr-tab:hover { background: rgba(212,81,79,0.16); }
+body.stagelight a.lr-tab:focus-visible { outline: 2px solid var(--sl-muted); outline-offset: 2px; }
+body.stagelight .lr-tab-empty { color: var(--sl-faint); border: 0; padding-left: 2px; }
 body.stagelight .lr-title { font-family: var(--sl-display); font-size: 15px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-body.stagelight .lr-badge { margin-left: 10px; font-family: var(--sl-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.09em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); vertical-align: middle; white-space: nowrap; }
-body.stagelight .lr-badge-internal { border-color: rgba(212,81,79,0.5); color: var(--sl-ink); }
-body.stagelight .lr-ext-arrow { margin-left: 5px; color: var(--sl-faint); }
-body.stagelight .lr-kind { margin-left: 8px; font-family: var(--sl-mono); font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); vertical-align: middle; white-space: nowrap; }
+body.stagelight .lr-artist { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.stagelight .lr-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-body.stagelight .lr-plays { text-align: right; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .lr-words { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-muted); white-space: nowrap; }
+body.stagelight .lr-ext-arrow { color: var(--sl-faint); }
+body.stagelight .lr-none { color: var(--sl-faint); }
+body.stagelight .lr-plays { text-align: right; justify-self: end; font-family: var(--sl-mono); font-size: 15px; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
 body.stagelight .lr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
-@media (max-width: 640px) {
-  body.stagelight .lyric-row { grid-template-columns: minmax(0, 1fr) 84px; grid-auto-rows: auto; row-gap: 4px; }
-  body.stagelight .lr-sub { grid-column: 1; }
-  body.stagelight .lr-plays { grid-column: 2; grid-row: 1; }
+/* Tablet (561–900px): drop ARTIST + ALBUM, leaving SONG | LYRICS | TAB | PLAYS. */
+@media (min-width: 561px) and (max-width: 900px) {
+  body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1fr) 120px 84px 96px; }
+  body.stagelight .lr-artist, body.stagelight .lr-sub,
+  body.stagelight .lh-artist, body.stagelight .lh-album { display: none; }
+  body.stagelight .lr-tab { grid-column: 3; }
+  body.stagelight .lr-plays { grid-column: 4; }
+}
+/* Mobile (<=560px): collapse to the essentials — SONG | LYRICS | PLAYS. */
+@media (max-width: 560px) {
+  body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1fr) 90px 68px; }
+  body.stagelight .lr-artist, body.stagelight .lr-sub, body.stagelight .lr-tab,
+  body.stagelight .lh-artist, body.stagelight .lh-album, body.stagelight .lh-tab { display: none; }
+  body.stagelight .lr-words { grid-column: 2; }
+  body.stagelight .lr-plays { grid-column: 3; }
 }
 
 body.stagelight .song-eyebrow { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 10px; }

@@ -376,14 +376,14 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
 
   // (9) Chords dual-links resolve to real dist files.
   const hub = await readText("dist/lyrics-chords/index.html").catch(() => "");
-  const tabHrefs = [...hub.matchAll(/class="lr-tab-chip" href="([^"]+)"/g)].map((m) => m[1]);
+  const tabHrefs = [...hub.matchAll(/<a class="lr-tab" href="([^"]+)"/g)].map((m) => m[1]);
   const missingTab = [];
   for (const href of tabHrefs) {
     const ok = await stat(distDir + href).then(() => true).catch(() => false);
     if (!ok) missingTab.push(href);
   }
-  record("Lyrics hub renders Tab chips for sibling guitar-tab pages", tabHrefs.length > 0);
-  record("Every Tab chip resolves to a real dist page", missingTab.length === 0, missingTab.join("\n"));
+  record("Lyrics hub renders Tab links for sibling guitar-tab pages", tabHrefs.length > 0);
+  record("Every Tab link resolves to a real dist page", missingTab.length === 0, missingTab.join("\n"));
 }
 
 function checkTourDates(html, siteData) {
@@ -426,10 +426,17 @@ async function checkMobilePassCss() {
   record("Album tracks stack the sheet/plays stat under the title on mobile",
     /body\.stagelight \.album-track \.track-stat \{ grid-column: 2; grid-row: 2;/.test(css),
     "560px media block moves .track-stat to its own row");
-  record("Lyrics hub header drops the TAB track at phone widths",
-    /body\.stagelight \.lyric-head \{ grid-template-columns: var\(--lr-cols\); \}/.test(css)
-      && /body\.stagelight \.lyric-head \.lh-tab \{ display: none; \}/.test(css),
-    "mobile lyric-head aligns SONG/PLAYS with the rows");
+  // Mobile lyrics hub collapses to SONG | LYRICS | PLAYS: ARTIST/ALBUM/TAB drop out
+  // (header + rows together) and the words/plays cells re-anchor to tracks 2/3 so the
+  // header labels stay aligned with the rows. One shared --lr-cols per breakpoint.
+  record("Lyrics hub collapses to SONG | LYRICS | PLAYS at phone widths",
+    /body\.stagelight \.lr-artist, body\.stagelight \.lr-sub, body\.stagelight \.lr-tab,\s*body\.stagelight \.lh-artist, body\.stagelight \.lh-album, body\.stagelight \.lh-tab \{ display: none; \}/.test(css)
+      && /body\.stagelight \.lr-words \{ grid-column: 2; \}/.test(css)
+      && /body\.stagelight \.lr-plays \{ grid-column: 3; \}/.test(css),
+    "mobile lyric hub hides ARTIST/ALBUM/TAB and re-anchors words/plays");
+  record("Lyrics hub header and rows share one --lr-cols grid template",
+    /body\.stagelight \.lyrics-list, body\.stagelight \.lyric-head \{ --lr-cols:/.test(css),
+    "header + rows must resolve identical column edges");
   // (Change 1) Last-four rail defines all four canonical marker colors.
   record("Tour Stats last-four rail defines the four marker colors",
     /\.lf-rail \.rail-black \{ color: #131313;/.test(css)
@@ -1126,14 +1133,34 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   const chordKind = (hub.match(/class="lr-words">Lyrics \+ chords</g) || []).length;
   const lyricsOnlyKind = (hub.match(/class="lr-words">Lyrics<\/span>/g) || []).length;
   record("Lyrics hub rows carry no source-name pills", !/lr-badge/.test(hub) && !/Burnthday transcription/.test(hub), "source pills should be gone");
-  record("Lyrics hub renders a sticky column-header row", /class="lyric-head"/.test(hub) && (hub.match(/class="lh-col/g) || []).length === 5, "lyric-head with 5 columns");
+  // Header row: six columns — SONG | ARTIST | ALBUM | LYRICS | TAB | PLAYS — with the
+  // sortable ones rendered as buttons (SONG, ARTIST, LYRICS, TAB, PLAYS = 5 sort keys).
+  record("Lyrics hub renders a sticky six-column header row", /class="lyric-head"/.test(hub) && (hub.match(/class="lh-col/g) || []).length === 6, "lyric-head with 6 columns");
+  const sortButtons = (hub.match(/class="lh-col lh-sort[^"]*" data-sort="[^"]+"/g) || []);
+  record("Lyrics hub column headers are sortable buttons", sortButtons.length === 5, `${sortButtons.length} sortable headers (expect SONG/ARTIST/LYRICS/TAB/PLAYS)`);
+  for (const key of ["title", "artist", "transcription", "hastab", "plays"]) {
+    assertIncludes(hub, `data-sort="${key}"`, `Lyrics hub offers the ${key} column sort`);
+  }
+  // LYRICS and TAB columns are adjacent (the Lyrics sort header immediately precedes
+  // the Tab sort header in the head row).
+  record("Lyrics hub places the LYRICS and TAB columns adjacent",
+    indexOf(hub, 'data-sort="transcription"') < indexOf(hub, 'data-sort="hastab"')
+      && indexOf(hub, 'data-sort="hastab"') < indexOf(hub, 'data-sort="plays"'),
+    "Lyrics header must sit immediately before Tab, before Plays");
   record("Lyrics & Chords hub shows the LYRICS + CHORDS content-type indicator", chordKind > 0, `${chordKind} rows marked Lyrics + Chords`);
   record("Lyrics & Chords hub shows the LYRICS content-type indicator", lyricsOnlyKind > 0, `${lyricsOnlyKind} rows marked Lyrics-only`);
   record("Every internal row carries a content-type indicator", chordKind + lyricsOnlyKind === internalCount, `${chordKind + lyricsOnlyKind} indicators vs ${internalCount} internal rows`);
-  const internalRows = [...hub.matchAll(/<a class="lyric-row" href="([^"]+)"(?![^>]*target)[^>]*data-transcription="yes"/g)].map((m) => m[1]);
-  record("Every badged internal row links a real archive page in dist", internalRows.length > 0 && internalRows.every((href) => files.some((f) => f.endsWith(href.replace(/^\//, "").split("/").join(path.sep)))), `${internalRows.length} internal rows checked`);
-  const ecRows = [...hub.matchAll(/<a class="lyric-row" href="([^"]+)"[^>]*target="_blank"[^>]*data-transcription="no"/g)].map((m) => m[1]);
+  // Facets/sort keys ride on the wrapper now; internal rows (data-transcription="yes")
+  // link a real archive page, EC rows (data-transcription="no") open everydaycompanion.com.
+  const internalRows = [...hub.matchAll(/<div class="lyric-row-wrap"[^>]*data-transcription="yes"[^>]*>\s*<a class="lyric-row" href="([^"]+)"/g)].map((m) => m[1]);
+  record("Every internal transcription row links a real archive page in dist", internalRows.length > 0 && internalRows.every((href) => files.some((f) => f.endsWith(href.replace(/^\//, "").split("/").join(path.sep)))), `${internalRows.length} internal rows checked`);
+  const ecRows = [...hub.matchAll(/<div class="lyric-row-wrap"[^>]*data-transcription="no"[^>]*>\s*<a class="lyric-row" href="([^"]+)"[^>]*target="_blank"/g)].map((m) => m[1]);
   record("Lyrics & Chords hub sends EC rows to everydaycompanion.com", ecRows.length > 0 && ecRows.every((href) => /^https?:\/\/(?:www\.)?everydaycompanion\.com\//.test(href)), `${ecRows.length} EC rows checked`);
+  // ARTIST column: only COVERS with curated origin data carry an attribution; it is a
+  // real string on the wrapper (data-artist), never invented. Populated rows exist and
+  // are strictly fewer than the catalog (most songs have no curated attribution).
+  const artistRows = (hub.match(/data-artist="[^"]+"/g) || []).length;
+  record("Lyrics hub attributes covers with curated origin data (no invented artists)", artistRows > 0 && artistRows < rowCount, `${artistRows} rows carry an artist attribution`);
 
   // PART 2: the multi-select filters (Type / Has transcription / Album) compose
   // with the search box; the controls are real and the rows carry the data-*.
@@ -1144,7 +1171,7 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   assertIncludes(hub, ">Has chords<", "Lyrics & Chords hub Has-chords filter is labelled");
   assertIncludes(hub, "data-album-filter", "Lyrics & Chords hub offers the album filter");
   for (const type of ["all", "original", "cover"]) assertIncludes(hub, `data-type-filter="${type}"`, `Lyrics & Chords hub offers the ${type} type filter`);
-  record("Lyrics & Chords rows carry the filter data-* attributes", /class="lyric-row"[^>]*data-transcription="(?:yes|no)"[^>]*data-haschords="(?:yes|no)"[^>]*data-type="[^"]*"[^>]*data-album="[^"]*"/.test(hub), "lyric-row data-transcription/data-haschords/data-type/data-album present");
+  record("Lyrics & Chords rows carry the filter + sort data-* attributes", /class="lyric-row-wrap"[^>]*data-transcription="(?:yes|no)"[^>]*data-haschords="(?:yes|no)"[^>]*data-hastab="(?:yes|no)"[^>]*data-type="[^"]*"[^>]*data-album="[^"]*"[^>]*data-plays="\d+"/.test(hub), "lyric-row-wrap data-transcription/haschords/hastab/type/album/plays present");
   record("Lyrics & Chords hub has internal rows flagged with chords", (hub.match(/data-haschords="yes"/g) || []).length > 0, "no data-haschords=yes rows");
 
   // Known lyric subpages: KEEP the framing eyebrow (categorizes them into the
