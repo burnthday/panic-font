@@ -12506,6 +12506,11 @@ body.stagelight .live-dot { width: 7px; height: 7px; border-radius: 50%; backgro
 body.stagelight .signal-cell strong { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 620; }
 body.stagelight .signal-cell small { display: block; margin-top: 4px; font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); letter-spacing: 0.02em; font-weight: 400; }
 body.stagelight .tour-table td, body.stagelight .tour-table th[scope="row"] { vertical-align: top; }
+/* Mobile: the capped table scrolls sideways; a legacy card-layout rule zeroed the
+   signal columns' min-width, crushing RARITY/HEAT into tall word-per-line stacks. */
+@media (max-width: 560px) {
+  body.stagelight .tour-table .signal-cell { min-width: 150px; }
+}
 /* mobile-sort now wraps the shared custom-select; the inner summary is the pill */
 body.stagelight .data-toolbar .mobile-sort { display: none; }
 body.stagelight .show-filter { gap: 12px; }
@@ -13152,6 +13157,12 @@ body.stagelight .album-nav a:hover strong { color: #fff; }
   body.stagelight .album-cover-lg { grid-row: 1 / span 3; }
   body.stagelight .album-footprint { grid-template-columns: 1fr; }
 }
+/* Mobile: the nowrap ON-THE-CURRENT-SHEET pill + plays ate the whole row and sat
+   on top of the track title. Stack the stat line under the title instead. */
+@media (max-width: 560px) {
+  body.stagelight .album-track { grid-template-columns: 34px minmax(0, 1fr); row-gap: 8px; }
+  body.stagelight .album-track .track-stat { grid-column: 2; grid-row: 2; justify-content: flex-start; flex-wrap: wrap; white-space: normal; }
+}
 
 /* song index + per-song history */
 body.stagelight .songs-main { width: min(1180px, calc(100% - 28px)); }
@@ -13344,6 +13355,10 @@ body.stagelight .lr-ext-arrow { color: var(--sl-faint); }
   body.stagelight .lyrics-list, body.stagelight .lyric-head { --lr-cols: minmax(0, 1fr) 96px; }
   body.stagelight .lyric-row .lr-sub, body.stagelight .lyric-row .lr-words,
   body.stagelight .lyric-head .lh-col:nth-child(2), body.stagelight .lyric-head .lh-col:nth-child(3) { display: none; }
+  /* Drop the TAB header track too — most rows carry no Tab chip at this width,
+     so keeping it left the SONG/PLAYS labels floating out of line with the rows. */
+  body.stagelight .lyric-head { grid-template-columns: var(--lr-cols); }
+  body.stagelight .lyric-head .lh-tab { display: none; }
 }
 body.stagelight .lyric-row:hover { background: rgba(255,255,255,0.03); }
 /* Rows whose chords live on a sibling tab page carry a separate Tab chip. */
@@ -13416,7 +13431,7 @@ body.stagelight .song-history { margin: 40px 0 8px; }
 body.stagelight .song-history-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--sl-line); }
 body.stagelight .song-history-head h2 { font-family: var(--sl-display); font-size: 21px; font-weight: 640; letter-spacing: -0.01em; }
 body.stagelight .song-history-head span { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); white-space: nowrap; }
-body.stagelight .perf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+body.stagelight .perf-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; }
 body.stagelight .perf > a, body.stagelight .perf > .perf-static {
   display: grid; grid-template-columns: 150px minmax(0, 1fr) auto 14px; align-items: baseline; gap: 6px 16px;
   padding: 12px 8px; color: var(--sl-ink); border-bottom: 1px solid var(--sl-line-faint);
@@ -13433,11 +13448,12 @@ body.stagelight .perf-more { margin-top: 16px; font-family: var(--sl-mono); font
 body.stagelight .perf-more a { color: var(--sl-muted); text-decoration: underline; text-underline-offset: 2px; }
 body.stagelight .perf-more a:hover { color: var(--sl-ink); }
 @media (max-width: 640px) {
-  body.stagelight .perf > a, body.stagelight .perf > .perf-static { grid-template-columns: 1fr auto 14px; }
+  body.stagelight .perf > a, body.stagelight .perf > .perf-static { grid-template-columns: minmax(0, 1fr) 14px; gap: 2px 12px; }
   body.stagelight .perf-date { grid-column: 1 / -1; grid-row: 1; }
   body.stagelight .perf-venue { grid-column: 1; grid-row: 2; }
-  body.stagelight .perf-loc { grid-column: 2; grid-row: 2; text-align: right; }
-  body.stagelight .perf-go { grid-column: 3; grid-row: 2; }
+  body.stagelight .perf-loc { grid-column: 1; grid-row: 3; text-align: left; }
+  body.stagelight .perf-go { grid-column: 2; grid-row: 2; }
+  body.stagelight .perf-tags { grid-column: 1 / -1; }
 }
 /* "Learn It" resource row — guitarist-facing, styled to match .song-album-chips */
 body.stagelight .song-learn { margin: 0 0 30px; }

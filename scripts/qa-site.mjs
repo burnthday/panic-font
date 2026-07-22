@@ -28,6 +28,7 @@ async function main() {
   checkTourDates(homeHtml, siteData);
   await checkUpcomingBackdrop(homeHtml);
   await checkMobileTourDateCss();
+  await checkMobilePassCss();
   await checkSetlistImageOrientation(siteData);
   await checkLatestSetlist(homeHtml, siteData);
   checkGuestAnnotations(homeHtml, review2025Html);
@@ -349,6 +350,30 @@ async function checkMobileTourDateCss() {
     "Mobile Tour Date status stays below the venue",
     /\.tour-dates li em\s*\{[^}]*grid-column:\s*2;[^}]*grid-row:\s*3;/s.test(styles)
   );
+}
+
+// Mobile pass (2026-07-21) — guards for the 375/431px fixes so they can't silently
+// regress: song-page performance rows must be allowed to shrink below min-content
+// (they overflowed the viewport), the Tour Stats signal columns keep a real
+// min-width inside the sideways-scrolling capped table (a legacy card-layout rule
+// zeroed it and crushed RARITY/HEAT into tall stacks), album-detail track stats
+// stack under the title instead of overlapping it, and the lyrics-hub header drops
+// its TAB track at phone widths so SONG/PLAYS line up with the rows.
+async function checkMobilePassCss() {
+  const css = await readText("dist/stagelight.css").catch(() => "");
+  record("Song-page performance list column can shrink (no viewport overflow)",
+    /body\.stagelight \.perf-list \{[^}]*grid-template-columns: minmax\(0, 1fr\)/.test(css),
+    "perf-list uses minmax(0,1fr) so has-relisten rows never push past 375px");
+  record("Tour Stats signal columns keep min-width inside the mobile scroll table",
+    /body\.stagelight \.tour-table \.signal-cell \{ min-width: 150px; \}/.test(css),
+    "560px media block restores .signal-cell min-width for the capped table");
+  record("Album tracks stack the sheet/plays stat under the title on mobile",
+    /body\.stagelight \.album-track \.track-stat \{ grid-column: 2; grid-row: 2;/.test(css),
+    "560px media block moves .track-stat to its own row");
+  record("Lyrics hub header drops the TAB track at phone widths",
+    /body\.stagelight \.lyric-head \{ grid-template-columns: var\(--lr-cols\); \}/.test(css)
+      && /body\.stagelight \.lyric-head \.lh-tab \{ display: none; \}/.test(css),
+    "mobile lyric-head aligns SONG/PLAYS with the rows");
 }
 
 // Feature 2 — the homepage UPCOMING board carries a full-bleed live-show backdrop
