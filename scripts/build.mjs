@@ -7081,12 +7081,35 @@ function renderSetlistExpandScript() {
     const section = document.getElementById("setlists");
     if (!btn || !section) return;
     const label = btn.querySelector(".sea-label");
+    const cards = [...section.querySelectorAll(".setlist-list .show-entry")];
+    // Unique view-transition names let the browser FLIP the whole grid when a
+    // card expands to full width (Stripe case-study move). No-op without VT.
+    cards.forEach((card, index) => { card.style.viewTransitionName = "se" + index; });
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const smooth = (fn) => {
+      if (document.startViewTransition && !reduced.matches) document.startViewTransition(fn);
+      else fn();
+    };
     btn.addEventListener("click", () => {
-      const cards = [...section.querySelectorAll(".setlist-list .show-entry")];
       const anyClosed = cards.some((card) => !card.open);
-      cards.forEach((card) => { card.open = anyClosed; });
+      smooth(() => cards.forEach((card) => { card.open = anyClosed; }));
       btn.setAttribute("aria-expanded", String(anyClosed));
       if (label) label.textContent = anyClosed ? "Collapse all" : "Open all setlists";
+    });
+    // Accordion: opening a card closes the others and it takes the full row.
+    // While "Open all" is on, cards toggle independently.
+    section.querySelector(".setlist-list")?.addEventListener("click", (event) => {
+      const summary = event.target.closest("summary");
+      const card = summary?.closest(".show-entry");
+      if (!card || !cards.includes(card) || event.target.closest("a")) return;
+      if (btn.getAttribute("aria-expanded") === "true") return;
+      event.preventDefault();
+      const willOpen = !card.open;
+      smooth(() => {
+        cards.forEach((other) => { if (other !== card) other.open = false; });
+        card.open = willOpen;
+      });
+      if (willOpen) setTimeout(() => card.scrollIntoView({ block: "nearest", behavior: reduced.matches ? "auto" : "smooth" }), 60);
     });
   })();`;
 }
@@ -8003,7 +8026,8 @@ function renderFooterBottom(year) {
 function renderSiteFooter(data, options = {}) {
   const year = data?.site?.year || new Date().getFullYear();
   if (options.stagelight) {
-    return `<footer class="site-foot">
+    return `<div class="athens-strip" aria-hidden="true"><span>ALL THE WAY FROM ATHENS GA</span></div>
+<footer class="site-foot">
   <div class="site-foot-inner">
     <div class="footer-lead">
       <a class="footer-brand" href="/"><img class="footer-mark" src="/assets/brand/burnthday-eater.svg" alt="Burnthday"></a>
@@ -9105,12 +9129,12 @@ function renderSetlists(data, options = {}) {
   const postedLabel = skipDates.size ? `${setlists.length} older posted` : `${data.totals.postedSetlists} posted`;
   const upcomingDates = (data.tourDates || []).filter((date) => !date.isPosted);
   const upcomingBlock = upcomingDates.length ? `<div class="upcoming-dates" id="tour-dates">
-    <div class="upcoming-heading"><h3>UPCOMING</h3><span>${formatNumber(upcomingDates.length)} shows ahead</span></div>
+    <div class="upcoming-heading"><h3>UPCOMING</h3><span>${formatNumber(upcomingDates.length)} shows ahead</span><a class="link-quiet up-official" href="https://widespreadpanic.com/tour">Full tour at widespreadpanic.com <span aria-hidden="true">→</span></a></div>
     <ol class="tour-dates">
       ${upcomingDates.map((date) => `<li class="is-upcoming">
         <time class="sc-date" datetime="${escapeAttr(date.isoDate || "")}">${escapeHtml(date.date)}</time>
         <span class="sc-place"><strong>${escapeHtml(date.location)}</strong><small>${escapeHtml(date.venue)}</small></span>
-        <em class="up-flag">Upcoming</em>
+        ${date.sourceUrl ? `<a class="up-tickets" href="${escapeAttr(date.sourceUrl)}">Get Tickets <span aria-hidden="true">→</span></a>` : '<em class="up-flag">Upcoming</em>'}
       </li>`).join("")}
     </ol>
   </div><p class="upcoming-credit">Photo: Andy Tennille</p>` : "";
@@ -13296,7 +13320,21 @@ body.stagelight .sc-tier { font-family: var(--sl-mono); font-size: 12px; letter-
 body.stagelight .sc-pull b { font-weight: 600; white-space: nowrap; color: var(--sl-ink); }
 body.stagelight .sc-pull [fill="#111111"] { fill: #f2f2f0; }
 body.stagelight .sc-pull [stroke="#111111"] { stroke: #f2f2f0; }
-body.stagelight .setlist-list { display: grid; gap: 16px; }
+/* Two-up feed: closed cards pair per row; the open card takes the full row
+   (view transitions animate the reflow — Stripe case-study language). */
+body.stagelight .setlist-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+body.stagelight .setlist-list .show-entry[open] { grid-column: 1 / -1; }
+@media (max-width: 760px) { body.stagelight .setlist-list { grid-template-columns: 1fr; } }
+body.stagelight .up-tickets {
+  display: inline-flex; align-items: center; gap: 7px; margin-left: auto; flex: none;
+  padding: 8px 14px; border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-pill);
+  background: rgba(255,255,255,0.05); color: var(--sl-ink); font-size: 13px; font-weight: 560; white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+body.stagelight .up-tickets span { transition: transform 0.18s ease; }
+body.stagelight .up-tickets:hover { background: rgba(255,255,255,0.1); border-color: var(--sl-muted); }
+body.stagelight .up-tickets:hover span { transform: translateX(2px); }
+body.stagelight .up-official { margin-left: auto; }
 body.stagelight .setlist-archive-panel > summary { display: none; }
 @media (max-width: 560px) {
   body.stagelight .site-head { gap: 16px; }
@@ -13551,6 +13589,20 @@ body.stagelight .setlist-row { border-bottom: 1px solid var(--sl-line); }
 body.stagelight .setlist-section .setlist-text, body.stagelight .setlist-row-body { color: var(--sl-ink); }
 
 /* ---- FOOTER ---- */
+/* Garrie Vereen's line, stretched across the page and sitting right on the
+   footer, Webflow-style: no borders, slight baseline crop, italic. */
+body.stagelight .athens-strip {
+  width: 100vw; margin-left: calc(50% - 50vw); margin-top: 96px;
+  overflow: hidden; line-height: 0.78; pointer-events: none; user-select: none;
+}
+body.stagelight .athens-strip span {
+  display: block; text-align: center; white-space: nowrap;
+  font-family: var(--sl-display); font-style: italic; font-weight: 700;
+  font-size: clamp(30px, 7.4vw, 118px); letter-spacing: -0.01em;
+  margin-bottom: -0.16em;
+  background: linear-gradient(180deg, rgba(242,242,240,0.22), rgba(242,242,240,0.05));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 body.stagelight .site-foot {
   margin-top: 120px; position: relative;
   background: linear-gradient(180deg, rgba(15,15,17,0.72), rgba(9,9,11,0.92));

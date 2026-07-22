@@ -390,7 +390,12 @@ function checkTourDates(html, siteData) {
   const upcoming = siteData.tourDates.filter((date) => !date.isPosted).length;
   assertIncludes(feature, `${upcoming} shows ahead`, "Upcoming block summarizes the remaining schedule");
   record("Upcoming block lists every unplayed show once", (feature.match(/<li class="is-upcoming">/g) || []).length === upcoming);
-  record("Upcoming block gives every row a clear status", (feature.match(/<em class="up-flag">Upcoming<\/em>/g) || []).length === upcoming);
+  // Every upcoming row carries a Get Tickets link to that show's official page
+  // (falls back to the Upcoming flag only when a show has no sourceUrl).
+  record("Upcoming block gives every row a Get Tickets link or status flag",
+    ((feature.match(/class="up-tickets"/g) || []).length + (feature.match(/<em class="up-flag">Upcoming<\/em>/g) || []).length) === upcoming
+    && (feature.match(/class="up-tickets" href="https:\/\/widespreadpanic\.com\/shows\//g) || []).length > 0);
+  assertIncludes(feature, 'href="https://widespreadpanic.com/tour"', "Upcoming block links the official tour page");
   record("Upcoming block omits already-posted shows", !feature.includes('<li class="is-posted">') && !feature.includes("Setlist posted"));
   record("Upcoming shows sit inside the Setlists section, below the archive", indexOf(html, 'id="setlists"') < indexOf(html, 'id="tour-dates"') && indexOf(html, '<details class="setlist-archive-panel"') < indexOf(html, 'id="tour-dates"'));
 }
