@@ -7446,9 +7446,8 @@ function renderStagelightHeader(data) {
       </div>` : ""}
     </div>` : "";
   return `<header class="site-head" id="top">
-  <a class="brand" href="/" aria-label="Burnthday">
+  <a class="brand" href="/" aria-label="Burnthday home">
     <img class="brand-logo-sl" src="/assets/brand/burnthday-eater.svg" alt="" aria-hidden="true">
-    <span class="brand-wordmark" aria-hidden="true">Burnthday</span>
   </a>
   <div class="head-actions">
     <button type="button" class="head-search" data-search-open aria-haspopup="dialog" aria-controls="site-search" aria-keyshortcuts="Meta+K Control+K" aria-label="Search Burnthday">
