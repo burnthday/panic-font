@@ -126,7 +126,7 @@ function checkCorePageState(html, siteData) {
   record("Song List laminate contains no website-stat ledger", !ledger.includes("board-ledger") && !ledger.includes("songs per show"));
 
   assertIncludes(html, "The tiny number beside a song counts its plays this tour", "Sheet key explains the tiny number");
-  assertIncludes(html, "Marker color identifies the most recent shows on the sheet", "Sheet key opens with the one-line marker explanation");
+  assertIncludes(html, "the last four shows marked out in color", "Board intro subline explains the marker color code");
   assertIncludes(html, "The Woodshed", "Sheet key includes The Woodshed");
   record("The Woodshed explains the Nick Johnson logic", html.includes("The Woodshed lists rotation songs") && html.includes("hasn&#39;t played yet") || html.includes("The Woodshed lists rotation songs"), "Woodshed Ramp column present");
   record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed-sheet").includes("songs not yet played with Nick Johnson"));
@@ -1342,8 +1342,12 @@ function checkMarkerLegend(html, siteData) {
     const item = legend[index];
     return item?.color === colors[index] && item?.isoDate === isoDate && Boolean(item?.label);
   });
-  const matchesHtml = legend.every((item, index) => html.includes(item.label)) && html.includes('class="mk-dot"') && html.includes('<b>1</b><small>show ago</small>') && html.includes('<b>4</b><small>shows ago</small>');
-  record("Marker legend circles match the last four posted shows", matchesData && matchesHtml, JSON.stringify(legend));
+  // The color key renders as four intro marker swipes (bi-swipe), each carrying
+  // its show's short date; the four canon marker colors all appear as --mc values.
+  const swipeCount = (html.match(/class="bi-swipe"/g) || []).length;
+  const swipeColors = ["#131313", "#465692", "#47866a", "#d4514f"].every((hex) => html.includes(`class="bi-swipe" style="--mc:${hex}`));
+  const matchesHtml = legend.every((item) => html.includes(`datetime="${item.isoDate}"`)) && swipeCount === legend.length && swipeColors;
+  record("Marker swipes in the board intro match the last four posted shows", matchesData && matchesHtml, JSON.stringify(legend));
 }
 
 // The music layer (Song Origins video embeds, official-video WATCH, Relisten links).

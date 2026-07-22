@@ -8049,8 +8049,22 @@ function renderBoardIntro(data) {
     const city = clean(String(upcoming.location).split(",")[0]) || upcoming.location;
     where = `${when} show at ${city}'s ${upcoming.venue}`;
   }
+  const legend = data.site.markerLegend || [];
+  const tilts = ["-1.3deg", "1.1deg", "-0.7deg", "1.4deg"];
+  const swipes = legend.map((item, index) => {
+    const color = STRIKE_COLORS[item.asset] || "#131313";
+    const shortDate = isoToShortDate(item.isoDate);
+    const location = item.label.startsWith(shortDate) ? item.label.slice(shortDate.length).trim() : item.label;
+    const city = clean(String(location).split(",")[0]) || location;
+    const numeral = (location.match(/\b([IVX]+)$/) || [])[1] || "";
+    return `<li class="bi-swipe" style="--mc:${color}; --tilt:${tilts[index] || "0deg"}"><time datetime="${escapeAttr(item.isoDate)}">${escapeHtml(shortDate)}</time><b>${escapeHtml(city)}${numeral ? ` <span class="bi-run">${numeral}</span>` : ""}</b></li>`;
+  }).join("");
   return `<div class="board-intro">
-    <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}.</span></h2>
+    <div class="bi-copy">
+      <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}.</span></h2>
+      <p class="bi-sub">Every song on the table, the last four shows marked out in color, and how many times each has been played this year.</p>
+    </div>
+    ${legend.length ? `<ol class="bi-swipes" aria-label="Marker colors, most recent show first">${swipes}</ol>` : ""}
   </div>`;
 }
 
@@ -8571,15 +8585,9 @@ function renderNickRanking(songs) {
 }
 
 function renderSheetKey(data) {
-  const legend = data.site.markerLegend || [];
-  const dots = legend.map((item, index) => {
-    const color = STRIKE_COLORS[item.asset] || "#131313";
-    const n = index + 1;
-    return `<li><span class="mk-dot" style="--mc:${color}"><b>${n}</b><small>show${n === 1 ? "" : "s"} ago</small></span><span class="mk-show">${escapeHtml(item.label)}</span></li>`;
-  }).join("");
+  // Marker color key lives in the board intro (bi-swipes); this section keeps
+  // only the quiet "what everything means" disclosure.
   return `<section class="sheet-key" id="sheet-key">
-    <p class="sheet-key-line">Marker color identifies the most recent shows on the sheet.</p>
-    ${legend.length ? `<ol class="marker-dots" aria-label="Marker colors, most recent show first">${dots}</ol>` : ""}
     <details class="key-more">
     <summary class="link-quiet">What everything on the sheets means <svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
     <div class="key-grid">
@@ -13860,28 +13868,45 @@ body.stagelight .board-intro::before {
   background: radial-gradient(52% 58% at 32% 38%, var(--hero-glow, rgba(255,186,128,0.10)), transparent 74%);
   pointer-events: none;
 }
+body.stagelight .board-intro { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 32px 72px; align-items: center; }
 body.stagelight .board-intro-line {
-  position: relative; max-width: 52%; font-family: var(--sl-display);
-  font-size: 32px; font-weight: 640; letter-spacing: -0.015em; line-height: 1.28;
+  position: relative; font-family: var(--sl-display);
+  font-size: 30px; font-weight: 640; letter-spacing: -0.015em; line-height: 1.3;
 }
 body.stagelight .bi-lead { color: var(--sl-ink); }
 body.stagelight .bi-rest { color: rgba(242,242,240,0.5); }
-@media (max-width: 900px) { body.stagelight .board-intro-line { max-width: 100%; font-size: 26px; } }
+body.stagelight .bi-sub { margin: 16px 0 0; max-width: 52ch; font-size: 16px; line-height: 1.62; color: var(--sl-muted); }
+/* Marker swipes: the four most recent shows as big highlighter strokes. Uneven
+   corner radii + a per-stroke tilt keep them hand-drawn; hover squares them up. */
+body.stagelight .bi-swipes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; }
+body.stagelight .bi-swipe {
+  position: relative; display: flex; flex-direction: column; gap: 4px;
+  padding: 16px 20px 14px; background: var(--mc);
+  border-radius: 20px 30px 16px 32px / 30px 16px 34px 18px;
+  transform: rotate(var(--tilt, 0deg));
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.14), 0 18px 34px -18px rgba(0,0,0,0.75);
+  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1), box-shadow 0.22s ease;
+}
+/* Ink texture: a light entry edge fading into a darker dry-out, like one pass of a marker. */
+body.stagelight .bi-swipe::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(104deg, rgba(255,255,255,0.12), transparent 34%, rgba(0,0,0,0.14) 88%);
+}
+body.stagelight .bi-swipe:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 0 0 1px rgba(255,255,255,0.22), 0 22px 40px -18px rgba(0,0,0,0.8); }
+@media (prefers-reduced-motion: reduce) { body.stagelight .bi-swipe, body.stagelight .bi-swipe:hover { transition: none; transform: rotate(var(--tilt, 0deg)); } }
+body.stagelight .bi-swipe time { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.1em; color: rgba(255,255,255,0.78); }
+body.stagelight .bi-swipe b { font-family: var(--sl-display); font-size: 19px; font-weight: 660; letter-spacing: -0.01em; color: rgba(255,255,255,0.96); line-height: 1.1; }
+body.stagelight .bi-run { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7); }
+@media (max-width: 900px) {
+  body.stagelight .board-intro { grid-template-columns: 1fr; gap: 28px; }
+  body.stagelight .board-intro-line { font-size: 26px; }
+  body.stagelight .bi-swipe { padding: 13px 16px 12px; }
+  body.stagelight .bi-swipe b { font-size: 17px; }
+}
 body.stagelight main > .board-intro + section { margin-top: 44px; }
 
-/* ---- SHEET KEY (no bento: one bold line, marker circles, quiet disclosure) ---- */
+/* ---- SHEET KEY (quiet disclosure only; the color key is the intro's bi-swipes) ---- */
 body.stagelight .sheet-key { margin-bottom: 34px; }
-body.stagelight .sheet-key-line { font-size: 17px; font-weight: 650; color: var(--sl-ink); margin: 0 0 20px; }
-body.stagelight .marker-dots { list-style: none; margin: 0; padding: 0; display: flex; gap: 34px; flex-wrap: wrap; }
-body.stagelight .marker-dots li { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-body.stagelight .mk-dot {
-  width: 88px; height: 88px; border-radius: 50%; background: var(--mc);
-  display: grid; place-content: center; text-align: center; gap: 1px;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.16), 0 14px 30px -14px rgba(0,0,0,0.7);
-}
-body.stagelight .mk-dot b { font-family: var(--sl-display); font-size: 24px; font-weight: 680; color: rgba(255,255,255,0.94); line-height: 1; }
-body.stagelight .mk-dot small { font-family: var(--sl-mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.72); }
-body.stagelight .mk-show { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
 body.stagelight .key-more { margin-top: 24px; }
 body.stagelight .key-more summary { list-style: none; cursor: pointer; }
 body.stagelight .key-more summary::-webkit-details-marker { display: none; }
@@ -13893,8 +13918,6 @@ body.stagelight .key-grid p { margin: 0; font-size: 14.5px; line-height: 1.6; co
 body.stagelight .key-grid b { color: var(--sl-ink); font-weight: 650; }
 @media (max-width: 900px) {
   body.stagelight .key-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
-  body.stagelight .marker-dots { gap: 22px; }
-  body.stagelight .mk-dot { width: 74px; height: 74px; }
 }
 @media (max-width: 560px) { body.stagelight .key-grid { grid-template-columns: 1fr; } }
 
