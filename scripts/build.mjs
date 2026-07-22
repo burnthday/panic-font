@@ -8557,10 +8557,13 @@ function renderHomeHero(data, show) {
   const pullGroups = hasSetlist ? computeShowPulls(data, show) : [];
   const pullsRow = renderShowPulls(pullGroups);
   const ltpRow = hasSetlist ? renderShowLastPlayed(data, show) : "";
+  const bgSrc = show.bgImage || show.image;
+  const credit = show.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(show.photoCredit)}</figcaption>` : "";
   const photo = show.image
-    ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async" fetchpriority="high"></figure>`
+    ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async" fetchpriority="high">${credit}</figure>`
     : "";
-  const bg = show.image ? `<div class="hero-bg" aria-hidden="true"><img src="${escapeAttr(show.image)}" alt="" decoding="async"></div>` : "";
+  const bg = bgSrc ? `<div class="hero-bg" aria-hidden="true"><img src="${escapeAttr(bgSrc)}" alt="" decoding="async"></div>` : "";
+  const side = (pullsRow || ltpRow) ? `<div class="hero-side">${pullsRow}${ltpRow}</div>` : "";
   return `<section class="home-hero${show.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${ariaHeading}">
     ${bg}
     <div class="hero-inner">
@@ -8573,7 +8576,10 @@ function renderHomeHero(data, show) {
         </div>
         ${photo}
       </div>
-      <div class="hero-setlist"><div class="sc-sets">${setRows}${notes}${pullsRow}${ltpRow}</div></div>
+      <div class="hero-setlist">
+        <div class="hero-sets sc-sets">${setRows}${notes}</div>
+        ${side}
+      </div>
     </div>
   </section>`;
 }
@@ -12442,8 +12448,8 @@ body.stagelight .site-head {
   display: flex; align-items: center; gap: 28px; min-height: 66px;
   padding: 0 max(28px, calc((100% - 1400px) / 2));
   position: sticky; top: 0; z-index: 60;
-  background: linear-gradient(180deg, rgba(16,16,18,0.78), rgba(13,13,15,0.62));
-  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  background: linear-gradient(180deg, rgba(14,14,16,0.52), rgba(12,12,14,0.36));
+  -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5);
   border-bottom: 1px solid var(--sl-line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
   transition: transform 0.3s ease;
 }
@@ -12719,24 +12725,32 @@ body.stagelight .show-entry.is-latest[open] .sc-bg { display: block; overflow: h
 body.stagelight .show-entry.is-latest[open] .sc-bg img { opacity: 0.5; object-position: center 34%; transform: scale(1.35); filter: blur(18px) saturate(1.1); }
 body.stagelight .show-entry.is-latest[open] .sc-bg::after { background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.72) 44%, rgba(11,11,12,0.94) 78%, rgba(11,11,12,1) 100%); }
 body.stagelight .show-entry[open] .sc-lockup, body.stagelight .sc-body { position: relative; z-index: 1; }
-/* ---- HOMEPAGE HERO (dedicated section, not the setlist card) ---- */
-body.stagelight .home-hero { position: relative; width: 100vw; margin-left: calc(50% - 50vw); overflow: hidden; isolation: isolate; }
-body.stagelight main > .home-hero { margin-top: 0; }
+/* ---- HOMEPAGE HERO (dedicated section, not the setlist card) ----
+   Pulls up behind the glassy header + breadcrumb so the blurred backdrop shows
+   through them, and the whole hero is tuned to fit ~one viewport (capped photo,
+   two-column setlist + pulls) without dynamic text shrinking. */
+body.stagelight .home-hero { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: calc(-1 * (66px + var(--sl-breadcrumb-h, 37px))); overflow: hidden; isolation: isolate; }
 body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
-body.stagelight .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; object-position: center 32%; transform: scale(1.4); filter: blur(22px) saturate(1.1); }
-body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.34) 0%, rgba(10,10,12,0.72) 46%, rgba(11,11,12,0.95) 82%, #0b0b0d 100%); }
-body.stagelight .hero-inner { position: relative; z-index: 1; padding: 60px max(28px, calc((100% - 1400px) / 2)) 44px; }
-body.stagelight .hero-lockup { display: grid; grid-template-columns: 1fr 1.14fr; gap: 56px; align-items: center; }
+body.stagelight .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.55; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); }
+body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.6) 52%, rgba(11,11,12,0.92) 84%, #0b0b0d 100%); }
+body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) max(28px, calc((100% - 1400px) / 2)) 38px; }
+body.stagelight .hero-lockup { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
 body.stagelight .home-hero.no-image .hero-lockup { grid-template-columns: 1fr; }
 body.stagelight .hero-lock { min-width: 0; }
-body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
-body.stagelight .home-hero .sc-city { margin: 14px 0 0; font-family: var(--sl-display); font-size: 60px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
-body.stagelight .home-hero .sc-venue { display: block; margin-top: 12px; font-size: 17px; color: var(--sl-muted); }
-body.stagelight .home-hero .sc-chips { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-body.stagelight .hero-photo { margin: 0; justify-self: end; width: 100%; border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
-body.stagelight .hero-photo img { display: block; width: 100%; height: auto; }
-body.stagelight .hero-setlist { margin-top: 40px; }
-body.stagelight .hero-setlist .sc-sets { display: grid; gap: 18px; }
+body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
+body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-display); font-size: 52px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
+body.stagelight .home-hero .sc-venue { display: block; margin-top: 10px; font-size: 16px; color: var(--sl-muted); }
+body.stagelight .home-hero .sc-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+body.stagelight .hero-photo { position: relative; margin: 0; justify-self: end; width: 100%; height: clamp(280px, 40vh, 400px); border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
+body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 28%; }
+body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
+body.stagelight .hero-setlist { margin-top: 30px; display: grid; grid-template-columns: 1.7fr 1fr; gap: 44px; align-items: start; }
+body.stagelight .hero-sets { display: grid; gap: 14px; }
+body.stagelight .hero-side { display: grid; gap: 12px; align-content: start; }
+body.stagelight .hero-side .sc-pulls { display: block; }
+body.stagelight .hero-side .sc-pulls .sc-label { display: block; margin-bottom: 8px; }
+body.stagelight .hero-side .sc-stats { margin-top: 4px; }
+@media (max-width: 900px) { body.stagelight .hero-setlist { grid-template-columns: 1fr; gap: 22px; } }
 body.stagelight .sc-closed { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; min-height: 84px; padding: 18px 70px 18px 28px; }
 body.stagelight .show-entry[open] .sc-closed { display: none; }
 body.stagelight .sc-date { font-family: var(--sl-mono); font-size: 13.5px; letter-spacing: 0.08em; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -13398,8 +13412,8 @@ body.stagelight .home-nav {
   display: flex; flex-wrap: wrap; align-items: center; gap: 2px 7px;
   width: 100vw; margin: 0 calc(50% - 50vw);
   padding: 7px max(28px, calc((100% - 1400px) / 2));
-  border-bottom: 1px solid var(--sl-line);
-  background: rgba(12,12,14,0.85); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(12,12,14,0.34); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
 }
 body.stagelight.nav-hidden .home-nav { top: 0; }
 body.stagelight .home-nav a {
