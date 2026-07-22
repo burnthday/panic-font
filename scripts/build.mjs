@@ -1861,7 +1861,7 @@ function renderAboutPage(entry, data, cache) {
           ${faqItems}
           <h2 class="about-h2">Friends of Burnthday</h2>
           <p>Nineteen years of this does not happen alone. Thank you to the Widespread Panic band and crew, the taper section — especially the Home Team and the <a href="https://hometeam.fm" target="_blank" rel="noopener noreferrer">hometeam.fm</a> folks — Ashley and Charles Fox, Z-Man, D.P. Swint, Bennett Schwartz, Ted Rockwell at <a href="https://everydaycompanion.com" target="_blank" rel="noopener noreferrer">Everyday Companion</a>, Horace Moore, J.T. Lucchesi, and Beau Gunn of my favorite radio station, 98.3 The Penguin FM.</p>
-          <p>And to the photographers whose shots light up these pages: thank you. If your photo is here and you would like a credit added, or the photo taken down, <a href="https://www.facebook.com/burnthday">message Burnthday</a> and it happens, no questions asked.</p>
+          <p>And to the photographers whose shots light up these pages: thank you. Special thanks to Josh Timmermans and Andy Tennille, whose photos and videos of the band have been lighting things up lately, and to all our photographer friends in the Panic family. If your photo is here and you would like a credit added, or the photo taken down, <a href="https://www.facebook.com/burnthday">message Burnthday</a> and it happens, no questions asked.</p>
           <p>Say hi on <a href="https://www.facebook.com/burnthday">Facebook</a>, <a href="https://twitter.com/burnthday">X</a>, or <a href="https://www.instagram.com/burnthday/">Instagram</a>. I hope to see you on the road.</p>
         </div>
       </article>
