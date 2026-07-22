@@ -1975,7 +1975,8 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
           <button type="button" data-type-filter="original">Originals</button>
           <button type="button" data-type-filter="cover">Covers</button>
         </div>
-        <button type="button" class="index-toggle" data-chords-filter aria-pressed="false">Has chords</button>
+        <label class="index-check"><input type="checkbox" data-chords-filter> Has chords</label>
+        <label class="index-check"><input type="checkbox" data-tab-filter> Has tab</label>
         ${renderCustomSelect({ hook: "data-album-filter", label: "Album", active: "", options: albumSelectOptions })}
       </div>
       <div class="lyric-head" role="row">
@@ -2009,25 +2010,28 @@ function renderLyricsSearchScript() {
     const empty = document.getElementById("lyric-empty");
     const total = rows.length;
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
-    const chordsToggle = document.querySelector("[data-chords-filter]");
+    const chordsBox = document.querySelector("[data-chords-filter]");
+    const tabBox = document.querySelector("[data-tab-filter]");
     const albumSelect = document.querySelector("[data-album-filter]");
     let selectedType = "all";
     const base = total + " songs";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
-      const chordsOnly = chordsToggle && chordsToggle.getAttribute("aria-pressed") === "true";
+      const chordsOnly = chordsBox && chordsBox.checked;
+      const tabOnly = tabBox && tabBox.checked;
       const album = albumSelect ? (albumSelect.dataset.value || "") : "";
       let shown = 0;
       rows.forEach((row) => {
         const hit = (!q || row.dataset.title.includes(q))
           && (selectedType === "all" || row.dataset.type === selectedType)
           && (!chordsOnly || row.dataset.haschords === "yes")
+          && (!tabOnly || row.dataset.hastab === "yes")
           && (!album || row.dataset.album === album);
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      const filtered = q || selectedType !== "all" || chordsOnly || album;
+      const filtered = q || selectedType !== "all" || chordsOnly || tabOnly || album;
       count.textContent = filtered ? shown + " of " + total + " songs" : base;
     };
     // Column sort: click a header to sort by that key; click again to flip direction.
@@ -2069,10 +2073,8 @@ function renderLyricsSearchScript() {
       typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
       apply();
     }));
-    if (chordsToggle) chordsToggle.addEventListener("click", () => {
-      chordsToggle.setAttribute("aria-pressed", chordsToggle.getAttribute("aria-pressed") === "true" ? "false" : "true");
-      apply();
-    });
+    if (chordsBox) chordsBox.addEventListener("change", apply);
+    if (tabBox) tabBox.addEventListener("change", apply);
     if (albumSelect) albumSelect.addEventListener("cs:change", apply);
     input.addEventListener("input", apply);
     input.focus();
@@ -13650,6 +13652,25 @@ body.stagelight .index-toggle {
   color: var(--sl-muted); font-size: 13px; font-weight: 560; letter-spacing: 0.01em; cursor: pointer;
   transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
 }
+/* Plain labeled checkboxes for boolean filters (owner: a checkbox, not a button). */
+body.stagelight .index-check {
+  display: inline-flex; align-items: center; gap: 9px; height: 40px; padding: 0 4px;
+  color: var(--sl-muted); font-size: 13.5px; font-weight: 540; cursor: pointer; user-select: none;
+}
+body.stagelight .index-check:hover { color: var(--sl-ink); }
+body.stagelight .index-check input {
+  appearance: none; -webkit-appearance: none; width: 17px; height: 17px; margin: 0;
+  border: 1px solid var(--sl-line-strong); border-radius: 5px; background: rgba(255,255,255,0.04);
+  display: inline-grid; place-items: center; cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+body.stagelight .index-check input:checked { background: #d4514f; border-color: #d4514f; }
+body.stagelight .index-check input:checked::after {
+  content: ""; width: 9px; height: 5px; margin-top: -2px;
+  border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg);
+}
+body.stagelight .index-check input:focus-visible { outline: 2px solid var(--sl-muted); outline-offset: 2px; }
+body.stagelight .index-check:has(input:checked) { color: var(--sl-ink); }
 body.stagelight .index-toggle:hover { color: var(--sl-ink); background: rgba(255,255,255,0.08); }
 body.stagelight .index-toggle[aria-pressed="true"] { background: var(--sl-ink); color: #111; border-color: var(--sl-ink); }
 body.stagelight .index-select {

@@ -1168,7 +1168,10 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   assertNotIncludes(hub, "data-transcription-filter", "Lyrics & Chords drops the On Burnthday (source) filter");
   assertNotIncludes(hub, ">On Burnthday<", "Lyrics & Chords drops the 'On Burnthday' selector");
   assertIncludes(hub, "data-chords-filter", "Lyrics & Chords hub offers the Has chords filter");
-  assertIncludes(hub, ">Has chords<", "Lyrics & Chords hub Has-chords filter is labelled");
+  record("Lyrics & Chords hub Has-chords + Has-tab are real checkboxes",
+    /<label class="index-check"><input type="checkbox" data-chords-filter> Has chords<\/label>/.test(hub)
+    && /<label class="index-check"><input type="checkbox" data-tab-filter> Has tab<\/label>/.test(hub),
+    "index-check labels wrap checkbox inputs for Has chords / Has tab");
   assertIncludes(hub, "data-album-filter", "Lyrics & Chords hub offers the album filter");
   for (const type of ["all", "original", "cover"]) assertIncludes(hub, `data-type-filter="${type}"`, `Lyrics & Chords hub offers the ${type} type filter`);
   record("Lyrics & Chords rows carry the filter + sort data-* attributes", /class="lyric-row-wrap"[^>]*data-transcription="(?:yes|no)"[^>]*data-haschords="(?:yes|no)"[^>]*data-hastab="(?:yes|no)"[^>]*data-type="[^"]*"[^>]*data-album="[^"]*"[^>]*data-plays="\d+"/.test(hub), "lyric-row-wrap data-transcription/haschords/hastab/type/album/plays present");
