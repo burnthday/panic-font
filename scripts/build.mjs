@@ -13303,7 +13303,9 @@ body.stagelight .index-method > summary {
   text-transform: uppercase; color: var(--sl-faint); transition: color 0.15s ease;
 }
 body.stagelight .index-method > summary:hover { color: var(--sl-muted); }
-body.stagelight .index-method > summary svg { flex: none; opacity: 0.7; }
+body.stagelight .index-method > summary svg { flex: none; opacity: 0.7; margin-right: 9px; }
+body.stagelight .index-method > summary span { display: inline-block; }
+@supports (gap: 8px) { body.stagelight .index-method > summary svg { margin-right: 0; } }
 body.stagelight .index-method > summary::after { content: none; }
 body.stagelight .index-method[open] > summary { color: var(--sl-muted); }
 body.stagelight .index-method > div {
@@ -13868,7 +13870,9 @@ body.stagelight .current-review-link a { color: var(--sl-ink); text-decoration: 
    so the grid's left edge lines up under the wordmark. The detail page stays on
    the narrower reading rail so its cover keeps matching the index card size. */
 body.stagelight .albums-main { width: min(1400px, calc(100% - 56px)); }
-body.stagelight .album-main { width: min(1180px, calc(100% - 28px)); }
+/* Detail pages share the SAME left margin line as the index: left edge pinned to
+   the 1400 rail, content keeps its narrower 1180 reading measure to the right. */
+body.stagelight .album-main { width: min(1180px, calc(100% - 56px)); margin-left: max(28px, calc((100% - 1400px) / 2)); margin-right: auto; }
 body.stagelight .albums-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
 body.stagelight .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
 body.stagelight .album-tile { display: block; color: var(--sl-ink); }
