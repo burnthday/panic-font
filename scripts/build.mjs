@@ -12661,6 +12661,18 @@ body.stagelight .type-filter button { color: var(--sl-muted); }
 body.stagelight .type-filter button[aria-pressed="true"], body.stagelight .type-filter button.is-active { background: var(--sl-ink); color: #111; }
 
 /* ---- DATA TABLES (tour stats, shelf watch) ---- */
+/* Fixed layout locks columns to the header so filtering/sorting (which changes
+   the widest visible cell) can never re-flow them. Durable fix for "columns move
+   when I click Not Played." Lives here in the stagelight overrides (not the base
+   sheet) so it reliably ships in stagelight.css and wins the cascade. */
+body.stagelight .tour-table { table-layout: fixed; }
+body.stagelight .tour-table thead th:nth-child(1) { width: 24%; }
+body.stagelight .tour-table thead th:nth-child(2) { width: 12%; }
+body.stagelight .tour-table thead th:nth-child(3) { width: 25%; }
+body.stagelight .tour-table thead th:nth-child(4) { width: 24%; }
+body.stagelight .tour-table thead th:nth-child(5) { width: 15%; }
+body.stagelight .tour-table tbody th[scope="row"] { overflow: hidden; text-overflow: ellipsis; }
+body.stagelight .tour-table .signal-cell small { white-space: normal; }
 body.stagelight .tour-stats, body.stagelight .shelf-watch {
   background: var(--sl-glass);
   -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
