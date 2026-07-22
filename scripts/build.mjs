@@ -7206,14 +7206,19 @@ function renderHeroModalScript() {
     const updateCards = (activeIso) => {
       const order = hero.querySelector(".hero-pager")?.dataset.pagerOrder.split(",") || [];
       const posted = order.filter((iso) => iso !== upcomingIso);
-      const anchorIndex = posted.indexOf(activeIso === upcomingIso ? latestIso : activeIso);
-      // Context = the two shows before the active one, skipping the pinned latest.
-      const pool = posted.filter((iso) => iso !== latestIso);
-      const anchorPos = activeIso === upcomingIso || activeIso === latestIso
-        ? pool.length
-        : pool.indexOf(activeIso);
-      const before = pool.slice(Math.max(0, anchorPos - 2), anchorPos).reverse();
-      const fill = [...before, ...pool.slice(anchorPos + 1, anchorPos + 1 + (2 - before.length))];
+      // Pinned latest + tonight never move. When the active view is one of the
+      // pinned pair, context = the two shows before latest. Otherwise the ACTIVE
+      // show sits in slot A (so its red ring stays visible) with its predecessor
+      // in slot B.
+      // Pager order is oldest-first; the rail thinks newest-first.
+      const pool = posted.filter((iso) => iso !== latestIso).reverse();
+      let fill;
+      if (activeIso === upcomingIso || activeIso === latestIso) {
+        fill = pool.slice(0, 2);
+      } else {
+        const at = pool.indexOf(activeIso);
+        fill = [activeIso, pool[at + 1] || pool[at - 1]];
+      }
       fillSlot(slotA, fill[0]);
       fillSlot(slotB, fill[1]);
       [slotA, slotB, latestCard, upcomingCardEl].forEach((card) => {
@@ -13072,6 +13077,7 @@ body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc
 body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.3; }
 body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
 body.stagelight main > *:not(.hero-echo) { position: relative; z-index: 1; }
+body.stagelight main > .home-nav { position: sticky; z-index: 55; }
 body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) max(28px, calc((100% - 1400px) / 2)) 38px; }
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
    setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
