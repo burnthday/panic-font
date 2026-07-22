@@ -61,7 +61,7 @@ Alex is not a coder: show rendered results (`show <file>` → his Chrome) and pl
 ## Failure modes from this session (do not repeat)
 
 - Reusing an existing component (setlist card) as the hero with CSS overrides → chrome leaked, two rebuild rounds. Dedicated components for dedicated roles.
-- Blanket CSS rules (`main > *:not(...)`) silently out-specified component rules TWICE (breadcrumb lost sticky, got shifted 66px into the hero). Prefer explicit child selectors.
+- Blanket CSS rules (`main > *:not(...)`) silently out-specified component rules — now THREE times (breadcrumb lost sticky). The exact trap: `body.stagelight main > *:not(.hero-echo)…` and `body.stagelight main > .home-nav {position:sticky}` were tied on specificity, sticky won by source order. Adding ANOTHER `:not()` to the blanket (e.g. `:not(.bento-panel)`) raises its specificity one notch, tips the race, and flattens the breadcrumb to `position:relative`. FIX IN PLACE: the blanket now also excludes `:not(.home-nav)`. NEVER add a `:not()` to that blanket without also confirming every self-positioning child (`.home-nav`, `.bento-panel`, `.hero-echo`) is excluded. Do not "fix" a breadcrumb shift with `scrollbar-gutter`/viewport hacks — that was a wrong-diagnosis detour that got reverted.
 - Moving/hiding card lists → jump bugs. Keep the fixed-slot model.
 - Timer-raced animations broke under frame throttling → always rAF + timeout fallback; release locks unconditionally.
 - An agent added images beyond Alex's explicit list (Wikimedia trio, Posse banner) — all ripped out. Only place assets Alex names.
