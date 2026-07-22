@@ -854,7 +854,7 @@ function checkNavigation(html, siteData) {
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
-  const expectedFooter = [`${siteData.site.year} Setlists`, "Tour In Review", "Newsletters", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "The Almanac", "Song List", "The Shelf", "About"];
+  const expectedFooter = [`${siteData.site.year} Setlists`, "Tour In Review", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "The Almanac", "Song List", "The Shelf", "About"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerColumns = sectionsByClass(html, "footer-links");
   const footerNav = footerColumns.flatMap((column) => linkTexts(column));
@@ -1641,13 +1641,10 @@ async function checkArchiveIndex() {
 // and Tour Prints decorations on the Tour In Review hub. These verify the data is
 // wired in with its required attribution (Internet Archive, per-poster artist link).
 async function checkArchivalDecorations() {
+  // Newsletters parked (removed from nav + site 2026-07-22). The page is no longer
+  // generated and must not be linked anywhere.
   const newsletters = await readText("dist/newsletters/index.html").catch(() => "");
-  const hasMoon = newsletters.includes('id="moon-heading"') && /Moon Times/.test(newsletters);
-  const hasPanicle = newsletters.includes('id="panicle-heading"') && /The Panicle/.test(newsletters);
-  const hasArchiveLink = newsletters.includes('href="https://web.archive.org/');
-  record("Newsletters page renders Moon Times + Panicle sections with the Internet Archive attribution link",
-    hasMoon && hasPanicle && hasArchiveLink,
-    `moon=${hasMoon} panicle=${hasPanicle} archiveLink=${hasArchiveLink}`);
+  record("Newsletters page is parked (not generated)", newsletters === "", "dist/newsletters/index.html absent");
 
   const hub = await readText("dist/tour-in-review/index.html").catch(() => "");
   const hasPorch = hub.includes('class="tour-porch"') && hub.includes('id="porch-heading"');
@@ -1669,8 +1666,8 @@ async function checkArchivalDecorations() {
     posterCards.length > 0 && posterBad === 0, `posters=${posterCards.length} failing=${posterBad}`);
 
   const sitemap = await readText("dist/sitemap.xml").catch(() => "");
-  record("Newsletters page appears in the sitemap",
-    sitemap.includes("https://burnthday.com/newsletters/"), "expected /newsletters/ in sitemap.xml");
+  record("Newsletters page is absent from the sitemap (parked)",
+    !sitemap.includes("https://burnthday.com/newsletters/"), "/newsletters/ correctly absent from sitemap.xml");
 }
 
 // Band FAQ page (/faq/): renders the new-fan questions with FAQPage JSON-LD, and

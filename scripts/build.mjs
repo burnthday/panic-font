@@ -77,7 +77,6 @@ const footerColumns = [
   ["Live", [
     ["{YEAR} Setlists", "/#setlists"],
     ["Tour In Review", "/tour-in-review/"],
-    ["Newsletters", "/newsletters/"],
     ["FAQ", "/faq/"],
     ["Rumors", "/rumors/"]
   ]],
@@ -150,7 +149,8 @@ async function main() {
   await writeShelfInfoPage(siteData, archiveEntries);
   await writeRumorsPage(siteData, archiveEntries);
   await writePrivacyPage(siteData);
-  await writeNewslettersPage(siteData);
+  // Newsletters parked (removed from nav + site 2026-07-22, kept in code to restore).
+  // await writeNewslettersPage(siteData);
   await writeFaqPage(siteData);
   await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
@@ -3667,7 +3667,6 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
       ${yearSummary}
       ${renderPorchSongsSection(data)}
       ${renderTourPrintsSection(data)}
-      <p class="tour-archive-more">More band history lives in the <a href="/newsletters/">newsletter archive</a>: the official Moon Times and the fan-run Panicle.</p>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
     <script>${renderTourHubScript()}</script>
@@ -12856,8 +12855,8 @@ body.stagelight .site-foot-inner {
 }
 body.stagelight .footer-lead { max-width: 420px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
-body.stagelight .footer-mark { width: min(340px, 85%); height: auto; }
-body.stagelight .footer-lead p.footer-identity { margin: 16px 0 0; max-width: none; white-space: nowrap; font-weight: 650; font-size: 17px; color: var(--sl-ink); letter-spacing: 0.01em; }
+body.stagelight .footer-mark { width: min(384px, 94%); height: auto; }
+body.stagelight .footer-lead p.footer-identity { margin: 18px 0 0; max-width: none; white-space: nowrap; font-weight: 650; font-size: 19px; color: var(--sl-ink); letter-spacing: 0.01em; }
 body.stagelight .footer-copy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .footer-lead p { color: var(--sl-muted); margin-top: 8px; max-width: 340px; font-size: 17px; line-height: 1.55; }
 body.stagelight .footer-links { gap: 9px; }
@@ -13076,8 +13075,10 @@ body.stagelight .tour-table-wrap.is-capped thead th:last-child { border-top-righ
 body.stagelight .tour-table tbody th[scope="row"] { position: relative; }
 /* Full row height with no radius so consecutive rows' bars read as continuous
    vertical strips; multiple shows stack side by side, never overlapping. */
-body.stagelight .lf-rail { position: absolute; left: 0; top: 0; bottom: 0; display: flex; gap: 2px; }
+body.stagelight .lf-rail { position: absolute; left: 0; top: 0; bottom: 0; display: flex; gap: 1px; }
 body.stagelight .lf-rail i { display: block; width: 2px; background: currentColor; }
+/* A second (older) show reads as a barely-there sliver, essentially a right-edge accent. */
+body.stagelight .lf-rail i:nth-child(n+2) { width: 1px; }
 body.stagelight .lf-rail .rail-black { color: #2e2e30; }
 body.stagelight .lf-rail .rail-blue { color: #465692; }
 body.stagelight .lf-rail .rail-green { color: #47866a; }
@@ -14588,9 +14589,6 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
     <loc>https://burnthday.com${escapeHtml(tour.route)}</loc>
     <lastmod>${escapeHtml(tour.last)}</lastmod>
   </url>`).join("\n  ")}
-  <url>
-    <loc>https://burnthday.com/newsletters/</loc>
-  </url>
   <url>
     <loc>https://burnthday.com/faq/</loc>
   </url>
