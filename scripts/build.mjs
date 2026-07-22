@@ -7182,10 +7182,8 @@ function renderHeroModalScript() {
     const meta = JSON.parse(document.getElementById("hero-card-meta")?.textContent || "{}");
     const slotA = hero.querySelector('[data-card-slot="a"]');
     const slotB = hero.querySelector('[data-card-slot="b"]');
-    const latestCard = hero.querySelector('[data-card-slot="latest"]');
     const upcomingCardEl = hero.querySelector(".hero-card-upcoming");
     const upcomingIso = upcomingCardEl?.dataset.viewBtn;
-    const latestIso = latestCard?.dataset.viewBtn;
     const fillSlot = (slotEl, iso) => {
       if (!slotEl) return;
       if (!iso || !meta[iso]) { slotEl.hidden = true; return; }
@@ -7205,23 +7203,17 @@ function renderHeroModalScript() {
     };
     const updateCards = (activeIso) => {
       const order = hero.querySelector(".hero-pager")?.dataset.pagerOrder.split(",") || [];
-      const posted = order.filter((iso) => iso !== upcomingIso);
-      // Pinned latest + tonight never move. When the active view is one of the
-      // pinned pair, context = the two shows before latest. Otherwise the ACTIVE
-      // show sits in slot A (so its red ring stays visible) with its predecessor
-      // in slot B.
       // Pager order is oldest-first; the rail thinks newest-first.
-      const pool = posted.filter((iso) => iso !== latestIso).reverse();
-      let fill;
-      if (activeIso === upcomingIso || activeIso === latestIso) {
-        fill = pool.slice(0, 2);
-      } else {
-        const at = pool.indexOf(activeIso);
-        fill = [activeIso, pool[at + 1] || pool[at - 1]];
-      }
-      fillSlot(slotA, fill[0]);
-      fillSlot(slotB, fill[1]);
-      [slotA, slotB, latestCard, upcomingCardEl].forEach((card) => {
+      const posted = order.filter((iso) => iso !== upcomingIso).reverse();
+      // Never show the two most recent setlists (the hero features them), the
+      // active view itself, or run-mates from the active view's city.
+      const cityOf = (iso) => String(meta[iso]?.c || "").split(",")[0];
+      const activeCity = cityOf(activeIso);
+      const pool = posted.filter((iso, index) =>
+        index > 1 && iso !== activeIso && (!activeCity || cityOf(iso) !== activeCity));
+      fillSlot(slotA, pool[0]);
+      fillSlot(slotB, pool[1]);
+      [slotA, slotB, upcomingCardEl].forEach((card) => {
         if (!card) return;
         const on = card.dataset.viewBtn === activeIso;
         card.classList.toggle("is-current", on);
@@ -7234,6 +7226,24 @@ function renderHeroModalScript() {
     });
     hero.addEventListener("viewchange", () => updateCards(hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view || ""));
     updateCards(hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view || "");
+
+    // Date pager: walks every view chronologically and wraps at both ends.
+    const pagerEl = hero.querySelector(".hero-pager");
+    if (pagerEl) {
+      const order = pagerEl.dataset.pagerOrder.split(",");
+      const currentIso = () => hero.querySelector(".hero-lock-slot .hv.is-active")?.dataset.view || "";
+      const step = (dir) => {
+        const at = order.indexOf(currentIso());
+        showView(order[(at + dir + order.length) % order.length]);
+      };
+      pagerEl.querySelector("[data-page-prev]")?.addEventListener("click", () => step(-1));
+      pagerEl.querySelector("[data-page-next]")?.addEventListener("click", () => step(1));
+      document.addEventListener("keydown", (event) => {
+        if (event.target.closest("input, textarea, select")) return;
+        if (event.key === "ArrowLeft") step(-1);
+        else if (event.key === "ArrowRight") step(1);
+      });
+    }
 
     // Glint follows the cursor while hovering the stats button.
     hero.addEventListener("pointermove", (event) => {
@@ -8050,19 +8060,23 @@ function renderBoardIntro(data) {
     where = `${when} show at ${city}'s ${upcoming.venue}`;
   }
   const legend = data.site.markerLegend || [];
-  const tilts = ["-1.3deg", "1.1deg", "-0.7deg", "1.4deg"];
+  // Right-edge "dry-out" angle varies per stroke so the row reads hand-made.
+  const cuts = ["96%", "94%", "97%", "95%"];
   const swipes = legend.map((item, index) => {
-    const color = STRIKE_COLORS[item.asset] || "#131313";
+    // Black lifts to charcoal so the stroke reads on the near-black page (the
+    // clip-path diagonal eats box-shadow rings, so no outline is available).
+    const raw = STRIKE_COLORS[item.asset] || "#131313";
+    const color = raw === "#131313" ? "#26262b" : raw;
     const shortDate = isoToShortDate(item.isoDate);
     const location = item.label.startsWith(shortDate) ? item.label.slice(shortDate.length).trim() : item.label;
     const city = clean(String(location).split(",")[0]) || location;
     const numeral = (location.match(/\b([IVX]+)$/) || [])[1] || "";
-    return `<li class="bi-swipe" style="--mc:${color}; --tilt:${tilts[index] || "0deg"}"><time datetime="${escapeAttr(item.isoDate)}">${escapeHtml(shortDate)}</time><b>${escapeHtml(city)}${numeral ? ` <span class="bi-run">${numeral}</span>` : ""}</b></li>`;
+    const run = numeral ? ` ${romanToNumber(numeral)}` : "";
+    return `<li class="bi-swipe" style="--mc:${color}; --cut:${cuts[index] || "96%"}" data-date="${escapeAttr(item.isoDate)}"><b>${escapeHtml(city)}${run}</b></li>`;
   }).join("");
   return `<div class="board-intro">
     <div class="bi-copy">
-      <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}.</span></h2>
-      <p class="bi-sub">Every song on the table, the last four shows marked out in color, and how many times each has been played this year.</p>
+      <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}. Every song on the table, the last four shows marked out in color, and how many times each has been played this year.</span></h2>
     </div>
     ${legend.length ? `<ol class="bi-swipes" aria-label="Marker colors, most recent show first">${swipes}</ol>` : ""}
   </div>`;
@@ -8901,17 +8915,22 @@ function renderHomeHero(data) {
       <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${nightFor(entry) ? ` · ${nightFor(entry)}` : ""}</small></span>
       <span class="hc-go" aria-hidden="true">→</span>
     </button>`;
-  const contextShows = posted.slice(1, 3);
+  // Context picks skip the two most recent setlists (the hero already features
+  // them) and any run-mate from the featured show's city (Alex: redundant).
+  const featCity = String(featured.location || "").split(",")[0];
+  const contextShows = posted.slice(2)
+    .filter((entry) => String(entry.location || "").split(",")[0] !== featCity)
+    .slice(0, 2);
   const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
   const upcomingCard = upcoming ? `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(upcoming.isoDate)}" aria-pressed="false">
         <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
         <span class="hc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
         <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
       </button>` : "";
+  // Three cards only: two context slots + the upcoming show pinned last.
   const cards = [
     contextShows[0] ? slotCard(contextShows[0], "", "a") : "",
     contextShows[1] ? slotCard(contextShows[1], "", "b") : "",
-    slotCard(featured, " hero-card-latest is-current", "latest"),
     upcomingCard
   ].join("");
   const cardMetaJson = `<script type="application/json" id="hero-card-meta">${JSON.stringify(cardMeta).replace(/</g, "\\u003c")}</script>`;
@@ -8930,7 +8949,6 @@ function renderHomeHero(data) {
   const pager = pagerOrder.length > 1 ? `<div class="hero-pager" data-pager-order="${escapeAttr(pagerOrder.join(","))}">
       <button type="button" class="hero-page" data-page-prev aria-label="Earlier show">&#8249;</button>
       <button type="button" class="hero-page" data-page-next aria-label="Later show">&#8250;</button>
-      <span class="hero-page-count" data-page-count>${pagerOrder.indexOf(featured.isoDate) + 1} of ${pagerOrder.length}</span>
     </div>` : "";
   return `<section class="home-hero${featured.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${views[0].view.ariaHeading}">
     ${bg}
@@ -13090,7 +13108,7 @@ body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
    setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
    below the image line so the left column breathes. */
-body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 20px; align-items: start; }
+body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 14px; align-items: start; }
 body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
 body.stagelight .hero-slot, body.stagelight .hero-rail { min-width: 0; }
 body.stagelight .hero-lockwrap { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; }
@@ -13102,7 +13120,6 @@ body.stagelight .hero-page {
 }
 body.stagelight .hero-page:hover:not(:disabled) { color: var(--sl-ink); border-color: var(--sl-muted); background: rgba(255,255,255,0.05); }
 body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
-body.stagelight .hero-page-count { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--sl-faint); margin-left: 4px; }
 body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
 body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; }
 body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
@@ -13145,8 +13162,10 @@ body.stagelight .hsb-ring {
 body.stagelight .hero-stats-btn:hover .hsb-ring { animation-play-state: paused; }
 @keyframes hsb-orbit { to { --hsb-a: 360deg; } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .hsb-ring { animation: none; } }
-body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(260px, 36vh, 380px); border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
-body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 28%; }
+body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(300px, 44vh, 460px); border-radius: 0 0 var(--sl-r-md) var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); border-top: 0; box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
+body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+/* The photo rises flush to the bar above (square top, no top border). */
+body.stagelight .hero-media-slot { margin-top: -30px; }
 body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
 /* Ticker: slow continuous crawl, pauses on hover; static scroll under 900px / reduced motion. */
 body.stagelight .hero-ticker { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
@@ -13175,9 +13194,10 @@ body.stagelight .hero-card {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
   width: 100%; text-align: left; cursor: pointer; font: inherit;
   padding: 13px 18px; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md);
-  background: rgba(255,255,255,0.035); color: var(--sl-ink); transition: border-color 0.15s ease, transform 0.18s ease, filter 0.18s ease;
+  background: rgba(16,16,20,0.32); -webkit-backdrop-filter: blur(16px) saturate(1.2); backdrop-filter: blur(16px) saturate(1.2);
+  color: var(--sl-ink); transition: border-color 0.15s ease, transform 0.18s ease, filter 0.18s ease;
 }
-body.stagelight .hero-card:hover { background: rgba(255,255,255,0.07); border-color: var(--sl-line-strong); transform: translateY(-1px); }
+body.stagelight .hero-card:hover { background: rgba(28,28,34,0.45); border-color: var(--sl-line-strong); transform: translateY(-1px); }
 
 body.stagelight .hc-place { display: flex; flex-direction: column; min-width: 0; }
 body.stagelight .hc-place strong { font-size: 15px; font-weight: 620; }
@@ -13194,7 +13214,7 @@ body.stagelight .hero-all { justify-self: end; margin-top: 4px; }
    (.hero-media, sized by the photo cap); toggling .stats-open crossfades the
    photo away and slides the panel up into its place — cards stay put, hero
    height never changes. */
-body.stagelight .hero-media { position: relative; height: clamp(260px, 36vh, 380px); }
+body.stagelight .hero-media { position: relative; height: clamp(300px, 44vh, 460px); }
 body.stagelight .hero-media .hero-photo { position: absolute; inset: 0; height: 100%; transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hero-stats-panel {
   position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -13229,7 +13249,8 @@ body.stagelight .hero-stats-panel .ltp-song { flex: 1; min-width: 0; overflow: h
   body.stagelight .hero-music-slot,
   body.stagelight .hero-rail { grid-column: 1; grid-row: auto; }
   body.stagelight .hero-lockwrap { order: 1; align-self: start; }
-  body.stagelight .hero-media-slot { order: 2; }
+  body.stagelight .hero-media-slot { order: 2; margin-top: 0; }
+  body.stagelight .hero-photo { border-radius: var(--sl-r-md); border-top: 1px solid var(--sl-line); }
   body.stagelight .hero-music-slot { order: 3; }
   body.stagelight .hero-rail { order: 4; }
   body.stagelight .hero-photo { height: clamp(200px, 30vh, 300px); }
@@ -13871,39 +13892,36 @@ body.stagelight .board-intro::before {
 body.stagelight .board-intro { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 32px 72px; align-items: center; }
 body.stagelight .board-intro-line {
   position: relative; font-family: var(--sl-display);
-  font-size: 30px; font-weight: 640; letter-spacing: -0.015em; line-height: 1.3;
+  font-size: 27px; font-weight: 640; letter-spacing: -0.015em; line-height: 1.42;
 }
 body.stagelight .bi-lead { color: var(--sl-ink); }
 body.stagelight .bi-rest { color: rgba(242,242,240,0.5); }
-body.stagelight .bi-sub { margin: 16px 0 0; max-width: 52ch; font-size: 16px; line-height: 1.62; color: var(--sl-muted); }
-/* Marker swipes: the four most recent shows as big highlighter strokes. Uneven
-   corner radii + a per-stroke tilt keep them hand-drawn; hover squares them up. */
+/* Marker swipes: the four most recent shows as big highlighter strokes. Straight
+   left-to-right; the imperfection is the right edge, clipped at a per-stroke
+   diagonal (--cut) like the marker lifting off the page. */
 body.stagelight .bi-swipes { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 18px; }
 body.stagelight .bi-swipe {
-  position: relative; display: flex; flex-direction: column; gap: 4px;
-  padding: 16px 20px 14px; background: var(--mc);
-  border-radius: 20px 30px 16px 32px / 30px 16px 34px 18px;
-  transform: rotate(var(--tilt, 0deg));
+  position: relative; display: flex; align-items: center;
+  padding: 12px 26px 14px 20px; background: var(--mc);
+  border-radius: 10px 4px 14px 8px / 14px 6px 10px 12px;
+  clip-path: polygon(0 0, 100% 0, var(--cut, 96%) 100%, 0 100%);
   box-shadow: 0 0 0 1px rgba(255,255,255,0.14), 0 18px 34px -18px rgba(0,0,0,0.75);
-  transition: transform 0.22s cubic-bezier(0.22,1,0.36,1), box-shadow 0.22s ease;
+  transition: filter 0.2s ease;
 }
 /* Ink texture: a light entry edge fading into a darker dry-out, like one pass of a marker. */
 body.stagelight .bi-swipe::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  background: linear-gradient(104deg, rgba(255,255,255,0.12), transparent 34%, rgba(0,0,0,0.14) 88%);
+  background: linear-gradient(100deg, rgba(255,255,255,0.12), transparent 34%, rgba(0,0,0,0.16) 90%);
 }
-body.stagelight .bi-swipe:hover { transform: rotate(0deg) translateY(-2px); box-shadow: 0 0 0 1px rgba(255,255,255,0.22), 0 22px 40px -18px rgba(0,0,0,0.8); }
-@media (prefers-reduced-motion: reduce) { body.stagelight .bi-swipe, body.stagelight .bi-swipe:hover { transition: none; transform: rotate(var(--tilt, 0deg)); } }
-body.stagelight .bi-swipe time { font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.1em; color: rgba(255,255,255,0.78); }
-body.stagelight .bi-swipe b { font-family: var(--sl-display); font-size: 19px; font-weight: 660; letter-spacing: -0.01em; color: rgba(255,255,255,0.96); line-height: 1.1; }
-body.stagelight .bi-run { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.7); }
+body.stagelight .bi-swipe:hover { filter: brightness(1.12); }
+body.stagelight .bi-swipe b { font-family: "PanicHand", "MilkRun", var(--sl-display), sans-serif; font-size: 26px; font-weight: 400; letter-spacing: 0.01em; color: rgba(255,255,255,0.96); line-height: 1.05; }
 @media (max-width: 900px) {
   body.stagelight .board-intro { grid-template-columns: 1fr; gap: 28px; }
   body.stagelight .board-intro-line { font-size: 26px; }
   body.stagelight .bi-swipe { padding: 13px 16px 12px; }
   body.stagelight .bi-swipe b { font-size: 17px; }
 }
-body.stagelight main > .board-intro + section { margin-top: 44px; }
+body.stagelight main > .board-intro + section { margin-top: 68px; }
 
 /* ---- SHEET KEY (quiet disclosure only; the color key is the intro's bi-swipes) ---- */
 body.stagelight .sheet-key { margin-bottom: 34px; }
@@ -15467,9 +15485,15 @@ function romanNumeral(value) {
   return numerals[value] || String(value);
 }
 
+function romanToNumber(numeral) {
+  const index = ["", "I", "II", "III", "IV", "V", "VI"].indexOf(numeral);
+  return index > 0 ? index : numeral;
+}
+
 function formatBoardShowTitle(show) {
   if (!show?.location) return "";
-  return `${show.location}${show.runLabel ? ` ${show.runLabel}` : ""}`;
+  // Board header style: "Sacramento CA", no comma (Alex, round 5).
+  return `${show.location.replace(",", "")}${show.runLabel ? ` ${show.runLabel}` : ""}`;
 }
 
 function newestUniqueDates(setlists, catalog, currentTour) {

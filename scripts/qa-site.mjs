@@ -108,7 +108,8 @@ function checkCorePageState(html, siteData) {
   for (const anchor of ["song-list", "tour-stats", "shelf", "purgatory", "nick-johnson", "setlists"]) assertIncludes(html, `id="${anchor}"`, `Homepage keeps the #${anchor} section anchor`);
   assertIncludes(html, '<section class="home-hero" id="latest-setlist"', "Homepage has a dedicated top-of-page hero section");
   assertIncludes(html, '<section class="laminate primary-board" id="song-list">', "Homepage has song-list laminate");
-  const boardTitle = [siteData.site?.boardShow?.location, siteData.site?.boardShow?.runLabel].filter(Boolean).join(" ").toUpperCase();
+  // Board header drops the comma ("SACRAMENTO CA", Alex round 5).
+  const boardTitle = [siteData.site?.boardShow?.location?.replace(",", ""), siteData.site?.boardShow?.runLabel].filter(Boolean).join(" ").toUpperCase();
   assertIncludes(html, `<h1>${escapeHtml(boardTitle)}</h1>`, `Song List title matches board show: ${boardTitle}`);
 
   record("Current tour-stop setlists appear above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
@@ -611,16 +612,24 @@ async function checkLatestSetlist(html, siteData) {
     heroOnly.includes('class="hero-ticker"') && heroOnly.includes('class="tk-track"'), "hero-ticker present");
   const runNights = (siteData.setlists || []).slice(1).filter((entry) => entry.venue === feat?.venue && entry.location === feat?.location);
   for (const night of runNights) {
-    assertIncludes(heroOnly, `data-view-btn="${night.isoDate}"`, `Hero card swaps run night ${night.isoDate} into the hero`);
     assertIncludes(heroOnly, `data-view="${night.isoDate}"`, `Hero carries a full view for run night ${night.isoDate}`);
     assertIncludes(html, `id="setlist-${night.isoDate}"`, `Feed card carries the #setlist-${night.isoDate} anchor`);
   }
   record("Cards are flat glass (photo backdrops reverted per owner)", !/data-view-btn="[^"]+"[^>]*style="background-image/.test(heroOnly), "no card background-image");
-  record("Latest show is a pinned card carrying the red current-ring while active",
-    new RegExp(`hero-card-latest is-current"[^>]*data-view-btn="${feat?.isoDate}"`).test(heroOnly), "pinned latest card with is-current");
-  record("Rail is four fixed slots (two context + latest + upcoming)",
-    heroOnly.includes('data-card-slot="a"') && heroOnly.includes('data-card-slot="b"') && heroOnly.includes('data-card-slot="latest"') && heroOnly.includes("hero-card-upcoming") && heroOnly.includes('id="hero-card-meta"'),
-    "slots a/b/latest/upcoming + card meta present");
+  record("Rail is three fixed slots (two context + upcoming pinned last), no pinned-latest card",
+    heroOnly.includes('data-card-slot="a"') && heroOnly.includes('data-card-slot="b"') && !heroOnly.includes('data-card-slot="latest"') && heroOnly.includes("hero-card-upcoming") && heroOnly.includes('id="hero-card-meta"'),
+    "slots a/b + upcoming + card meta present, latest slot gone");
+  // Rail context skips the 2 most recent setlists and the featured city's run-mates.
+  const featCityQa = String(feat?.location || "").split(",")[0];
+  const excluded = (siteData.setlists || []).slice(0, 2).map((entry) => entry.isoDate)
+    .concat((siteData.setlists || []).filter((entry) => String(entry.location || "").split(",")[0] === featCityQa).map((entry) => entry.isoDate));
+  const slotIsos = [...heroOnly.matchAll(/data-card-slot="[ab]"[^>]*data-view-btn="([^"]+)"/g)].map((m) => m[1]);
+  record("Rail context cards skip the two most recent setlists and same-city run-mates",
+    slotIsos.length > 0 && slotIsos.every((iso) => !excluded.includes(iso)), JSON.stringify({ slotIsos, excluded }));
+  record("Date pager has working prev/next wiring, wraps, and shows no count",
+    heroOnly.includes("data-page-prev") && heroOnly.includes("data-page-next") && !heroOnly.includes("hero-page-count")
+    && html.includes('[data-page-prev]') && html.includes("% order.length"),
+    "pager buttons + wrap-around handler present, count removed");
   record("Hero right rail closes with the quiet all-setlists link",
     heroOnly.includes('class="link-quiet hero-all"') && heroOnly.includes(`All ${siteData.site.year} setlists`), "link-quiet hero-all present");
   record("Song stats expands in place: trigger button + per-view panel with rarity symbols + shimmer ring",
@@ -1345,8 +1354,8 @@ function checkMarkerLegend(html, siteData) {
   // The color key renders as four intro marker swipes (bi-swipe), each carrying
   // its show's short date; the four canon marker colors all appear as --mc values.
   const swipeCount = (html.match(/class="bi-swipe"/g) || []).length;
-  const swipeColors = ["#131313", "#465692", "#47866a", "#d4514f"].every((hex) => html.includes(`class="bi-swipe" style="--mc:${hex}`));
-  const matchesHtml = legend.every((item) => html.includes(`datetime="${item.isoDate}"`)) && swipeCount === legend.length && swipeColors;
+  const swipeColors = ["#26262b", "#465692", "#47866a", "#d4514f"].every((hex) => html.includes(`class="bi-swipe" style="--mc:${hex}`));
+  const matchesHtml = legend.every((item) => html.includes(`data-date="${item.isoDate}"`)) && swipeCount === legend.length && swipeColors;
   record("Marker swipes in the board intro match the last four posted shows", matchesData && matchesHtml, JSON.stringify(legend));
 }
 
