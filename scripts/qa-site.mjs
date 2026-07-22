@@ -599,19 +599,28 @@ async function checkLatestSetlist(html, siteData) {
   const sourceLabels = sourceSets.map((set) => set.label === "1" ? "Set 1" : set.label === "2" ? "Set 2" : /^E$/i.test(set.label) ? "Encore" : set.label);
   record("Hero renders one line for every set", arraysEqual(renderedLabels, sourceLabels), `${renderedLabels.join(", ")} vs ${sourceLabels.join(", ")}`);
 
-  // ---- Slim upcoming / tonight strip under the hero ----
+  // ---- Right-rail: ticker + run-night cards + upcoming card + all-setlists ----
+  record("Hero right rail carries the highlights ticker with a doubled crawl track",
+    heroOnly.includes('class="hero-ticker"') && heroOnly.includes('class="tk-track"'), "hero-ticker present");
+  const runNights = (siteData.setlists || []).slice(1).filter((entry) => entry.venue === feat?.venue && entry.location === feat?.location);
+  for (const night of runNights) {
+    assertIncludes(heroOnly, `href="#setlist-${night.isoDate}"`, `Hero card links run night ${night.isoDate} to its feed entry`);
+    assertIncludes(html, `id="setlist-${night.isoDate}"`, `Feed card carries the #setlist-${night.isoDate} anchor`);
+  }
+  record("Hero right rail closes with the All-setlists button",
+    heroOnly.includes('class="hero-all"') && heroOnly.includes(`All ${siteData.site.year} setlists`), "hero-all present");
+  record("Song stats is a popup: trigger button + dialog with the last-played table",
+    heroOnly.includes("data-stats-open") && heroOnly.includes('id="hero-stats-modal"') && heroOnly.includes('role="dialog"') && heroOnly.includes('class="ltp-list"'),
+    "stats button + modal present");
   const preview = siteData.site?.isShowDayPreview ? siteData.site.featuredShow : null;
   const upcoming = preview || (siteData.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (feat?.isoDate || ""));
   if (upcoming) {
-    record("Upcoming show appears as a strip under the hero", stripStart >= 0, upcoming.isoDate || "");
-    assertIncludes(strip, `datetime="${upcoming.isoDate || ""}"`, "Upcoming strip shows the next scheduled date");
-    record("Upcoming strip has no set rows until songs post", strip.length > 0 && !strip.includes('class="sc-label"'));
-    record("Upcoming strip does not advertise a post-show Nugs archive", !strip.includes("Listen at Nugs.net"));
+    record("Upcoming show appears as a card in the hero right rail", heroOnly.includes("hero-card-upcoming"), upcoming.isoDate || "");
+    assertIncludes(heroOnly, `datetime="${upcoming.isoDate || ""}"`, "Upcoming card shows the next scheduled date");
     if (preview) {
-      record("Upcoming strip flags tonight's live show", strip.includes("ns-flag is-tonight"), upcoming.isoDate || "");
-      if (upcoming.sourceUrl) assertIncludes(strip, ">Show Details</a>", "Tonight links to show details");
+      record("Upcoming card flags tonight's live show", heroOnly.includes("ns-flag is-tonight"), upcoming.isoDate || "");
     } else {
-      record("Upcoming strip flags the next scheduled show", strip.includes('class="ns-flag"') && !strip.includes("is-tonight"), upcoming.isoDate || "");
+      record("Upcoming card flags the next scheduled show", heroOnly.includes('class="ns-flag"') && !heroOnly.includes("is-tonight"), upcoming.isoDate || "");
     }
   }
   record("Homepage contains no Twitch links", !html.includes("twitch.tv") && !html.includes("Twitch"));

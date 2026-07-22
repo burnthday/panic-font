@@ -7026,6 +7026,7 @@ function renderHtml(data) {
       ${renderSetlistExpandScript()}
       ${renderStatsAutoCollapseScript()}
       ${renderHomeNavScript()}
+      ${renderHeroModalScript()}
       ${renderStrikeScriptBody()}
       ${renderCustomSelectScript()}
     </script>
@@ -7077,6 +7078,20 @@ function renderSetlistExpandScript() {
 
 // Sticky home section-nav: highlight the link whose section is in view. Subtle
 // IntersectionObserver, guarded so no-IO visitors just get plain links.
+// Song stats popup: open/close with backdrop, ✕, and Esc; focus returns to the button.
+function renderHeroModalScript() {
+  return `(() => {
+    const modal = document.getElementById("hero-stats-modal");
+    const openBtn = document.querySelector("[data-stats-open]");
+    if (!modal || !openBtn) return;
+    const open = () => { modal.hidden = false; document.body.style.overflow = "hidden"; modal.querySelector(".hero-modal-x")?.focus(); };
+    const close = () => { modal.hidden = true; document.body.style.overflow = ""; openBtn.focus(); };
+    openBtn.addEventListener("click", open);
+    modal.querySelectorAll("[data-stats-close]").forEach((el) => el.addEventListener("click", close));
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !modal.hidden) close(); });
+  })();`;
+}
+
 function renderHomeNavScript() {
   return `(() => {
     const nav = document.querySelector(".home-nav");
@@ -8554,32 +8569,111 @@ function renderHomeHero(data, show) {
     ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}${renderSetlistNotes(annotations)}</div></div>`
     : "";
   const pullGroups = hasSetlist ? computeShowPulls(data, show) : [];
-  const pullsRow = renderShowPulls(pullGroups);
-  const ltpRow = hasSetlist ? renderShowLastPlayed(data, show) : "";
+  const ltpRows = hasSetlist ? computeLastPlayedRows(data, show) : [];
+
+  // ---- TICKER: pulls + 30-show-plus gaps + editorial notes (no lineup boilerplate) ----
+  const tickerItems = [];
+  for (const group of pullGroups) {
+    for (const song of group.songs) tickerItems.push(`<span class="tk-item">${renderRaritySymbol(group.tier)}<em>${escapeHtml(group.label)}</em><b>${escapeHtml(song)}</b></span>`);
+  }
+  for (const r of ltpRows) {
+    if (r.gap !== null && r.gap >= 30) tickerItems.push(`<span class="tk-item"><em>Last</em><b>${escapeHtml(r.title)}</b><em>${formatNumber(r.gap)} shows ago</em></span>`);
+    if (r.gap === null) tickerItems.push(`<span class="tk-item tk-debut"><em>Live debut</em><b>${escapeHtml(r.title)}</b></span>`);
+  }
+  const isLineupNote = (note) => /entire (show|night)|on guitar|sitting in for|filling in/i.test(note);
+  for (const note of [...annotations.guestNotes, ...annotations.bracketNotes]) {
+    const text = clean(String(note).replace(/^\[|\]$/g, ""));
+    if (text && !isLineupNote(text)) tickerItems.push(`<span class="tk-item tk-note"><b>${escapeHtml(text)}</b></span>`);
+  }
+  const tickerSeq = tickerItems.length ? tickerItems.join('<span class="tk-sep" aria-hidden="true">·</span>') + '<span class="tk-sep" aria-hidden="true">·</span>' : "";
+  // Track content is doubled so the -50% crawl loops seamlessly.
+  const ticker = tickerItems.length
+    ? `<div class="hero-ticker" aria-label="Show highlights"><div class="tk-track">${tickerSeq}${tickerSeq}</div></div>`
+    : "";
+
+  // Lineup boilerplate stays as the quiet footnote under the setlist.
+  const lineupNotes = [...annotations.guestNotes, ...annotations.bracketNotes]
+    .map((note) => clean(String(note).replace(/^\[|\]$/g, "")))
+    .filter((text) => text && isLineupNote(text));
+  const footnote = lineupNotes.length
+    ? `<p class="hero-footnote">${lineupNotes.map((text) => `[${escapeHtml(text)}]`).join(" ")}</p>`
+    : "";
+
+  // ---- RIGHT-RAIL CARDS: other run nights + upcoming + all-setlists ----
+  const posted = data.setlists || [];
+  const runShows = [];
+  for (const entry of posted) {
+    if (entry.venue === show.venue && entry.location === show.location) { if (entry.isoDate !== show.isoDate) runShows.push(entry); }
+    else break;
+  }
+  const nightCards = runShows.map((entry) => {
+    let night = "";
+    try { const run = tourRunInfo(data.tourDates || [], entry); if (run && run.length > 1) night = `Night ${run.number}`; } catch {}
+    return `<a class="hero-card" href="#setlist-${escapeAttr(entry.isoDate)}">
+      <time class="sc-date" datetime="${escapeAttr(entry.isoDate)}">${escapeHtml(entry.date)}</time>
+      <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${night ? ` · ${night}` : ""}</small></span>
+      <span class="hc-go" aria-hidden="true">↓</span>
+    </a>`;
+  }).join("");
+  const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
+  const upcoming = preview || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (show.isoDate || ""));
+  const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
+  const upcomingCard = upcoming ? `<a class="hero-card hero-card-upcoming" href="${escapeAttr(upcoming.sourceUrl || "/#tour-dates")}">
+      <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
+      <span class="hc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
+      <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
+    </a>` : "";
+
+  // ---- SONG STATS MODAL (popup experience; declutters the hero) ----
+  const statCell = (r) => {
+    const g = r.gap === null ? "Live debut" : r.gap === 0 ? "Also last show" : `${formatNumber(r.gap)} show${r.gap === 1 ? "" : "s"} ago`;
+    const name = r.slug ? `<a href="/song/${escapeAttr(r.slug)}/">${escapeHtml(r.title)}</a>` : escapeHtml(r.title);
+    return `<li class="ltp-item"><span class="ltp-song">${name}</span><span class="ltp-gap${r.gap === null || (r.gap || 0) >= 40 ? " is-rare" : ""}">${g}</span></li>`;
+  };
+  const rareCount = ltpRows.filter((r) => r.gap === null || (r.gap || 0) >= 40).length;
+  const statsButton = ltpRows.length
+    ? `<button type="button" class="hero-stats-btn" data-stats-open aria-haspopup="dialog" aria-controls="hero-stats-modal">Song stats<span>${formatNumber(ltpRows.length)} songs${rareCount ? ` · ${rareCount} deep pull${rareCount === 1 ? "" : "s"}` : ""}</span></button>`
+    : "";
+  const statsModal = ltpRows.length
+    ? `<div class="hero-modal" id="hero-stats-modal" role="dialog" aria-modal="true" aria-label="Song stats for ${ariaHeading}" hidden>
+        <div class="hero-modal-backdrop" data-stats-close></div>
+        <div class="hero-modal-panel">
+          <div class="hero-modal-head"><h3>Song stats</h3><span>${escapeHtml(show.date)} · ${escapeHtml(show.location)}</span><button type="button" class="hero-modal-x" data-stats-close aria-label="Close">✕</button></div>
+          <p class="sc-stats-head"><span>Song</span><span>Last time played</span></p>
+          <ol class="ltp-list">${ltpRows.map(statCell).join("")}</ol>
+        </div>
+      </div>`
+    : "";
+
   const bgSrc = show.bgImage || show.image;
   const credit = show.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(show.photoCredit)}</figcaption>` : "";
   const photo = show.image
     ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async" fetchpriority="high">${credit}</figure>`
     : "";
   const bg = bgSrc ? `<div class="hero-bg" aria-hidden="true"><img src="${escapeAttr(bgSrc)}" alt="" decoding="async"></div>` : "";
-  const side = (pullsRow || ltpRow) ? `<div class="hero-side">${pullsRow}${ltpRow}</div>` : "";
   return `<section class="home-hero${show.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${ariaHeading}">
     ${bg}
     <div class="hero-inner">
-      <div class="hero-lockup">
-        <div class="hero-lock">
-          <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
-          <h2 class="sc-city">${escapeHtml(show.location)}</h2>
-          <span class="sc-venue">${escapeHtml(venueLine)}</span>
-          ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
-        </div>
-        ${photo}
+      <div class="hero-left">
+        <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
+        <h2 class="sc-city">${escapeHtml(show.location)}</h2>
+        <span class="sc-venue">${escapeHtml(venueLine)}</span>
+        ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
+        <div class="hero-sets sc-sets">${setRows}</div>
+        ${footnote}
+        ${statsButton}
       </div>
-      <div class="hero-setlist">
-        <div class="hero-sets sc-sets">${setRows}${notes}</div>
-        ${side}
+      <div class="hero-right">
+        ${photo}
+        ${ticker}
+        <div class="hero-cards">
+          ${nightCards}
+          ${upcomingCard}
+          <a class="hero-all" href="/#setlists">All ${escapeHtml(String(data.site.year))} setlists <span aria-hidden="true">→</span></a>
+        </div>
       </div>
     </div>
+    ${statsModal}
   </section>`;
 }
 
@@ -8587,33 +8681,7 @@ function renderLatestSetlist(data) {
   const posted = data.setlists || [];
   const featured = posted[0];
   if (!featured) return "";
-  return `${renderHomeHero(data, featured)}
-  ${renderNextShowStrip(data, featured)}`;
-}
-
-// Slim strip under the hero for the next scheduled show — or tonight's live
-// preview on show day (live-dot + "Tonight"). Expands to a short note + details link.
-function renderNextShowStrip(data, featured) {
-  const preview = data.site.isShowDayPreview ? data.site.featuredShow : null;
-  const upcoming = preview || (data.tourDates || []).find((entry) => !entry.isPosted && entry.isoDate > (featured?.isoDate || ""));
-  if (!upcoming) return "";
-  const iso = upcoming.isoDate || "";
-  const dow = weekdayName(iso).slice(0, 3).toUpperCase();
-  return `<details class="next-strip show-entry no-image">
-    <summary>
-      <span class="sc-closed">
-        <time class="sc-date" datetime="${escapeAttr(iso)}">${escapeHtml(upcoming.date)}</time>
-        <span class="sc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
-        <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(dow)}`}</span>
-      </span>
-      <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </summary>
-    <div class="ns-body">
-      ${upcoming.image ? `<figure class="ns-photo"><img src="${escapeAttr(upcoming.image)}" alt="${escapeAttr(`${upcoming.date} ${upcoming.location}`)}" loading="lazy" decoding="async"></figure>` : ""}
-      <p class="sc-preview-note">The setlist posts here after the show, verified against the official page.</p>
-      ${upcoming.sourceUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(upcoming.sourceUrl)}">Show Details</a>` : ""}
-    </div>
-  </details>`;
+  return renderHomeHero(data, featured);
 }
 
 function weekdayName(isoDate) {
@@ -8641,11 +8709,11 @@ function computeShowPulls(data, show) {
   return groups;
 }
 
-function renderShowLastPlayed(data, show) {
+// Shared: per-song last-time-played rows for a show, sorted longest gap first.
+function computeLastPlayedRows(data, show) {
   const titles = [...new Set((show.sets || []).flatMap((set) => set.songTitles || []))];
-  const rows = titles.map((title) => {
+  return titles.map((title) => {
     const key = normalizeTitle(title);
-    const row = (data.catalog || []).find((entry) => entry.key === key);
     const gap = lastTimePlayedGap(data, key, show.isoDate);
     const slug = data.songSlugMap?.get(key);
     return { title, slug, gap };
@@ -8653,6 +8721,10 @@ function renderShowLastPlayed(data, show) {
     if (a.gap === null) return -1; if (b.gap === null) return 1;
     return b.gap - a.gap;
   });
+}
+
+function renderShowLastPlayed(data, show) {
+  const rows = computeLastPlayedRows(data, show);
   const cell = (r) => {
     const g = r.gap === null ? "Live debut" : r.gap === 0 ? "Also last show" : `${formatNumber(r.gap)} show${r.gap === 1 ? "" : "s"} ago`;
     const name = r.slug ? `<a href="/song/${escapeAttr(r.slug)}/">${escapeHtml(r.title)}</a>` : escapeHtml(r.title);
@@ -8717,7 +8789,7 @@ function renderShowCard(data, show, options = {}) {
     ? `<span class="sc-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async"${loading}${priority}></span>`
     : "";
   const bg = show.image ? `<span class="sc-bg" aria-hidden="true"><img src="${escapeAttr(show.image)}" alt="" loading="lazy" decoding="async"></span>` : "";
-  return `<details class="show-entry${options.latest ? " is-latest" : ""}${show.image ? "" : " no-image"}"${options.latest || options.open ? " open" : ""}>
+  return `<details class="show-entry${options.latest ? " is-latest" : ""}${show.image ? "" : " no-image"}"${options.latest || options.open ? " open" : ""}${show.isoDate ? ` id="setlist-${escapeAttr(show.isoDate)}"` : ""} style="scroll-margin-top: 120px">
     <summary>
       ${bg}
       <span class="sc-closed">
@@ -12733,23 +12805,74 @@ body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
 body.stagelight .hero-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.55; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); }
 body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.6) 52%, rgba(11,11,12,0.92) 84%, #0b0b0d 100%); }
 body.stagelight .hero-inner { position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) max(28px, calc((100% - 1400px) / 2)) 38px; }
-body.stagelight .hero-lockup { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
-body.stagelight .home-hero.no-image .hero-lockup { grid-template-columns: 1fr; }
-body.stagelight .hero-lock { min-width: 0; }
+/* Strict 50/50: one center gutter, nothing crosses it. Left = identity + setlist.
+   Right = photo + ticker + cards. Right column is fixed-height content, so the
+   hero fits ~one viewport without dynamic text scaling. */
+body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; column-gap: 64px; align-items: start; }
+body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
+body.stagelight .hero-left, body.stagelight .hero-right { min-width: 0; }
 body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-display); font-size: 52px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
 body.stagelight .home-hero .sc-venue { display: block; margin-top: 10px; font-size: 16px; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-body.stagelight .hero-photo { position: relative; margin: 0; justify-self: end; width: 100%; height: clamp(280px, 40vh, 400px); border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
+body.stagelight .hero-sets { margin-top: 30px; display: grid; gap: 14px; }
+body.stagelight .home-hero .sc-row { grid-template-columns: 64px minmax(0, 1fr); }
+body.stagelight .hero-footnote { margin: 14px 0 0; font-size: 13px; color: var(--sl-faint); }
+body.stagelight .hero-stats-btn {
+  display: inline-flex; align-items: baseline; gap: 10px; margin-top: 22px; padding: 10px 16px;
+  border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-pill); background: rgba(255,255,255,0.04);
+  font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-ink);
+  cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease;
+}
+body.stagelight .hero-stats-btn span { color: var(--sl-faint); letter-spacing: 0.04em; text-transform: none; font-size: 11.5px; }
+body.stagelight .hero-stats-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--sl-muted); }
+body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(260px, 36vh, 380px); border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08); }
 body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 28%; }
 body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
-body.stagelight .hero-setlist { margin-top: 30px; display: grid; grid-template-columns: 1.7fr 1fr; gap: 44px; align-items: start; }
-body.stagelight .hero-sets { display: grid; gap: 14px; }
-body.stagelight .hero-side { display: grid; gap: 12px; align-content: start; }
-body.stagelight .hero-side .sc-pulls { display: block; }
-body.stagelight .hero-side .sc-pulls .sc-label { display: block; margin-bottom: 8px; }
-body.stagelight .hero-side .sc-stats { margin-top: 4px; }
-@media (max-width: 900px) { body.stagelight .hero-setlist { grid-template-columns: 1fr; gap: 22px; } }
+/* Ticker: slow continuous crawl, pauses on hover; static scroll under 900px / reduced motion. */
+body.stagelight .hero-ticker { margin-top: 14px; overflow: hidden; border: 1px solid var(--sl-line); border-radius: var(--sl-r-sm); background: rgba(255,255,255,0.035); -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+body.stagelight .tk-track { display: inline-flex; align-items: center; gap: 18px; padding: 9px 18px; white-space: nowrap; width: max-content; animation: tk-crawl 46s linear infinite; }
+body.stagelight .hero-ticker:hover .tk-track { animation-play-state: paused; }
+@keyframes tk-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+body.stagelight .tk-item { display: inline-flex; align-items: baseline; gap: 7px; font-size: 13px; }
+body.stagelight .tk-item em { font-style: normal; font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .tk-item b { font-weight: 600; color: var(--sl-ink); }
+body.stagelight .tk-item .rarity-symbol { margin-right: 0; }
+body.stagelight .tk-note b { font-weight: 500; color: var(--sl-muted); }
+body.stagelight .tk-sep { color: var(--sl-faint); opacity: 0.5; }
+@media (prefers-reduced-motion: reduce) { body.stagelight .tk-track { animation: none; } body.stagelight .hero-ticker { overflow-x: auto; } }
+/* Right-rail cards */
+body.stagelight .hero-cards { margin-top: 14px; display: grid; gap: 10px; }
+body.stagelight .hero-card {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 18px;
+  padding: 12px 18px; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md);
+  background: rgba(255,255,255,0.035); color: var(--sl-ink); transition: background 0.15s ease, border-color 0.15s ease, transform 0.18s ease;
+}
+body.stagelight .hero-card:hover { background: rgba(255,255,255,0.07); border-color: var(--sl-line-strong); transform: translateY(-1px); }
+body.stagelight .hc-place { display: flex; flex-direction: column; min-width: 0; }
+body.stagelight .hc-place strong { font-size: 15px; font-weight: 620; }
+body.stagelight .hc-place small { font-size: 12.5px; color: var(--sl-faint); }
+body.stagelight .hc-go { color: var(--sl-faint); }
+body.stagelight .hero-card-upcoming { border-style: dashed; }
+body.stagelight .hero-all { display: flex; justify-content: center; gap: 8px; padding: 10px; border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-md); font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-muted); transition: color 0.15s ease, background 0.15s ease; }
+body.stagelight .hero-all:hover { color: var(--sl-ink); background: rgba(255,255,255,0.05); }
+/* Song stats modal */
+body.stagelight .hero-modal { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 24px; }
+body.stagelight .hero-modal[hidden] { display: none; }
+body.stagelight .hero-modal-backdrop { position: absolute; inset: 0; background: rgba(6,6,8,0.7); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+body.stagelight .hero-modal-panel { position: relative; width: min(680px, 100%); max-height: min(78vh, 720px); overflow-y: auto; padding: 24px 28px 28px; border-radius: var(--sl-r); border: 1px solid var(--sl-line-strong); background: #121215; box-shadow: 0 60px 120px -30px rgba(0,0,0,0.9); }
+body.stagelight .hero-modal-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 16px; }
+body.stagelight .hero-modal-head h3 { font-family: var(--sl-display); font-size: 22px; font-weight: 650; }
+body.stagelight .hero-modal-head span { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); }
+body.stagelight .hero-modal-x { margin-left: auto; width: 32px; height: 32px; border: 1px solid var(--sl-line); border-radius: 8px; background: transparent; color: var(--sl-muted); cursor: pointer; }
+body.stagelight .hero-modal-x:hover { color: var(--sl-ink); border-color: var(--sl-muted); }
+body.stagelight .hero-modal-panel .ltp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+@media (max-width: 640px) { body.stagelight .hero-modal-panel .ltp-list { grid-template-columns: 1fr; } }
+@media (max-width: 900px) {
+  body.stagelight .hero-inner { grid-template-columns: 1fr; row-gap: 26px; }
+  body.stagelight .hero-right { order: -1; }
+  body.stagelight .hero-photo { height: clamp(200px, 30vh, 300px); }
+}
 body.stagelight .sc-closed { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; min-height: 84px; padding: 18px 70px 18px 28px; }
 body.stagelight .show-entry[open] .sc-closed { display: none; }
 body.stagelight .sc-date { font-family: var(--sl-mono); font-size: 13.5px; letter-spacing: 0.08em; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -12800,10 +12923,8 @@ body.stagelight .setlist-archive-panel > summary { display: none; }
 @media (max-width: 900px) {
   body.stagelight .show-entry[open] .sc-lockup { grid-template-columns: 1fr; gap: 24px; padding: 26px 22px 0; }
   body.stagelight .sc-city { font-size: 28px; }
-  body.stagelight .hero-lockup { grid-template-columns: 1fr; gap: 22px; }
-  body.stagelight .hero-inner { padding: 30px 22px 26px; }
+  body.stagelight .hero-inner { padding-left: 22px; padding-right: 22px; }
   body.stagelight .home-hero .sc-city { font-size: 38px; }
-  body.stagelight .hero-photo { order: -1; }
   body.stagelight .sc-body { padding: 0 22px 26px; }
   body.stagelight .sc-row { grid-template-columns: 1fr; gap: 6px; }
   body.stagelight .sc-label { padding-top: 0; }
@@ -13428,17 +13549,13 @@ body.stagelight .home-nav-sep { color: var(--sl-faint); font-size: 10px; opacity
   body.stagelight .home-nav a { font-size: 10px; letter-spacing: 0.08em; }
 }
 
-/* ---- NEXT-SHOW STRIP (matches the show rows) ---- */
-body.stagelight .next-strip { margin-top: 16px; }
-body.stagelight .next-strip[open] .sc-closed { display: flex; }
+/* ---- UPCOMING FLAG (hero upcoming card) ---- */
 body.stagelight .ns-flag {
   margin-left: auto; display: inline-flex; align-items: center; gap: 9px;
   font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--sl-muted); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-pill); padding: 8px 16px; white-space: nowrap;
 }
 body.stagelight .ns-flag.is-tonight { color: var(--sl-ink); border-color: rgba(212,81,79,0.5); }
-body.stagelight .ns-body { padding: 4px 28px 26px; display: grid; gap: 16px; justify-items: start; }
-body.stagelight .ns-photo img { border-radius: var(--sl-r-md); border: 1px solid var(--sl-line); max-width: 520px; width: 100%; }
 @media (max-width: 760px) { body.stagelight .ns-flag { margin-left: 0; } }
 
 /* ---- HERO PHOTO SHEEN ---- */
