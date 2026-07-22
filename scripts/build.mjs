@@ -2490,45 +2490,45 @@ function renderFaqPage(data) {
     return `<p class="faq-sources"><span class="faq-sources-label">Sources</span>${parts.join('<span class="faq-sep" aria-hidden="true">·</span>')}</p>`;
   };
 
-  const renderItem = (faq) => `<details class="faq-item"${faq.id ? ` id="${escapeAttr(faq.id)}"` : ""}>
+  // Optional in-answer media, all placed INSIDE the <details> answer body (never as
+  // section breaks or a page hero). Only images explicitly supplied per entry are
+  // rendered — a photo (with a plain caption + optional mono sub-line), a verbatim
+  // pull-quote, and verified "watch" links. Nothing is invented; a field is rendered
+  // only when the data carries it.
+  const renderExtras = (faq) => {
+    let out = "";
+    if (faq.pullquote) {
+      out += `<blockquote class="faq-pullquote"><p>${escapeHtml(faq.pullquote.text)}</p>${faq.pullquote.cite ? `<cite>${escapeHtml(faq.pullquote.cite)}</cite>` : ""}</blockquote>`;
+    }
+    if (faq.image) {
+      const img = faq.image;
+      const caps = (Array.isArray(img.caption) ? img.caption : [img.caption]).filter(Boolean);
+      out += `<figure class="faq-figure">
+            <img src="${escapeAttr(img.src)}" alt="${escapeAttr(img.alt || "")}" loading="lazy" decoding="async"${img.w ? ` width="${img.w}"` : ""}${img.h ? ` height="${img.h}"` : ""}>
+            <figcaption class="faq-figcaption">${caps.map((c, i) => `<span class="${i === 0 ? "faq-figcap-main" : "faq-figcap-sub"}">${escapeHtml(c)}</span>`).join("")}</figcaption>
+          </figure>`;
+    }
+    if (faq.links && faq.links.length) {
+      out += `<p class="faq-watch">${faq.links.map((l) => `<a href="${escapeAttr(l.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(l.label)} <span aria-hidden="true">↗</span></a>`).join('<span class="faq-sep" aria-hidden="true">·</span>')}</p>`;
+    }
+    return out;
+  };
+
+  const renderItem = (faq) => {
+    const paras = String(faq.answer || "").split(/\n\n+/).map((p) => `<p>${escapeHtml(p)}</p>`).join("\n            ");
+    return `<details class="faq-item"${faq.id ? ` id="${escapeAttr(faq.id)}"` : ""}>
           <summary>${escapeHtml(faq.question)}</summary>
           <div class="faq-answer">
-            <p>${escapeHtml(faq.answer)}</p>
+            ${paras}
+            ${renderExtras(faq)}
             ${sourcesLine(faq)}
           </div>
         </details>`;
+  };
 
   // Group the rendered questions under mono-label section headers, preserving the
-  // order sections first appear in the data. Each section is preceded by a photo
-  // break: three Wikimedia Commons live shots (each carrying a visible photographer
-  // + license credit line per band-photography etiquette) plus the in-house Posse
-  // banner ahead of "Right Now". License verified on each file's Commons page; the
-  // source images live in /assets and are copied to /assets at build.
-  const sectionBreaks = {
-    "The Band": {
-      src: "/assets/wsp-band-jb-2014.jpg", w: 1600, h: 1200,
-      alt: "John Bell of Widespread Panic performing, 2014",
-      credit: "John Bell, 2014 · Photo: NewMillenniumMusic / Wikimedia Commons (CC BY-SA 4.0)"
-    },
-    "The Story": {
-      src: "/assets/wsp-band-2007.jpg", w: 1600, h: 1200,
-      alt: "Widespread Panic on stage, 2007",
-      credit: "Widespread Panic, 2007 · Photo: Mattd523 / Wikimedia Commons (CC BY-SA 3.0)"
-    },
-    "The Scene": {
-      src: "/assets/wsp-redrocks-2010.jpg", w: 1600, h: 936,
-      alt: "Widespread Panic at Red Rocks Amphitheatre, 2010",
-      credit: "Red Rocks, 2010 · Photo: Mike Hardaker / Wikimedia Commons (CC BY-SA 3.0)"
-    }
-  };
-  const posseBreak = `<figure class="faq-break">
-          <img src="/assets/PosseFacebookBanner.png" alt="Jimmy Herring Has a Posse banner" loading="lazy" decoding="async" width="820" height="312">
-        </figure>\n        `;
-  const photoBreak = (b) => `<figure class="faq-break faq-break-photo">
-          <img src="${b.src}" alt="${escapeAttr(b.alt)}" loading="lazy" decoding="async" width="${b.w}" height="${b.h}">
-          <figcaption class="faq-break-credit">${escapeHtml(b.credit)}</figcaption>
-        </figure>\n        `;
-
+  // order sections first appear in the data. No section-break imagery — the only
+  // photographs on the page live inside the specific answers they illustrate.
   const sectionOrder = [];
   for (const faq of faqs) {
     const name = faq.section || "More";
@@ -2537,10 +2537,7 @@ function renderFaqPage(data) {
   const items = sectionOrder.map((name) => {
     const groupFaqs = faqs.filter((faq) => (faq.section || "More") === name);
     const count = groupFaqs.length;
-    const breakImg = /right now/i.test(name)
-      ? posseBreak
-      : (sectionBreaks[name] ? photoBreak(sectionBreaks[name]) : "");
-    return `${breakImg}<section class="faq-group" aria-labelledby="grp-${slugify(name)}">
+    return `<section class="faq-group" aria-labelledby="grp-${slugify(name)}">
           <h2 class="faq-group-label" id="grp-${slugify(name)}">${escapeHtml(name)}<span class="faq-group-count" aria-hidden="true">${count}</span></h2>
           ${groupFaqs.map(renderItem).join("\n          ")}
         </section>`;
@@ -2552,7 +2549,7 @@ function renderFaqPage(data) {
     mainEntity: faqs.map((faq) => ({
       "@type": "Question",
       name: faq.question,
-      acceptedAnswer: { "@type": "Answer", text: faq.answer }
+      acceptedAnswer: { "@type": "Answer", text: String(faq.answer || "").replace(/\s*\n+\s*/g, " ").trim() }
     }))
   }).replace(/</g, "\\u003c");
 
@@ -2585,7 +2582,6 @@ function renderFaqPage(data) {
           <p class="faq-eyebrow">Widespread Panic</p>
           <h1>The questions we actually get</h1>
           <p class="faq-deck">New to the band? Here's the name, the story, the people, where they stand right now, and where to start listening. Written by fans who've been in the room.</p>
-          <p class="faq-credit">Photo: Andy Tennille</p>
         </header>
         <div class="faq-list">
         ${items}
@@ -2601,9 +2597,9 @@ function renderFaqCss() {
   return `
       .faq-page { max-width: 840px; }
 
-      /* Hero: full-bleed live-show backdrop (Andy Tennille) behind a dark vertical
-         gradient, same overlay idiom as the upcoming board. Crumbs, title, deck and
-         the visible photo credit all ride above the ::before on z-index. */
+      /* Hero: a quiet glass panel (no backdrop photo — the only images on this page
+         live inside the specific answers they illustrate). A soft vertical gradient
+         gives it depth; crumbs, title and deck ride above the ::before on z-index. */
       .faq-hero {
         position: relative; overflow: hidden; isolation: isolate;
         border: 1px solid var(--sl-line); border-radius: var(--sl-r);
@@ -2612,8 +2608,7 @@ function renderFaqCss() {
       }
       .faq-hero::before {
         content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-        background-image: linear-gradient(180deg, rgba(9,9,11,0.68) 0%, rgba(10,10,12,0.80) 52%, rgba(11,11,12,0.94) 100%), url("/assets/upcoming-bg-andy-tennille.jpg");
-        background-size: cover, cover; background-position: center, center top;
+        background-image: linear-gradient(180deg, rgba(9,9,11,0.34) 0%, rgba(11,11,12,0.62) 100%);
       }
       .faq-hero .crumbs { position: relative; }
       .faq-eyebrow {
@@ -2648,17 +2643,37 @@ function renderFaqCss() {
         font-size: 11px; letter-spacing: 0.12em; color: var(--sl-faint); font-weight: 400;
       }
 
-      /* Inline photo break (in-house Posse banner + credited Commons live shots). */
-      .faq-break { margin: 40px 0 0; }
-      .faq-break img {
+      /* In-answer photo: a captioned figure sitting inside a single answer body.
+         Caption is a plain lead line plus an optional mono sub-line (date/place). */
+      .faq-figure { margin: 1.1rem 0 1.2rem; }
+      .faq-figure img {
         display: block; width: 100%; height: auto; border-radius: var(--sl-r-md);
-        border: 1px solid var(--sl-line); opacity: 0.92;
+        border: 1px solid var(--sl-line);
       }
-      .faq-break-photo { margin: 44px 0 0; }
-      .faq-break-credit {
-        margin: 8px 0 0; font-family: var(--sl-mono); font-size: 9.5px;
-        letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint);
+      .faq-figcaption { margin: 9px 0 0; display: flex; flex-direction: column; gap: 3px; }
+      .faq-figcap-main { font-size: .82rem; line-height: 1.5; color: var(--sl-muted); max-width: 60ch; }
+      .faq-figcap-sub {
+        font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--sl-faint);
       }
+
+      /* Verbatim pull-quote inside an answer (e.g. Michael Houser, 1996). */
+      .faq-pullquote {
+        margin: 1.1rem 0; padding: .1rem 0 .1rem 1.1rem;
+        border-left: 2px solid var(--sl-line-strong);
+      }
+      .faq-pullquote p {
+        margin: 0 0 .5rem; font-size: 1.05rem; line-height: 1.65; font-style: italic;
+        color: var(--sl-ink); max-width: 62ch;
+      }
+      .faq-pullquote cite {
+        font-family: var(--sl-mono); font-style: normal; font-size: .7rem;
+        letter-spacing: .1em; text-transform: uppercase; color: var(--sl-faint);
+      }
+
+      /* Verified "watch" links inside an answer. */
+      .faq-watch { margin: .55rem 0 0; font-size: .85rem; display: flex; flex-wrap: wrap; gap: .5rem; align-items: baseline; }
+      .faq-watch a { color: var(--sl-muted); }
 
       .faq-item { border-bottom: 1px solid var(--sl-line); padding: .2rem 0; }
       .faq-item:last-child { border-bottom: none; }

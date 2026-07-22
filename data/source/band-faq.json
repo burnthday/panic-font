@@ -87,28 +87,33 @@
       "id": "when-where-started",
       "section": "The Story",
       "question": "When and where did Widespread Panic start?",
-      "answer": "Athens, Georgia. John “JB” Bell and Michael Houser met at the University of Georgia in the early '80s and began as a guitar duo. The fuller band came together in 1986, with the first gig featuring drummer Todd Nance on February 10, 1986 at The Mad Hatter.",
-      "sources": [
-        {
-          "label": "Michael Houser interview (8/22/1997), Relix Oct/Nov 2003",
-          "url": null
-        }
-      ],
-      "verify": false
-    },
-    {
-      "id": "early-years-fast",
-      "section": "The Story",
-      "question": "Can you walk me through the early years, fast?",
-      "answer": "Fast version. JB and Michael Houser met at the University of Georgia in the early '80s and started as a guitar duo. By the mid-'80s they were a full band grinding it out in Athens, playing an A-frame house and dollar-Monday nights at the Uptown Lounge before Space Wrangler landed in 1988. Keys came in stages, T Lavitz of the Dixie Dregs first, then JoJo Hermann for good in 1992. That same year they helped launch H.O.R.D.E., the traveling festival they co-founded with Blues Traveler, Phish, the Spin Doctors, and Col. Bruce Hampton's Aquarium Rescue Unit, the tour that carried the whole jam scene out of the clubs.",
+      "answer": "Fast version. JB and Michael Houser met at the University of Georgia in the early '80s and started as a guitar duo. By the mid-'80s they were a full band grinding it out in Athens, playing an A-frame house and dollar-Monday nights at the Uptown Lounge before Space Wrangler landed in 1988. Keys came in stages, T Lavitz of the Dixie Dregs first, then JoJo Hermann for good in 1992. That same year they helped launch H.O.R.D.E., the traveling festival they co-founded with Blues Traveler, Phish, the Spin Doctors, and Col. Bruce Hampton's Aquarium Rescue Unit, the tour that carried the whole jam scene out of the clubs.\n\nThe longer version fills in the grind. JB and Mikey met as University of Georgia freshmen in 1981, roomed together, and wrote songs that are still setlist staples, “Chilly Water” and “Driving Song” among them. They cut their teeth on the Athens circuit the hard way, fraternity parties and bars, night after night, before drummer Todd Nance, a childhood friend Houser called up, completed the lineup for the band's first shows as Widespread Panic in early 1986. A deal with Atlanta's Landslide Records followed in 1987, and Space Wrangler arrived the next year.\n\nOne more piece of that early crew is worth knowing. Garrie Vereen pulled his truck up to the band's house in 1986 to help haul gear and never really left, becoming their equipment manager and, in JB's words, the band's “ambassador to the rest of the music world.” To Spreadheads he's also the voice tied to the band's own Athens tagline, sending them out “all the way from Athens, Georgia.” He passed in 2011, and the band still honors him.",
+      "image": {
+        "src": "/assets/wsp-aframe-1985.jpg",
+        "w": 1200,
+        "h": 839,
+        "alt": "Widespread Panic performing at the A-Frame house in Athens, Georgia, February 1985",
+        "caption": [
+          "First Widespread Panic show at the band's A-Frame house in Athens, GA, 02/24/1985. Photo by Neal Becton.",
+          "02/24/85 · A-Frame, Weymanda Court, Athens, GA"
+        ]
+      },
       "sources": [
         {
           "label": "New Georgia Encyclopedia: Widespread Panic",
           "url": "https://www.georgiaencyclopedia.org/articles/arts-culture/widespread-panic/"
         },
         {
+          "label": "Widespread Panic — Wikipedia (met 1981; Todd Nance, first show 1986; Landslide 1987)",
+          "url": "https://en.wikipedia.org/wiki/Widespread_Panic"
+        },
+        {
           "label": "Flagpole: Widespread Panic Celebrates 30 Years of Athens Music",
           "url": "https://flagpole.com/music/music-features/2016/02/03/widespread-panic-celebrates-30-years-of-athens-music/"
+        },
+        {
+          "label": "Garrie Vereen 1961–2011 (official memorial; JB on Vereen as the band's ambassador)",
+          "url": "https://widespreadpanic.com/2011/04/26/garrie-vereen-1961-2011/"
         },
         {
           "label": "H.O.R.D.E. tour — Wikipedia",
@@ -121,7 +126,7 @@
       "id": "modern-era-fast",
       "section": "The Story",
       "question": "And from the major-label years to now?",
-      "answer": "They signed to Capricorn and cut the major-label records Everyday (1993) and Ain't Life Grand (1994), then toured without mercy. Early in 1996 they ran the Sit n Ski tour through Western ski towns, an acoustic-leaning run where the band played sitting down. Two years later came the Athens free show for Light Fuse Get Away, roughly 100,000 people downtown. The hardest turn was 2002, when Mikey died of cancer. George McConnell held the guitar chair from 2002 to 2006, and Jimmy Herring has had it since. In 2012 they hung up the electrics for the Wood Tour, their first all-acoustic run, and released the live album Wood. Running under all of it is an Allman Brothers thread, from Warren Haynes sit-ins going back to 1991 to the 2009 Southbound co-tour, and today it's literally in the blood: drummer Duane Trucks is Butch Trucks' nephew and Derek Trucks' brother.",
+      "answer": "They signed to Capricorn and cut the major-label records Everyday (1993) and Ain't Life Grand (1994), then toured without mercy. Early in 1996 they ran the Sit n Ski tour through Western ski towns, an acoustic-leaning run where the band played sitting down. Two years later came the Athens free show for Light Fuse Get Away, roughly 100,000 people downtown. The hardest turn was 2002, when Mikey died of cancer. George McConnell held the guitar chair from 2002 to 2006, and Jimmy Herring has had it since. In 2012 they hung up the electrics for the Wood Tour, their first all-acoustic run, and released the live album Wood. Running under all of it is an Allman Brothers thread, from Warren Haynes sit-ins going back to 1991 to the 2009 Southbound co-tour.",
       "sources": [
         {
           "label": "Ain't Life Grand (1994), Capricorn/Warner — Wikipedia",
@@ -146,7 +151,11 @@
       "id": "what-happened-to-houser",
       "section": "The Story",
       "question": "Who was Michael Houser?",
-      "answer": "The founding guitarist and the band's sonic core. Mikey played nearly to the end, including the first Bonnaroo, before pancreatic cancer took him on August 10, 2002. If you want to know what the band sounds like at its heart, it's him. George McConnell filled the chair afterward (2002 to 2006), and Jimmy Herring has held lead guitar since 2006.",
+      "answer": "The founding guitarist and the sonic heart of the band. Everyone called him Mikey. He was quiet, unshowy, and completely singular, and the sound of Widespread Panic at its core is the sound of his playing.\n\nThat sound came from touch as much as from notes. Mikey layered reverb and delay and rode a volume pedal with his right foot, swelling each note in from silence so the pick attack disappeared, a rhythmic, wave-like wash that rolled under the band instead of sitting on top of it. It's why his leads feel less like solos and more like weather moving through.\n\nHe played nearly to the end, including the first Bonnaroo in 2002, before pancreatic cancer took him on August 10, 2002. If you want to know what this band sounds like at its heart, it's him.",
+      "pullquote": {
+        "text": "When I play a lead, it's describing something that I kind of see or hear in my head. A natural outpouring. That's why I love playing: there's nothing else that I can do better than I play lead guitar. We met, we all realized that we had the same vision. It's the most important thing that we do, a very healing sort of thing. Each one of us gets that something out of the show. That THING.",
+        "cite": "— Michael Houser, 1996"
+      },
       "sources": [
         {
           "label": "Relix, Oct/Nov 2003, “Southeast of Eden”",
@@ -160,6 +169,15 @@
       "section": "The Story",
       "question": "Why did Mikey sit down?",
       "answer": "Two reasons, and neither is the one people assumed. Houser had actually sat to play early on (1986–87), but so many fans thought he was blind, one after another telling him “I'm sorry you can't see,” that he stood up just to stop the questions, even though sitting was always more comfortable. The bigger problem was physical: he worked a volume pedal constantly with his right foot, which left him balanced stock-still on his left leg for three hours a night and wrecked his leg and back. Eventually he decided, in his words, “I have to sit down, and if people don't like it I guess I'm gonna have to start driving a taxi or something.” He found he played better seated, with more range, and nobody ever gave him grief for it. Fans mark March 14, 1997 in Park City as the night he took his seat for good, after a “last stand” run of standing shows in Vail.",
+      "image": {
+        "src": "/assets/wsp-mikey-seated.jpg",
+        "w": 1000,
+        "h": 789,
+        "alt": "Michael Houser of Widespread Panic playing guitar seated",
+        "caption": [
+          "Michael Houser, seated, in his final years with the band."
+        ]
+      },
       "sources": [
         {
           "label": "Michael Houser, “Detours” interview (shared by Burnthday)",
@@ -176,7 +194,7 @@
       "id": "first-release",
       "section": "The Story",
       "question": "Was Space Wrangler their first record?",
-      "answer": "It was their debut studio album (1988), but not their first release. That was a self-pressed 45 in 1986 on the band's own Space Baby label, only 500 copies, whose B-side “Monkey Image” is a shortened version of “Sleepy Monkey.” JB has told the story of driving from their Athens house to Atlanta to pick the box of singles up from the presser.",
+      "answer": "It was their debut studio album (1988), but not their first release. That was a self-pressed 45 in 1986 on the band's own Space Baby label, only 500 copies, whose B-side “Monkey Image” is a shortened version of “Sleepy Monkey.” JB has told the story of driving from their Athens house to Atlanta to pick the box of singles up from the presser.\n\nOne for the collectors: Dave Schools has said the very first pressing of Space Wrangler had the labels put on the wrong sides, so genuine misprints are out there for anyone willing to dig through crates. The mismatch is documented too, the jacket and the label disagree about which song opens side one. The record came out on Atlanta's Landslide label in 1988, and the band has since reissued much of its back catalog on vinyl, Space Wrangler included, so you don't need the misprint to hear it.",
       "sources": [
         {
           "label": "Everyday Companion, Song Histories (Sleepy Monkey)",
@@ -185,6 +203,14 @@
         {
           "label": "Widespread Panic debut-single reissue",
           "url": "https://www.jambase.com/article/widespread-panic-debut-single-reissue"
+        },
+        {
+          "label": "Space Wrangler — Wikipedia (original Landslide pressing; jacket/label side mismatch)",
+          "url": "https://en.wikipedia.org/wiki/Space_Wrangler"
+        },
+        {
+          "label": "Back Catalog Vinyl Reissues (official, 2014)",
+          "url": "https://widespreadpanic.com/2014/07/01/back-catalog-vinyl-reissues/"
         }
       ],
       "verify": false
@@ -193,7 +219,13 @@
       "id": "biggest-show",
       "section": "The Story",
       "question": "What's the biggest show they ever played?",
-      "answer": "Panic in the Streets, April 18, 1998. To celebrate the release of their live album Light Fuse Get Away, the band threw a free show on Washington Street outside the 40 Watt Club in their hometown of Athens. They figured maybe 20,000 might turn up. Something close to 100,000 packed downtown, and it still stands as the largest record-release party ever thrown. For scale of a different kind, look at Bonnaroo: Panic was the very first band booked for the inaugural festival in 2002 and headlined both of its nights, one of six times they'd play the Manchester farm. If you want to understand what this band means to Georgia, start with Athens.",
+      "answer": "Panic in the Streets, April 18, 1998. To celebrate the release of their live album Light Fuse Get Away, the band threw a free show on Washington Street outside the 40 Watt Club in their hometown of Athens. They figured maybe 20,000 might turn up. Something close to 100,000 packed downtown, and it still stands as the largest record-release party ever thrown. For scale of a different kind, look at Bonnaroo: Panic was the very first band booked for the inaugural festival in 2002 and headlined both of its nights, one of six times they'd play the Manchester farm.\n\nThat first Bonnaroo produced one of the band's own favorite memories. They pulled gospel singer Dottie Peoples and her People's Choice Choir out for “Tall Boy,” and Dave Schools still talks about it: “I watched 80,000 music lovers literally levitate as Dottie channeled the spirit.” If you want to understand what this band means to Georgia, though, start with Athens.",
+      "links": [
+        {
+          "label": "Watch: “Tall Boy” with Dottie Peoples, Bonnaroo 2002",
+          "url": "https://www.youtube.com/watch?v=wc5HY2qaF0Y"
+        }
+      ],
       "sources": [
         {
           "label": "Athens 1998 (official)",
@@ -204,8 +236,12 @@
           "url": "https://www.jambase.com/article/widespread-panic-performs-massive-crowd-hometown-concert-1998"
         },
         {
-          "label": "Relix: Bonnaroo 2011 lineup (Panic's sixth appearance)",
-          "url": "https://relix.com/news/detail/bonnaroo-2011-eminem-arcade-fire-widespread-panic-the-black-keys-buffa/"
+          "label": "Relix: Bonnaroo 2002 — Widespread Panic with Dottie Peoples “Tall Boy”",
+          "url": "https://relix.com/blogs/detail/bonnaroo-2002-widespread-panic-with-dottie-peoples-tall-boy/"
+        },
+        {
+          "label": "Jambands: My First Roo (Dave Schools on Bonnaroo 2002)",
+          "url": "https://jambands.com/features/2007/06/25/my-first-roo-reflections-from-members-of-widespread-panic-brazilian-girls-the-slip-tortoise-benevento-russo-duo/"
         }
       ],
       "verify": false
@@ -252,11 +288,15 @@
       "id": "nick-johnson",
       "section": "Right Now",
       "question": "Who's Nick Johnson, the guitarist filling in for Jimmy?",
-      "answer": "A Georgia guitar lifer, even if he'll tell you he wasn't a Spreadhead himself. Nick came up around Col. Bruce Hampton, the same Atlanta mad-scientist mentor who shaped Duane Trucks, and he's spent 13 years in Randall Bramblett's band, about the strongest Georgia-soul pedigree you can carry. Duane called him on December 23 with the news that Jimmy wanted the 2026 dates honored but couldn't make them, and Nick got the nod. His first full run as our guy was Panic en la Playa 13 down in Mexico. The whole thing keeps it in the family: Bramblett and Sam Holt, Mikey's old guitar tech who leads Outformation, are exactly the kind of Athens-orbit players who have turned up on Panic stages for years.",
+      "answer": "A Georgia guitar lifer, even if he'll tell you he wasn't a Spreadhead himself. There's a full-circle twist to him taking Jimmy's chair: Nick moved to Atlanta specifically to study under Jimmy Herring at the Atlanta Institute of Music, only for Jimmy to land the Panic gig right as Nick arrived, so the lessons never happened. By then Nick had already been playing with Duane Trucks and bassist Kevin Scott, and the three of them came up together under Col. Bruce Hampton, the Atlanta mad-scientist mentor whose orbit shaped half this story. Nick went on to spend 13 years in Randall Bramblett's band, about the strongest Georgia-soul pedigree you can carry. Duane called him on December 23 with the news that Jimmy wanted the 2026 dates honored but couldn't make them, and Nick got the nod. His first full run as our guy was Panic en la Playa 13 down in Mexico. The whole thing keeps it in the family: Bramblett and Sam Holt, Mikey's old guitar tech who leads Outformation, are exactly the kind of Athens-orbit players who have turned up on Panic stages for years.",
       "sources": [
         {
           "label": "JamBase: Nick Johnson Talks Getting The Call To Tour With Widespread Panic",
           "url": "https://www.jambase.com/article/widespread-panic-nick-johnson-interview"
+        },
+        {
+          "label": "ARTS ATL: 30 Under 30 — guitarist Nick Johnson (Jimmy Herring, AIM, Kevin Scott, Duane Trucks, Col. Bruce)",
+          "url": "https://www.artsatl.org/30-30-guitarist-nick-johnson-atlanta-musical-home-hed/"
         },
         {
           "label": "ARTS ATL: From the Randall Bramblett Band to Widespread Panic",
@@ -275,6 +315,35 @@
       "question": "They're called a “jam band” — do they play the same set every night?",
       "answer": "No, and that's the whole point. They carry well over 100 songs, rewrite the setlist every night, try not to repeat a song within a run, and stretch tunes out with long improvisation. No two shows are the same. That's exactly why Spreadheads follow them city to city.",
       "sources": [],
+      "verify": false
+    },
+    {
+      "id": "sit-ins",
+      "section": "The Scene",
+      "question": "Who sits in with Panic?",
+      "answer": "Constantly, and that's the Athens way. Widespread Panic came up inside a whole web of Southern players, so their stage has always had a revolving door. In the early days it was fiddle: David Blackmon sawed away on Space Wrangler and turned up for years after, and the tradition carried through guests like Nicky Sanders of the Steep Canyon Rangers, the “Nicky Fiddle” you'll hear Spreadheads talk about.\n\nThe Allman-Brothers and Georgia-soul family runs deep. Derek Trucks, Randall Bramblett, and Chuck Leavell all guested on the Athens live album Live in the Classic City back in 2000, and all three keep coming back, Bramblett a regular for decades, Leavell as recently as the band's 75th straight Red Rocks sellout in 2025, where he sat in on Stones and Pink Floyd covers. More recently, bluegrass phenom Billy Strings joined the 2026 New Year's run at the Fox.\n\nThen there are the marquee one-offs. Carlos Santana made his only appearance with the band in 2001 at Berkeley's Greek Theatre, tearing through Funkadelic. Two years before that, Bob Weir of the Grateful Dead climbed aboard at the 1999 Aspen Harmony Festival for a 25-minute “Pusherman.” Different worlds, same porch.",
+      "sources": [
+        {
+          "label": "Tomorrow's Verse: Fiddling Around With Widespread Panic (David Blackmon, Nicky Sanders)",
+          "url": "https://tomorrowsverse.com/story/list-fiddling-around-with-widespread-panic-19503.html"
+        },
+        {
+          "label": "JamBase: Carlos Santana & Widespread Panic, Berkeley Greek 2001",
+          "url": "https://www.jambase.com/article/widespread-panic-carlos-santana-berkeley-greek-2001-setlist-video"
+        },
+        {
+          "label": "Live For Live Music: Bob Weir & RatDog Join Widespread Panic, Aspen 1999",
+          "url": "https://liveforlivemusic.com/news/bob-weir-ratdog-widespread-panic-1999/"
+        },
+        {
+          "label": "Chuck Leavell: Widespread Panic plays Stones & Pink Floyd with Chuck Leavell, 75th Red Rocks sellout (2025)",
+          "url": "https://chuckleavell.com/2025/07/08/widespread-panic-plays-rolling-stones-pink-floyd-with-chuck-leavell-at-75th-straight-red-rocks-sell-out/"
+        },
+        {
+          "label": "Widespread Panic: Live in the Classic City (Derek Trucks, Randall Bramblett, Chuck Leavell, 2000)",
+          "url": "https://widespreadpanic.com/music/live-in-the-classic-city/"
+        }
+      ],
       "verify": false
     },
     {
@@ -311,8 +380,12 @@
       "id": "starter-albums",
       "section": "The Scene",
       "question": "Which albums should a new fan start with?",
-      "answer": "Start with the studio run: Space Wrangler (1988), Ain't Life Grand (1994), Bombs & Butterflies (1997), and 'Til the Medicine Takes (1999). Then, because Panic is above all a live band, go to Light Fuse Get Away (1998), the definitive live document. To hear where they are right now, cue up their 2024 record Hailbound Queen, which opens with “King Baby,” a Jerry Joseph co-write that's become a live staple. After that, quit reading and go pull a tape.",
+      "answer": "Start with the studio run: Space Wrangler (1988), Ain't Life Grand (1994), Bombs & Butterflies (1997), and 'Til the Medicine Takes (1999). Then, because Panic is above all a live band, go to Light Fuse Get Away (1998), the definitive live document. For where they are right now, they broke a nine-year studio silence in 2024 with a pair of companion records, Snake Oil King in June and Hailbound Queen that fall, their first new studio music since 2015. After that, quit reading and go pull a tape, because the real Panic is the one happening on stage tonight.",
       "sources": [
+        {
+          "label": "JamBase: 'King' Gets A Partner — Widespread Panic Preps 2nd New Album Of 2024, Hailbound Queen (companion to Snake Oil King)",
+          "url": "https://www.jambase.com/article/widespread-panic-hailbound-queen-album"
+        },
         {
           "label": "Hailbound Queen (2024), official Bandcamp",
           "url": "https://widespreadpanic.bandcamp.com/album/hailbound-queen"
