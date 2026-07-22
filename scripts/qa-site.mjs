@@ -42,6 +42,7 @@ async function main() {
   await checkTourInReviewPages();
   await checkArchiveIndex();
   await checkArchivalDecorations();
+  await checkBandFaqPage();
   await checkMusicLayer(allHtmlFiles, allHtml);
   await checkCommandPalette(allHtmlFiles, allHtml, siteData);
   await checkLaminateRim();
@@ -606,7 +607,7 @@ function checkNavigation(html, siteData) {
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
-  const expectedFooter = ["Setlists", "Tour In Review", "Newsletters", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "Song List", "The Shelf", "About"];
+  const expectedFooter = ["Setlists", "Tour In Review", "Newsletters", "FAQ", "Rumors", "Song Index", "Albums", "Lyrics & Chords", "Song Origins", "Song List", "The Shelf", "About"];
   const megaNav = linkTexts(sectionByClass(html, "mega-nav"));
   const footerColumns = sectionsByClass(html, "footer-links");
   const footerNav = footerColumns.flatMap((column) => linkTexts(column));
@@ -758,6 +759,20 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
   const expected = siteData.songOrigins?.totalEntries || 0;
   const cardCount = (indexHtml.match(/class="origin-card"/g) || []).length;
   record("Song Origins index lists every origin", expected > 0 && cardCount === expected, `index has ${cardCount} cards, expected ${expected}`);
+
+  // Curated "kind" surfacing on the index: "fact" entries render as compact cards
+  // (title + one-line summary via .origin-card-line), and "trivia" entries are
+  // pulled into a "Deep cuts" strip (.origin-deepcuts) of one-liners at the end.
+  record("Song Origins index renders a Deep cuts strip and compact fact cards",
+    /class="origin-deepcuts"/.test(indexHtml)
+      && /data-kind="trivia"/.test(indexHtml)
+      && /class="origin-card-line"/.test(indexHtml)
+      && /data-kind="fact"/.test(indexHtml),
+    "expected an origin-deepcuts strip plus origin-card-line compact fact cards");
+  // The quiet acknowledgments line (Ethan Ice for the Relix scans) is surfaced.
+  record("Song Origins index surfaces the Special thanks acknowledgment (Ethan Ice)",
+    /class="origin-ack"/.test(indexHtml) && /Ethan Ice/.test(indexHtml),
+    "expected a Special thanks line naming Ethan Ice");
 
   // "By the Numbers" panel: the 5 numeric metrics are now COMPUTED live from the
   // setlist.fm performance log (replacing Alex's years-old FB snapshot). His notes,
@@ -1386,6 +1401,27 @@ async function checkArchivalDecorations() {
   const sitemap = await readText("dist/sitemap.xml").catch(() => "");
   record("Newsletters page appears in the sitemap",
     sitemap.includes("https://burnthday.com/newsletters/"), "expected /newsletters/ in sitemap.xml");
+}
+
+// Band FAQ page (/faq/): renders the new-fan questions with FAQPage JSON-LD, and
+// the three verify:true entries (awaiting human fact-check) are held back entirely.
+async function checkBandFaqPage() {
+  const faq = await readText("dist/faq/index.html").catch(() => "");
+  const ldBlocks = [...faq.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map((m) => { try { return JSON.parse(m[1]); } catch { return null; } });
+  const faqLd = ldBlocks.find((b) => b && b["@type"] === "FAQPage");
+  const questionCount = (faq.match(/<details class="faq-item"/g) || []).length;
+  const faqLdValid = Boolean(faqLd) && Array.isArray(faqLd.mainEntity) && faqLd.mainEntity.length >= 9
+    && faqLd.mainEntity.every((q) => q["@type"] === "Question" && q.name && q.acceptedAnswer && q.acceptedAnswer.text);
+  const heldQuestions = ["Who's in the band?", "Can I record their shows, and where can I hear live tapes?", "What are Widespread Panic's big traditions?"];
+  const heldLeak = heldQuestions.filter((q) => faq.includes(escapeHtml(q)));
+  record("Band FAQ page renders with FAQPage JSON-LD, at least 9 questions, and no verify-held entries",
+    faqLdValid && questionCount >= 9 && heldLeak.length === 0,
+    `rendered=${questionCount} faqLd=${Boolean(faqLd)} mainEntity=${faqLd ? faqLd.mainEntity.length : 0} heldLeak=${heldLeak.join("; ") || "none"}`);
+
+  const sitemap = await readText("dist/sitemap.xml").catch(() => "");
+  record("Band FAQ page appears in the sitemap",
+    sitemap.includes("https://burnthday.com/faq/"), "expected /faq/ in sitemap.xml");
 }
 
 async function listFiles(dir, predicate) {

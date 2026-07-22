@@ -77,6 +77,7 @@ const footerColumns = [
     ["Setlists", "/#setlists"],
     ["Tour In Review", "/tour-in-review/"],
     ["Newsletters", "/newsletters/"],
+    ["FAQ", "/faq/"],
     ["Rumors", "/rumors/"]
   ]],
   ["Songbook", [
@@ -120,6 +121,8 @@ async function main() {
   siteData.porchSongs = porchSongs;
   siteData.tourPosters = tourPosters;
   siteData.newsletters = newsletters;
+  siteData.bandFaq = await loadBandFaq();
+  siteData.originAcknowledgments = await loadOriginAcknowledgments();
   // Data layers the lyric/archive pages join against must exist BEFORE those pages
   // render: albums (album chip), song slug map (/song/ live-history link) and the
   // lyrics resource index. These are pure, deterministic joins over already-loaded
@@ -146,6 +149,7 @@ async function main() {
   await writeRumorsPage(siteData, archiveEntries);
   await writePrivacyPage(siteData);
   await writeNewslettersPage(siteData);
+  await writeFaqPage(siteData);
   await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
   attachTonightOdds(siteData);
@@ -418,6 +422,30 @@ async function loadNewsletters() {
   } catch (error) {
     if (error.code === "ENOENT") return null;
     throw error;
+  }
+}
+
+// Band-level FAQ (data/source/band-faq.json): the plain-language questions a new
+// fan asks, rendered as the /faq/ page + FAQPage JSON-LD. Missing file → an empty
+// shape so the page renders nothing rather than throwing.
+async function loadBandFaq() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "band-faq.json"), "utf8");
+    return JSON.parse(raw);
+  } catch {
+    return { description: "", faqs: [] };
+  }
+}
+
+// The curated song-origins file carries a top-level acknowledgments[] (e.g. Ethan
+// Ice for the Relix scans). Surfaced as a quiet "Special thanks" line on the
+// origins index and on any curated origin page whose sources cite Relix.
+async function loadOriginAcknowledgments() {
+  try {
+    const raw = await readFile(path.join(root, "data", "source", "song-origins-curated.json"), "utf8");
+    return JSON.parse(raw).acknowledgments || [];
+  } catch {
+    return [];
   }
 }
 
@@ -2368,6 +2396,104 @@ function renderNewslettersCss() {
   `;
 }
 
+async function writeFaqPage(data) {
+  await writeStaticPage("/faq/index.html", renderFaqPage(data));
+}
+
+// Band-level FAQ page (/faq/). Renders the questions a new Widespread Panic fan
+// asks as details/summary entries (mirrors the About-page FAQ pattern), each with
+// a small sources line — linked when a URL exists, label-only when it does not
+// (source URLs are never invented). Entries flagged verify:true are general
+// knowledge awaiting human fact-check and are excluded from rendering entirely;
+// they stay in the data. FAQPage JSON-LD is emitted from the rendered entries only.
+function renderFaqPage(data) {
+  const faqData = data.bandFaq || {};
+  const allFaqs = faqData.faqs || [];
+  const faqs = allFaqs.filter((faq) => faq.verify !== true);
+  const held = allFaqs.length - faqs.length;
+  const description = faqData.description || "The questions a new Widespread Panic fan actually asks, answered plainly with sources.";
+
+  const sourcesLine = (faq) => {
+    const srcs = faq.sources || [];
+    if (!srcs.length) return "";
+    const parts = srcs.map((s) => (s.url
+      ? `<a href="${escapeAttr(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.label)}</a>`
+      : escapeHtml(s.label)));
+    return `<p class="faq-sources"><span class="faq-sources-label">Sources</span>${parts.join('<span class="faq-sep" aria-hidden="true">·</span>')}</p>`;
+  };
+
+  const items = faqs.map((faq) => `<details class="faq-item"${faq.id ? ` id="${escapeAttr(faq.id)}"` : ""}>
+          <summary>${escapeHtml(faq.question)}</summary>
+          <div class="faq-answer">
+            <p>${escapeHtml(faq.answer)}</p>
+            ${sourcesLine(faq)}
+          </div>
+        </details>`).join("\n        ");
+
+  const faqJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: { "@type": "Answer", text: faq.answer }
+    }))
+  }).replace(/</g, "\\u003c");
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Widespread Panic FAQ | Burnthday</title>
+    <meta name="description" content="${escapeAttr(fitMetaText(description, 155))}">
+    <link rel="canonical" href="https://burnthday.com/faq/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+    <style>${renderFaqCss()}</style>
+    <script type="application/ld+json">${renderBreadcrumbJsonLd([
+      ["Home", "https://burnthday.com/"],
+      ["FAQ", "https://burnthday.com/faq/"]
+    ])}</script>
+    <script type="application/ld+json">${faqJsonLd}</script>
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <!-- ${held} FAQ entr${held === 1 ? "y is" : "ies are"} held back for human verification (verify:true) and not rendered. -->
+    <main class="archive-main">
+      <article class="archive-page faq-page">
+        <header class="archive-title">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">FAQ</span></nav>
+          <h1>Widespread Panic FAQ</h1>
+          <p class="faq-deck">The questions a new fan actually asks: the name, what happened to Michael Houser, how they started, and where to begin listening. Answered plainly, with sources.</p>
+        </header>
+        <div class="faq-list">
+        ${items}
+        </div>
+      </article>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+  </body>
+</html>`;
+}
+
+function renderFaqCss() {
+  return `
+      .faq-page { max-width: 820px; }
+      .faq-deck { font-size: 1rem; opacity: 0.8; line-height: 1.6; max-width: 66ch; }
+      .faq-list { margin-top: 1.6rem; }
+      .faq-item { border-bottom: 1px solid rgba(255,255,255,.09); padding: .35rem 0; }
+      .faq-item summary { cursor: pointer; padding: .7rem 0; font-weight: 600; letter-spacing: .01em; }
+      .faq-answer { margin: .2rem 0 1rem; }
+      .faq-answer p { margin: 0 0 .6rem; line-height: 1.7; opacity: .85; max-width: 68ch; }
+      .faq-sources { display: flex; flex-wrap: wrap; gap: .45rem; align-items: baseline; margin: 0; font-size: .82rem; opacity: .72; }
+      .faq-sources-label { text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; opacity: .85; }
+      .faq-sep { opacity: .5; }
+  `;
+}
+
 async function writeGeneratedTourReviewPages(data) {
   const reviews = [];
   const review2025 = await buildGeneratedTourReview(2025, data);
@@ -3720,6 +3846,12 @@ function renderSongOriginsIndex(origins, options = {}) {
   const data = options.data;
   const albums = options.albums || [];
   const description = "Widespread Panic song origins, histories, notes, and Burnthday picks.";
+  // Curated entries carry a kind: "story" gets the full card, "fact" a compact
+  // card, "trivia" a one-liner pulled out into a "Deep cuts" strip at the end.
+  // Legacy (Facebook-sourced) origins have no kind and keep their card treatment
+  // and their order untouched: they render in the main grid exactly as before.
+  const mainOrigins = origins.filter((origin) => !(origin.curated && origin.kind === "trivia"));
+  const trivia = origins.filter((origin) => origin.curated && origin.kind === "trivia");
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -3733,6 +3865,7 @@ function renderSongOriginsIndex(origins, options = {}) {
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
+    <style>${renderOriginIndexCss()}</style>
   </head>
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
@@ -3746,8 +3879,10 @@ function renderSongOriginsIndex(origins, options = {}) {
           </div>
         </header>
         <div class="origin-grid">
-          ${origins.map((origin) => renderSongOriginCard(origin, data, albums)).join("")}
+          ${mainOrigins.map((origin) => renderSongOriginCard(origin, data, albums)).join("")}
         </div>
+        ${renderDeepCutsStrip(trivia)}
+        ${renderOriginAcknowledgments(data)}
       </section>
     </main>
     ${renderSiteFooter({ generatedAt: new Date().toISOString(), source: { label: "Song Origins archive" } }, { stagelight: true })}
@@ -3756,7 +3891,60 @@ function renderSongOriginsIndex(origins, options = {}) {
 `;
 }
 
+// Scoped styles for the origins index: compact "fact" cards, the "Deep cuts"
+// trivia strip, and the quiet acknowledgments line. The base .origin-card /
+// .origin-grid rules live in renderStagelightCss and are left untouched.
+function renderOriginIndexCss() {
+  return `
+      .origin-card[data-kind="fact"] { gap: .2rem; }
+      .origin-card[data-kind="fact"] .origin-card-line { display: block; margin-top: .35rem; font-size: .82rem; line-height: 1.45; opacity: .72; }
+      .origin-deepcuts { margin-top: 2.6rem; border-top: 1px solid rgba(255,255,255,.12); padding-top: 1.4rem; }
+      .origin-deepcuts h2 { margin: 0 0 .2rem; font-size: 1.1rem; letter-spacing: .02em; }
+      .origin-deepcuts-sub { margin: 0 0 1rem; font-size: .85rem; opacity: .7; }
+      .origin-deepcuts-list { display: grid; gap: .5rem; }
+      .origin-deepcuts .origin-card { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .6rem; padding: .55rem .8rem; }
+      .origin-deepcuts .origin-card strong { font-size: .95rem; }
+      .origin-deepcut-note { font-size: .82rem; opacity: .68; line-height: 1.4; }
+      .origin-ack { margin-top: 2.4rem; padding-top: 1.2rem; border-top: 1px solid rgba(255,255,255,.09); font-size: .82rem; opacity: .72; line-height: 1.6; }
+      .origin-ack-label { display: inline; text-transform: uppercase; letter-spacing: .09em; font-size: .68rem; opacity: .85; margin-right: .5rem; }
+  `;
+}
+
+// The "Deep cuts" strip: curated trivia entries rendered as one-liners grouped at
+// the end of the index. Each keeps the base .origin-card class (so the index's
+// per-origin count stays honest) with data-kind="trivia" for the compact styling.
+function renderDeepCutsStrip(trivia) {
+  if (!trivia.length) return "";
+  const items = trivia.map((origin) => `<a class="origin-card" data-kind="trivia" href="/song-origins/${escapeAttr(origin.slug)}/">
+            <strong>${escapeHtml(origin.title)}</strong>${origin.summary ? `<span class="origin-deepcut-note">${escapeHtml(oneLineOriginSummary(origin.summary))}</span>` : ""}
+          </a>`).join("");
+  return `<section class="origin-deepcuts" aria-label="Deep cuts">
+          <h2>Deep cuts</h2>
+          <p class="origin-deepcuts-sub">Short, sourced confirmations of the rarities and the unreleased.</p>
+          <div class="origin-deepcuts-list">${items}</div>
+        </section>`;
+}
+
+// Quiet "Special thanks" line rendering each acknowledgments[] entry from the
+// curated data. Plain text, no invented links.
+function renderOriginAcknowledgments(data) {
+  const acks = (data && data.originAcknowledgments) || [];
+  if (!acks.length) return "";
+  const lines = acks
+    .map((ack) => `<span class="origin-ack-item">${escapeHtml(ack.name)}${ack.for ? ` for ${escapeHtml(ack.for)}` : ""}.</span>`)
+    .join(" ");
+  return `<aside class="origin-ack" aria-label="Special thanks"><span class="origin-ack-label">Special thanks</span>${lines}</aside>`;
+}
+
+// Collapse a curated summary to a single clean line for the compact cards / strip.
+function oneLineOriginSummary(summary) {
+  return String(summary || "").replace(/\s+/g, " ").trim();
+}
+
 function renderSongOriginCard(origin, data, albums = []) {
+  // Curated "fact" entries are a sourced note, not a saga: a compact card of just
+  // title + one-line summary. Story and legacy (no-kind) entries keep the full card.
+  if (origin.curated && origin.kind === "fact") return renderCompactOriginCard(origin);
   // Cheap computed meta line: lifetime plays and/or its album, joined from the
   // catalog. Nothing authored — purely derived, omitted when the join is missing.
   const { song, onAlbums } = data ? originDataJoin(origin, data, albums) : { song: null, onAlbums: [] };
@@ -3772,6 +3960,18 @@ function renderSongOriginCard(origin, data, albums = []) {
     <span>Song Origins</span>
     <strong>${escapeHtml(origin.title)}</strong>
     ${meta}
+  </a>`;
+}
+
+// Compact card for a curated "fact" origin: title + one-line summary, no image, no
+// stat meta. Keeps the base .origin-card class (so the index count stays honest)
+// with data-kind="fact" driving the tightened styling.
+function renderCompactOriginCard(origin) {
+  const line = origin.summary ? oneLineOriginSummary(origin.summary) : "";
+  return `<a class="origin-card" data-kind="fact" href="/song-origins/${escapeAttr(origin.slug)}/">
+    <span>Song Origins</span>
+    <strong>${escapeHtml(origin.title)}</strong>
+    ${line ? `<small class="origin-card-line">${escapeHtml(line)}</small>` : ""}
   </a>`;
 }
 
@@ -4217,6 +4417,10 @@ function renderSongOriginPage(origin, origins, data, albums = []) {
 // claude/affectionate-blackwell-b25e75 (data/source/SONG-ORIGINS-SPEC.md).
 function renderCuratedOriginPage(origin, origins, data, albums = []) {
   const description = clean(origin.summary).slice(0, 180) || `Burnthday Song Origins: ${origin.title}`;
+  // "fact" and "trivia" entries are short sourced notes, not full stories: tighten
+  // the layout so a sparse entry does not read as a padded-out saga. "story" pages
+  // are unchanged.
+  const compact = origin.kind === "fact" || origin.kind === "trivia";
   const currentIndex = origins.findIndex((item) => item.slug === origin.slug);
   const previous = origins[currentIndex - 1] || null;
   const next = origins[currentIndex + 1] || null;
@@ -4279,6 +4483,10 @@ function renderCuratedOriginPage(origin, origins, data, albums = []) {
       }).join("")}</ul></div>`
     : "";
 
+  // Relix credit: entries sourced to the Relix Oct/Nov 2003 issue carry the same
+  // one-line acknowledgment (Ethan Ice provided the scans) at the bottom.
+  const relixCredit = renderRelixCredit(origin, data);
+
   // Enrichment mesh: filed-under cluster chips, related origins, FAQ. Cluster pages
   // are not yet built, so chips are non-linked labels (no dead links); related
   // targets all resolve to real curated origin pages.
@@ -4329,12 +4537,13 @@ function renderCuratedOriginPage(origin, origins, data, albums = []) {
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
+    ${compact ? `<style>${renderCompactOriginCss()}</style>` : ""}
     ${jsonLdBlocks}
   </head>
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main origins-main">
-      <article class="archive-page origin-article">
+      <article class="archive-page origin-article${compact ? " origin-article-compact" : ""}">
         <header class="origin-article-head">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">&rsaquo;</span><a href="/song-origins/">Song Origins</a></nav>
           <p class="origin-eyebrow">SONG ORIGIN</p>
@@ -4346,6 +4555,7 @@ function renderCuratedOriginPage(origin, origins, data, albums = []) {
         <div class="origin-body prose-plate">
           ${bodyBlocks}
           ${sourcesHtml}
+          ${relixCredit}
         </div>
         ${clustersHtml}
         ${relatedHtml}
@@ -4361,6 +4571,30 @@ function renderCuratedOriginPage(origin, origins, data, albums = []) {
   </body>
 </html>
 `;
+}
+
+// Scoped tightening for compact (fact/trivia) curated origin pages: a narrower
+// measure and less vertical padding so a short sourced note does not read as a
+// padded saga. The base .origin-article / .prose-plate rules stay in stagelight.css.
+function renderCompactOriginCss() {
+  return `
+      .origin-article-compact { max-width: 720px; }
+      .origin-article-compact .origin-body.prose-plate { min-height: 0; padding-top: 1.1rem; padding-bottom: 1.1rem; }
+      .origin-article-compact .origin-summary { font-size: 1.02rem; line-height: 1.6; margin-bottom: 1rem; }
+      .origin-article-compact .origin-note { margin-top: 1rem; }
+  `;
+}
+
+// Relix acknowledgment: any curated origin whose sources cite Relix carries the
+// same one-line credit (Ethan Ice provided the Oct/Nov 2003 scans). Rendered from
+// the acknowledgments data; no link is invented.
+function renderRelixCredit(origin, data) {
+  const citesRelix = (origin.sources || []).some((s) => /Relix/i.test(`${s.label || ""} ${s.publisher || ""}`));
+  if (!citesRelix) return "";
+  const acks = (data && data.originAcknowledgments) || [];
+  const ack = acks.find((a) => /Relix/i.test(a.for || "")) || acks[0];
+  const name = ack ? ack.name : "Ethan Ice";
+  return `<p class="origin-relix-credit">Special thanks to ${escapeHtml(name)} for providing the Relix (Oct/Nov 2003) scans that sourced this entry.</p>`;
 }
 
 // MusicComposition JSON-LD for a curated origin (composer / byArtist for covers,
@@ -12874,6 +13108,9 @@ function renderSitemap(data, archiveEntries = [], songOrigins = [], generatedRev
   </url>`).join("\n  ")}
   <url>
     <loc>https://burnthday.com/newsletters/</loc>
+  </url>
+  <url>
+    <loc>https://burnthday.com/faq/</loc>
   </url>
   <url>
     <loc>https://burnthday.com/shelf/</loc>
