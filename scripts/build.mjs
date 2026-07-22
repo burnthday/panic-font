@@ -6786,6 +6786,7 @@ function renderHtml(data) {
     <script>
       ${renderFitScriptBody()}
       ${renderNickRankingScript()}
+      ${renderSetlistExpandScript()}
       ${renderStrikeScriptBody()}
       ${renderCustomSelectScript()}
     </script>
@@ -6819,6 +6820,22 @@ function renderStrikeScriptBody() {
 // type chips (All/Originals/Covers) and state toggles (Played/Not yet played/Everything),
 // sorts by plays (default, descending) or title (A–Z), then renumbers the visible rows so
 // the ranked column always reads 1..N. Self-contained; no-ops on pages without the feature.
+function renderSetlistExpandScript() {
+  return `(() => {
+    const btn = document.querySelector("[data-setlist-expand]");
+    const section = document.getElementById("setlists");
+    if (!btn || !section) return;
+    const label = btn.querySelector(".sea-label");
+    btn.addEventListener("click", () => {
+      const cards = [...section.querySelectorAll(".setlist-list .show-entry")];
+      const anyClosed = cards.some((card) => !card.open);
+      cards.forEach((card) => { card.open = anyClosed; });
+      btn.setAttribute("aria-expanded", String(anyClosed));
+      if (label) label.textContent = anyClosed ? "Collapse all" : "Open all setlists";
+    });
+  })();`;
+}
+
 function renderNickRankingScript() {
   return `(() => {
     const feature = document.querySelector(".nick-feature");
@@ -8294,7 +8311,7 @@ function renderSetlists(data, options = {}) {
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
     <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>
-    <span>${escapeHtml(postedLabel)}</span>
+    <button type="button" class="setlist-expand-all" data-setlist-expand aria-expanded="false"><span class="sea-label">Open all setlists</span><span class="sea-count">${escapeHtml(postedLabel)}</span></button>
   </div>
   <details class="setlist-archive-panel" open>
     <summary><span>VIEW OLDER SETLISTS</span><strong>${formatNumber(setlists.length)}</strong></summary>
@@ -12234,13 +12251,17 @@ body.stagelight .show-entry summary { position: relative; display: block; cursor
 body.stagelight .show-entry summary::-webkit-details-marker { display: none; }
 body.stagelight .sc-chev { position: absolute; top: 26px; right: 26px; z-index: 3; color: var(--sl-faint); transition: transform 0.22s ease; }
 body.stagelight .show-entry[open] .sc-chev { transform: rotate(180deg); }
+body.stagelight .setlist-expand-all { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px; border: 1px solid var(--sl-line); border-radius: var(--sl-r-pill); background: transparent; color: var(--sl-muted); cursor: pointer; font: inherit; transition: color 0.15s ease, border-color 0.15s ease; }
+body.stagelight .setlist-expand-all:hover { color: var(--sl-ink); border-color: var(--sl-line-strong); }
+body.stagelight .setlist-expand-all .sea-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+body.stagelight .setlist-expand-all .sea-count { font-weight: 700; color: var(--sl-ink); }
 body.stagelight .sc-bg { position: absolute; inset: 0; z-index: 0; display: block; }
 body.stagelight .sc-bg img { width: 100%; height: 100%; object-fit: cover; opacity: 0.5; }
 body.stagelight .sc-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(9,9,11,0.95) 24%, rgba(9,9,11,0.68) 58%, rgba(9,9,11,0.4)); }
 body.stagelight .show-entry[open] .sc-bg { display: none; }
-body.stagelight .show-entry.is-latest[open] .sc-bg { display: block; }
-body.stagelight .show-entry.is-latest[open] .sc-bg img { opacity: 0.38; object-position: center 30%; }
-body.stagelight .show-entry.is-latest[open] .sc-bg::after { background: linear-gradient(180deg, rgba(9,9,11,0.34) 0%, rgba(10,10,12,0.78) 46%, rgba(11,11,12,0.96) 74%, rgba(11,11,12,1) 100%); }
+body.stagelight .show-entry.is-latest[open] .sc-bg { display: block; overflow: hidden; }
+body.stagelight .show-entry.is-latest[open] .sc-bg img { opacity: 0.5; object-position: center 34%; transform: scale(1.35); filter: blur(18px) saturate(1.1); }
+body.stagelight .show-entry.is-latest[open] .sc-bg::after { background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.72) 44%, rgba(11,11,12,0.94) 78%, rgba(11,11,12,1) 100%); }
 body.stagelight .show-entry[open] .sc-lockup, body.stagelight .sc-body { position: relative; z-index: 1; }
 body.stagelight .show-entry.is-latest[open] .sc-lockup { padding-top: 64px; }
 body.stagelight .show-entry.is-latest .sc-city { text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
