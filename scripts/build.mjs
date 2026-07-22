@@ -6785,6 +6785,7 @@ function renderHtml(data) {
 
     <script>
       ${renderFitScriptBody()}
+      ${renderNickRankingScript()}
       ${renderStrikeScriptBody()}
       ${renderCustomSelectScript()}
     </script>
@@ -6810,6 +6811,55 @@ function renderStrikeScriptBody() {
       }
     }, { rootMargin: "0px 0px -6% 0px" });
     masks.forEach((mask) => io.observe(mask));
+  })();`;
+}
+
+// Client filter/sort for the merged "Most played with Nick Johnson" ranking. Reads the
+// data-type / data-played / data-nick-count facets each row already carries, applies the
+// type chips (All/Originals/Covers) and state toggles (Played/Not yet played/Everything),
+// sorts by plays (default, descending) or title (A–Z), then renumbers the visible rows so
+// the ranked column always reads 1..N. Self-contained; no-ops on pages without the feature.
+function renderNickRankingScript() {
+  return `(() => {
+    const feature = document.querySelector(".nick-feature");
+    const list = feature && feature.querySelector(".nick-ranking");
+    if (!list) return;
+    const rows = [...list.children];
+    const typeButtons = [...feature.querySelectorAll("[data-nick-type]")];
+    const stateButtons = [...feature.querySelectorAll("[data-nick-state]")];
+    const sortButtons = [...feature.querySelectorAll("[data-nick-sort]")];
+    const status = feature.querySelector("[data-nick-status]");
+    let type = "all";
+    let state = "played";
+    let sort = "plays";
+    const apply = () => {
+      const visible = rows.filter((row) => {
+        const played = row.dataset.played === "yes";
+        const typeOk = type === "all" || row.dataset.type === type;
+        const stateOk = state === "everything" || (state === "played" ? played : !played);
+        const ok = typeOk && stateOk;
+        row.hidden = !ok;
+        return ok;
+      });
+      visible.sort((a, b) => sort === "title"
+        ? a.dataset.songTitle.localeCompare(b.dataset.songTitle)
+        : Number(b.dataset.nickCount) - Number(a.dataset.nickCount) || a.dataset.songTitle.localeCompare(b.dataset.songTitle));
+      visible.forEach((row, index) => {
+        list.appendChild(row);
+        const rank = row.querySelector(".nick-rank");
+        if (rank) rank.textContent = String(index + 1);
+      });
+      if (status) status.textContent = visible.length + (visible.length === 1 ? " song" : " songs");
+    };
+    const wire = (buttons, set) => buttons.forEach((btn) => btn.addEventListener("click", () => {
+      set(btn);
+      buttons.forEach((b) => b.classList.toggle("is-active", b === btn));
+      apply();
+    }));
+    wire(typeButtons, (btn) => { type = btn.dataset.nickType; });
+    wire(stateButtons, (btn) => { state = btn.dataset.nickState; });
+    wire(sortButtons, (btn) => { sort = btn.dataset.nickSort; });
+    apply();
   })();`;
 }
 
@@ -7863,8 +7913,6 @@ function renderNickJohnsonFeature(data) {
     .filter((row) => row.effectiveSlp < data.rules.rotationSlpLimit || row.playedThisTour)
     .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
   const played = rotation.filter((row) => row.nickCount > 0);
-  const featuredSongs = played.slice(0, 10);
-  const remainingSongs = rotation.slice(featuredSongs.length);
   const shows = (data.setlists || []).filter(isNickJohnsonShow).length;
   const plays = sum(played.map((row) => row.nickCount));
   const woodshed = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
@@ -7894,12 +7942,29 @@ function renderNickJohnsonFeature(data) {
     <span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i><i class="is-cover" style="width:${coverWidth}%"></i></span>
     <div class="progress-key"><span><i class="key-original"></i>Originals ${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span><span><i class="key-cover"></i>Covers ${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span><span><i class="key-unplayed"></i>${formatNumber(played.length)}/${formatNumber(rotation.length)} overall</span></div>
   </div>
-  <div class="nick-ranking-heading"><span>plays per show</span></div>
-  ${renderNickRanking(featuredSongs)}
-  ${remainingSongs.length ? `<details class="nick-played-panel">
-    <summary><span>VIEW ALL SONGS, INCLUDING ZERO PLAYS</span><strong>${formatNumber(remainingSongs.length)}</strong></summary>
-    ${renderNickRanking(remainingSongs, { start: featuredSongs.length + 1, compact: true })}
-  </details>` : ""}
+  <div class="nick-controls" role="group" aria-label="Filter and sort songs played with Nick Johnson">
+    <div class="type-filter nick-chip-group" role="group" aria-label="Filter by song type">
+      <button type="button" class="is-active" data-nick-type="all">All</button>
+      <button type="button" data-nick-type="original">Originals</button>
+      <button type="button" data-nick-type="cover">Covers</button>
+    </div>
+    <div class="type-filter nick-chip-group" role="group" aria-label="Filter by play state">
+      <button type="button" class="is-active" data-nick-state="played">Played</button>
+      <button type="button" data-nick-state="woodshed">Not yet played</button>
+      <button type="button" data-nick-state="everything">Everything</button>
+    </div>
+    <div class="type-filter nick-chip-group" role="group" aria-label="Sort songs">
+      <button type="button" class="is-active" data-nick-sort="plays">Plays</button>
+      <button type="button" data-nick-sort="title">A–Z</button>
+    </div>
+    <span class="nick-ranking-status" data-nick-status aria-live="polite"></span>
+  </div>
+  <div class="nick-ranking-head" role="presentation" aria-hidden="true">
+    <span class="nrh-col">#</span>
+    <span class="nrh-col">Song</span>
+    <span class="nrh-col nrh-plays">Plays</span>
+  </div>
+  ${renderNickRanking(rotation)}
   </div>
   </details>
 </section>`;
@@ -7909,14 +7974,22 @@ function renderNickStat(value, label) {
   return `<div class="nick-stat"><strong>${formatNumber(value)}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
-function renderNickRanking(songs, options = {}) {
-  const start = options.start || 1;
-  const classes = options.compact ? "nick-ranking is-compact" : "nick-ranking";
-  return `<ol class="${classes}" start="${start}">${songs.map((song, index) => `<li class="${song.nickCount === 0 ? "is-zero" : ""}" value="${start + index}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}">
-    <span class="nick-rank" aria-hidden="true">${start + index}</span>
+// One merged, filterable/sortable ranking of the full rotation. Every song ships in
+// the DOM carrying its facets (data-type, data-played) and per-show count so the inline
+// nick-ranking handler can filter (type + play state) and sort (plays / A–Z) without a
+// refetch. Zero-play songs render hidden by default so the restrained view shows only
+// songs actually played with Nick until "Not yet played" or "Everything" is chosen.
+// Rows stay in rotation order (plays desc, alphabetical tie-break) for the no-JS default.
+function renderNickRanking(songs) {
+  return `<ol class="nick-ranking">${songs.map((song, index) => {
+    const played = song.nickCount > 0;
+    const type = song.type === "Cover" ? "cover" : "original";
+    return `<li class="nick-row${played ? "" : " is-zero"}" data-type="${type}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-played="${played ? "yes" : "no"}"${played ? "" : " hidden"}>
+    <span class="nick-rank" aria-hidden="true">${index + 1}</span>
     <span class="nick-song"><strong>${escapeHtml(song.title)}</strong><small>${escapeHtml(song.type)}</small></span>
     <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong><small>${song.nickCount === 1 ? "play" : "plays"}</small></span>
-  </li>`).join("")}</ol>`;
+  </li>`;
+  }).join("")}</ol>`;
 }
 
 function renderSheetKey(data) {
@@ -9842,6 +9915,41 @@ sup {
   font-size: 12px;
   line-height: 1.2;
   text-transform: uppercase;
+}
+
+.nick-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.nick-controls .nick-ranking-status {
+  margin-left: auto;
+  color: var(--muted);
+  font: 600 12px/1 var(--ui-font);
+}
+
+.nick-ranking-head {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.nick-ranking-head .nrh-col {
+  color: var(--muted);
+  font: 500 11px/1 var(--ui-font);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.nick-ranking-head .nrh-plays {
+  min-width: 50px;
+  text-align: right;
 }
 
 .nick-ranking-heading {

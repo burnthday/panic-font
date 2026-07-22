@@ -277,6 +277,43 @@ function checkNickJohnsonFeature(html, siteData) {
   );
   record("Nick Johnson ranking includes zero-play rotation songs at the bottom", renderedRanking.some((song) => song.count === 0) && renderedRanking.slice(-1)[0]?.count === 0);
   record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
+
+  // Merged filter/sort ranking: every row carries the facets the client handler needs.
+  const facetRows = [...feature.matchAll(/<li class="nick-row[^>]*data-type="(original|cover)"[^>]*data-nick-count="\d+"[^>]*data-played="(?:yes|no)"/g)];
+  record(
+    "Nick ranking rows carry type and per-show play facets",
+    facetRows.length === rotation.length,
+    `${facetRows.length} faceted rows vs ${rotation.length} expected`
+  );
+
+  // Filter chips: All / Originals / Covers.
+  assertIncludes(feature, '<button type="button" class="is-active" data-nick-type="all">All</button>', "Nick ranking renders the All type chip (default active)");
+  assertIncludes(feature, 'data-nick-type="original">Originals</button>', "Nick ranking renders the Originals type chip");
+  assertIncludes(feature, 'data-nick-type="cover">Covers</button>', "Nick ranking renders the Covers type chip");
+
+  // State toggles: Played (default) / Not yet played (Woodshed) / Everything.
+  assertIncludes(feature, '<button type="button" class="is-active" data-nick-state="played">Played</button>', "Nick ranking renders the Played state toggle (default active)");
+  assertIncludes(feature, 'data-nick-state="woodshed">Not yet played</button>', "Nick ranking renders the Not yet played (Woodshed) state toggle");
+  assertIncludes(feature, 'data-nick-state="everything">Everything</button>', "Nick ranking renders the Everything state toggle");
+
+  // Sort control: plays (default) / A–Z.
+  assertIncludes(feature, '<button type="button" class="is-active" data-nick-sort="plays">Plays</button>', "Nick ranking renders the plays sort control (default active)");
+  assertIncludes(feature, 'data-nick-sort="title">A', "Nick ranking renders the A–Z title sort control");
+
+  // Default view is restrained: zero-play rows ship hidden and marked not-played, so they
+  // only appear once "Not yet played" or "Everything" is chosen. Played rows stay visible.
+  const zeroRows = [...feature.matchAll(/<li class="nick-row[^>]*data-nick-count="0"[^>]*>/g)].map((match) => match[0]);
+  record(
+    "Zero-play Nick rows ship hidden and marked not-yet-played by default",
+    zeroRows.length > 0 && zeroRows.every((li) => / hidden>/.test(li) && li.includes('data-played="no"') && li.includes("is-zero")),
+    `${zeroRows.length} zero-play rows`
+  );
+  const playedRows = [...feature.matchAll(/<li class="nick-row(?![^>]*data-nick-count="0")[^>]*>/g)].map((match) => match[0]);
+  record(
+    "Played Nick rows are visible in the default markup",
+    playedRows.length === played.length && playedRows.every((li) => !/ hidden>/.test(li) && li.includes('data-played="yes"')),
+    `${playedRows.length} played rows vs ${played.length} expected`
+  );
 }
 
 // ── Taste-pass round guards ──────────────────────────────────────────────────
