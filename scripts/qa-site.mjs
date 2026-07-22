@@ -262,83 +262,122 @@ function checkShelfWatch(html, siteData) {
 
 function checkNickJohnsonFeature(html, siteData) {
   const feature = sectionHtml(html, "nick-johnson");
+  const fmt = (value) => new Intl.NumberFormat("en-US").format(value);
   const played = (siteData.catalog || [])
-    .filter((song) => song.playedWithNick && song.nickCount > 0)
-    .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
+    .filter((song) => song.playedWithNick && song.nickCount > 0);
   const rotation = (siteData.catalog || [])
-    .filter((song) => song.effectiveSlp < siteData.rules.rotationSlpLimit || song.playedThisTour)
-    .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
+    .filter((song) => song.effectiveSlp < siteData.rules.rotationSlpLimit || song.playedThisTour);
   const nickShows = (siteData.setlists || []).filter((show) => (show.notes || []).some((note) => /\bnick johnson\b/i.test(note) && /\bguitar\b/i.test(note))).length;
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
+  const nextCount = rotation.filter((song) => (song.effectiveSlp ?? 0) > 4).length;
+  const expectedVisible = Math.min(6, nextCount);
 
-  assertIncludes(feature, "<h2>Nick stats</h2>", "Homepage has the Nick stats feature");
-  assertIncludes(feature, '<details class="nick-disclosure" open>', "Nick Stats uses one desktop-open disclosure");
-  for (const [value, label] of [
-    [nickShows, "shows on guitar"],
-    [played.length, "unique songs"],
-    [nickPlays, "song plays"],
-    [woodshed.length, "still in The Woodshed"]
-  ]) {
-    assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Nick Johnson summary reports ${label}`);
-  }
+  // Section is always open now: no accordion wrapper and no "Nick stats" heading.
+  record("Nick feature drops the accordion wrapper and heading",
+    !feature.includes("nick-disclosure") && !feature.includes("<h2>Nick stats</h2>") && !feature.includes("<details class=\"nick-disclosure"),
+    "no nick-disclosure / summary heading");
 
-  assertIncludes(feature, 'class="nick-ranking"', "Nick Johnson feature presents a ranked most-played view");
-  const completion = Math.round((played.length / rotation.length) * 100);
-  assertIncludes(feature, `<strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span>`, "Nick Johnson feature shows rotation completion");
+  // Headline with both coral accent spans and the computed show count.
+  assertIncludes(feature, 'class="nick-headline"', "Nick feature leads with the headline");
+  assertIncludes(feature, '<em class="nick-accent">just over half</em>', "Headline accents \"just over half\"");
+  assertIncludes(feature, `<em class="nick-accent">${fmt(nickShows)}</em> shows`, "Headline accents the computed show count");
+  assertIncludes(feature, "most likely to come next", "Headline keeps the exact closing copy");
+
+  // Single grouped summary panel: lead "PLAYED of ROTATION", caption, three bars, three
+  // inline stats, and the current-through note. The old 4-tile block is gone.
+  assertIncludes(feature, 'class="nick-panel"', "Nick feature groups the summary into one glass panel");
+  assertIncludes(feature, `<div class="nick-lead"><strong>${fmt(played.length)}</strong><span> of ${fmt(rotation.length)}</span></div>`, "Panel leads with the played/rotation count");
+  assertIncludes(feature, "Songs played with Nick", "Panel caption present");
+  assertIncludes(feature, 'class="is-overall"', "Nick has a dedicated overall progress bar");
   assertIncludes(feature, 'class="is-original"', "Nick completion bar separates played originals");
   assertIncludes(feature, 'class="is-cover"', "Nick completion bar separates played covers");
   assertIncludes(feature, `${played.length}/${rotation.length}`, "Nick overall bar gives the exact overall count");
-  assertIncludes(feature, 'class="is-overall"', "Nick has a dedicated overall progress bar");
-  record("Nick Johnson feature is not another laminated song sheet", !feature.includes("nick-played-sheet") && !feature.includes("song-panel"));
-  const renderedRanking = [...feature.matchAll(/data-song-title="([^"]+)" data-nick-count="(\d+)"/g)]
-    .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
-  record(
-    "Nick Johnson songs are ranked by plays with alphabetical tie-breaking",
-    arraysEqual(renderedRanking.map((song) => song.title), rotation.map((song) => song.title)),
-    renderedRanking.slice(0, 20).map((song) => `${song.title}: ${song.count}`).join("\n")
-  );
-  record(
-    "Every Nick Johnson song keeps its per-show play count",
-    renderedRanking.length === rotation.length && renderedRanking.every((song, index) => song.count === rotation[index].nickCount),
-    `${renderedRanking.length} rendered vs ${rotation.length} expected`
-  );
-  record("Nick Johnson ranking includes zero-play rotation songs at the bottom", renderedRanking.some((song) => song.count === 0) && renderedRanking.slice(-1)[0]?.count === 0);
-  record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
+  for (const [value, label] of [
+    [nickShows, "shows"],
+    [nickPlays, "song plays"],
+    [woodshed.length, "still in the Woodshed"]
+  ]) {
+    assertIncludes(feature, `<strong>${fmt(value)}</strong> ${label}`, `Panel inline stat reports ${label}`);
+  }
+  record("Nick feature drops the duplicate 4-tile summary block",
+    !feature.includes("nick-summary") && !feature.includes("data-metrics"),
+    "no data-metrics.nick-summary");
+  assertIncludes(feature, "Stats current through", "Panel shows the stats-current-through note");
 
-  // Merged filter/sort ranking: every row carries the facets the client handler needs.
-  const facetRows = [...feature.matchAll(/<li class="nick-row[^>]*data-type="(original|cover)"[^>]*data-nick-count="\d+"[^>]*data-played="(?:yes|no)"/g)];
+  assertIncludes(feature, 'class="nick-ranking"', "Nick Johnson feature presents a ranked most-likely-next view");
+
+  // Every rotation song ships in the DOM carrying the full facet set.
+  const facetRows = [...feature.matchAll(/<li class="nick-row[^>]*data-type="(?:original|cover)"[^>]*data-nick-count="\d+"[^>]*data-slp="\d+"[^>]*data-score="\d+"[^>]*data-played="(?:yes|no)"/g)];
   record(
-    "Nick ranking rows carry type and per-show play facets",
+    "Nick ranking rows carry type, play, gap, and likelihood facets",
     facetRows.length === rotation.length,
     `${facetRows.length} faceted rows vs ${rotation.length} expected`
   );
 
-  // Quiet dropdown controls (button-chip groups retired, Alex round 6): a Show
-  // select (played default) and a Sort select (plays default, incl. last played).
-  assertIncludes(feature, 'data-nick-show-dd', "Nick ranking renders the Show dropdown");
-  assertIncludes(feature, 'data-nick-sort-dd', "Nick ranking renders the Sort dropdown");
-  record("Nick controls are dropdowns, not button chips",
-    !feature.includes("data-nick-type=") && !feature.includes("data-nick-state=") && !feature.includes("data-nick-sort="),
-    "chip groups removed");
-  assertIncludes(feature, 'class="nrh-col nrh-last"', "Nick ranking has a Last played column header");
-  record("Nick rows carry last-played data and cell",
-    (feature.match(/class="nick-last"/g) || []).length === rotation.length, "nick-last cells");
+  // Per-song play count integrity: every rotation song present with the right nickCount.
+  const renderedByTitle = new Map(
+    [...feature.matchAll(/data-song-title="([^"]+)"[^>]*data-nick-count="(\d+)"/g)]
+      .map((match) => [decodeHtml(match[1]), Number(match[2])])
+  );
+  const countMismatches = rotation.filter((song) => renderedByTitle.get(song.title) !== song.nickCount);
+  record(
+    "Every rotation song is present with its correct play count",
+    renderedByTitle.size === rotation.length && countMismatches.length === 0,
+    countMismatches.slice(0, 10).map((song) => `${song.title}: ${renderedByTitle.get(song.title)} vs ${song.nickCount}`).join("\n")
+  );
 
-  // Default view is restrained: zero-play rows ship hidden and marked not-played, so they
-  // only appear once "Not yet played" or "Everything" is chosen. Played rows stay visible.
-  const zeroRows = [...feature.matchAll(/<li class="nick-row[^>]*data-nick-count="0"[^>]*>/g)].map((match) => match[0]);
+  // TYPE chips live in their own column.
+  const chipCount = (feature.match(/class="nick-chip is-(?:original|cover)"/g) || []).length;
+  record("Type chips render in their own column for every row",
+    chipCount === rotation.length && feature.includes(">ORIGINAL<") && feature.includes(">COVER<"),
+    `${chipCount} chips vs ${rotation.length} rows`);
+
+  // Column headers, styled like the tour-stats sheet.
+  for (const header of ["nrh-type", "nrh-plays", "nrh-last", "nrh-score"]) {
+    assertIncludes(feature, `nrh-col ${header}`, `Ranking header column ${header} present`);
+  }
+  assertIncludes(feature, ">Likelihood<", "Ranking has the Likelihood column header");
+
+  // Likelihood is a plain 0-100 score — digits only, never a percent sign.
+  const scoreCells = [...feature.matchAll(/<span class="nick-score">([^<]*)<\/span>/g)].map((match) => match[1]);
   record(
-    "Zero-play Nick rows ship hidden and marked not-yet-played by default",
-    zeroRows.length > 0 && zeroRows.every((li) => / hidden>/.test(li) && li.includes('data-played="no"') && li.includes("is-zero")),
-    `${zeroRows.length} zero-play rows`
+    "Likelihood renders as a digit-only score with no percent sign",
+    scoreCells.length === rotation.length && scoreCells.every((value) => /^\d+$/.test(value)) && !/%<\/?/.test(feature),
+    `${scoreCells.length} score cells`
   );
-  const playedRows = [...feature.matchAll(/<li class="nick-row(?![^>]*data-nick-count="0")[^>]*>/g)].map((match) => match[0]);
+
+  // View + Sort dropdowns; the old Show dropdown is retired.
+  assertIncludes(feature, 'data-nick-view-dd', "Nick ranking renders the View dropdown");
+  assertIncludes(feature, 'data-nick-sort-dd', "Nick ranking renders the Sort dropdown");
+  record("Old Show dropdown is gone", !feature.includes("data-nick-show-dd"), "data-nick-show-dd removed");
+
+  // Quiet songbook link replaces the big expand button + capped scroll wrapper.
+  assertIncludes(feature, 'data-nick-songbook', "Nick feature has the quiet songbook link");
+  assertIncludes(feature, 'link-quiet nick-songbook', "Songbook link uses the quiet link style");
+  record("Old capped-scroll expand button is gone",
+    !feature.includes("stats-expand") && !feature.includes("data-nick-scroll") && !feature.includes("data-nick-expand"),
+    "expand button + scroll wrapper removed");
+
+  // Default "most likely next" view: recently played rows (data-slp <= 4) ship hidden,
+  // exactly the top six of the rest render visible, and every visible row is slp > 4.
+  const allRows = [...feature.matchAll(/<li class="nick-row[^>]*>/g)].map((match) => match[0]);
+  const visibleRows = allRows.filter((li) => !/ hidden>/.test(li));
+  const recentRows = allRows.filter((li) => /data-slp="([0-4])"/.test(li));
   record(
-    "Played Nick rows are visible in the default markup",
-    playedRows.length === played.length && playedRows.every((li) => !/ hidden>/.test(li) && li.includes('data-played="yes"')),
-    `${playedRows.length} played rows vs ${played.length} expected`
+    "Recently played songs (last four shows) ship hidden by default",
+    recentRows.length > 0 && recentRows.every((li) => / hidden>/.test(li)),
+    `${recentRows.length} recently-played rows`
   );
+  record(
+    "Exactly the top six most-likely-next rows are visible by default",
+    visibleRows.length === expectedVisible && visibleRows.every((li) => {
+      const match = li.match(/data-slp="(\d+)"/);
+      return match && Number(match[1]) > 4;
+    }),
+    `${visibleRows.length} visible vs ${expectedVisible} expected`
+  );
+  record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
 }
 
 // ── Taste-pass round guards ──────────────────────────────────────────────────
@@ -697,7 +736,7 @@ async function checkLatestSetlist(html, siteData) {
   record("Every posted show is individually expandable in the feed", (archive.match(/<details class="show-entry[^"]*"/g) || []).length === siteData.setlists.length);
   assertIncludes(html, 'row.classList.toggle("is-selected-show"', "Selected-show songs receive a dedicated highlight state");
   assertIncludes(html, 'rightSelected - leftSelected', "Selected-show songs move ahead of the remaining tour table");
-  record("Mobile initialization collapses Nick Stats, Tour Stats, and the older setlist archive", html.includes('.nick-disclosure, .stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
+  record("Mobile initialization collapses Tour Stats and the older setlist archive", html.includes('.stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
   record("Mobile initialization leaves every laminated sheet expanded", !html.includes('.song-panel:not(:first-of-type)') && !html.includes('.shelf-board .song-panel') && !html.includes('.purgatory-board .song-panel') && !html.includes('.woodshed-board .song-panel'));
 
   const bendHeading = "07/11/2026 Hayden Homes Amphitheater, Bend, OR";

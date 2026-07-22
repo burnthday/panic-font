@@ -7349,14 +7349,14 @@ function renderStatsAutoCollapseScript() {
     // them into the next section, re-collapse to the capped height so the long
     // list never trails behind you. Compensate scroll when the block is above the
     // viewport so the page doesn't lurch.
-    const lists = [...document.querySelectorAll("[data-nick-scroll], [data-table-scroll]")];
+    const lists = [...document.querySelectorAll("[data-table-scroll]")];
     if (lists.length) {
       const io2 = new IntersectionObserver((entries) => {
         for (const entry of entries) {
           const wrap = entry.target;
           if (entry.isIntersecting || wrap.classList.contains("is-capped")) continue;
           if (entry.boundingClientRect.top > 0) continue; // only when scrolled past the top
-          const btn = wrap.parentElement.querySelector("[data-nick-expand], [data-table-expand]");
+          const btn = wrap.parentElement.querySelector("[data-table-expand]");
           const before = wrap.getBoundingClientRect().top;
           wrap.classList.add("is-capped");
           if (btn) { btn.setAttribute("aria-expanded", "false"); btn.textContent = btn.dataset.expandLabel; }
@@ -7374,41 +7374,50 @@ function renderNickRankingScript() {
     const list = feature && feature.querySelector(".nick-ranking");
     if (!list) return;
     const rows = [...list.children];
-    const showDd = feature.querySelector("[data-nick-show-dd]");
+    const viewDd = feature.querySelector("[data-nick-view-dd]");
     const sortDd = feature.querySelector("[data-nick-sort-dd]");
-    let state = "played";
-    let sort = "plays";
+    const songbook = feature.querySelector("[data-nick-songbook]");
+    const CAP = 6;
+    let view = "next";
+    let sort = "score";
+    let expanded = false;
+    const num = (row, key) => Number(row.dataset[key] || 0);
+    const byTitle = (a, b) => a.dataset.songTitle.localeCompare(b.dataset.songTitle);
     const apply = () => {
       const visible = rows.filter((row) => {
-        const played = row.dataset.played === "yes";
-        const ok = state === "everything" || (state === "played" ? played : !played);
-        row.hidden = !ok;
-        return ok;
+        const nick = num(row, "nickCount");
+        // "Most likely next" hard-filters the last-four-shows songs (data-slp <= 4).
+        if (view === "next") return num(row, "slp") > 4;
+        if (view === "woodshed") return nick === 0;
+        return nick > 0; // "played"
       });
       visible.sort((a, b) => {
-        if (sort === "title") return a.dataset.songTitle.localeCompare(b.dataset.songTitle);
-        if (sort === "last") return (b.dataset.last || "").localeCompare(a.dataset.last || "") || a.dataset.songTitle.localeCompare(b.dataset.songTitle);
-        return Number(b.dataset.nickCount) - Number(a.dataset.nickCount) || a.dataset.songTitle.localeCompare(b.dataset.songTitle);
+        if (sort === "plays") return num(b, "nickCount") - num(a, "nickCount") || byTitle(a, b);
+        if (sort === "gone") return num(b, "slp") - num(a, "slp") || byTitle(a, b);
+        if (sort === "recent") return (b.dataset.last || "").localeCompare(a.dataset.last || "") || byTitle(a, b);
+        return num(b, "score") - num(a, "score") || byTitle(a, b); // "likelihood"
       });
+      rows.forEach((row) => { row.hidden = true; });
       visible.forEach((row, index) => {
         list.appendChild(row);
+        row.hidden = !expanded && index >= CAP;
         const rank = row.querySelector(".nick-rank");
         if (rank) rank.textContent = String(index + 1);
       });
+      if (songbook) {
+        const collapsible = visible.length > CAP;
+        songbook.hidden = !collapsible;
+        songbook.setAttribute("aria-expanded", String(expanded));
+        const label = expanded ? songbook.dataset.fewerLabel : songbook.dataset.moreLabel;
+        songbook.firstChild.textContent = label + " ";
+      }
     };
-    showDd?.addEventListener("cs:change", (event) => { state = event.detail.value; apply(); });
+    viewDd?.addEventListener("cs:change", (event) => { view = event.detail.value; expanded = false; apply(); });
     sortDd?.addEventListener("cs:change", (event) => { sort = event.detail.value; apply(); });
-    const nickScroll = feature.querySelector("[data-nick-scroll]");
-    const nickExpand = feature.querySelector("[data-nick-expand]");
-    nickExpand?.addEventListener("click", () => {
-      // Collapsing shrinks the list above the button; compensate scroll so the
-      // button (and the reader's eye) stays put instead of jumping to the footer.
-      const before = nickExpand.getBoundingClientRect().top;
-      const capped = nickScroll?.classList.toggle("is-capped");
-      nickExpand.setAttribute("aria-expanded", String(!capped));
-      nickExpand.textContent = capped ? nickExpand.dataset.expandLabel : nickExpand.dataset.collapseLabel;
-      nickExpand.classList.toggle("is-pinned", !capped);
-      if (capped) window.scrollBy(0, nickExpand.getBoundingClientRect().top - before);
+    songbook?.addEventListener("click", (event) => {
+      event.preventDefault();
+      expanded = !expanded;
+      apply();
     });
     apply();
   })();`;
@@ -7470,7 +7479,7 @@ function renderFitScriptBody() {
       });
 
       if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".nick-disclosure, .stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
+        document.querySelectorAll(".stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
       }
 
       document.querySelectorAll(".tour-table").forEach((table) => {
@@ -8609,60 +8618,57 @@ function renderShelfWatch(data) {
 
 function renderNickJohnsonFeature(data) {
   const rotation = (data.catalog || [])
-    .filter((row) => row.effectiveSlp < data.rules.rotationSlpLimit || row.playedThisTour)
-    .sort((left, right) => right.nickCount - left.nickCount || left.title.localeCompare(right.title));
+    .filter((row) => row.effectiveSlp < data.rules.rotationSlpLimit || row.playedThisTour);
   const played = rotation.filter((row) => row.nickCount > 0);
   const shows = (data.setlists || []).filter(isNickJohnsonShow).length;
   const plays = sum(played.map((row) => row.nickCount));
   const woodshed = data.boards.woodshedOriginals.length + data.boards.woodshedCovers.length;
-  const completion = rotation.length ? Math.round((played.length / rotation.length) * 100) : 0;
   const originals = rotation.filter((row) => row.type === "Original");
   const covers = rotation.filter((row) => row.type === "Cover");
   const playedOriginals = originals.filter((row) => row.nickCount > 0).length;
   const playedCovers = covers.filter((row) => row.nickCount > 0).length;
-  const originalWidth = rotation.length ? (playedOriginals / rotation.length) * 100 : 0;
-  const coverWidth = rotation.length ? (playedCovers / rotation.length) * 100 : 0;
+  const overallWidth = rotation.length ? (played.length / rotation.length) * 100 : 0;
+  const originalWidth = originals.length ? (playedOriginals / originals.length) * 100 : 0;
+  const coverWidth = covers.length ? (playedCovers / covers.length) * 100 : 0;
+  const through = data.setlists?.[0]?.isoDate ? formatLongDate(data.setlists[0].isoDate) : "";
 
   return `<section class="nick-feature" id="nick-johnson">
-  <details class="nick-disclosure" open>
-  <summary class="section-heading data-heading">
-    <h2>Nick stats</h2>
-  </summary>
   <div class="nick-feature-body nick-two-col">
   <div class="nick-left">
-    <div class="data-metrics nick-summary" aria-label="Nick Johnson tour stats">
-      ${renderNickStat(shows, "shows on guitar")}
-      ${renderNickStat(played.length, "unique songs")}
-      ${renderNickStat(plays, "song plays")}
-      ${renderNickStat(woodshed, "still in The Woodshed")}
-    </div>
-    <div class="nick-progress" aria-label="${completion}% of current song possibilities played with Nick Johnson">
-      <div><strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span></div>
+    <p class="nick-headline">Nick Johnson has played <em class="nick-accent">just over half</em> of the band&#39;s current rotation in <em class="nick-accent">${formatNumber(shows)}</em> shows. Here&#39;s what is most likely to come next.</p>
+    <div class="nick-panel">
+      <div class="nick-lead"><strong>${formatNumber(played.length)}</strong><span> of ${formatNumber(rotation.length)}</span></div>
+      <p class="nick-caption">Songs played with Nick</p>
       <div class="nick-bars">
-        <div class="nick-bar-row"><span class="nb-label">Overall</span><span class="nick-progress-track"><i class="is-overall" style="width:${completion}%"></i></span><span class="nb-count">${formatNumber(played.length)}/${formatNumber(rotation.length)}</span></div>
-        <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originals.length ? (playedOriginals / originals.length) * 100 : 0}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
-        <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${covers.length ? (playedCovers / covers.length) * 100 : 0}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
+        <div class="nick-bar-row"><span class="nb-label">Overall</span><span class="nick-progress-track"><i class="is-overall" style="width:${overallWidth}%"></i></span><span class="nb-count">${formatNumber(played.length)}/${formatNumber(rotation.length)}</span></div>
+        <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
+        <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${coverWidth}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
       </div>
+      <div class="nick-inline-stats">
+        <span class="nis"><strong>${formatNumber(shows)}</strong> shows</span>
+        <span class="nis"><strong>${formatNumber(plays)}</strong> song plays</span>
+        <span class="nis"><strong>${formatNumber(woodshed)}</strong> still in the Woodshed</span>
+      </div>
+      ${through ? `<p class="nick-through">Stats current through ${escapeHtml(through)}</p>` : ""}
     </div>
   </div>
   <div class="nick-right">
-    <div class="nick-controls" role="group" aria-label="Filter and sort songs played with Nick Johnson">
-      ${renderCustomSelect({ hook: "data-nick-show-dd", label: "Show", active: "played", options: [{ value: "played", label: "Played with Nick" }, { value: "woodshed", label: "Not yet played" }, { value: "everything", label: "Everything" }] })}
-      ${renderCustomSelect({ hook: "data-nick-sort-dd", label: "Sort by", active: "plays", options: [{ value: "plays", label: "Most played" }, { value: "last", label: "Last played" }, { value: "title", label: "Song name" }] })}
+    <div class="nick-controls" role="group" aria-label="Filter and sort the songs most likely to come next">
+      ${renderCustomSelect({ hook: "data-nick-view-dd", label: "View", active: "next", options: [{ value: "next", label: "Most likely next" }, { value: "woodshed", label: "Not yet played" }, { value: "played", label: "Played with Nick" }] })}
+      ${renderCustomSelect({ hook: "data-nick-sort-dd", label: "Sort", active: "score", options: [{ value: "score", label: "Likelihood" }, { value: "plays", label: "Most played" }, { value: "gone", label: "Longest gone" }, { value: "recent", label: "Most recently played" }] })}
     </div>
     <div class="nick-ranking-head" role="presentation" aria-hidden="true">
       <span class="nrh-col">#</span>
       <span class="nrh-col">Song</span>
-      <span class="nrh-col nrh-plays">Plays this tour</span>
+      <span class="nrh-col nrh-type">Type</span>
+      <span class="nrh-col nrh-plays">Total plays</span>
       <span class="nrh-col nrh-last">Last played</span>
+      <span class="nrh-col nrh-score">Likelihood</span>
     </div>
-    <div class="nick-ranking-wrap is-capped" data-nick-scroll>
     ${renderNickRanking(rotation)}
-    </div>
-    <button type="button" class="stats-expand" data-nick-expand aria-expanded="false" data-expand-label="Show the full list" data-collapse-label="Show fewer">Show the full list</button>
+    <a class="link-quiet nick-songbook" href="#" role="button" aria-expanded="false" data-nick-songbook data-more-label="Explore Nick&#39;s full songbook" data-fewer-label="Show fewer">Explore Nick&#39;s full songbook <span aria-hidden="true">→</span></a>
   </div>
   </div>
-  </details>
 </section>`;
 }
 
@@ -8670,21 +8676,55 @@ function renderNickStat(value, label) {
   return `<div class="nick-stat"><strong>${formatNumber(value)}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
-// One merged, filterable/sortable ranking of the full rotation. Every song ships in
-// the DOM carrying its facets (data-type, data-played) and per-show count so the inline
-// nick-ranking handler can filter (type + play state) and sort (plays / A–Z) without a
-// refetch. Zero-play songs render hidden by default so the restrained view shows only
-// songs actually played with Nick until "Not yet played" or "Everything" is chosen.
-// Rows stay in rotation order (plays desc, alphabetical tie-break) for the no-JS default.
+// A "most likely next" ranking of the full rotation. Every rotation song ships in the
+// DOM carrying its facets (data-type, data-nick-count, data-slp, data-last, data-score,
+// data-played) so the inline nick-ranking handler can switch view + sort and re-cap to
+// six rows without a refetch. A transparent 0–100 likelihood SCORE (never a probability,
+// never a % sign) is computed per song from defensible signals — see nickLikelihood().
+// Default view = "most likely next": recently played songs (effectiveSlp <= 4, i.e. in
+// the last four shows) are excluded, the rest ranked by score desc; only the top six
+// render visible, the rest ship hidden for the songbook expand.
 function renderNickRanking(songs) {
-  return `<ol class="nick-ranking">${songs.map((song, index) => {
+  // Likelihood signals, in the owner's priority order: (1) not yet played with Nick,
+  // (2) not played in the previous four shows, (3) historically frequent (l100),
+  // (4) active this tour, (5) longest since last play. Weights sum to a 0–100 raw max;
+  // the pool is then normalized so the top song lands in the 90s with a visible floor.
+  const maxL100 = Math.max(1, ...songs.map((song) => song.l100 || 0));
+  const nickLikelihood = (song) => {
+    const slp = Number.isFinite(song.effectiveSlp) ? song.effectiveSlp : 0;
+    return 30 * (song.nickCount === 0 ? 1 : 0)
+      + 20 * (slp > 4 ? 1 : 0)
+      + 30 * ((song.l100 || 0) / maxL100)
+      + 10 * (song.playedThisTour ? 1 : 0)
+      + 10 * (Math.min(slp, 40) / 40);
+  };
+  const scored = songs.map((song) => ({ song, raw: nickLikelihood(song) }));
+  const maxRaw = Math.max(1, ...scored.map((entry) => entry.raw));
+  scored.forEach((entry) => {
+    entry.score = Math.max(4, Math.round((entry.raw / maxRaw) * 94));
+  });
+  const byScore = (a, b) => b.score - a.score || a.song.title.localeCompare(b.song.title);
+  const nextPool = scored.filter((entry) => (entry.song.effectiveSlp ?? 0) > 4).sort(byScore);
+  const recent = scored.filter((entry) => (entry.song.effectiveSlp ?? 0) <= 4).sort(byScore);
+  const ordered = [...nextPool, ...recent];
+  const visibleTitles = new Set(nextPool.slice(0, 6).map((entry) => entry.song.title));
+
+  return `<ol class="nick-ranking">${ordered.map((entry, index) => {
+    const song = entry.song;
     const played = song.nickCount > 0;
     const type = song.type === "Cover" ? "cover" : "original";
-    return `<li class="nick-row${played ? "" : " is-zero"}" data-type="${type}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-played="${played ? "yes" : "no"}"${played ? "" : " hidden"}>
+    const slp = Number.isFinite(song.effectiveSlp) ? song.effectiveSlp : 0;
+    const l100 = song.l100 || 0;
+    const usualGap = l100 >= 6 ? (100 / l100).toFixed(1) : "";
+    const visible = visibleTitles.has(song.title);
+    const agoSub = played && slp > 0 && slp <= 40 ? `<small>(${formatNumber(slp)} show${slp === 1 ? "" : "s"} ago)</small>` : "";
+    return `<li class="nick-row${played ? "" : " is-zero"}" data-type="${type}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-slp="${escapeAttr(String(slp))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-score="${escapeAttr(String(entry.score))}" data-played="${played ? "yes" : "no"}"${visible ? "" : " hidden"}>
     <span class="nick-rank" aria-hidden="true">${index + 1}</span>
-    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong><small>${escapeHtml(song.type)}</small></span>
+    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong>${usualGap ? `<small>Usually played every ${usualGap} shows</small>` : ""}</span>
+    <span class="nick-type"><span class="nick-chip is-${type}">${type === "cover" ? "COVER" : "ORIGINAL"}</span></span>
     <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong></span>
-    <span class="nick-last">${escapeHtml(played && song.lastDisplay ? song.lastDisplay : "—")}</span>
+    <span class="nick-last">${escapeHtml(played && song.lastDisplay ? song.lastDisplay : "—")}${agoSub}</span>
+    <span class="nick-score">${entry.score}</span>
   </li>`;
   }).join("")}</ol>`;
 }
@@ -13580,7 +13620,40 @@ body.stagelight .key-block { border-color: var(--sl-line); }
 
 /* ---- NICK FEATURE ---- */
 /* Nick stats: no bento frame — the section sits open on the page (Alex round 6). */
-body.stagelight .nick-feature { background: none; border: 0; box-shadow: none; color: var(--sl-ink); }
+body.stagelight .nick-feature { background: none; border: 0; box-shadow: none; padding: 0; color: var(--sl-ink); }
+/* Headline (left column). "just over half" + the show count read coral. */
+body.stagelight .nick-headline { font-family: var(--sl-display); font-size: 29px; line-height: 1.35; font-weight: 640; color: var(--sl-ink); margin: 0 0 26px; max-width: 26ch; }
+body.stagelight .nick-accent { font-style: normal; color: #ef8b88; }
+/* Grouped glass summary panel. */
+body.stagelight .nick-panel { background: var(--sl-glass); -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4); border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow); padding: 26px 28px 22px; }
+body.stagelight .nick-lead { display: flex; align-items: baseline; gap: 8px; }
+body.stagelight .nick-lead strong { font-family: var(--sl-mono); font-size: 46px; line-height: 1; font-weight: 640; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-lead span { font-family: var(--sl-mono); font-size: 22px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-caption { margin: 8px 0 22px; font-size: 14.5px; color: var(--sl-muted); }
+body.stagelight .nick-inline-stats { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--sl-line); }
+body.stagelight .nis { font-size: 13px; color: var(--sl-muted); }
+body.stagelight .nis strong { font-family: var(--sl-mono); font-size: 15px; font-weight: 640; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-through { margin: 16px 0 0; font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--sl-faint); }
+/* Type chips (own column). */
+body.stagelight .nick-type { display: flex; align-items: center; }
+body.stagelight .nick-chip { font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px; border-radius: var(--sl-r-pill); border: 1px solid transparent; white-space: nowrap; }
+body.stagelight .nick-chip.is-original { color: #7fbf9b; background: rgba(45, 124, 82, 0.14); border-color: rgba(45, 124, 82, 0.5); }
+body.stagelight .nick-chip.is-cover { color: #8fc0e0; background: rgba(96, 165, 210, 0.12); border-color: rgba(96, 165, 210, 0.45); }
+/* Likelihood score (coral, mono, right-aligned, digits only — never a percent). */
+body.stagelight .nick-score { font-family: var(--sl-mono); font-size: 15px; font-weight: 620; color: #ef8b88; font-variant-numeric: tabular-nums; text-align: right; justify-self: end; }
+body.stagelight .nick-song small { display: block; margin-top: 3px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.02em; color: var(--sl-faint); text-transform: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.stagelight .nick-last { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+body.stagelight .nick-last small { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
+body.stagelight .nick-songbook { margin-top: 20px; }
+/* Narrow screens: drop the Type + Last played columns so the row stays legible. */
+@media (max-width: 560px) {
+  body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { grid-template-columns: 24px minmax(0, 1fr) 62px 64px; }
+  body.stagelight .nrh-type, body.stagelight .nick-type,
+  body.stagelight .nrh-last, body.stagelight .nick-last { display: none; }
+  body.stagelight .nick-headline { font-size: 24px; }
+  body.stagelight .nick-panel { padding: 22px 20px 20px; }
+  body.stagelight .nick-lead strong { font-size: 40px; }
+}
 /* Three labeled progress bars (overall / originals / covers). */
 body.stagelight .nick-bars { display: grid; gap: 12px; margin-top: 16px; }
 body.stagelight .nick-bar-row { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 14px; align-items: center; }
@@ -13589,7 +13662,8 @@ body.stagelight .nb-label { font-family: var(--sl-mono); font-size: 11px; letter
 body.stagelight .nb-count { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
 body.stagelight .nick-progress-track i.is-overall { background: var(--sl-ink); }
 /* Ranking: four columns, headers styled like the tour-stats sheet. */
-body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { grid-template-columns: 30px minmax(0, 1fr) 104px 118px; }
+body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { grid-template-columns: 26px minmax(0, 1fr) 84px 78px 116px 82px; }
+body.stagelight .nick-ranking-head .nrh-plays, body.stagelight .nick-ranking-head .nrh-last, body.stagelight .nick-ranking-head .nrh-score { text-align: right; justify-self: end; }
 body.stagelight .nick-ranking-head { border-bottom: 1px solid var(--sl-line); }
 body.stagelight .nick-ranking-head .nrh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); text-transform: uppercase; }
 body.stagelight .nick-ranking-head .nrh-plays, body.stagelight .nick-plays { text-align: right; justify-self: end; }
@@ -13613,8 +13687,8 @@ body.stagelight .nick-ranking-heading span { font-family: var(--sl-mono); font-s
 body.stagelight .nick-ranking li { padding: 12px 10px; }
 body.stagelight .nick-ranking li:hover { background: rgba(255,255,255,0.025); }
 body.stagelight .nick-rank { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; }
-body.stagelight .nick-song { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
-body.stagelight .nick-song strong { font-size: 15px; font-weight: 600; color: var(--sl-ink); letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.stagelight .nick-song { display: block; min-width: 0; }
+body.stagelight .nick-song strong { display: block; font-size: 15px; font-weight: 600; color: var(--sl-ink); letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 body.stagelight .nick-song small { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; color: var(--sl-faint); text-transform: uppercase; flex: none; }
 body.stagelight .nick-plays { display: flex; align-items: baseline; gap: 6px; justify-self: end; }
 body.stagelight .nick-plays strong { font-family: var(--sl-mono); font-size: 15px; font-weight: 620; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
