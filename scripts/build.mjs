@@ -8472,7 +8472,7 @@ function renderSheetBentos(data) {
   // Curate to titles short enough to sit on one line in a column (no overflow).
   const scrawlPool = [...shelfRows, ...purgRows, ...woodRows]
     .map((row) => row.title.toUpperCase())
-    .filter((title) => title.length <= 19);
+    .filter((title) => title.length <= 15);
   // ONE element: five handwritten setlists laid out like loose papers behind the
   // bentos. Every column has the SAME line count; the greats (Alex's picks) are
   // the last lines, and a natural bottom-spotlight fade + per-column stagger let
@@ -13748,7 +13748,7 @@ body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink
 /* One continuous sheet behind the three bentos: the scrawl runs under the
    glass (barely there), then its last line comes into focus below the cards
    (the Webflow move). Cards sit above it. */
-body.stagelight .bento-region { position: relative; padding-top: 70px; padding-bottom: 128px; }
+body.stagelight .bento-region { position: relative; padding-top: 110px; padding-bottom: 128px; }
 body.stagelight .bento-region .bento-grid { position: relative; z-index: 1; }
 /* ONE element: five handwritten setlists laid out like loose papers behind the
    bentos — shows above, below, and faintly through the glass cards. A single
@@ -13759,21 +13759,23 @@ body.stagelight .sheet-scrawl {
   display: flex; gap: 52px; padding: 0 24px; align-items: flex-end;
   font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.03em;
   pointer-events: none; user-select: none;
-  filter: blur(2.4px);
-  color: rgba(255,255,255,0.5);
-  -webkit-mask-image: linear-gradient(180deg, transparent 6%, rgba(0,0,0,0.12) 34%, rgba(0,0,0,0.45) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
-  mask-image: linear-gradient(180deg, transparent 6%, rgba(0,0,0,0.12) 34%, rgba(0,0,0,0.45) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
+  filter: blur(2px);
+  color: rgba(255,255,255,0.6);
+  /* Faintly visible at the very top (shows above the bentos), ramping to lit at
+     the base so the trailing greats read — just barely. */
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.18) 30%, rgba(0,0,0,0.5) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.18) 30%, rgba(0,0,0,0.5) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
 }
 body.stagelight .ss-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
-body.stagelight .ss-song { display: block; font-size: 13px; line-height: 1.68; white-space: nowrap; }
+body.stagelight .ss-song { display: block; font-size: 15px; line-height: 1.7; white-space: nowrap; }
 /* Laid out like loose papers: shrunk, each sheet nudged and tilted its own way,
    the first pushed further off the left. Stagger sets how many trailing songs
    reach the light (~2, ~2, ~1.5, ~1, <1). */
 body.stagelight .ss-col-1 { transform: translate(-34px, -6px) rotate(-2deg); }
 body.stagelight .ss-col-2 { transform: translate(-8px, -10px) rotate(1.5deg); }
 body.stagelight .ss-col-3 { transform: translate(0, -26px) rotate(-1deg); }
-body.stagelight .ss-col-4 { transform: translate(6px, -40px) rotate(1.25deg); }
-body.stagelight .ss-col-5 { transform: translate(20px, -54px) rotate(-1.75deg); }
+body.stagelight .ss-col-4 { transform: translate(6px, -24px) rotate(1.25deg); }
+body.stagelight .ss-col-5 { transform: translate(20px, -34px) rotate(-1.75deg); }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
