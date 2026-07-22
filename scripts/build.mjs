@@ -8417,7 +8417,7 @@ function renderBentoCard(key, label, count, desc, extra, sheetTitles = []) {
   // The sheet "shows through" the card: a blurred, faint column of the sheet's
   // real song titles (no sheet photo exists in the repo, so the text IS the sheet).
   const sheetBg = sheetTitles.length
-    ? `<span class="bc-sheetbg" aria-hidden="true">${sheetTitles.map((title) => escapeHtml(title)).join(" · ")}</span>`
+    ? `<span class="bc-sheetbg" aria-hidden="true">${sheetTitles.map((title) => escapeHtml(title)).join(" \u2192 ")}</span>`
     : "";
   return `<button type="button" class="bento-card bento-${key}" id="${key}" data-bento="${key}" aria-expanded="false" aria-controls="bento-panel-${key}">
     ${sheetBg}
@@ -8481,6 +8481,7 @@ function renderSheetBentos(data) {
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts, purgRows.map((row) => row.title))}
     ${renderBentoCard("woodshed", "The Woodshed", woodCount, "In rotation, not yet played with Nick.", woodExtra, woodRows.map((row) => row.title))}
   </div>
+  <p class="sheet-scrawl" aria-hidden="true">${["Havin' A Ball", "Raise The Roof", "Ball of Confusion", "Stir It Up", "Sympathy for the Devil", "West Virginia", "L.a.", "Band On The Run"].map((title) => escapeHtml(title)).join(' <span class="ss-arrow">→</span> ')}</p>
   ${renderBentoPanel("shelf", "The Shelf", shelf)}
   ${renderBentoPanel("purgatory", "Purgatory", purgatory)}
   ${renderBentoPanel("woodshed", "The Woodshed", woodshed)}
@@ -13701,25 +13702,36 @@ body.stagelight .bento-card[aria-expanded="true"] { border-color: var(--sl-line-
 body.stagelight .bento-shelf[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(212,81,79,0.4); }
 body.stagelight .bento-purgatory[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(40,110,158,0.45); }
 body.stagelight .bento-woodshed[aria-expanded="true"] { box-shadow: var(--sl-glass-shadow), 0 0 60px -18px rgba(45,124,82,0.45); }
-/* Stripe-style open affordance: bordered circle, arrow slides through on hover. */
+/* Open affordance: rounded square top-right; the arrow quarter-turns left on hover. */
 body.stagelight .bc-open {
-  position: absolute; top: 20px; right: 22px; z-index: 1;
-  width: 32px; height: 32px; display: grid; place-items: center; overflow: hidden;
-  border: 1px solid var(--sl-line-strong); border-radius: 50%; color: var(--sl-muted);
+  position: absolute !important; top: 20px; right: 20px; left: auto; z-index: 2;
+  width: 34px; height: 34px; display: grid; place-items: center;
+  border: 1px solid var(--sl-line-strong); border-radius: 10px; color: var(--sl-muted);
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
 }
-body.stagelight .bc-open svg { transition: transform 0.28s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .bc-open svg { transition: transform 0.32s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .bento-card:hover .bc-open { border-color: var(--sl-ink); color: var(--sl-ink); background: rgba(255,255,255,0.06); }
-body.stagelight .bento-card:hover .bc-open svg { transform: translateX(3px); }
+body.stagelight .bento-card:hover .bc-open svg { transform: rotate(-90deg); }
 body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink); border-color: var(--sl-ink); }
 /* The sheet ghosting through: blurred faint run of the sheet's real titles. */
 body.stagelight .bc-sheetbg {
   position: absolute; inset: -12% -6%; z-index: 0; pointer-events: none;
-  font-family: var(--sl-mono); font-size: 15px; line-height: 2.1; text-transform: uppercase; letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.055); filter: blur(2.5px); transform: rotate(-3deg);
+  font-family: "PanicHand", "MilkRun", cursive; font-size: 21px; line-height: 1.9; text-transform: uppercase; letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.06); filter: blur(1.8px); transform: rotate(-3deg);
   overflow: hidden; white-space: normal; word-break: break-word;
 }
-body.stagelight .bento-card > span:not(.bc-sheetbg) { position: relative; z-index: 1; }
+body.stagelight .bento-card > span:not(.bc-sheetbg):not(.bc-open) { position: relative; z-index: 1; }
+/* Below the bentos: a readable line of Garrie's scrawl — barely-blurred hand
+   font fading in at the left, out at the right. Subtle but legible. */
+body.stagelight .sheet-scrawl {
+  margin: 26px 2px 0; overflow: hidden; white-space: nowrap;
+  font-family: "PanicHand", "MilkRun", cursive; font-size: 24px; text-transform: uppercase; letter-spacing: 0.04em;
+  color: rgba(255,255,255,0.3); filter: blur(0.4px); transform: rotate(-0.6deg);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 82%, transparent);
+  pointer-events: none; user-select: none;
+}
+body.stagelight .sheet-scrawl .ss-arrow { color: rgba(255,255,255,0.18); margin: 0 6px; }
 body.stagelight .bc-name { display: block; font-family: var(--sl-display); font-weight: 640; font-size: 21px; letter-spacing: -0.005em; }
 body.stagelight .bc-count { display: block; font-family: var(--sl-mono); font-size: 34px; font-weight: 640; margin-top: 14px; font-variant-numeric: tabular-nums; }
 body.stagelight .bc-count small { font-size: 13.5px; color: var(--sl-faint); font-weight: 500; letter-spacing: 0.08em; margin-left: 8px; }
