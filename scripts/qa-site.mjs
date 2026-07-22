@@ -281,7 +281,8 @@ function checkNickJohnsonFeature(html, siteData) {
   assertIncludes(feature, `<strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span>`, "Nick Johnson feature shows rotation completion");
   assertIncludes(feature, 'class="is-original"', "Nick completion bar separates played originals");
   assertIncludes(feature, 'class="is-cover"', "Nick completion bar separates played covers");
-  assertIncludes(feature, `${played.length}/${rotation.length} overall`, "Nick completion bar gives the exact overall count");
+  assertIncludes(feature, `${played.length}/${rotation.length}`, "Nick overall bar gives the exact overall count");
+  assertIncludes(feature, 'class="is-overall"', "Nick has a dedicated overall progress bar");
   record("Nick Johnson feature is not another laminated song sheet", !feature.includes("nick-played-sheet") && !feature.includes("song-panel"));
   const renderedRanking = [...feature.matchAll(/data-song-title="([^"]+)" data-nick-count="(\d+)"/g)]
     .map((match) => ({ title: decodeHtml(match[1]), count: Number(match[2]) }));
@@ -306,19 +307,16 @@ function checkNickJohnsonFeature(html, siteData) {
     `${facetRows.length} faceted rows vs ${rotation.length} expected`
   );
 
-  // Filter chips: All / Originals / Covers.
-  assertIncludes(feature, '<button type="button" class="is-active" data-nick-type="all">All</button>', "Nick ranking renders the All type chip (default active)");
-  assertIncludes(feature, 'data-nick-type="original">Originals</button>', "Nick ranking renders the Originals type chip");
-  assertIncludes(feature, 'data-nick-type="cover">Covers</button>', "Nick ranking renders the Covers type chip");
-
-  // State toggles: Played (default) / Not yet played (Woodshed) / Everything.
-  assertIncludes(feature, '<button type="button" class="is-active" data-nick-state="played">Played</button>', "Nick ranking renders the Played state toggle (default active)");
-  assertIncludes(feature, 'data-nick-state="woodshed">Not yet</button>', "Nick ranking renders the Not-yet (Woodshed) state toggle");
-  assertIncludes(feature, 'data-nick-state="everything">All</button>', "Nick ranking renders the everything state toggle");
-
-  // Sort control: plays (default) / A–Z.
-  assertIncludes(feature, '<button type="button" class="is-active" data-nick-sort="plays">Plays</button>', "Nick ranking renders the plays sort control (default active)");
-  assertIncludes(feature, 'data-nick-sort="title">A', "Nick ranking renders the A–Z title sort control");
+  // Quiet dropdown controls (button-chip groups retired, Alex round 6): a Show
+  // select (played default) and a Sort select (plays default, incl. last played).
+  assertIncludes(feature, 'data-nick-show-dd', "Nick ranking renders the Show dropdown");
+  assertIncludes(feature, 'data-nick-sort-dd', "Nick ranking renders the Sort dropdown");
+  record("Nick controls are dropdowns, not button chips",
+    !feature.includes("data-nick-type=") && !feature.includes("data-nick-state=") && !feature.includes("data-nick-sort="),
+    "chip groups removed");
+  assertIncludes(feature, 'class="nrh-col nrh-last"', "Nick ranking has a Last played column header");
+  record("Nick rows carry last-played data and cell",
+    (feature.match(/class="nick-last"/g) || []).length === rotation.length, "nick-last cells");
 
   // Default view is restrained: zero-play rows ship hidden and marked not-played, so they
   // only appear once "Not yet played" or "Everything" is chosen. Played rows stay visible.

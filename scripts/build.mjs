@@ -7351,40 +7351,30 @@ function renderNickRankingScript() {
     const list = feature && feature.querySelector(".nick-ranking");
     if (!list) return;
     const rows = [...list.children];
-    const typeButtons = [...feature.querySelectorAll("[data-nick-type]")];
-    const stateButtons = [...feature.querySelectorAll("[data-nick-state]")];
-    const sortButtons = [...feature.querySelectorAll("[data-nick-sort]")];
-    const status = feature.querySelector("[data-nick-status]");
-    let type = "all";
+    const showDd = feature.querySelector("[data-nick-show-dd]");
+    const sortDd = feature.querySelector("[data-nick-sort-dd]");
     let state = "played";
     let sort = "plays";
     const apply = () => {
       const visible = rows.filter((row) => {
         const played = row.dataset.played === "yes";
-        const typeOk = type === "all" || row.dataset.type === type;
-        const stateOk = state === "everything" || (state === "played" ? played : !played);
-        const ok = typeOk && stateOk;
+        const ok = state === "everything" || (state === "played" ? played : !played);
         row.hidden = !ok;
         return ok;
       });
-      visible.sort((a, b) => sort === "title"
-        ? a.dataset.songTitle.localeCompare(b.dataset.songTitle)
-        : Number(b.dataset.nickCount) - Number(a.dataset.nickCount) || a.dataset.songTitle.localeCompare(b.dataset.songTitle));
+      visible.sort((a, b) => {
+        if (sort === "title") return a.dataset.songTitle.localeCompare(b.dataset.songTitle);
+        if (sort === "last") return (b.dataset.last || "").localeCompare(a.dataset.last || "") || a.dataset.songTitle.localeCompare(b.dataset.songTitle);
+        return Number(b.dataset.nickCount) - Number(a.dataset.nickCount) || a.dataset.songTitle.localeCompare(b.dataset.songTitle);
+      });
       visible.forEach((row, index) => {
         list.appendChild(row);
         const rank = row.querySelector(".nick-rank");
         if (rank) rank.textContent = String(index + 1);
       });
-      if (status) status.textContent = visible.length + (visible.length === 1 ? " song" : " songs");
     };
-    const wire = (buttons, set) => buttons.forEach((btn) => btn.addEventListener("click", () => {
-      set(btn);
-      buttons.forEach((b) => b.classList.toggle("is-active", b === btn));
-      apply();
-    }));
-    wire(typeButtons, (btn) => { type = btn.dataset.nickType; });
-    wire(stateButtons, (btn) => { state = btn.dataset.nickState; });
-    wire(sortButtons, (btn) => { sort = btn.dataset.nickSort; });
+    showDd?.addEventListener("cs:change", (event) => { state = event.detail.value; apply(); });
+    sortDd?.addEventListener("cs:change", (event) => { sort = event.detail.value; apply(); });
     const nickScroll = feature.querySelector("[data-nick-scroll]");
     const nickExpand = feature.querySelector("[data-nick-expand]");
     nickExpand?.addEventListener("click", () => {
@@ -8542,7 +8532,6 @@ function renderNickJohnsonFeature(data) {
   <details class="nick-disclosure" open>
   <summary class="section-heading data-heading">
     <h2>Nick stats</h2>
-    <span>${escapeHtml(String(data.site.year))} tour</span>
   </summary>
   <div class="nick-feature-body nick-two-col">
   <div class="nick-left">
@@ -8554,32 +8543,23 @@ function renderNickJohnsonFeature(data) {
     </div>
     <div class="nick-progress" aria-label="${completion}% of current song possibilities played with Nick Johnson">
       <div><strong>${completion}%</strong><span>of current Song Possibilities played with Nick</span></div>
-      <span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i><i class="is-cover" style="width:${coverWidth}%"></i></span>
-      <div class="progress-key"><span><i class="key-original"></i>Originals ${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span><span><i class="key-cover"></i>Covers ${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span><span><i class="key-unplayed"></i>${formatNumber(played.length)}/${formatNumber(rotation.length)} overall</span></div>
+      <div class="nick-bars">
+        <div class="nick-bar-row"><span class="nb-label">Overall</span><span class="nick-progress-track"><i class="is-overall" style="width:${completion}%"></i></span><span class="nb-count">${formatNumber(played.length)}/${formatNumber(rotation.length)}</span></div>
+        <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originals.length ? (playedOriginals / originals.length) * 100 : 0}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
+        <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${covers.length ? (playedCovers / covers.length) * 100 : 0}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
+      </div>
     </div>
   </div>
   <div class="nick-right">
     <div class="nick-controls" role="group" aria-label="Filter and sort songs played with Nick Johnson">
-      <div class="type-filter nick-chip-group" role="group" aria-label="Filter by song type">
-        <button type="button" class="is-active" data-nick-type="all">All</button>
-        <button type="button" data-nick-type="original">Originals</button>
-        <button type="button" data-nick-type="cover">Covers</button>
-      </div>
-      <div class="type-filter nick-chip-group" role="group" aria-label="Filter by play state">
-        <button type="button" class="is-active" data-nick-state="played">Played</button>
-        <button type="button" data-nick-state="woodshed">Not yet</button>
-        <button type="button" data-nick-state="everything">All</button>
-      </div>
-      <div class="type-filter nick-chip-group" role="group" aria-label="Sort songs">
-        <button type="button" class="is-active" data-nick-sort="plays">Plays</button>
-        <button type="button" data-nick-sort="title">A–Z</button>
-      </div>
-      <span class="nick-ranking-status" data-nick-status aria-live="polite"></span>
+      ${renderCustomSelect({ hook: "data-nick-show-dd", label: "Show", active: "played", options: [{ value: "played", label: "Played with Nick" }, { value: "woodshed", label: "Not yet played" }, { value: "everything", label: "Everything" }] })}
+      ${renderCustomSelect({ hook: "data-nick-sort-dd", label: "Sort by", active: "plays", options: [{ value: "plays", label: "Most played" }, { value: "last", label: "Last played" }, { value: "title", label: "Song name" }] })}
     </div>
     <div class="nick-ranking-head" role="presentation" aria-hidden="true">
       <span class="nrh-col">#</span>
       <span class="nrh-col">Song</span>
-      <span class="nrh-col nrh-plays">Plays</span>
+      <span class="nrh-col nrh-plays">Plays this tour</span>
+      <span class="nrh-col nrh-last">Last played</span>
     </div>
     <div class="nick-ranking-wrap is-capped" data-nick-scroll>
     ${renderNickRanking(rotation)}
@@ -8605,10 +8585,11 @@ function renderNickRanking(songs) {
   return `<ol class="nick-ranking">${songs.map((song, index) => {
     const played = song.nickCount > 0;
     const type = song.type === "Cover" ? "cover" : "original";
-    return `<li class="nick-row${played ? "" : " is-zero"}" data-type="${type}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-played="${played ? "yes" : "no"}"${played ? "" : " hidden"}>
+    return `<li class="nick-row${played ? "" : " is-zero"}" data-type="${type}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-played="${played ? "yes" : "no"}"${played ? "" : " hidden"}>
     <span class="nick-rank" aria-hidden="true">${index + 1}</span>
     <span class="nick-song"><strong>${escapeHtml(song.title)}</strong><small>${escapeHtml(song.type)}</small></span>
-    <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong><small>${song.nickCount === 1 ? "play" : "plays"}</small></span>
+    <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong></span>
+    <span class="nick-last">${escapeHtml(played && song.lastDisplay ? song.lastDisplay : "—")}</span>
   </li>`;
   }).join("")}</ol>`;
 }
@@ -13463,11 +13444,22 @@ body.stagelight .marker-legend strong { color: var(--sl-ink); }
 body.stagelight .key-block { border-color: var(--sl-line); }
 
 /* ---- NICK FEATURE ---- */
-body.stagelight .nick-feature {
-  background: var(--sl-glass);
-  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
-  border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow); color: var(--sl-ink);
-}
+/* Nick stats: no bento frame — the section sits open on the page (Alex round 6). */
+body.stagelight .nick-feature { background: none; border: 0; box-shadow: none; color: var(--sl-ink); }
+/* Three labeled progress bars (overall / originals / covers). */
+body.stagelight .nick-bars { display: grid; gap: 12px; margin-top: 16px; }
+body.stagelight .nick-bar-row { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 14px; align-items: center; }
+body.stagelight .nick-bar-row .nick-progress-track { margin: 0; }
+body.stagelight .nb-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .nb-count { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-progress-track i.is-overall { background: var(--sl-ink); }
+/* Ranking: four columns, headers styled like the tour-stats sheet. */
+body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { grid-template-columns: 30px minmax(0, 1fr) 104px 118px; }
+body.stagelight .nick-ranking-head { border-bottom: 1px solid var(--sl-line); }
+body.stagelight .nick-ranking-head .nrh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .nick-ranking-head .nrh-plays, body.stagelight .nick-plays { text-align: right; justify-self: end; }
+body.stagelight .nick-ranking-head .nrh-last, body.stagelight .nick-last { text-align: right; justify-self: end; }
+body.stagelight .nick-last { font-family: var(--sl-mono); font-size: 12.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 body.stagelight .nick-feature h2, body.stagelight .nick-feature h3 { color: var(--sl-ink); font-family: var(--sl-display); }
 body.stagelight .nick-feature p { color: var(--sl-muted); }
 body.stagelight .nick-summary .nick-stat { background: rgba(255,255,255,0.03); border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); }
