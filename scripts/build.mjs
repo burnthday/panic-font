@@ -7003,20 +7003,43 @@ function renderSetlistExpandScript() {
 // compensating scroll so the page doesn't jump when a box above the viewport shrinks.
 function renderStatsAutoCollapseScript() {
   return `(() => {
+    if (!("IntersectionObserver" in window)) return;
+    // Per-card setlist "Song stats" details: close when scrolled out of view.
     const stats = [...document.querySelectorAll("[data-sc-stats]")];
-    if (!stats.length || !("IntersectionObserver" in window)) return;
-    const io = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        const el = entry.target;
-        if (!el.open || entry.isIntersecting) continue;
-        const rect = el.getBoundingClientRect();
-        const before = el.offsetHeight;
-        el.open = false;
-        const delta = el.offsetHeight - before;
-        if (rect.bottom < 0) window.scrollBy(0, delta);
-      }
-    }, { threshold: 0 });
-    stats.forEach((el) => io.observe(el));
+    if (stats.length) {
+      const io = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          const el = entry.target;
+          if (!el.open || entry.isIntersecting) continue;
+          const rect = el.getBoundingClientRect();
+          const before = el.offsetHeight;
+          el.open = false;
+          const delta = el.offsetHeight - before;
+          if (rect.bottom < 0) window.scrollBy(0, delta);
+        }
+      }, { threshold: 0 });
+      stats.forEach((el) => io.observe(el));
+    }
+    // Expanded stat lists (Tour Stats table, Nick ranking): once you scroll past
+    // them into the next section, re-collapse to the capped height so the long
+    // list never trails behind you. Compensate scroll when the block is above the
+    // viewport so the page doesn't lurch.
+    const lists = [...document.querySelectorAll("[data-nick-scroll], [data-table-scroll]")];
+    if (lists.length) {
+      const io2 = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          const wrap = entry.target;
+          if (entry.isIntersecting || wrap.classList.contains("is-capped")) continue;
+          if (entry.boundingClientRect.top > 0) continue; // only when scrolled past the top
+          const btn = wrap.parentElement.querySelector("[data-nick-expand], [data-table-expand]");
+          const before = wrap.getBoundingClientRect().top;
+          wrap.classList.add("is-capped");
+          if (btn) { btn.setAttribute("aria-expanded", "false"); btn.textContent = btn.dataset.expandLabel; }
+          window.scrollBy(0, wrap.getBoundingClientRect().top - before);
+        }
+      }, { threshold: 0 });
+      lists.forEach((el) => io2.observe(el));
+    }
   })();`;
 }
 
@@ -7063,9 +7086,13 @@ function renderNickRankingScript() {
     const nickScroll = feature.querySelector("[data-nick-scroll]");
     const nickExpand = feature.querySelector("[data-nick-expand]");
     nickExpand?.addEventListener("click", () => {
+      // Collapsing shrinks the list above the button; compensate scroll so the
+      // button (and the reader's eye) stays put instead of jumping to the footer.
+      const before = nickExpand.getBoundingClientRect().top;
       const capped = nickScroll?.classList.toggle("is-capped");
       nickExpand.setAttribute("aria-expanded", String(!capped));
       nickExpand.textContent = capped ? nickExpand.dataset.expandLabel : nickExpand.dataset.collapseLabel;
+      if (capped) window.scrollBy(0, nickExpand.getBoundingClientRect().top - before);
     });
     apply();
   })();`;
@@ -7259,9 +7286,11 @@ function renderFitScriptBody() {
         const tableScroll = section?.querySelector("[data-table-scroll]");
         const tableExpand = section?.querySelector("[data-table-expand]");
         tableExpand?.addEventListener("click", () => {
+          const before = tableExpand.getBoundingClientRect().top;
           const capped = tableScroll?.classList.toggle("is-capped");
           tableExpand.setAttribute("aria-expanded", String(!capped));
           tableExpand.textContent = capped ? tableExpand.dataset.expandLabel : tableExpand.dataset.collapseLabel;
+          if (capped) window.scrollBy(0, tableExpand.getBoundingClientRect().top - before);
         });
         const tonight = section?.querySelector("[data-tonight]");
         const tonightToggle = section?.querySelector("[data-tonight-toggle]");
@@ -7859,7 +7888,7 @@ function renderTourStats(data) {
   return `<section class="tour-stats" id="tour-stats">
   <details class="stats-disclosure" open>
   <summary class="section-heading data-heading">
-    <h2>TOUR STATS</h2>
+    <h2>Tour stats</h2>
     <span>${escapeHtml(String(data.site.year))} through ${escapeHtml(data.site.latestShow?.date || "the latest posted show")}</span>
     <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </summary>
@@ -8134,7 +8163,7 @@ function renderShelfWatch(data) {
   const cutoff = data.rules.rotationSlpLimit;
   return `<section class="shelf-watch" id="shelf-watch">
   <div class="section-heading data-heading">
-    <h2>SHELF WATCH</h2>
+    <h2>Shelf watch</h2>
     <span>songs nearing the ${escapeHtml(String(cutoff))}-show cutoff</span>
   </div>
   <div class="shelf-grid">${songs.map((song) => {
@@ -8169,7 +8198,7 @@ function renderNickJohnsonFeature(data) {
   return `<section class="nick-feature" id="nick-johnson">
   <details class="nick-disclosure" open>
   <summary class="section-heading data-heading">
-    <h2>MOST PLAYED WITH NICK JOHNSON</h2>
+    <h2>Most played with Nick Johnson</h2>
     <span>${escapeHtml(String(data.site.year))} tour</span>
   </summary>
   <div class="nick-feature-body">
@@ -8241,7 +8270,7 @@ function renderSheetKey(data) {
   return `<section class="bento-card bento-key sheet-key" id="sheet-key">
     <div class="key-strip">
       <div class="key-head">
-        <h2>SHEET KEY</h2>
+        <h2>Sheet key</h2>
         <p>Marker color identifies the most recent shows on the sheet.</p>
       </div>
       ${renderMarkerLegend(data.site.markerLegend)}
@@ -8573,7 +8602,7 @@ function renderSetlists(data, options = {}) {
   </div><p class="upcoming-credit">Photo: Andy Tennille</p>` : "";
   return `<section class="setlist-section" id="setlists">
   <div class="section-heading">
-    <h2>${escapeHtml(String(data.site.year))} SETLISTS</h2>
+    <h2>${escapeHtml(String(data.site.year))} setlists</h2>
     <button type="button" class="setlist-expand-all" data-setlist-expand aria-expanded="false"><span class="sea-label">Open all setlists</span><span class="sea-count">${escapeHtml(postedLabel)}</span></button>
   </div>
   <details class="setlist-archive-panel" open>

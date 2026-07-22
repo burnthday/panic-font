@@ -150,7 +150,7 @@ function checkTourStats(html, siteData) {
     .sort((left, right) => right.tourCount - left.tourCount || left.title.localeCompare(right.title));
   const average = shows ? (plays / shows).toFixed(1) : "0";
 
-  assertIncludes(feature, "<h2>TOUR STATS</h2>", "Homepage has a separate Tour Stats section");
+  assertIncludes(feature, "<h2>Tour stats</h2>", "Homepage has a separate Tour Stats section");
   for (const [value, label] of [
     [shows, "shows played"],
     [songs.length, "unique songs"],
@@ -229,7 +229,7 @@ function checkShelfWatch(html, siteData) {
   const actual = siteData.boards?.shelfWatch || [];
   const feature = sectionHtml(html, "shelf-watch");
 
-  assertIncludes(feature, "<h2>SHELF WATCH</h2>", "Homepage has Shelf Watch");
+  assertIncludes(feature, "<h2>Shelf watch</h2>", "Homepage has Shelf Watch");
   record(
     "Shelf Watch is derived from the closest eligible SLP values",
     arraysEqual(actual.map((song) => song.title), expected.map((song) => song.title)),
@@ -264,7 +264,7 @@ function checkNickJohnsonFeature(html, siteData) {
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
 
-  assertIncludes(feature, "<h2>MOST PLAYED WITH NICK JOHNSON</h2>", "Homepage has the Most Played with Nick Johnson feature");
+  assertIncludes(feature, "<h2>Most played with Nick Johnson</h2>", "Homepage has the Most Played with Nick Johnson feature");
   assertIncludes(feature, '<details class="nick-disclosure" open>', "Nick Stats uses one desktop-open disclosure");
   for (const [value, label] of [
     [nickShows, "shows on guitar"],
