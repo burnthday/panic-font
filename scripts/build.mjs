@@ -859,7 +859,7 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       purgatory: "Songs with one lifetime play stay in Purgatory. If played this tour, they stay marked black until the next tour reset.",
       shelf: "Shelf songs that return this tour stay marked black until the next tour reset.",
       shelfWatch: `Shelf Watch shows up to ${config.shelfWatchLimit} unplayed songs within ${config.shelfWatchWindow} shows of the ${config.rotationSlpLimit}-show Shelf cutoff.`,
-      woodshed: "The Woodshed contains songs on the current sheet that have not been played with Nick Johnson on guitar."
+      woodshed: "The Woodshed contains songs in rotation that have not been played with Nick Johnson on guitar."
     },
     totals: {
       catalogSongs: songs.length,
@@ -3157,7 +3157,7 @@ function renderShelfInfoPage(data, oldShelfEntry) {
 
   const neighbors = [
     { href: "/#purgatory-sheet", name: "Purgatory", count: purgCount, desc: "Played once, ever — waiting on a second life." },
-    { href: "/#woodshed-sheet", name: "The Woodshed", count: woodCount, desc: "On the current sheet, not yet played with Nick Johnson." }
+    { href: "/#woodshed-sheet", name: "The Woodshed", count: woodCount, desc: "In rotation, not yet played with Nick Johnson." }
   ].filter((item) => item.count);
 
   return `<!doctype html>
@@ -6238,7 +6238,7 @@ function renderSongPage(song, data, albums, slugMap) {
   const tile = (value, label, sub = "") => `<div class="song-stat"><strong>${value}</strong><span>${escapeHtml(label)}</span>${sub ? `<small>${escapeHtml(sub)}</small>` : ""}</div>`;
   const tiles = [
     tile(formatNumber(song.total || 0), "lifetime plays", "since debut"),
-    tile(formatNumber(song.tourCount || 0), `played this tour`, song.playedThisTour ? "on the current sheet" : "not yet this tour"),
+    tile(formatNumber(song.tourCount || 0), `played this tour`, song.playedThisTour ? "in rotation" : "not yet this tour"),
     `<div class="song-stat"><strong class="song-rarity"><span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}</strong><span>tour rarity</span>${rarity.tier !== "new" ? `<small>${formatNumber(song.l100 || 0)} in last 100</small>` : ""}</div>`,
     tile(`${formatNumber(song.effectiveSlp ?? 0)}`, "shows since last", `usual gap ${heat.expectedGap.toFixed(1)}`)
   ];
@@ -7982,7 +7982,7 @@ function renderSheetBentos(data) {
     ${renderSheetKey(data)}
     ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
-    ${renderBentoCard("woodshed", "The Woodshed", woodCount, "On the current sheet, not yet played with Nick.", woodExtra)}
+    ${renderBentoCard("woodshed", "The Woodshed", woodCount, "In rotation, not yet played with Nick.", woodExtra)}
   </div>
   ${renderBentoPanel("shelf", "The Shelf", shelf)}
   ${renderBentoPanel("purgatory", "Purgatory", purgatory)}
@@ -8154,7 +8154,7 @@ function renderSheetKey(data) {
           <div><dt>Shelf</dt><dd>Songs outside the rotation window, with lifetime count and last-played date.</dd></div>
           <div><dt>Shelf Watch</dt><dd>Songs within ${escapeHtml(String(data.rules.shelfWatchWindow))} shows of the ${escapeHtml(String(data.rules.rotationSlpLimit))}-show Shelf cutoff.</dd></div>
           <div><dt>Purgatory</dt><dd>One-timers, with lifetime count and last-played date.</dd></div>
-          <div><dt>The Woodshed</dt><dd>Songs on the current sheet not yet played with Nick Johnson on guitar.</dd></div>
+          <div><dt>The Woodshed</dt><dd>Songs in rotation not yet played with Nick Johnson on guitar.</dd></div>
         </dl>
       </section>
     </div>
