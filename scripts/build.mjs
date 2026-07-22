@@ -150,8 +150,9 @@ async function main() {
   // Newsletters parked (removed from nav + site 2026-07-22, kept in code to restore).
   // await writeNewslettersPage(siteData);
   await writeFaqPage(siteData);
-  await writeAlbumPages(siteData, albums);
   await attachSetlistFmPerformances(siteData);
+  // Album pages need data.allShowDates (set above) for the per-track frequency stat.
+  await writeAlbumPages(siteData, albums);
   attachSeguePairs(siteData);
   attachAlmanac(siteData, await loadAlmanac());
   attachTonightOdds(siteData);
@@ -6632,10 +6633,18 @@ function albumTrackStats(album, data) {
     // exact, then with any "(parenthetical)" subtitle stripped to match the live name
     return byKey.get(normalizeTitle(title)) || byKey.get(normalizeTitle(String(title).replace(/\s*\([^)]*\)\s*$/, "")));
   };
+  const allDates = data.allShowDates || [];
   const tracks = (album.tracks || []).map((track) => {
     const row = lookup(track.title);
     const onSheet = row ? row.playedThisTour || (row.effectiveSlp ?? Infinity) < cutoff : false;
-    return { ...track, row, onSheet, total: row?.total || 0 };
+    // Lifetime frequency: shows the band has played since the song's debut, per play.
+    let frequency = null;
+    if (row && (row.total || 0) > 0) {
+      const firstIso = parseDateKey(row.first);
+      const showsSince = firstIso ? allDates.filter((iso) => iso >= firstIso).length : 0;
+      if (showsSince >= row.total && row.total > 0) frequency = showsSince / row.total;
+    }
+    return { ...track, row, onSheet, total: row?.total || 0, frequency };
   });
   const matched = tracks.filter((track) => track.row);
   return {
@@ -6703,7 +6712,7 @@ function renderAlbumPage(album, albums, data) {
 
   const trackRows = stats.tracks.map((track, i) => {
     const stat = track.row
-      ? `<span class="track-stat">${track.onSheet ? `<span class="track-live">In Rotation</span>` : ""}<span class="track-plays">${formatNumber(track.total)} live</span></span>`
+      ? `<span class="track-stat">${track.onSheet ? `<span class="track-live">In Rotation</span>` : ""}${track.frequency ? `<span class="track-freq">1 in every ${track.frequency >= 10 ? Math.round(track.frequency) : track.frequency.toFixed(1)} shows</span>` : ""}<span class="track-plays">${formatNumber(track.total)} live</span></span>`
       : "";
     return `<li class="album-track${track.row ? "" : " no-data"}">
       <span class="track-n">${String(i + 1).padStart(2, "0")}</span>
@@ -13769,6 +13778,7 @@ body.stagelight .track-title small { font-family: var(--sl-mono); font-size: 12p
 body.stagelight .track-stat { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; }
 body.stagelight .track-live { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-ink); border: 1px solid rgba(45,124,82,0.55); border-radius: var(--sl-r-pill); padding: 4px 10px; }
 body.stagelight .track-plays { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+body.stagelight .track-freq { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
 body.stagelight .album-track.no-data .track-title { color: var(--sl-muted); }
 body.stagelight .album-pending { color: var(--sl-faint); font-size: 15px; }
 body.stagelight .album-credits { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 22px 28px; margin-top: 40px; padding-top: 26px; border-top: 1px solid var(--sl-line); }
