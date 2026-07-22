@@ -7595,8 +7595,8 @@ function renderStagelightHeaderScriptBody() {
       requestAnimationFrame(() => {
         const y = window.scrollY;
         if (menu.hidden) {
-          if (y > lastY + 6 && y > 180) head.classList.add("is-hidden");
-          else if (y < lastY - 6 || y <= 180) head.classList.remove("is-hidden");
+          if (y > lastY + 6 && y > 180) { head.classList.add("is-hidden"); document.body.classList.add("nav-hidden"); }
+          else if (y < lastY - 6 || y <= 180) { head.classList.remove("is-hidden"); document.body.classList.remove("nav-hidden"); }
         }
         lastY = y;
         ticking = false;
@@ -12773,13 +12773,13 @@ body.stagelight .site-foot::before {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
 }
 body.stagelight .site-foot-inner {
-  display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 20px 48px;
+  display: grid; grid-template-columns: 2.1fr 1fr 1fr 1fr; gap: 20px 40px;
   padding: 64px 0 32px; align-items: start;
 }
-body.stagelight .footer-lead { max-width: 340px; }
+body.stagelight .footer-lead { max-width: 420px; }
 body.stagelight .footer-brand { display: inline-flex; align-items: center; gap: 12px; font-family: var(--sl-display); color: var(--sl-ink); font-weight: 640; font-size: 21px; letter-spacing: -0.012em; }
 body.stagelight .footer-mark { width: min(340px, 85%); height: auto; }
-body.stagelight .footer-lead p.footer-identity { margin: 14px 0 0; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
+body.stagelight .footer-lead p.footer-identity { margin: 14px 0 0; max-width: none; white-space: nowrap; font-weight: 650; font-size: 15px; color: var(--sl-ink); letter-spacing: 0.01em; }
 body.stagelight .footer-copy { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); }
 body.stagelight .footer-lead p { color: var(--sl-faint); margin-top: 8px; max-width: 300px; font-size: 13.5px; line-height: 1.6; }
 body.stagelight .footer-links { gap: 9px; }
@@ -12811,8 +12811,16 @@ body.stagelight .back-top:hover { color: var(--sl-ink); border-color: var(--sl-m
   body.stagelight .footer-lead { grid-column: 1 / -1; max-width: 420px; }
   body.stagelight .footer-bottom-links { margin-left: 0; }
 }
+@media (max-width: 640px) {
+  body.stagelight .footer-lead p.footer-identity { white-space: normal; }
+  /* Copyright row stacks and centers so nothing crowds or overflows on phones. */
+  body.stagelight .footer-bottom { flex-direction: column; align-items: center; text-align: center; gap: 16px; }
+  body.stagelight .footer-sources { max-width: 34ch; }
+  body.stagelight .footer-bottom-links { margin-left: 0; justify-content: center; flex-wrap: wrap; gap: 16px 20px; }
+}
 @media (max-width: 540px) {
   body.stagelight .site-foot-inner { grid-template-columns: 1fr 1fr; }
+  body.stagelight .footer-lead { grid-column: 1 / -1; }
 }
 
 /* ---- BENTO CARDS: Sheet Key / Shelf / Purgatory / Woodshed ---- */
@@ -13623,6 +13631,7 @@ body.stagelight .legacy-shelf-notes { margin-top: 56px; }
 }
 body.stagelight .song-search {
   position: sticky; top: 78px; z-index: 3; display: flex; align-items: center; gap: 12px;
+  transition: top 0.28s ease;
   margin: 28px 0 18px; padding: 13px 18px; border-radius: var(--sl-r-md);
   background: color-mix(in srgb, var(--sl-glass) 88%, #000); border: 1px solid var(--sl-line);
   box-shadow: var(--sl-glass-shadow); backdrop-filter: blur(14px);
@@ -13673,10 +13682,15 @@ body.stagelight .song-index-head {
   display: grid; grid-template-columns: var(--sr-cols); gap: var(--sr-gap);
   align-items: center; padding: 10px 10px; margin-top: 6px;
   position: sticky; top: 128px; z-index: 2;
+  transition: top 0.28s ease;
   background: color-mix(in srgb, var(--sl-glass) 92%, #000);
   border-bottom: 1px solid var(--sl-line);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
 }
+/* When the header slides away on scroll-down, the sticky toolbars follow it up
+   instead of leaving a dead gap where the menu was. */
+body.stagelight.nav-hidden .song-search { top: 12px; }
+body.stagelight.nav-hidden .song-index-head { top: 62px; }
 body.stagelight .sih-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .sih-plays { text-align: right; }
 /* The wrapper's display:grid outweighs the UA [hidden] rule, so filtered/searched
@@ -13775,11 +13789,12 @@ body.stagelight .song-list.lyrics-list { display: grid; gap: 1px; }
 body.stagelight .lyric-head {
   display: grid; grid-template-columns: var(--lr-cols); gap: 16px;
   align-items: center; padding: 10px 12px; margin-top: 6px;
-  position: sticky; top: 128px; z-index: 2;
+  position: sticky; top: 128px; z-index: 2; transition: top 0.28s ease;
   background: color-mix(in srgb, var(--sl-glass) 92%, #000);
   border-bottom: 1px solid var(--sl-line);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
 }
+body.stagelight.nav-hidden .lyric-head { top: 62px; }
 body.stagelight .lh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight button.lh-sort { background: transparent; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 0; text-align: left; transition: color 0.15s ease; }
 body.stagelight button.lh-sort:hover { color: var(--sl-muted); }
