@@ -718,29 +718,59 @@ async function checkSongPages(siteData) {
   record("Song Index lists every catalog song once", rowCount === catalog.length, `${rowCount} rows vs ${catalog.length} songs`);
   assertIncludes(index, `${catalog.length.toLocaleString("en-US")} songs`, "Song Index reports the full catalog count");
 
-  // Client-side multi-select filters (Type / This tour / Has Best Guess) compose
-  // with the search box. The controls are real buttons and the rows carry the
-  // data-* attributes those filters read.
+  // Owner rework: the old pill/chip status toggles (This tour / Shelf / Purgatory) are
+  // REPLACED by two custom-select dropdowns — a STATUS select (All songs default /
+  // this tour / The Shelf / Purgatory) and a RARITY select (All rarities default /
+  // every tier). Type stays a 3-button group. Both dropdowns reuse the sitewide
+  // [data-cs] custom-select. The rows carry the data-* axes the filters + sort read.
   assertIncludes(index, 'class="index-toolbar"', "Song Index exposes the filter toolbar");
   for (const type of ["all", "original", "cover"]) assertIncludes(index, `data-type-filter="${type}"`, `Song Index offers the ${type} type filter`);
-  assertIncludes(index, "data-tour-filter", "Song Index offers the This-tour filter");
-  assertIncludes(index, "data-shelf-filter", "Song Index offers the Shelf filter");
-  assertIncludes(index, "data-purgatory-filter", "Song Index offers the Purgatory filter");
-  assertIncludes(index, "data-bestguess-filter", "Song Index offers the Transcribed-lyrics filter");
-  record("Song Index rows carry the filter data-* attributes", /class="song-row-wrap"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-tier="[a-z]+"[^>]*data-bestguess="(?:yes|no)"/.test(index), "song-row-wrap data-type/data-tour/data-tier/data-bestguess present");
+  assertNotIncludes(index, "data-tour-filter", "Song Index drops the old This-tour pill toggle");
+  assertNotIncludes(index, "data-shelf-filter", "Song Index drops the old Shelf pill toggle");
+  assertNotIncludes(index, "data-purgatory-filter", "Song Index drops the old Purgatory pill toggle");
+  assertNotIncludes(index, "data-bestguess-filter", "Song Index drops the old Best-Guess toggle");
+  record("Song Index STATUS is a custom-select dropdown defaulting to All songs",
+    /data-cs data-cs-managed data-status-filter data-value=""/.test(index)
+    && index.includes('data-cs-value>All songs<')
+    && index.includes('data-value="tour">') && index.includes('data-value="shelf">') && index.includes('data-value="purgatory">'),
+    "data-status-filter custom-select present with All songs default + tour/shelf/purgatory options");
+  record("Song Index RARITY is a custom-select dropdown defaulting to All rarities",
+    /data-cs data-cs-managed data-rarity-filter data-value=""/.test(index)
+    && index.includes('data-cs-value>All rarities<')
+    && ["common", "uncommon", "rare", "ultra", "hyper", "bustout", "mega", "new"].every((tier) => index.includes(`data-value="${tier}">`)),
+    "data-rarity-filter custom-select present with All rarities default + every tier option");
+  record("Song Index rows carry the filter + sort data-* attributes",
+    /class="song-row-wrap"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-tier="[a-z]+"[^>]*data-status="[0-2]"[^>]*data-rarity="-?\d+"[^>]*data-rarity-tier="[a-z]*"[^>]*data-plays="\d+"/.test(index),
+    "song-row-wrap carries data-type/data-tour/data-tier/data-status/data-rarity/data-rarity-tier/data-plays");
 
   // Owner QA fixes on the Song Index.
   const songIndexCss = await readText("dist/stagelight.css").catch(() => "");
 
   // FIX 2 — sticky column-header row aligned to the row grid. The header and every
   // row share one --sr-cols template, and the header is sticky under the search bar.
-  record("Song Index renders the column-header row (Title/Type/Status/Rarity/More/Plays)",
+  record("Song Index renders the column-header row (Title/Type/Status/Rarity/Links/Plays)",
     index.includes('class="song-index-head"') && (index.match(/class="sih-col[^"]*"/g) || []).length === 6
-    && index.includes('class="sih-col sih-status">Status<')
-    && index.includes('class="sih-col sih-rarity">Rarity<')
+    && index.includes('data-sort="status" aria-sort="none">Status ')
+    && index.includes('data-sort="rarity" aria-sort="none">Rarity ')
     && !index.includes('sih-tour')
-    && index.includes('class="sih-col sih-more">More<'),
-    "song-index-head with six sih-col cells: Title/Type/Status/Rarity/More/Plays (This Tour removed)");
+    && index.includes('class="sih-col sih-more">Links<'),
+    "song-index-head with six cells: Title/Type/Status/Rarity/Links/Plays (More renamed Links)");
+  // Owner rework: every column header is a sort button (mirrors the Lyrics & Chords hub),
+  // Title A-Z is the default (aria-sort=ascending), and the LINKS column is a plain label.
+  record("Song Index column headers are sort buttons with Title as the A-Z default",
+    index.includes('data-sort="title" aria-sort="ascending">Title ')
+    && ["title", "type", "status", "rarity", "plays"].every((key) => index.includes(`data-sort="${key}"`))
+    && !/data-sort="(?:more|links)"/.test(index),
+    "five sortable headers (Title default ascending); Links stays a non-sortable label");
+  record("Song Index sort buttons carry the sih-sort styling hook",
+    /body\.stagelight button\.sih-sort \{/.test(songIndexCss),
+    "button.sih-sort has a CSS home");
+  // Owner QA: the LINKS chips share the header's left edge — the header and the row
+  // wrapper both carry the same horizontal padding so the grid tracks line up.
+  record("Song Index aligns the Links chips left with the header (shared padding)",
+    /body\.stagelight \.song-row-wrap \{[^}]*padding: 0 10px/.test(songIndexCss)
+    && /body\.stagelight \.song-row \{[^}]*padding: 14px 0/.test(songIndexCss),
+    "song-row-wrap and song-index-head share horizontal padding; row content sits flush");
   record("Song Index header + rows share one grid template",
     /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
     && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)

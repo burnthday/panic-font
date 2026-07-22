@@ -5743,7 +5743,6 @@ function renderSongsIndex(data, slugMap) {
   const rotationLimit = data.rules?.rotationSlpLimit || 200;
   const rows = catalog.map((song) => {
     const rarity = calculateRarity(song);
-    const hasBestGuess = data.bestGuessByKey?.has(song.key);
     // Two independent axes now, per owner feedback:
     //   STATUS  = board state (In Rotation / Shelf / Purgatory) — where the song lives.
     //   RARITY  = frequency tier (Common…Hyper Rare, or a Bustout) — how rare when played.
@@ -5783,7 +5782,14 @@ function renderSongsIndex(data, slugMap) {
       resChips.push(`<a class="sr-chip" href="${escapeAttr(lyricsHref)}" aria-label="${escapeAttr(song.title)} lyrics and chords">Lyrics</a>`);
     }
     resChips.push(`<a class="sr-chip sr-chip-ext" href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(song.title)} guitar tab on Songsterr">Tab</a>`);
-    return `<div class="song-row-wrap" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-tier="${escapeAttr(statusTier)}" data-bestguess="${hasBestGuess ? "yes" : "no"}">
+    // Sortable/filterable data axes. STATUS sorts by a board rank (rotation → shelf →
+    // purgatory); RARITY sorts by the frequency sortValue but ONLY for In-Rotation
+    // songs — parked songs show a dash in the rarity column, so they carry an empty
+    // data-rarity-tier (excluded from the rarity filter) and sink to -1 on a rarity sort.
+    const statusRank = statusTier === "rotation" ? 0 : statusTier === "shelf" ? 1 : 2;
+    const rarityTierAttr = statusTier === "rotation" ? rarity.tier : "";
+    const raritySort = statusTier === "rotation" ? rarity.sortValue : -1;
+    return `<div class="song-row-wrap" data-title="${escapeAttr(song.title.toLowerCase())}" data-type="${escapeAttr(song.type.toLowerCase())}" data-tour="${song.playedThisTour ? "yes" : "no"}" data-tier="${escapeAttr(statusTier)}" data-status="${statusRank}" data-rarity="${escapeAttr(String(raritySort))}" data-rarity-tier="${escapeAttr(rarityTierAttr)}" data-plays="${escapeAttr(String(song.total || 0))}">
       <a class="song-row" href="/song/${escapeAttr(slugMap.get(song.key))}/" tabindex="0">
         <span class="sr-title">${escapeHtml(song.title)}</span>
         <span class="sr-type">${escapeHtml(song.type)}</span>
@@ -5827,17 +5833,31 @@ function renderSongsIndex(data, slugMap) {
           <button type="button" data-type-filter="original">Originals</button>
           <button type="button" data-type-filter="cover">Covers</button>
         </div>
-        <button type="button" class="index-toggle" data-tour-filter aria-pressed="false">This tour</button>
-        <button type="button" class="index-toggle" data-shelf-filter aria-pressed="false">Shelf</button>
-        <button type="button" class="index-toggle" data-purgatory-filter aria-pressed="false">Purgatory</button>
+        ${renderCustomSelect({ hook: "data-status-filter", label: "Status", active: "", options: [
+          { value: "", label: "All songs" },
+          { value: "tour", label: `${data.site.year} tour` },
+          { value: "shelf", label: "The Shelf" },
+          { value: "purgatory", label: "Purgatory" }
+        ] })}
+        ${renderCustomSelect({ hook: "data-rarity-filter", label: "Rarity", active: "", options: [
+          { value: "", label: "All rarities" },
+          { value: "common", label: "Common" },
+          { value: "uncommon", label: "Uncommon" },
+          { value: "rare", label: "Rare" },
+          { value: "ultra", label: "Ultra Rare" },
+          { value: "hyper", label: "Hyper Rare" },
+          { value: "bustout", label: "Bustout" },
+          { value: "mega", label: "Mega Bustout" },
+          { value: "new", label: "New this tour" }
+        ] })}
       </div>
-      <div class="song-index-head" role="presentation" aria-hidden="true">
-        <span class="sih-col">Title</span>
-        <span class="sih-col sih-type">Type</span>
-        <span class="sih-col sih-status">Status</span>
-        <span class="sih-col sih-rarity">Rarity</span>
-        <span class="sih-col sih-more">More</span>
-        <span class="sih-col sih-plays">Plays</span>
+      <div class="song-index-head" role="row">
+        <button type="button" class="sih-col sih-sort" data-sort="title" aria-sort="ascending">Title <span class="sih-arrow" aria-hidden="true">↑</span></button>
+        <button type="button" class="sih-col sih-sort sih-type" data-sort="type" aria-sort="none">Type <span class="sih-arrow" aria-hidden="true">↕</span></button>
+        <button type="button" class="sih-col sih-sort sih-status" data-sort="status" aria-sort="none">Status <span class="sih-arrow" aria-hidden="true">↕</span></button>
+        <button type="button" class="sih-col sih-sort sih-rarity" data-sort="rarity" aria-sort="none">Rarity <span class="sih-arrow" aria-hidden="true">↕</span></button>
+        <span class="sih-col sih-more">Links</span>
+        <button type="button" class="sih-col sih-sort sih-plays" data-sort="plays" aria-sort="none">Plays <span class="sih-arrow" aria-hidden="true">↕</span></button>
       </div>
       <div class="song-list" id="song-list">${rows}</div>
       <p class="song-empty" id="song-empty" hidden>No songs match that search.</p>
@@ -5849,58 +5869,90 @@ function renderSongsIndex(data, slugMap) {
 `;
 }
 
-// Client-side search + multi-facet filter for the Song Index. Composes a title
-// search, a Type button group, a "This tour" toggle and a "Has Best Guess" toggle —
-// all reading the data-* attributes on each .song-row-wrap (the wrapper carries the
-// facets and the hide toggle so its resource links hide with the row). Modeled on the homepage Tour
-// Stats rarity/type filter interaction.
+// Client-side search + filter + column-sort for the Song Index. Composes a title
+// search, a Type button group, a STATUS custom-select (All songs / this tour / Shelf /
+// Purgatory) and a RARITY custom-select (All rarities / each tier) — all reading the
+// data-* attributes on each .song-row-wrap (the wrapper carries the facets and the hide
+// toggle so its resource links hide with the row). Every column header is a sort button
+// (mirrors the Lyrics & Chords hub). The dropdowns reuse the sitewide custom-select.
 function renderSongSearchScript() {
   return `(() => {
     const input = document.getElementById("song-search");
-    const rows = [...document.querySelectorAll(".song-row-wrap")];
+    const list = document.getElementById("song-list");
+    const rows = [...list.querySelectorAll(".song-row-wrap")];
     const count = document.getElementById("song-count");
     const empty = document.getElementById("song-empty");
     const total = rows.length;
     const baseLabel = count.textContent;
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
-    const tourToggle = document.querySelector("[data-tour-filter]");
-    const shelfToggle = document.querySelector("[data-shelf-filter]");
-    const purgatoryToggle = document.querySelector("[data-purgatory-filter]");
-    const bestToggle = document.querySelector("[data-bestguess-filter]");
+    const statusSelect = document.querySelector("[data-status-filter]");
+    const raritySelect = document.querySelector("[data-rarity-filter]");
     let selectedType = "all";
     const apply = () => {
       const q = input.value.trim().toLowerCase();
-      const tourOnly = tourToggle && tourToggle.getAttribute("aria-pressed") === "true";
-      const shelfOnly = shelfToggle && shelfToggle.getAttribute("aria-pressed") === "true";
-      const purgatoryOnly = purgatoryToggle && purgatoryToggle.getAttribute("aria-pressed") === "true";
-      const bestOnly = bestToggle && bestToggle.getAttribute("aria-pressed") === "true";
+      const status = statusSelect ? (statusSelect.dataset.value || "") : "";
+      const rarity = raritySelect ? (raritySelect.dataset.value || "") : "";
+      // STATUS: "tour" reads the this-tour flag; "shelf"/"purgatory" read the board tier.
       let shown = 0;
       rows.forEach((row) => {
+        const statusHit = !status
+          || (status === "tour" ? row.dataset.tour === "yes" : row.dataset.tier === status);
         const hit = (!q || row.dataset.title.includes(q))
           && (selectedType === "all" || row.dataset.type === selectedType)
-          && (!tourOnly || row.dataset.tour === "yes")
-          && (!shelfOnly || row.dataset.tier === "shelf")
-          && (!purgatoryOnly || row.dataset.tier === "purgatory")
-          && (!bestOnly || row.dataset.bestguess === "yes");
+          && statusHit
+          && (!rarity || row.dataset.rarityTier === rarity);
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      const filtered = q || selectedType !== "all" || tourOnly || shelfOnly || purgatoryOnly || bestOnly;
+      const filtered = q || selectedType !== "all" || status || rarity;
       count.textContent = filtered ? shown + " of " + total + " songs" : baseLabel;
     };
+    // Column sort: click a header to sort by that key; click again to flip direction.
+    // STATUS (board rank), RARITY (frequency sortValue) and PLAYS (total) are numeric;
+    // TITLE and TYPE sort alphabetically. Title breaks every tie. Sort reorders the
+    // wraps in place; the filter's hidden state is untouched. Title is the default (A-Z).
+    const sortButtons = [...document.querySelectorAll(".song-index-head [data-sort]")];
+    const numeric = { status: true, rarity: true, plays: true };
+    let sortKey = "title";
+    let sortDir = "asc";
+    const compare = (a, b) => {
+      const av = a.dataset[sortKey] || "";
+      const bv = b.dataset[sortKey] || "";
+      let c = numeric[sortKey] ? (Number(av) - Number(bv)) : av.localeCompare(bv);
+      if (!c) c = a.dataset.title.localeCompare(b.dataset.title);
+      return sortDir === "asc" ? c : -c;
+    };
+    const runSort = () => {
+      [...list.querySelectorAll(".song-row-wrap")].sort(compare).forEach((w) => list.appendChild(w));
+    };
+    sortButtons.forEach((btn) => btn.addEventListener("click", () => {
+      const key = btn.dataset.sort;
+      if (sortKey === key) {
+        sortDir = sortDir === "asc" ? "desc" : "asc";
+      } else {
+        sortKey = key;
+        sortDir = (key === "title" || key === "type") ? "asc" : "desc";
+      }
+      sortButtons.forEach((b) => {
+        const on = b.dataset.sort === sortKey;
+        b.setAttribute("aria-sort", on ? (sortDir === "asc" ? "ascending" : "descending") : "none");
+        const arrow = b.querySelector(".sih-arrow");
+        if (arrow) arrow.textContent = on ? (sortDir === "asc" ? "↑" : "↓") : "↕";
+      });
+      runSort();
+    }));
     typeButtons.forEach((btn) => btn.addEventListener("click", () => {
       selectedType = btn.dataset.typeFilter;
       typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
       apply();
     }));
-    [tourToggle, shelfToggle, purgatoryToggle, bestToggle].forEach((btn) => btn && btn.addEventListener("click", () => {
-      btn.setAttribute("aria-pressed", btn.getAttribute("aria-pressed") === "true" ? "false" : "true");
-      apply();
-    }));
+    if (statusSelect) statusSelect.addEventListener("cs:change", apply);
+    if (raritySelect) raritySelect.addEventListener("cs:change", apply);
     input.addEventListener("input", apply);
     input.focus();
-  })();`;
+  })();
+  ${renderCustomSelectScript()}`;
 }
 
 // Optional verified Everyday Companion deep links, keyed by the same
@@ -14035,7 +14087,16 @@ body.stagelight .song-index-head {
 body.stagelight.nav-hidden .song-search { top: 12px; }
 body.stagelight.nav-hidden .song-index-head { top: 62px; }
 body.stagelight .sih-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .sih-plays { text-align: right; }
+/* Sortable column headers — buttons styled to read as the same mono/uppercase label
+   idiom as the static .sih-col, with an arrow glyph that lights up on the active sort.
+   Mirrors the Lyrics & Chords hub's .lh-sort so the two index pages feel identical. */
+body.stagelight button.sih-sort { background: transparent; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 0; text-align: left; transition: color 0.15s ease; }
+body.stagelight button.sih-sort:hover { color: var(--sl-muted); }
+body.stagelight button.sih-sort[aria-sort="ascending"], body.stagelight button.sih-sort[aria-sort="descending"] { color: var(--sl-ink); }
+body.stagelight .sih-arrow { font-size: 10px; color: var(--sl-line-strong); }
+body.stagelight button.sih-sort[aria-sort="ascending"] .sih-arrow, body.stagelight button.sih-sort[aria-sort="descending"] .sih-arrow { color: rgba(212,81,79,0.95); }
+body.stagelight .sih-plays { text-align: right; justify-self: end; }
+body.stagelight button.sih-plays { justify-content: flex-end; }
 /* The wrapper's display:grid outweighs the UA [hidden] rule, so filtered/searched
    rows need an explicit, equal-specificity hide. The wrap (not the inner row) is
    what the search script toggles, so its resource links hide with it. */
@@ -14044,13 +14105,18 @@ body.stagelight .song-row-wrap[hidden], body.stagelight .lyric-row-wrap[hidden] 
    elements (nested anchors inside the row link would be invalid HTML). The wrap
    shares the row's --sr-cols template; the row anchor spans every column and holds
    an empty RESOURCES track, and .sr-resources overlays that same track on top. */
+/* Owner QA: the LINKS chips must share the header's left edge. The header carries
+   10px horizontal padding; the wrap now carries the SAME 10px so both grids resolve
+   the flexible TITLE track identically and every column edge lines up. The row's own
+   horizontal padding is dropped (moved to the wrap) so its cells sit flush on the
+   shared tracks — .sr-resources (a wrap child) then aligns with the LINKS header. */
 body.stagelight .song-row-wrap {
   position: relative; display: grid; grid-template-columns: var(--sr-cols);
-  align-items: center; gap: var(--sr-gap); border-bottom: 1px solid var(--sl-line-faint);
+  align-items: center; gap: var(--sr-gap); padding: 0 10px; border-bottom: 1px solid var(--sl-line-faint);
 }
 body.stagelight .song-row {
   grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: var(--sr-cols);
-  align-items: center; gap: var(--sr-gap); padding: 14px 10px; color: var(--sl-ink);
+  align-items: center; gap: var(--sr-gap); padding: 14px 0; color: var(--sl-ink);
 }
 body.stagelight .sr-plays { grid-column: 6; }
 body.stagelight .song-row-wrap:hover { background: rgba(255,255,255,0.03); }
@@ -14100,7 +14166,8 @@ body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(-
    title. Header collapses to TITLE | PLAYS. Tighter paddings; sticky header stays. */
 @media (max-width: 640px) {
   body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 76px; --sr-gap: 12px; }
-  body.stagelight .song-row { grid-auto-rows: auto; row-gap: 4px; padding: 12px 4px; }
+  body.stagelight .song-row-wrap { padding: 0 4px; }
+  body.stagelight .song-row { grid-auto-rows: auto; row-gap: 4px; padding: 12px 0; }
   body.stagelight .sr-type, body.stagelight .sr-rarity { display: none; }
   body.stagelight .sr-status-cell { grid-column: 1; grid-row: 2; }
   body.stagelight .sr-plays { grid-column: 2; grid-row: 1; }
