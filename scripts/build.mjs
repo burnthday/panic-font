@@ -12670,7 +12670,14 @@ body.stagelight .show-entry.is-latest[open] .sc-bg { display: block; overflow: h
 body.stagelight .show-entry.is-latest[open] .sc-bg img { opacity: 0.5; object-position: center 34%; transform: scale(1.35); filter: blur(18px) saturate(1.1); }
 body.stagelight .show-entry.is-latest[open] .sc-bg::after { background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.72) 44%, rgba(11,11,12,0.94) 78%, rgba(11,11,12,1) 100%); }
 body.stagelight .show-entry[open] .sc-lockup, body.stagelight .sc-body { position: relative; z-index: 1; }
-body.stagelight .show-entry.is-latest[open] .sc-lockup { padding-top: 64px; }
+/* Full-bleed hero: the blurred backdrop spans the entire viewport edge to edge;
+   content rides the same 1400 rail as the header, so the photo's right edge lines
+   up with the hamburger. */
+body.stagelight .show-entry.is-latest { width: 100vw; margin-left: calc(50% - 50vw); border-radius: 0; border-left: 0; border-right: 0; }
+body.stagelight .show-entry.is-latest[open] .sc-lockup {
+  padding: 56px max(28px, calc((100% - 1400px) / 2)) 0;
+  grid-template-columns: 1fr 1.18fr; gap: 56px;
+}
 body.stagelight .show-entry.is-latest .sc-city { text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
 body.stagelight .show-entry.is-latest .sc-sets { border-top: none; }
 body.stagelight .sc-closed { position: relative; z-index: 1; display: flex; align-items: center; gap: 24px; min-height: 84px; padding: 18px 70px 18px 28px; }
@@ -12697,7 +12704,7 @@ body.stagelight .sc-chip-glass:hover { transform: translateY(-1px); background: 
 body.stagelight .sc-photo { display: block; position: relative; }
 body.stagelight .sc-photo img { width: 100%; height: auto; border-radius: var(--sl-r-md); border: 1px solid var(--sl-line); box-shadow: 0 30px 60px -24px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1); }
 body.stagelight .sc-body { padding: 0 44px 36px; }
-body.stagelight .show-entry.is-latest .sc-body { padding: 0 44px 40px; }
+body.stagelight .show-entry.is-latest .sc-body { padding: 0 max(28px, calc((100% - 1400px) / 2)) 40px; }
 body.stagelight .sc-sets { border-top: 1px solid var(--sl-line); margin-top: 32px; padding-top: 30px; display: grid; gap: 18px; }
 body.stagelight .sc-row { display: grid; grid-template-columns: 96px 1fr; gap: 20px; }
 body.stagelight .sc-label { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.18em; color: var(--sl-faint); text-transform: uppercase; padding-top: 5px; white-space: nowrap; }
@@ -12721,7 +12728,8 @@ body.stagelight .setlist-archive-panel > summary { display: none; }
   body.stagelight .brand-wordmark { font-size: 17px; }
 }
 @media (max-width: 900px) {
-  body.stagelight .show-entry[open] .sc-lockup { grid-template-columns: 1fr; gap: 24px; padding: 26px 22px 0; }
+  body.stagelight .show-entry[open] .sc-lockup,
+  body.stagelight .show-entry.is-latest[open] .sc-lockup { grid-template-columns: 1fr; gap: 24px; padding: 26px 22px 0; }
   body.stagelight .sc-city { font-size: 28px; }
   body.stagelight .show-entry.is-latest .sc-city { font-size: 38px; }
   body.stagelight .sc-body, body.stagelight .show-entry.is-latest .sc-body { padding: 0 22px 26px; }
@@ -13322,26 +13330,30 @@ body.stagelight .key-other-sheets dd { margin: 2px 0 0; }
 /* ---- HOME SECTION NAV (sticky breadcrumbs) ---- */
 /* Quiet glass bar under the sticky site header. Rides up with the header when it
    hides on scroll-down (body.nav-hidden), mirroring the .song-search pattern. */
+/* Full-width section breadcrumb: no card, no top line (the header's own bottom
+   border is the top edge), just a bottom hairline. Starts on the page's left
+   rail, tight vertical padding, opaque-enough glass to hold over the white boards. */
 body.stagelight .home-nav {
   position: sticky; top: 66px; z-index: 55;
   transition: top 0.28s ease;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px;
-  margin: 0 0 20px; padding: 11px 20px; border-radius: var(--sl-r-md);
-  background: color-mix(in srgb, var(--sl-glass) 88%, #000); border: 1px solid var(--sl-line);
-  box-shadow: var(--sl-glass-shadow); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 2px 7px;
+  width: 100vw; margin: 0 calc(50% - 50vw);
+  padding: 7px max(28px, calc((100% - 1400px) / 2));
+  border-bottom: 1px solid var(--sl-line);
+  background: rgba(12,12,14,0.85); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
 }
-body.stagelight.nav-hidden .home-nav { top: 8px; }
+body.stagelight.nav-hidden .home-nav { top: 0; }
 body.stagelight .home-nav a {
-  font-family: var(--sl-mono); font-size: 11.5px; letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--sl-faint); text-decoration: none; padding: 2px 2px;
+  font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--sl-faint); text-decoration: none; padding: 3px 0;
   transition: color 0.16s ease;
 }
 body.stagelight .home-nav a:hover { color: var(--sl-muted); }
 body.stagelight .home-nav a.is-active { color: var(--sl-ink); }
-body.stagelight .home-nav-sep { color: var(--sl-faint); font-size: 12px; opacity: 0.6; }
+body.stagelight .home-nav-sep { color: var(--sl-faint); font-size: 10px; opacity: 0.45; }
 @media (max-width: 560px) {
-  body.stagelight .home-nav { gap: 2px 8px; padding: 10px 14px; }
-  body.stagelight .home-nav a { font-size: 10.5px; letter-spacing: 0.1em; }
+  body.stagelight .home-nav { gap: 2px 6px; padding-top: 6px; padding-bottom: 6px; }
+  body.stagelight .home-nav a { font-size: 10px; letter-spacing: 0.08em; }
 }
 
 /* ---- NEXT-SHOW STRIP (matches the show rows) ---- */
