@@ -6361,7 +6361,6 @@ function renderSongPage(song, data, albums, slugMap) {
     <main class="archive-main song-main">
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/songs/">Songs</a></nav>
-        ${song.type === "Cover" ? `<p class="song-eyebrow">${escapeHtml(eyebrow)}</p>` : ""}
         <h1>${escapeHtml(song.title)}</h1>
       </header>
       <div class="song-stat-grid">${tiles.join("")}</div>
@@ -8433,7 +8432,7 @@ function renderShowLastPlayed(data, show) {
     return b.gap - a.gap;
   });
   const cell = (r) => {
-    const g = r.gap === null ? "Live debut" : r.gap === 0 ? "Also last show" : `${formatNumber(r.gap)} show${r.gap === 1 ? "" : "s"} since`;
+    const g = r.gap === null ? "Live debut" : r.gap === 0 ? "Also last show" : `${formatNumber(r.gap)} show${r.gap === 1 ? "" : "s"} ago`;
     const name = r.slug ? `<a href="/song/${escapeAttr(r.slug)}/">${escapeHtml(r.title)}</a>` : escapeHtml(r.title);
     return `<li class="ltp-item"><span class="ltp-song">${name}</span><span class="ltp-gap${r.gap === null || (r.gap || 0) >= 40 ? " is-rare" : ""}">${g}</span></li>`;
   };
@@ -8442,7 +8441,7 @@ function renderShowLastPlayed(data, show) {
   return `<details class="sc-stats" data-sc-stats>
     <summary><span class="sc-stats-title">Song stats</span><span class="sc-stats-meta">${formatNumber(rows.length)} song${rows.length === 1 ? "" : "s"}${rare ? ` · ${rare} deep pull${rare === 1 ? "" : "s"}` : ""}</span><span class="sc-stats-chev" aria-hidden="true">›</span></summary>
     <div class="sc-stats-body">
-      <p class="sc-stats-head"><span>Song</span><span>Last time played, before this show</span></p>
+      <p class="sc-stats-head"><span>Song</span><span>Last time played</span></p>
       <ol class="ltp-list">${rows.map(cell).join("")}</ol>
     </div>
   </details>`;
@@ -12520,9 +12519,11 @@ body.stagelight .sc-lockup { display: none; }
 body.stagelight .show-entry[open] .sc-lockup,
 body.stagelight .show-entry.is-latest[open] .sc-lockup { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: center; padding: 44px 84px 0 44px; }
 body.stagelight .show-entry.no-image[open] .sc-lockup { grid-template-columns: 1fr; padding-right: 84px; }
-/* Featured card: drop the photo so its bottom edge rests on the divider below the hero. */
-body.stagelight .show-entry.is-latest[open] .sc-photo { transform: translateY(32px); }
-@media (max-width: 900px) { body.stagelight .show-entry.is-latest[open] .sc-photo { transform: none; } }
+/* Featured card: the blurred background panel — not the sharp photo — reaches down
+   to where Set 1 begins, and the hard divider there is removed so the panel itself
+   is the separator. The sharp photo stays inside the hero (no overhang). */
+body.stagelight .show-entry.is-latest[open] .sc-bg { bottom: -32px; }
+body.stagelight .show-entry.is-latest .sc-sets { border-top: none; }
 body.stagelight .sc-lock { display: block; }
 body.stagelight .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .sc-city { display: block; font-family: var(--sl-display); font-weight: 720; font-size: 40px; letter-spacing: -0.015em; line-height: 1.05; margin: 12px 0 0; color: var(--sl-ink); }

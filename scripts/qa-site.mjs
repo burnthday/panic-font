@@ -1228,7 +1228,7 @@ function checkEyebrowAudit(files, htmlByFile) {
   record("Archive index has no duplicate eyebrow", archiveHubEyebrow.length > 0 && !/class="[a-z-]*eyebrow"/.test(archiveHubEyebrow), "archive index carries no page eyebrow");
 
   // Kept on detail pages (they categorize — these add information).
-  record("Song detail pages keep the categorizing eyebrow", anyMatch(`${path.sep}song${path.sep}`, /class="song-eyebrow"/), "song-eyebrow present on /song/ pages");
+  record("Song detail pages drop the redundant type eyebrow", !anyMatch(`${path.sep}song${path.sep}`, /class="song-eyebrow"/), "song-eyebrow removed from /song/ pages (type still in the facts list)");
   record("Song Origin detail pages keep the SONG ORIGIN eyebrow", anyMatch(`${path.sep}song-origins${path.sep}`, /class="origin-eyebrow">SONG ORIGIN</), "origin-eyebrow present");
   record("Best Guess sections keep the BEST GUESS eyebrow", anyMatch(`${path.sep}song${path.sep}`, /class="bg-eyebrow"[^>]*>BEST GUESS</), "bg-eyebrow present");
   record("Tour In Review detail pages keep the Tour In Review eyebrow", anyMatch(`${path.sep}tour-in-review${path.sep}`, /class="tour-eyebrow">Tour In Review</), "tour-eyebrow present");
