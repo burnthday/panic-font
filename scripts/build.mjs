@@ -5721,10 +5721,6 @@ function renderSongsIndex(data, slugMap) {
     const rarityMarkup = statusTier === "rotation"
       ? `<span class="rarity-symbol" aria-hidden="true">${renderRaritySymbol(rarity.tier)}</span>${escapeHtml(rarity.label)}`
       : '<span class="sr-none" aria-hidden="true">—</span><span class="sr-sr-only">No rarity — parked</span>';
-    // THIS TOUR: play count when it's on the current sheet, otherwise a muted dash.
-    const tourMarkup = song.playedThisTour
-      ? `${formatNumber(song.tourCount || 0)}<small>this tour</small>`
-      : '<span class="sr-none" aria-hidden="true">—</span><span class="sr-sr-only">Not played this tour</span>';
     // Per-row resource indicators. These are REAL, separate <a> elements — the row
     // itself is one big <a>, and nested anchors are invalid HTML. They live in a
     // dedicated grid column (see .song-row-wrap / .sr-resources in renderStagelightCss)
@@ -5748,7 +5744,6 @@ function renderSongsIndex(data, slugMap) {
         <span class="sr-type">${escapeHtml(song.type)}</span>
         <span class="sr-status-cell">${statusMarkup}</span>
         <span class="sr-rarity">${rarityMarkup}</span>
-        <span class="sr-tour">${tourMarkup}</span>
         <span class="sr-plays">${formatNumber(song.total || 0)}<small>plays</small></span>
       </a>
       <span class="sr-resources">${resChips.join("")}</span>
@@ -5796,7 +5791,6 @@ function renderSongsIndex(data, slugMap) {
         <span class="sih-col sih-type">Type</span>
         <span class="sih-col sih-status">Status</span>
         <span class="sih-col sih-rarity">Rarity</span>
-        <span class="sih-col sih-tour">This Tour</span>
         <span class="sih-col sih-more">More</span>
         <span class="sih-col sih-plays">Plays</span>
       </div>
@@ -13673,11 +13667,11 @@ body.stagelight .index-select select option { color: #111; }
    row's content independently — columns never lined up. Fixed tracks make every
    independent row resolve identical column edges. Title flexes; type/status/plays
    are fixed; plays right-aligned. Owner QA: columns did not align across rows. */
-/* Seven shared columns: TITLE | TYPE | STATUS | RARITY | THIS TOUR | RESOURCES | PLAYS.
+/* Six shared columns: TITLE | TYPE | STATUS | RARITY | RESOURCES | PLAYS.
    STATUS (board state) and RARITY (frequency tier) are now separate axes per owner
    feedback. RESOURCES is a reserved empty track in the row anchor that .sr-resources
    overlays, so the whole row stays one clickable <a> while the chips are real siblings. */
-body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 82px 128px 148px 96px 138px 84px; --sr-gap: 16px; }
+body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 82px 128px 148px 138px 84px; --sr-gap: 16px; }
 body.stagelight .song-list { display: grid; gap: 1px; }
 /* Column-header row — mono/uppercase label idiom, sticky just under the sticky
    search bar (search sticks at top:78 and is ~48px tall, so ~128px lands it flush
@@ -13713,12 +13707,12 @@ body.stagelight .song-row {
   grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: var(--sr-cols);
   align-items: center; gap: var(--sr-gap); padding: 14px 10px; color: var(--sl-ink);
 }
-body.stagelight .sr-plays { grid-column: 7; }
+body.stagelight .sr-plays { grid-column: 6; }
 body.stagelight .song-row-wrap:hover { background: rgba(255,255,255,0.03); }
-/* Resource chips: quiet mono pills sitting in the reserved RESOURCES column (6),
+/* Resource chips: quiet mono pills sitting in the reserved RESOURCES column (5),
    layered above the row anchor (z-index) so each stays independently clickable + tabbable. */
 body.stagelight .sr-resources {
-  grid-column: 6; grid-row: 1; z-index: 1; position: relative;
+  grid-column: 5; grid-row: 1; z-index: 1; position: relative;
   display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-self: start;
 }
 body.stagelight .sr-chip {
@@ -13741,9 +13735,6 @@ body.stagelight .sr-status-purgatory { color: var(--sl-faint); background: rgba(
    Shelf/Purgatory show a muted dash (no frequency tier on a parked song). */
 body.stagelight .sr-rarity { display: flex; align-items: center; gap: 6px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .sr-rarity .rarity-symbol { min-width: 0; margin-right: 0; flex: none; }
-/* THIS TOUR column — play count when on the sheet, else a muted dash. */
-body.stagelight .sr-tour { font-family: var(--sl-mono); font-size: 14px; color: var(--sl-ink); }
-body.stagelight .sr-tour small { display: block; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
 body.stagelight .sr-none { color: var(--sl-faint); }
 body.stagelight .sr-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 body.stagelight .sr-title .sr-bestguess { margin-left: 9px; font-family: var(--sl-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 7px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); color: var(--sl-muted); vertical-align: middle; }
@@ -13751,21 +13742,21 @@ body.stagelight .sr-plays { text-align: right; font-family: var(--sl-mono); font
 body.stagelight .sr-plays small { display: block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); margin-top: 2px; }
 body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(--sl-faint); font-size: 15px; }
 /* Tablet (641–950px): drop the TYPE and RESOURCES columns so the seven-column grid
-   never overflows. Collapses to TITLE | STATUS | RARITY | THIS TOUR | PLAYS — both
-   header and rows share the reduced --sr-cols, and plays re-anchors to the 5th track.
+   never overflows. Collapses to TITLE | STATUS | RARITY | PLAYS — both header and
+   rows share the reduced --sr-cols, and plays re-anchors to the 4th track.
    Resources fold away (the /song/ pages carry every link anyway). */
 @media (min-width: 641px) and (max-width: 950px) {
-  body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 116px 132px 80px 76px; }
+  body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 132px 148px 84px; }
   body.stagelight .sr-type, body.stagelight .sih-type,
   body.stagelight .sr-resources, body.stagelight .sih-more { display: none; }
-  body.stagelight .sr-plays { grid-column: 5; }
+  body.stagelight .sr-plays { grid-column: 4; }
 }
 /* Mobile (<=640px): collapse to TITLE + PLAYS, with STATUS riding inline under each
    title. Header collapses to TITLE | PLAYS. Tighter paddings; sticky header stays. */
 @media (max-width: 640px) {
   body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 76px; --sr-gap: 12px; }
   body.stagelight .song-row { grid-auto-rows: auto; row-gap: 4px; padding: 12px 4px; }
-  body.stagelight .sr-type, body.stagelight .sr-rarity, body.stagelight .sr-tour { display: none; }
+  body.stagelight .sr-type, body.stagelight .sr-rarity { display: none; }
   body.stagelight .sr-status-cell { grid-column: 1; grid-row: 2; }
   body.stagelight .sr-plays { grid-column: 2; grid-row: 1; }
   /* Resource column is desktop-only — the /song/ pages already link every resource,
@@ -13775,8 +13766,7 @@ body.stagelight .song-empty { margin-top: 28px; text-align: center; color: var(-
   body.stagelight .song-index-head .sih-col:nth-child(2),
   body.stagelight .song-index-head .sih-col:nth-child(3),
   body.stagelight .song-index-head .sih-col:nth-child(4),
-  body.stagelight .song-index-head .sih-col:nth-child(5),
-  body.stagelight .song-index-head .sih-col:nth-child(6) { display: none; }
+  body.stagelight .song-index-head .sih-col:nth-child(5) { display: none; }
   body.stagelight .song-count { display: none; }
 }
 

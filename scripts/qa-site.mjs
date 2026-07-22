@@ -695,13 +695,13 @@ async function checkSongPages(siteData) {
 
   // FIX 2 — sticky column-header row aligned to the row grid. The header and every
   // row share one --sr-cols template, and the header is sticky under the search bar.
-  record("Song Index renders the column-header row (Title/Type/Status/Rarity/This Tour/More/Plays)",
-    index.includes('class="song-index-head"') && (index.match(/class="sih-col[^"]*"/g) || []).length === 7
+  record("Song Index renders the column-header row (Title/Type/Status/Rarity/More/Plays)",
+    index.includes('class="song-index-head"') && (index.match(/class="sih-col[^"]*"/g) || []).length === 6
     && index.includes('class="sih-col sih-status">Status<')
     && index.includes('class="sih-col sih-rarity">Rarity<')
-    && index.includes('class="sih-col sih-tour">This Tour<')
+    && !index.includes('sih-tour')
     && index.includes('class="sih-col sih-more">More<'),
-    "song-index-head with seven sih-col cells: Title/Type/Status/Rarity/This Tour/More/Plays");
+    "song-index-head with six sih-col cells: Title/Type/Status/Rarity/More/Plays (This Tour removed)");
   record("Song Index header + rows share one grid template",
     /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
     && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)
@@ -729,9 +729,9 @@ async function checkSongPages(siteData) {
     /class="sr-chip sr-chip-ext" href="https:\/\/www\.songsterr\.com\/[^"]*" target="_blank" rel="noopener noreferrer" aria-label="/.test(index),
     "sr-chip-ext has target=_blank + rel=noopener + aria-label");
   record("Song Index resource column has a CSS home and hides on mobile",
-    /body\.stagelight \.sr-resources \{[^}]*grid-column: 6/.test(songIndexCss)
+    /body\.stagelight \.sr-resources \{[^}]*grid-column: 5/.test(songIndexCss)
     && /@media \(max-width: 640px\)[\s\S]*?body\.stagelight \.sr-resources \{ display: none/.test(songIndexCss),
-    "sr-resources sits in the reserved column (6) and is hidden <=640px");
+    "sr-resources sits in the reserved column (5) and is hidden <=640px");
 
   // The Best Guess concept is retired from the Song Index: no jargon chip and no
   // row-level badge (Alex: "that's dumb" / remove Best Guess entirely).
@@ -747,8 +747,8 @@ async function checkSongPages(siteData) {
   const purgBoard = [...(siteData.boards?.purgatoryOriginals || []), ...(siteData.boards?.purgatoryCovers || [])];
   record("Song Index STATUS and RARITY are two distinct columns",
     index.includes('class="sr-status-cell">') && index.includes('class="sr-rarity">')
-    && index.includes('class="sr-tour">'),
-    "sr-status-cell / sr-rarity / sr-tour cells present on the rows");
+    && !index.includes('class="sr-tour">'),
+    "sr-status-cell / sr-rarity cells present; sr-tour column removed");
   const rotationTierCount = (index.match(/data-tier="rotation"/g) || []).length;
   record("Song Index marks in-rotation songs with data-tier=rotation and an In Rotation label",
     rotationTierCount >= 1 && index.includes('class="sr-status sr-status-rotation">In Rotation<'),
