@@ -122,7 +122,10 @@ Assert: legend reads Mikey's/Jimmy's/Nick's (3 owners); no `rig-tag` says "Confi
 
 ### OPEN — Alex must still call these (do NOT decide unilaterally)
 1. **Top bar:** the `.rig-head` has extra padding + a border-bottom divider the other modals (`.hero-modal-head`, e.g. song-stats) don't — reads heavier. Proposal: match the standard modal header. AWAITING ALEX.
-2. **Tagline** RESOLVED (Alex 7/23, Katherine-gated): drop "HALF-JIMMY · HALF-MIKEY". STATEMENT LINE LOCKED: "Mikey's old cabinet and an SLO clone running through Jimmy's wet rig." (sentence case deck line under the title, no commas, signal-chain accurate). COINED PHRASE for Nick still pending Alex's pick: front-runner "The Velvet Gun" (velvet = Houser's lingering wash/swells, gun = Herring's machine-gun precision); runner-up "Velvet Sniper". Header becomes: coined phrase as the title-adjacent line + the statement line as the deck. This changes header markup from a <span> micro-label to a two-line block; fold into the top-bar work.
+2. **Tagline** FULLY RESOLVED (Alex 7/23, Katherine-gated). Drop "HALF-JIMMY · HALF-MIKEY". The header becomes a bold HEADLINE + a body line:
+   - **HEADLINE (bold, the site's headline style):** "An honest tone with a blistering lead."
+   - **BODY line under it:** "Nick's playing through Mikey's old cabinet and an SLO clone running through Jimmy's wet rig."
+   NOTE for the executing session: the headline deliberately ECHOES a Widespread Panic lyric from "Driving Song" (a Houser co-write, founding era): "an honest tune with a lingering lead has taken me this far." Alex adapted it on purpose to "tone" + "blistering lead" so it is Nick's own line and NOT a lyric reproduction. DO NOT "correct" it back to the lyric or flag it as a typo. No attribution shown. This replaces the <span> micro-label with a headline+body block; do it as part of the top-bar header rework.
 
 ### Ship path
 All edits on `claude/project-status-4jp3e7` → preview only. Live requires a merge to main with Alex's explicit deploy word. Build `node scripts/build.mjs`, gate `npm run qa` must stay green, then `show` Alex the preview before any deploy talk.
