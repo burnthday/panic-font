@@ -10171,7 +10171,7 @@ function renderSetlistNotes(annotations) {
 
 function normalizeBracketNote(value) {
   const text = clean(value);
-  if (/^(?:entire show\s+)?with Nick Johnson on (?:lead )?guitar$/i.test(text)) {
+  if (/^(?:entire show\s+)?with Nick Johnson(?: on (?:lead )?guitar)?$/i.test(text)) {
     return "Entire show with Nick Johnson on guitar";
   }
   return text;
