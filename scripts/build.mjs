@@ -61,7 +61,7 @@ const navSubLinks = {
   "Home": [
     ["Song Possibilities", "/#song-list"],
     ["Song Index", "/songs/"],
-    ["Tour Stats", "/#tour-stats"],
+    ["Dork Stats", "/#tour-stats"],
     ["{YEAR} Setlists", "/#setlists"]
   ],
   "Albums": [
@@ -1664,7 +1664,7 @@ function renderLlmsTxt(data) {
 - [Song Possibilities (the working list)](https://burnthday.com/)
 - [Song Index — every song with live history](https://burnthday.com/songs/)
 - [Setlists](https://burnthday.com/#setlists)
-- [Tour Stats](https://burnthday.com/#tour-stats)
+- [Dork Stats](https://burnthday.com/#tour-stats)
 - [Albums](https://burnthday.com/albums/)
 - [Song Origins — researched song stories](https://burnthday.com/song-origins/)
 - [Lyrics & Chords](https://burnthday.com/lyrics-chords/)
@@ -7397,12 +7397,15 @@ function renderStatsAutoCollapseScript() {
       const io2 = new IntersectionObserver((entries) => {
         for (const entry of entries) {
           const wrap = entry.target;
-          if (entry.isIntersecting || wrap.classList.contains("is-capped")) continue;
+          // Only the expanded (bounded ~68vh) list re-collapses; the default capped
+          // preview is left alone.
+          if (entry.isIntersecting || !wrap.classList.contains("is-expanded")) continue;
           if (entry.boundingClientRect.top > 0) continue; // only when scrolled past the top
           const btn = wrap.parentElement.querySelector("[data-table-expand]");
           const before = wrap.getBoundingClientRect().top;
-          wrap.classList.add("is-capped");
-          if (btn) { btn.setAttribute("aria-expanded", "false"); btn.textContent = btn.dataset.expandLabel; }
+          wrap.classList.remove("is-expanded");
+          wrap.closest(".tour-stats")?.classList.remove("is-expanded");
+          if (btn) { btn.setAttribute("aria-expanded", "false"); btn.textContent = btn.dataset.expandLabel; btn.classList.remove("is-pinned"); }
           window.scrollBy(0, wrap.getBoundingClientRect().top - before);
         }
       }, { threshold: 0 });
@@ -7576,7 +7579,7 @@ function renderFitScriptBody() {
       });
 
       if (window.matchMedia("(max-width: 700px)").matches) {
-        document.querySelectorAll(".stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
+        document.querySelectorAll(".setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"));
       }
 
       document.querySelectorAll(".tour-table").forEach((table) => {
@@ -7594,9 +7597,15 @@ function renderFitScriptBody() {
         const rarityOptions = [...(section?.querySelectorAll("[data-rarity-option]") || [])];
         const rarityClear = section?.querySelector("[data-rarity-clear]");
         const rarityActive = section?.querySelector("[data-rarity-active]");
+        const showDot = section?.querySelector("[data-show-filter-dot]");
+        const songSearch = section?.querySelector("[data-song-search]");
+        const appliedRow = section?.querySelector("[data-applied-filters]");
+        const MARKER_HEX = { black: "#2e2e30", blue: "#465692", green: "#47866a", red: "#d4514f" };
+        const esc = (value) => String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
         let selectedShow = "";
         let selectedType = "all";
         let notPlayedOn = false;
+        let searchText = "";
         let sortKey = "count";
         let sortDirection = "descending";
 
@@ -7618,7 +7627,8 @@ function renderFitScriptBody() {
             const matchesRarity = !selectedRarities.length || selectedRarities.includes(row.dataset.rarityTier);
             const matchesShow = !selectedShow || (row.dataset.shows || "").split(",").includes(selectedShow);
             const matchesPlayed = notPlayedOn ? row.dataset.played === "no" : row.dataset.played !== "no";
-            const visible = matchesType && matchesRarity && matchesPlayed;
+            const matchesSearch = !searchText || (row.dataset.title || "").includes(searchText);
+            const visible = matchesType && matchesRarity && matchesPlayed && matchesSearch;
             row.hidden = !visible;
             if (visible) visibleCount += 1;
             row.classList.toggle("is-selected-show", Boolean(selectedShow && matchesShow && visible));
@@ -7648,6 +7658,46 @@ function renderFitScriptBody() {
             if (selectedRarities.length) parts.push(visibleCount + " songs at selected rarity");
             status.textContent = parts.join(" · ");
           }
+          if (appliedRow) {
+            const chips = [];
+            if (selectedShow) {
+              const opt = showOptions.find((item) => item.dataset.showValue === selectedShow);
+              chips.push({ type: "show", label: opt ? opt.textContent : "Selected show" });
+            }
+            if (selectedType !== "all") chips.push({ type: "type", label: selectedType === "original" ? "Originals" : "Covers" });
+            if (notPlayedOn) chips.push({ type: "np", label: "Not played this tour" });
+            selectedRarities.forEach((tier) => {
+              const box = rarityOptions.find((item) => item.value === tier);
+              const labelEl = box && box.closest(".rf-option").querySelector(".rf-label");
+              chips.push({ type: "rarity", value: tier, label: labelEl ? labelEl.textContent : tier });
+            });
+            if (searchText && songSearch) chips.push({ type: "search", label: '"' + songSearch.value.trim() + '"' });
+            appliedRow.hidden = chips.length === 0;
+            appliedRow.innerHTML = chips.length
+              ? chips.map((chip) => '<button type="button" class="af-chip" data-af="' + chip.type + '"' + (chip.value ? ' data-af-val="' + esc(chip.value) + '"' : "") + '>' + esc(chip.label) + '<span class="af-x" aria-hidden="true">×</span></button>').join("")
+                + '<button type="button" class="af-clear" data-af-clear>Clear all</button>'
+              : "";
+          }
+        };
+
+        const resetShow = () => {
+          selectedShow = "";
+          if (section) section.dataset.hl = "";
+          showOptions.forEach((item) => item.classList.toggle("is-active", item.dataset.showValue === ""));
+          const allOption = showOptions.find((item) => item.dataset.showValue === "");
+          if (showValue && allOption) showValue.textContent = allOption.textContent;
+          if (showDot) { showDot.hidden = true; showDot.style.background = ""; }
+        };
+        const resetAll = () => {
+          resetShow();
+          selectedType = "all";
+          typeButtons.forEach((item) => item.classList.toggle("is-active", item.dataset.typeFilter === "all"));
+          notPlayedOn = false;
+          if (notPlayedToggle) { notPlayedToggle.setAttribute("aria-pressed", "false"); notPlayedToggle.classList.remove("is-active"); }
+          rarityOptions.forEach((box) => { box.checked = false; });
+          if (songSearch) songSearch.value = "";
+          searchText = "";
+          applyState();
         };
 
         showOptions.forEach((option) => option.addEventListener("click", () => {
@@ -7655,6 +7705,10 @@ function renderFitScriptBody() {
           if (section) section.dataset.hl = selectedShow ? (option.dataset.marker || "white") : "";
           showOptions.forEach((item) => item.classList.toggle("is-active", item === option));
           if (showValue) showValue.textContent = option.textContent;
+          if (showDot) {
+            showDot.hidden = !selectedShow;
+            showDot.style.background = selectedShow ? (MARKER_HEX[option.dataset.marker] || "#e8e6e1") : "";
+          }
           showDd?.removeAttribute("open");
           applyState();
         }));
@@ -7667,19 +7721,29 @@ function renderFitScriptBody() {
           notPlayedOn = !notPlayedOn;
           notPlayedToggle.setAttribute("aria-pressed", String(notPlayedOn));
           notPlayedToggle.classList.toggle("is-active", notPlayedOn);
-          if (notPlayedOn) {
-            // Not-played songs never belong to a highlighted show; reset the show filter.
-            selectedShow = "";
-            if (section) section.dataset.hl = "";
-            showOptions.forEach((item) => item.classList.toggle("is-active", item.dataset.showValue === ""));
-            const allOption = showOptions.find((item) => item.dataset.showValue === "");
-            if (showValue && allOption) showValue.textContent = allOption.textContent;
-          }
+          // Not-played songs never belong to a highlighted show; reset the show filter.
+          if (notPlayedOn) resetShow();
           applyState();
         });
         rarityOptions.forEach((box) => box.addEventListener("change", applyState));
         rarityClear?.addEventListener("click", () => {
           rarityOptions.forEach((box) => { box.checked = false; });
+          applyState();
+        });
+        songSearch?.addEventListener("input", () => {
+          searchText = songSearch.value.trim().toLowerCase();
+          applyState();
+        });
+        appliedRow?.addEventListener("click", (event) => {
+          if (event.target.closest("[data-af-clear]")) { resetAll(); return; }
+          const chip = event.target.closest("[data-af]");
+          if (!chip) return;
+          const kind = chip.dataset.af;
+          if (kind === "show") resetShow();
+          else if (kind === "type") { selectedType = "all"; typeButtons.forEach((item) => item.classList.toggle("is-active", item.dataset.typeFilter === "all")); }
+          else if (kind === "np") { notPlayedOn = false; if (notPlayedToggle) { notPlayedToggle.setAttribute("aria-pressed", "false"); notPlayedToggle.classList.remove("is-active"); } }
+          else if (kind === "rarity") { const box = rarityOptions.find((item) => item.value === chip.dataset.afVal); if (box) box.checked = false; }
+          else if (kind === "search") { if (songSearch) songSearch.value = ""; searchText = ""; }
           applyState();
         });
         document.addEventListener("click", (event) => {
@@ -7707,13 +7771,17 @@ function renderFitScriptBody() {
         }));
         const tableScroll = section?.querySelector("[data-table-scroll]");
         const tableExpand = section?.querySelector("[data-table-expand]");
+        // Expanded = the capped scroll wrap grows to a bounded ~68vh window (sticky
+        // header inside, sticky Show-fewer control below) rather than uncapping to
+        // full page height. The wrap stays a scroll container either way.
         tableExpand?.addEventListener("click", () => {
           const before = tableExpand.getBoundingClientRect().top;
-          const capped = tableScroll?.classList.toggle("is-capped");
-          tableExpand.setAttribute("aria-expanded", String(!capped));
-          tableExpand.textContent = capped ? tableExpand.dataset.expandLabel : tableExpand.dataset.collapseLabel;
-          tableExpand.classList.toggle("is-pinned", !capped);
-          if (capped) window.scrollBy(0, tableExpand.getBoundingClientRect().top - before);
+          const expanded = tableScroll?.classList.toggle("is-expanded");
+          section?.classList.toggle("is-expanded", expanded);
+          tableExpand.setAttribute("aria-expanded", String(expanded));
+          tableExpand.textContent = expanded ? tableExpand.dataset.collapseLabel : tableExpand.dataset.expandLabel;
+          tableExpand.classList.toggle("is-pinned", expanded);
+          if (!expanded) window.scrollBy(0, tableExpand.getBoundingClientRect().top - before);
         });
         const tonight = section?.querySelector("[data-tonight]");
         const tonightToggle = section?.querySelector("[data-tonight-toggle]");
@@ -8214,7 +8282,6 @@ function renderRotationBoard(data) {
 function renderTonightOdds(odds) {
   if (!odds || !odds.songs?.length) return "";
   const tierLabel = { hot: "Hot", warm: "Warm", long: "Long shot" };
-  const where = odds.city ? ` in ${odds.city}` : "";
   const rows = odds.songs.map((song, index) => {
     const reason = song.reason
       ? `<small class="tn-reason"><span class="tn-note-icon" aria-hidden="true">🎵</span>${escapeHtml(song.reason)}${Number.isFinite(song.reasonPct) ? ` <span class="tn-reason-pct">${song.reasonPct >= 0 ? "+" : ""}${song.reasonPct}%</span>` : ""}</small>`
@@ -8225,10 +8292,19 @@ function renderTonightOdds(odds) {
       <span class="tn-heat"><span class="tn-tier">${tierLabel[song.tier] || ""}</span><b>${song.heat}</b></span>
     </li>`;
   }).join("");
+  // Closed-bar teaser: quiet inline preview of the real top three predictions
+  // (plain mono text, no pills). Full form on desktop, a one-song form ≤760px,
+  // hidden ≤560px — all handled in CSS off these two spans.
+  const top = odds.songs.slice(0, 3);
+  const teaserFull = top.map((song) => `${escapeHtml(song.title)} ${song.heat}`).join(" · ");
+  const teaserMin = top.length ? `${escapeHtml(top[0].title)} ${top[0].heat}${top.length > 1 ? ` · +${top.length - 1} more` : ""}` : "";
+  const cityLine = odds.city ? `<span class="tn-city"><span class="tn-city-sep" aria-hidden="true">·</span>${escapeHtml(odds.city)}</span>` : "";
   return `<div class="tonight-odds" data-tonight>
     <button type="button" class="tonight-toggle" data-tonight-toggle aria-expanded="false" aria-controls="tonight-panel">
       <span class="tn-live"><span class="live-dot" aria-hidden="true"></span>Tonight</span>
-      <span class="tn-lead">Tonight's Odds — what might they play${escapeHtml(where)}?</span>
+      <span class="tn-lead">Tonight's odds</span>
+      ${cityLine}
+      <span class="tn-teaser" aria-hidden="true"><span class="tn-teaser-label">Top picks</span><span class="tn-teaser-full">${teaserFull}</span><span class="tn-teaser-min">${teaserMin}</span></span>
       <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="tonight-panel-wrap">
@@ -8343,22 +8419,24 @@ function renderTourStats(data) {
   const gapTip = thTip("Shows since it was last played against its usual gap. Context, not a prediction.");
 
   return `<section class="tour-stats" id="tour-stats">
-  <details class="stats-disclosure" open>
-  <summary class="section-heading data-heading">
-    <h2>Tour stats</h2>
-    <svg class="sc-chev" width="14" height="9" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </summary>
-  <div class="stats-body">
-  <div class="data-metrics" aria-label="Current tour summary">
-    ${renderNickStat(shows, "shows played")}
-    ${renderNickStat(unique, "unique songs")}
-    ${renderNickStat(plays, "song plays")}
-    ${renderNickStat(average, "songs per show")}
+  <div class="ds-intro">
+    <h2 class="ds-title">Dork stats</h2>
+    <div class="ds-lede">
+      <p>Every song played this tour, how often it shows up, and how long it has been gone.</p>
+      <p>Highlight any show to mark its songs in the table.</p>
+      <p>Filter, sort, and open the full list when you want the whole rabbit hole.</p>
+    </div>
+  </div>
+  <div class="stats-rail" aria-label="Current tour summary">
+    <div class="stat-col"><strong>${formatNumber(shows)}</strong><span>shows played</span></div>
+    <div class="stat-col"><strong>${formatNumber(unique)}</strong><span>unique songs</span></div>
+    <div class="stat-col"><strong>${formatNumber(plays)}</strong><span>song plays</span></div>
+    <div class="stat-col"><strong>${formatNumber(average)}</strong><span>songs per show</span></div>
   </div>
   ${renderTonightOdds(data.tonightOdds)}
-  <div class="data-toolbar" aria-label="Tour Stats filters">
+  <div class="data-toolbar" aria-label="Dork stats filters">
     <details class="show-filter" data-show-filter-dd data-cs>
-      <summary aria-label="Highlight a show"><span>Highlight a show</span><b class="sf-value" data-show-filter-value>All ${formatNumber(shows)} shows</b><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+      <summary aria-label="Highlight a show"><span>Highlight a show</span><span class="sf-dot" data-show-filter-dot hidden></span><b class="sf-value" data-show-filter-value>All ${formatNumber(shows)} shows</b><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
       <div class="sf-pop">
         <button type="button" class="sf-option is-active" data-show-value="">All ${formatNumber(shows)} shows</button>
         ${(data.setlists || []).map((show) => {
@@ -8372,11 +8450,16 @@ function renderTourStats(data) {
       <button type="button" data-type-filter="original">Originals</button>
       <button type="button" data-type-filter="cover">Covers</button>
     </div>
-    <button type="button" class="np-toggle" data-notplayed-toggle aria-pressed="false">Not played</button>
+    <button type="button" class="np-toggle" data-notplayed-toggle aria-pressed="false">Not played this tour</button>
     ${renderRarityFilter(songs)}
+    <div class="find-song">
+      <svg class="find-song-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input type="search" class="find-song-input" data-song-search placeholder="Find a song" aria-label="Find a song" autocomplete="off">
+    </div>
     <div class="mobile-sort">${renderCustomSelect({ hook: "data-mobile-sort", label: "Sort by", active: "count", options: [{ value: "count", label: "Most played" }, { value: "rarity", label: "Rarest" }, { value: "heat", label: "Longest wait" }, { value: "title", label: "Song name" }] })}</div>
     <span class="show-filter-status" aria-live="polite"></span>
   </div>
+  <div class="applied-filters" data-applied-filters hidden></div>
   <div class="tour-table-wrap is-capped" data-table-scroll>
     <table class="tour-table">
       <thead><tr>
@@ -8414,9 +8497,7 @@ function renderTourStats(data) {
       }).join("")}</tbody>
     </table>
   </div>
-  ${songs.length > 12 ? `<button type="button" class="stats-expand" data-table-expand aria-expanded="false" data-expand-label="Show all ${formatNumber(songs.length)} songs" data-collapse-label="Show fewer">Show all ${formatNumber(songs.length)} songs</button>` : ""}
-  </div>
-  </details>
+  ${songs.length > 12 ? `<button type="button" class="stats-expand" data-table-expand aria-expanded="false" data-expand-label="Explore all ${formatNumber(songs.length)} songs" data-collapse-label="Show fewer">Explore all ${formatNumber(songs.length)} songs</button>` : ""}
 </section>`;
 }
 
@@ -9106,7 +9187,7 @@ function renderSong(row, options = {}) {
 function renderHomeSectionNav(data) {
   const links = [
     { id: "song-list", label: "Song possibilities" },
-    { id: "tour-stats", label: "Tour stats" },
+    { id: "tour-stats", label: "Dork stats" },
     { id: "setlists", label: `${escapeHtml(String(data.site.year))} setlists` }
   ];
   return `<nav class="home-nav" aria-label="Jump to a section">
@@ -14388,13 +14469,57 @@ body.stagelight .sf-option {
 body.stagelight .sf-option:hover { background: rgba(255,255,255,0.05); color: var(--sl-ink); }
 body.stagelight .sf-option.is-active { color: var(--sl-ink); font-weight: 600; }
 body.stagelight .sf-option.is-active::after { content: "\\2713"; float: right; color: var(--sl-faint); }
+/* Marker-color dot in the Highlight-a-show summary value: surfaces the selected
+   show's rail color so the control reads as "this show is now marked". */
+body.stagelight .sf-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; vertical-align: baseline; box-shadow: 0 0 0 1px rgba(255,255,255,0.25); }
+body.stagelight .sf-dot[hidden] { display: none; }
+/* Find-a-song: compact text search at the right end of the toolbar. */
+body.stagelight .find-song { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04); }
+body.stagelight .find-song:focus-within { border-color: var(--sl-muted); }
+body.stagelight .find-song-icon { color: var(--sl-faint); flex: none; }
+body.stagelight .find-song-input { border: 0; background: transparent; color: var(--sl-ink); font-family: var(--sl-mono); font-size: 12.5px; letter-spacing: 0.02em; width: 128px; outline: none; }
+body.stagelight .find-song-input::placeholder { color: var(--sl-faint); font-family: var(--sl-mono); }
+body.stagelight .find-song-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+/* Applied-filter row: one compact row of removable chips + Clear all. */
+body.stagelight .applied-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 18px; }
+body.stagelight .applied-filters[hidden] { display: none; }
+body.stagelight .af-chip { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px 0 12px; border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong); background: rgba(255,255,255,0.04); color: var(--sl-muted); font-size: 12.5px; cursor: pointer; }
+body.stagelight .af-chip:hover { color: var(--sl-ink); border-color: var(--sl-muted); }
+body.stagelight .af-x { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: rgba(255,255,255,0.08); color: var(--sl-faint); font-size: 13px; line-height: 1; }
+body.stagelight .af-chip:hover .af-x { color: var(--sl-ink); }
+body.stagelight .af-clear { height: 30px; padding: 0 4px; border: 0; background: none; color: var(--sl-faint); font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+body.stagelight .af-clear:hover { color: var(--sl-ink); }
 
 /* ---- STATS DISCLOSURE (accordion) ---- */
-body.stagelight .stats-disclosure > summary { cursor: pointer; }
-body.stagelight .stats-disclosure > summary:hover h2 { color: #fff; }
-body.stagelight .stats-disclosure > summary .sc-chev { position: static; margin-left: 4px; align-self: center; color: var(--sl-faint); transition: transform 0.22s ease; }
-body.stagelight .stats-disclosure[open] > summary .sc-chev { transform: rotate(180deg); }
-body.stagelight .stats-disclosure:not([open]) > summary.section-heading { margin-bottom: 0; }
+/* ---- DORK STATS: intro row + single summary rail ---- */
+/* Compact intro, outside any card: title left, three quiet lines right on desktop,
+   stacked below the title on mobile. Existing type + spacing only. */
+body.stagelight .ds-intro { display: flex; align-items: baseline; justify-content: space-between; gap: 20px 40px; flex-wrap: wrap; margin-bottom: 22px; }
+body.stagelight .ds-title { font-family: var(--sl-display); font-size: 34px; font-weight: 640; letter-spacing: -0.01em; line-height: 1.12; color: var(--sl-ink); }
+body.stagelight .ds-lede { display: flex; flex-direction: column; gap: 3px; text-align: right; max-width: 40ch; }
+body.stagelight .ds-lede p { font-size: 13.5px; line-height: 1.5; color: var(--sl-muted); }
+@media (max-width: 760px) {
+  body.stagelight .ds-intro { flex-direction: column; align-items: flex-start; gap: 12px; }
+  body.stagelight .ds-lede { text-align: left; max-width: none; }
+}
+/* Summary stats: one subtle bordered surface, four equal columns, thin dividers. */
+body.stagelight .stats-rail {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: center;
+  min-height: 90px; margin-bottom: 22px;
+  border: 1px solid var(--sl-line); border-radius: var(--sl-r-md); background: var(--sl-glass);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4);
+  box-shadow: var(--sl-glass-shadow);
+}
+body.stagelight .stats-rail .stat-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 18px 14px; text-align: center; }
+body.stagelight .stats-rail .stat-col + .stat-col { border-left: 1px solid var(--sl-line); }
+body.stagelight .stats-rail .stat-col strong { font-family: var(--sl-display); font-size: 30px; font-weight: 640; line-height: 1; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .stats-rail .stat-col span { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sl-faint); }
+@media (max-width: 560px) {
+  body.stagelight .stats-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body.stagelight .stats-rail .stat-col:nth-child(3), body.stagelight .stats-rail .stat-col:nth-child(4) { border-top: 1px solid var(--sl-line); }
+  body.stagelight .stats-rail .stat-col:nth-child(odd) { border-left: 0; }
+  body.stagelight .stats-rail .stat-col strong { font-size: 26px; }
+}
 
 /* ---- TOUR-STATS TABLE: capped preview + expand affordance ---- */
 body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; border-radius: var(--sl-r-md); -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
@@ -14461,6 +14586,22 @@ body.stagelight .stats-expand:hover { background: rgba(255,255,255,0.05); color:
    viewport so you can close it from anywhere in the long list. */
 body.stagelight .stats-expand.is-pinned { position: sticky; bottom: 14px; z-index: 4; background: rgba(20,20,23,0.92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); box-shadow: 0 10px 40px -12px rgba(0,0,0,0.7); }
 
+/* Sorting affordance: the active column's direction glyph (↓/↑) is always shown;
+   inactive columns reveal their ↕ hint only on hover/keyboard focus. Headers stay
+   on one line. */
+body.stagelight .tour-table thead th { white-space: nowrap; }
+body.stagelight .tour-table thead th button span { opacity: 0; transition: opacity 0.15s ease; }
+body.stagelight .tour-table thead th[aria-sort] button span,
+body.stagelight .tour-table thead th button:hover span,
+body.stagelight .tour-table thead th button:focus-visible span { opacity: 1; }
+
+/* Expanded list = a bounded ~68vh scroll window (not a full-page uncap). The wrap
+   stays a scroll container; its thead is already sticky, the Show-fewer control
+   pins to the bottom, and scroll-padding keeps a keyboard-focused row clear of it. */
+body.stagelight .tour-table-wrap.is-capped.is-expanded { max-height: 68vh; scroll-padding-bottom: 72px; }
+body.stagelight .tour-stats.is-expanded .data-toolbar { position: sticky; top: 6px; z-index: 6; }
+body.stagelight .tour-stats.is-expanded .applied-filters { position: sticky; top: 58px; z-index: 6; }
+
 /* "What these mean" — quiet footnote toggle, not a bolted-on bar. */
 body.stagelight .index-method { border-bottom: 0; margin-top: 6px; }
 body.stagelight .index-method > summary {
@@ -14507,7 +14648,23 @@ body.stagelight .tonight-toggle {
 }
 body.stagelight .tn-live { display: inline-flex; align-items: center; gap: 8px; font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--sl-ink); }
 body.stagelight .tn-lead { font-family: var(--sl-display); font-weight: 620; font-size: 18px; letter-spacing: -0.005em; }
-body.stagelight .tonight-toggle .sc-chev { position: static; margin-left: auto; color: var(--sl-faint); transition: transform 0.22s ease; }
+/* City as a quiet secondary line after a separator — not part of the title. */
+body.stagelight .tn-city { display: inline-flex; align-items: baseline; gap: 8px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-faint); text-transform: uppercase; }
+body.stagelight .tn-city-sep { color: var(--sl-line-strong); }
+/* Closed-bar teaser: quiet real top-three preview, mono, no pills. */
+body.stagelight .tn-teaser { margin-left: auto; display: inline-flex; align-items: baseline; gap: 10px; min-width: 0; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.01em; color: var(--sl-faint); }
+body.stagelight .tn-teaser-label { text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; color: var(--sl-line-strong); flex: none; }
+body.stagelight .tn-teaser-full { color: var(--sl-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+body.stagelight .tn-teaser-min { display: none; color: var(--sl-muted); white-space: nowrap; }
+body.stagelight .tonight-odds.is-open .tn-teaser { opacity: 0; }
+body.stagelight .tonight-toggle .sc-chev { position: static; margin-left: 14px; flex: none; color: var(--sl-faint); transition: transform 0.22s ease; }
+@media (max-width: 760px) {
+  body.stagelight .tn-teaser-full { display: none; }
+  body.stagelight .tn-teaser-min { display: inline; }
+}
+@media (max-width: 560px) {
+  body.stagelight .tn-teaser, body.stagelight .tn-city { display: none; }
+}
 body.stagelight .tonight-odds.is-open .tonight-toggle .sc-chev { transform: rotate(180deg); }
 body.stagelight .tonight-panel-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.25s ease; }
 body.stagelight .tonight-odds.is-open .tonight-panel-wrap { grid-template-rows: 1fr; }

@@ -151,13 +151,28 @@ function checkTourStats(html, siteData) {
     .sort((left, right) => right.tourCount - left.tourCount || left.title.localeCompare(right.title));
   const average = shows ? (plays / shows).toFixed(1) : "0";
 
-  assertIncludes(feature, "<h2>Tour stats</h2>", "Homepage has a separate Tour Stats section");
+  // The outer accordion is gone: the section is always open, headed by a compact
+  // "Dork stats" intro row (title + three quiet lines), no disclosure/summary/chevron.
+  assertNotIncludes(feature, "stats-disclosure", "Dork stats has no outer accordion wrapper");
+  assertIncludes(feature, '<h2 class="ds-title">Dork stats</h2>', "Homepage has a separate Dork stats section");
+  for (const line of [
+    "Every song played this tour, how often it shows up, and how long it has been gone.",
+    "Highlight any show to mark its songs in the table.",
+    "Filter, sort, and open the full list when you want the whole rabbit hole."
+  ]) assertIncludes(feature, line, "Dork stats intro carries its three lede lines");
+
+  // Summary stats: ONE horizontal rail (single surface, four equal columns), not
+  // the old four-tile bento and not the Nick section's .nick-stat tiles.
+  assertIncludes(feature, '<div class="stats-rail"', "Dork stats summary is a single horizontal rail");
+  assertNotIncludes(feature, "data-metrics", "Dork stats drops the four-tile metric bento");
+  assertNotIncludes(feature, "nick-stat", "Dork stats rail does not reuse the Nick .nick-stat tiles");
+  record("Dork stats rail has exactly four stat columns", (feature.match(/<div class="stat-col">/g) || []).length === 4);
   for (const [value, label] of [
     [shows, "shows played"],
     [songs.length, "unique songs"],
     [plays, "song plays"],
     [average, "songs per show"]
-  ]) assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Tour Stats reports ${label}`);
+  ]) assertIncludes(feature, `<strong>${value}</strong><span>${label}</span>`, `Dork stats reports ${label}`);
 
   for (const key of ["title", "count", "rarity", "heat", "last"]) {
     assertIncludes(feature, `data-sort="${key}"`, `Tour Stats supports sorting by ${key}`);
@@ -200,6 +215,18 @@ function checkTourStats(html, siteData) {
   record("Not-played songs render as hidden data-played=no rows", notPlayedRows.length === notPlayed.length && notPlayedRows.every((tr) => / hidden>/.test(tr)), `${notPlayedRows.length} not-played rows vs ${notPlayed.length} expected`);
   const playedRows = [...feature.matchAll(/<tr [^>]*data-played="yes"[^>]*>/g)];
   record("Played songs render as visible data-played=yes rows", playedRows.length === songs.length && playedRows.every((match) => !/ hidden>/.test(match[0])), `${playedRows.length} played rows vs ${songs.length} expected`);
+
+  // Consolidated-pass toolbar: renamed not-played label, a Find-a-song search at the
+  // right end, the marker-color dot in the Highlight control, and a computed
+  // "Explore all N songs" expand affordance with the bounded-scroll markup.
+  assertIncludes(feature, ">Not played this tour<", "Not-played toggle uses the full 'Not played this tour' label");
+  assertIncludes(feature, "data-song-search", "Dork stats has a Find-a-song text search");
+  assertIncludes(feature, 'placeholder="Find a song"', "Find-a-song search carries its mono placeholder");
+  assertIncludes(feature, "data-show-filter-dot", "Highlight control surfaces the selected show's marker color as a dot");
+  assertIncludes(feature, "data-applied-filters", "Dork stats has an applied-filter row container");
+  assertIncludes(feature, `data-expand-label="Explore all ${new Intl.NumberFormat("en-US").format(songs.length)} songs"`, "Expand control computes 'Explore all N songs'");
+  assertIncludes(feature, 'data-collapse-label="Show fewer"', "Expand control collapses back to 'Show fewer'");
+  assertIncludes(feature, 'class="tour-table-wrap is-capped" data-table-scroll', "Table wrap stays a capped scroll container for the bounded expand");
 }
 
 function checkTourSongCounts(html, siteData) {
@@ -447,17 +474,33 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
   record("Card group is lifted 72px so setlist shows above the card tops",
     /\.bento-region\s+\.bento-grid\s*\{[^}]*translateY\(-72px\)/.test(sl));
 
-  // (2) Round-4 features present and wired (accordion, custom show dropdown,
-  // stable sort state) — the three the owner reported reverted.
-  record("Tour Stats stays a collapsible accordion", homeHtml.includes('class="stats-disclosure"'));
+  // (2) Consolidated pass: the Dork stats accordion is REMOVED (section always open),
+  // while the custom show dropdown + stable sort state stay wired.
+  record("Dork stats section drops the outer accordion (always open)", !homeHtml.includes('class="stats-disclosure"'));
   record("Highlight-a-show stays the custom dark dropdown", homeHtml.includes("data-show-filter-dd") && homeHtml.includes('class="sf-option is-active"'));
   record("Custom show dropdown highlights the selected option when open", /sf-option[^"]*is-active/.test(homeHtml) && homeHtml.includes('classList.toggle("is-active"'));
-  record("Tour Stats sort order is tracked as stable state (no reorder on filter)", homeHtml.includes("applyState") && homeHtml.includes("compareRows") && !homeHtml.includes("applyFilters"));
+  record("Dork stats sort order is tracked as stable state (no reorder on filter)", homeHtml.includes("applyState") && homeHtml.includes("compareRows") && !homeHtml.includes("applyFilters"));
+  record("Dork stats applied-filter row offers a Clear all reset", homeHtml.includes("data-af-clear") && homeHtml.includes("resetAll"));
 
-  // (3) Tonight's Odds — the dataset has a show today (07/21 Sacramento).
+  // (3) Tonight's Odds — the dataset has a show today (07/21 Sacramento). Now its own
+  // accordion, CLOSED by default, with a real top-three teaser on the closed bar.
   record("Dataset has a show today (Tonight's Odds precondition)", Boolean(siteData.site?.isShowDayPreview));
   record("Tonight's Odds data is computed when a show is today", Boolean(siteData.tonightOdds && siteData.tonightOdds.songs?.length));
   record("Tonight's Odds panel is present on the homepage", homeHtml.includes('class="tonight-odds"') && homeHtml.includes("data-tonight-toggle"));
+  record("Tonight's Odds is closed by default (no is-open in markup, opened via JS)", homeHtml.includes('class="tonight-odds" data-tonight>') && !homeHtml.includes('class="tonight-odds is-open"'));
+  record("Tonight's Odds title is the lowercase-o 'Tonight's odds'", homeHtml.includes(">Tonight's odds</span>"));
+  if (siteData.tonightOdds && siteData.tonightOdds.songs?.length) {
+    const top = siteData.tonightOdds.songs.slice(0, 3);
+    const expected = top.map((song) => `${song.title} ${song.heat}`).join(" · ");
+    // The closed-bar full teaser lists the real top-three titles + heat, in order.
+    const full = (homeHtml.match(/<span class="tn-teaser-full">([^<]*)<\/span>/) || [])[1] || "";
+    record("Tonight's Odds teaser previews the real top-three predictions in order",
+      decodeHtml(full) === expected,
+      `teaser="${decodeHtml(full)}" expected="${expected}"`);
+    if (siteData.tonightOdds.city) {
+      record("Tonight's Odds shows the city as a quiet secondary line", homeHtml.includes(`class="tn-city"`) && homeHtml.includes(siteData.tonightOdds.city));
+    }
+  }
   record("Tonight's Odds carries its entertainment disclaimer", homeHtml.includes("This is just math having fun"));
   record("Tonight's Odds lists ranked songs with heat + tier", (homeHtml.match(/class="tn-row/g) || []).length >= 10);
 
@@ -675,7 +718,7 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(html, '<nav class="home-nav" aria-label="Jump to a section">', "Homepage has a section nav");
   record("Section nav sits above the hero", indexOf(html, 'class="home-nav"') >= 0 && indexOf(html, 'class="home-nav"') < indexOf(html, 'id="latest-setlist"'));
   assertIncludes(html, '<a href="/#song-list" data-nav-section="song-list">Song possibilities</a>', "Section nav links to Song possibilities");
-  assertIncludes(html, '<a href="/#tour-stats" data-nav-section="tour-stats">Tour stats</a>', "Section nav links to Tour stats");
+  assertIncludes(html, '<a href="/#tour-stats" data-nav-section="tour-stats">Dork stats</a>', "Section nav links to Dork stats");
   assertIncludes(html, `<a href="/#setlists" data-nav-section="setlists">${siteData.site.year} setlists</a>`, "Section nav links to the year setlists");
 
   // ---- Single hero: the latest posted show, no variants, no swap bento ----
@@ -814,7 +857,7 @@ async function checkLatestSetlist(html, siteData) {
   record("Every posted show is individually expandable in the feed", (archive.match(/<details class="show-entry[^"]*"/g) || []).length === siteData.setlists.length);
   assertIncludes(html, 'row.classList.toggle("is-selected-show"', "Selected-show songs receive a dedicated highlight state");
   assertIncludes(html, 'rightSelected - leftSelected', "Selected-show songs move ahead of the remaining tour table");
-  record("Mobile initialization collapses Tour Stats and the older setlist archive", html.includes('.stats-disclosure, .setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
+  record("Mobile initialization collapses the older setlist archive (Dork stats no longer an accordion)", html.includes('.setlist-archive-panel").forEach((panel) => panel.removeAttribute("open"))'));
   record("Mobile initialization leaves every laminated sheet expanded", !html.includes('.song-panel:not(:first-of-type)') && !html.includes('.shelf-board .song-panel') && !html.includes('.purgatory-board .song-panel') && !html.includes('.woodshed-board .song-panel'));
 
   const bendHeading = "07/11/2026 Hayden Homes Amphitheater, Bend, OR";
@@ -1083,7 +1126,7 @@ async function checkSongLearnBlock(siteData) {
 }
 
 function checkNavigation(html, siteData) {
-  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", `${siteData.site.year} Setlists`, "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
+  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Dork Stats", `${siteData.site.year} Setlists`, "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];
