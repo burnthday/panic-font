@@ -4094,7 +4094,7 @@ function renderTourArchiveCss() {
 }
 
 function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], tourInReviews = []) {
-  const description = "Burnthday's Widespread Panic Tour In Review: one computed page per tour from setlist.fm, unified with Alex's hand-written reviews.";
+  const description = "Widespread Panic tour by tour, going back to 1985. Setlists, stats, and notes from the road.";
 
   // Sort newest first (by last show date, then first).
   const sorted = [...tourInReviews].sort((a, b) => (b.last || "").localeCompare(a.last || "") || (b.first || "").localeCompare(a.first || ""));
@@ -4194,7 +4194,7 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
       ${renderPageHeader({
         crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Tour In Review</span></nav>`,
         title: "Tour In Review",
-        deck: `Burnthday's Widespread Panic Tour In Review pages — one page per tour, computed from setlist.fm and unified with Alex's hand-written reviews. <b>${escapeHtml(countLine)}.</b>`,
+        deck: "One page per tour, going back to 1985... what the boys had cooking, run by run. Setlists, stats, and notes from the road.",
         poster: POSTER_PAGES["tour-in-review"],
         headerClass: "tour-hub-title",
         escapeTitle: false
@@ -4818,7 +4818,7 @@ function renderSongOriginsIndex(origins, options = {}) {
         ${renderPageHeader({
           crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Song Origins</span></nav>`,
           title: "Widespread Panic Song Origins",
-          deck: "The stories behind the songs: how they got written, where they came from, and the people in them. Pulled from band interviews and old fan newsletters, with play history and Burnthday's picks.",
+          deck: "The stories behind the songs... how they got written, where they came from, and who's in them. Pulled from band interviews and old fan newsletters. A few I went down the rabbit hole on myself.",
           poster: POSTER_PAGES["song-origins"]
         })}
         <div class="origin-grid">
