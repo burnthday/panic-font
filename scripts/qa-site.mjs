@@ -136,12 +136,6 @@ function checkCorePageState(html, siteData) {
 
   assertIncludes(html, "The tiny number beside a song counts its plays this tour", "Sheet key explains the tiny number");
   assertIncludes(html, "the last 4 shows marked out in colors", "Board intro line explains the marker color code");
-  // Garrie separator sits once above the board intro; its hidden state uses dash
-  // gaps LARGER than the path lengths so no round-cap dot paints early.
-  record("Garrie separator renders once above the board intro with all five ink paths",
-    (html.match(/class="garrie-sep"/g) || []).length === 1
-    && html.indexOf('class="garrie-sep"') < html.indexOf('class="board-intro"')
-    && ["gs-l1", "gs-oo", "gs-l2"].every((c) => html.includes(`class="${c}"`)) && !html.includes('class="gs-p1"'));
   assertIncludes(html, "The Woodshed", "Sheet key includes The Woodshed");
   record("The Woodshed explains the Nick Johnson logic", html.includes("The Woodshed lists rotation songs") && html.includes("hasn&#39;t played yet") || html.includes("The Woodshed lists rotation songs"), "Woodshed Ramp column present");
   record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed-sheet").includes("songs not yet played with Nick Johnson"));
@@ -2287,16 +2281,23 @@ async function checkFontLoading(files, htmlByFile) {
 async function checkHeroTransitionEngine(homeHtml) {
   const css = await readText("dist/stagelight.css").catch(() => "");
   // CSS scaffolding for the crossfade/height engine.
-  record("Hero slots are positioning contexts with a height-tween swap state",
+  record("Hero swap clips slots and tweens ONLY the section height (slide engine v2)",
     /body\.stagelight \.hero-slot \{ position: relative; \}/.test(css)
-    && /body\.stagelight \.hero-slot\.is-swapping \{[^}]*transition: height 0\.3s cubic-bezier\(0\.22,1,0\.36,1\)/.test(css),
-    "hero-slot + is-swapping height transition present");
-  record("Hero views carry the crossfade transition and directional enter/leave states",
-    /body\.stagelight \.hv \{ transition: opacity 0\.3s cubic-bezier\(0\.22,1,0\.36,1\), transform 0\.3s/.test(css)
+    && /body\.stagelight \.hero-slot\.is-swapping \{ overflow: hidden; \}/.test(css)
+    && /body\.stagelight \.home-hero\.is-swapping \{ transition: height 0\.32s cubic-bezier\(0\.22,1,0\.36,1\)/.test(css)
+    && !/hero-slot\.is-swapping \{[^}]*transition: height/.test(css),
+    "section-level height tween, no per-slot height transitions");
+  record("Hero views slide horizontally with direction (photos crossfade in place)",
+    /body\.stagelight \.hv \{ transition: opacity 0\.28s cubic-bezier\(0\.22,1,0\.36,1\), transform 0\.28s/.test(css)
     && css.includes(".hv.is-leaving { position: absolute")
-    && css.includes(".hv.is-enter-next") && css.includes(".hv.is-enter-prev")
-    && css.includes(".hv.is-leave-next") && css.includes(".hv.is-leave-prev"),
-    "crossfade + drift classes present");
+    && /\.hv\.is-enter-next \{ opacity: 0; transform: translateX\(28px\); \}/.test(css)
+    && /\.hv\.is-enter-prev \{ opacity: 0; transform: translateX\(-28px\); \}/.test(css)
+    && /\.hv\.is-leave-next \{ opacity: 0; transform: translateX\(-22px\); \}/.test(css)
+    && /hero-media-slot \.hv\.is-enter-next[^}]*transform: none/.test(css),
+    "horizontal slide classes + media crossfade exception present");
+  record("Pager arrows are position-stable (lockwrap top-aligned, never re-centered)",
+    /body\.stagelight \.hero-lockwrap \{[^}]*align-self: start/.test(css) && !/hero-lockwrap \{[^}]*align-self: center/.test(css),
+    "lockwrap align-self start");
   record("Reduced motion disables the hero view transitions",
     /@media \(prefers-reduced-motion: reduce\) \{\s*body\.stagelight \.hv \{ transition: none/.test(css),
     "reduced-motion guard present");
@@ -2307,11 +2308,13 @@ async function checkHeroTransitionEngine(homeHtml) {
     homeHtml.includes('classList.add("is-leaving")') && homeHtml.includes('classList.add(enterCls)')
     && homeHtml.includes('.hv[data-view="'),
     "is-leaving + enter-class swap present");
-  record("Hero swap tweens explicit slot height between measured from/to heights",
-    homeHtml.includes("p.slot.style.height = fromH")
-    && homeHtml.includes("p.toH = p.slot.offsetHeight")
-    && homeHtml.includes('classList.add("is-swapping")')
-    && homeHtml.includes('p.slot.style.height = "";'),
+  record("Hero swap tweens the hero section height once between measured from/to heights",
+    homeHtml.includes("const fromHeroH = hero.offsetHeight")
+    && homeHtml.includes("const toHeroH = hero.offsetHeight")
+    && homeHtml.includes('hero.style.height = fromHeroH + "px"')
+    && homeHtml.includes('hero.style.height = toHeroH + "px"')
+    && homeHtml.includes('hero.style.height = "";')
+    && !homeHtml.includes("p.slot.style.height"),
     "height measure + tween + clear present");
   record("Hero gates the swap on decoded target imagery, capped so slow networks never block",
     homeHtml.includes("readyImages") && homeHtml.includes("img.decode()") && homeHtml.includes("setTimeout(res, 350)"),

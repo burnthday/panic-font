@@ -18,3 +18,4 @@ Unchecked items resurface at session start until cleared. Check the box or delet
 - [ ] 2026-07-22 — Video slider above Song Origins: planned, awaiting Alex's go + approved official-video list (raised in: round-6 batch)
 - [ ] 2026-07-22 — Nick Heat model: Alex fan-eye review of the top-10 once backtest lands; add explicit exclusion list if any one-offs survive (raised in: Nick correction pass)
 - [ ] 2026-07-22 — Mobile: 4-column song sheet wider than phone viewport (clamped, no visible pan) — fold into the dedicated mobile sweep (raised in: hero mobile fix)
+- [ ] 2026-07-22 — Garrie separator PARKED (Alex): built + animated, pulled from above the board intro pending a future spot; design lives in ~/Desktop/garrie-separator.html and git history (35d8a22 era)

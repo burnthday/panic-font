@@ -7153,18 +7153,6 @@ function renderSheetArrowScript() {
   return `(() => {
     const arrows = [...document.querySelectorAll(".sheet-arrow")];
     const grid = document.querySelector(".key-grid");
-    // The Garrie separator (above the board intro) shares the ink system: arm it
-    // and draw once on its own viewport entry.
-    const sep = document.querySelector(".garrie-sep");
-    if (sep && "IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      sep.classList.add("armed");
-      const sepIo = new IntersectionObserver((entries, obs) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) { sep.classList.add("draw"); obs.disconnect(); }
-        }
-      }, { threshold: 0.6 });
-      sepIo.observe(sep);
-    }
     if (!arrows.length || !grid) return;
     if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     arrows.forEach((arrow) => arrow.classList.add("armed"));
@@ -7355,21 +7343,25 @@ function renderHeroModalScript() {
           finishSwap(iso);
           return;
         }
-        // Lift outgoing to absolute, reveal incoming (invisible) so the slot's
-        // natural height becomes the target; pin the from-height, then tween.
+        // Slide engine: lift outgoing views out of flow, reveal incoming ones,
+        // and tween ONLY the hero section's total height (one smooth move) while
+        // content slides horizontally. Nothing inside ever repositions.
+        const fromHeroH = hero.offsetHeight;
         plans.forEach((p) => {
-          const fromH = p.slot.offsetHeight;
           if (p.out) p.out.classList.add("is-leaving");
           if (p.inc) { p.inc.hidden = false; p.inc.classList.add(enterCls); }
-          p.toH = p.slot.offsetHeight;
           p.slot.classList.add("is-swapping");
-          p.slot.style.height = fromH + "px";
         });
+        const toHeroH = hero.offsetHeight;
+        if (toHeroH !== fromHeroH) {
+          hero.classList.add("is-swapping");
+          hero.style.height = fromHeroH + "px";
+        }
         activateBg(iso);
         void hero.offsetHeight;
         nextFrame(() => {
+          if (toHeroH !== fromHeroH) hero.style.height = toHeroH + "px";
           plans.forEach((p) => {
-            p.slot.style.height = p.toH + "px";
             if (p.inc) { p.inc.classList.remove(enterCls); p.inc.classList.add("is-active"); }
             if (p.out) { p.out.classList.remove("is-active"); p.out.classList.add(leaveCls); }
           });
@@ -7379,8 +7371,9 @@ function renderHeroModalScript() {
               if (p.out) { p.out.classList.remove("is-leaving", "is-leave-next", "is-leave-prev"); p.out.hidden = true; }
               if (p.inc) p.inc.classList.remove("is-enter-next", "is-enter-prev");
               p.slot.classList.remove("is-swapping");
-              p.slot.style.height = "";
             });
+            hero.classList.remove("is-swapping");
+            hero.style.height = "";
             finishSwap(iso);
           });
         });
@@ -8432,14 +8425,7 @@ function renderBoardIntro(data) {
     const run = numeral ? ` ${numeral}` : "";
     return `<li class="bi-swipe" style="--mc:${color}; --cut:${cuts[index] || "96%"}" data-date="${escapeAttr(item.isoDate)}"><b>${escapeHtml(city)}${run}</b></li>`;
   }).join("");
-  return `<div class="garrie-sep" aria-hidden="true">
-    <svg viewBox="0 0 560 26" fill="none" xmlns="http://www.w3.org/2000/svg" class="garrie-sep-svg">
-      <path class="gs-l1" d="M10 16 C62 13.5 128 14.5 186 13.8 C214 13.5 236 14 249 13.6"/>
-      <path class="gs-oo" d="M266 10.5 C270.5 7.8 280 8.2 282.5 11.4 C284.6 14.2 280.8 17.6 274.6 17.3 C269.3 17 264.9 14.4 266.6 11.2"/>
-      <path class="gs-l2" d="M300 13.4 C348 12.6 420 14.6 478 13.2 C506 12.6 534 13.4 550 12.8"/>
-    </svg>
-  </div>
-  <div class="board-intro">
+  return `<div class="board-intro">
     <div class="bi-copy">
       <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}. Learn what songs are available with the last 4 shows marked out in colors and how many times each song has been played this year.</span></h2>
     </div>
@@ -13824,23 +13810,6 @@ body.stagelight .hero-bg::before { content: ""; position: absolute; inset: 0; z-
 body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 380px; margin-bottom: -380px; overflow: hidden; pointer-events: none; z-index: 0; }
 body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.3; }
 body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
-/* Garrie separator: two lazy strokes meeting a hand-looped o (traced from the
-   sheet scans, straightened per Alex). Draws with pen pacing when scrolled into
-   view. Dash gaps exceed path lengths so no cap-dot artifact paints early. */
-body.stagelight .garrie-sep { margin: 96px auto -56px; width: min(560px, 74%); line-height: 0; position: relative; z-index: 1; }
-body.stagelight .garrie-sep-svg { display: block; width: 100%; height: auto; overflow: visible; }
-body.stagelight .garrie-sep path { fill: none; stroke: rgba(255,255,255,0.62); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-body.stagelight .garrie-sep .gs-oo { stroke-width: 2; }
-body.stagelight .garrie-sep .gs-l1, body.stagelight .garrie-sep .gs-l2 { stroke-dasharray: 244; stroke-dashoffset: 0; }
-body.stagelight .garrie-sep .gs-oo { stroke-dasharray: 64; stroke-dashoffset: 0; }
-body.stagelight .garrie-sep.armed .gs-l1, body.stagelight .garrie-sep.armed .gs-l2 { stroke-dashoffset: 244; }
-body.stagelight .garrie-sep.armed .gs-oo { stroke-dashoffset: 64; }
-body.stagelight .garrie-sep.armed.draw .gs-l1 { animation: gs-draw 520ms cubic-bezier(0.45, 0.05, 0.4, 1) forwards; }
-body.stagelight .garrie-sep.armed.draw .gs-oo { animation: gs-draw 240ms cubic-bezier(0.5, 0.05, 0.35, 1.08) 480ms forwards; }
-body.stagelight .garrie-sep.armed.draw .gs-l2 { animation: gs-draw 520ms cubic-bezier(0.45, 0.05, 0.4, 1) 700ms forwards; }
-@keyframes gs-draw { to { stroke-dashoffset: 0; } }
-@keyframes gs-ink { to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { body.stagelight .garrie-sep.armed path { stroke-dashoffset: 0; opacity: 1; animation: none; } }
 /* Blanket stacking rule — MUST exclude anything that positions itself (this
    silently flattened the fixed bento popups once already). */
 /* Blanket stacking rule — MUST exclude every element that positions itself, or
@@ -13857,7 +13826,9 @@ body.stagelight .hero-inner { --hero-pad: max(28px, calc((100vw - 1400px) / 2));
 body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 14px; align-items: start; }
 body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
 body.stagelight .hero-slot, body.stagelight .hero-rail { min-width: 0; }
-body.stagelight .hero-lockwrap { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; }
+/* Top-aligned (was center): centering re-positioned the pager arrows every
+   time a view's height differed — seizure fuel. Pinned start = arrows never move. */
+body.stagelight .hero-lockwrap { grid-column: 1; grid-row: 1; align-self: start; padding-top: 26px; min-width: 0; }
 body.stagelight .hero-pager { display: flex; align-items: center; gap: 8px; margin-top: -10px; margin-bottom: 16px; }
 body.stagelight .hero-page {
   width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--sl-line-strong);
@@ -13869,30 +13840,31 @@ body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
 body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
 body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; margin-top: -34px; }
 body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
-/* View crossfade + height-continuity engine. During a swap the outgoing view is
-   lifted to absolute (is-leaving) so the incoming one takes over the flow and
-   defines the slot's target height; the slot tweens old->new height while the
-   two views crossfade with a small directional drift. No blank frame, no page
-   reflow. See renderHeroModalScript / showView. */
+/* Slide engine (v2, Alex: "the hero needs to slide"). Content slides
+   horizontally in the direction of navigation; the ONLY height that animates is
+   the hero section itself, in one smooth move — no per-slot tweens, so nothing
+   inside (arrows, chips, cards) ever changes position. Photos crossfade in
+   place (no slide) so the right-bleed image stays composed. */
 body.stagelight .hero-slot { position: relative; }
-body.stagelight .hero-slot.is-swapping { overflow: hidden; transition: height 0.3s cubic-bezier(0.22,1,0.36,1); }
-/* The photo slot keeps its box-shadow bleed visible while it swaps (its height
-   never actually changes, so nothing needs clipping). */
+body.stagelight .hero-slot.is-swapping { overflow: hidden; }
 body.stagelight .hero-media-slot.is-swapping { overflow: visible; }
-body.stagelight .hv { transition: opacity 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.3s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .home-hero.is-swapping { transition: height 0.32s cubic-bezier(0.22,1,0.36,1); will-change: height; }
+body.stagelight .hv { transition: opacity 0.28s cubic-bezier(0.22,1,0.36,1), transform 0.28s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hv[hidden] { display: none; }
-/* Outgoing snapshot: out of flow so the incoming view sizes the slot. */
+/* Outgoing snapshot: out of flow so the incoming view takes over the flow. */
 body.stagelight .hv.is-leaving { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-/* Enter start states (applied one frame before they transition to rest). next =
-   the incoming view rises from below (+8px); prev = it settles from above. */
-body.stagelight .hv.is-enter-next { opacity: 0; transform: translateY(8px); }
-body.stagelight .hv.is-enter-prev { opacity: 0; transform: translateY(-8px); }
-/* Leave end states: fade out with a slight opposite 4px drift. */
-body.stagelight .hv.is-leave-next { opacity: 0; transform: translateY(-4px); }
-body.stagelight .hv.is-leave-prev { opacity: 0; transform: translateY(4px); }
+/* Slide start/end states. next = incoming slides in from the right; prev = from
+   the left; outgoing exits the opposite way. */
+body.stagelight .hv.is-enter-next { opacity: 0; transform: translateX(28px); }
+body.stagelight .hv.is-enter-prev { opacity: 0; transform: translateX(-28px); }
+body.stagelight .hv.is-leave-next { opacity: 0; transform: translateX(-22px); }
+body.stagelight .hv.is-leave-prev { opacity: 0; transform: translateX(22px); }
+/* The photo crossfades only — a sliding full-bleed image reads as smear. */
+body.stagelight .hero-media-slot .hv.is-enter-next, body.stagelight .hero-media-slot .hv.is-enter-prev { transform: none; }
+body.stagelight .hero-media-slot .hv.is-leave-next, body.stagelight .hero-media-slot .hv.is-leave-prev { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   body.stagelight .hv { transition: none; }
-  body.stagelight .hero-slot.is-swapping { transition: none; }
+  body.stagelight .home-hero.is-swapping { transition: none; }
 }
 body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-display); font-size: 52px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
