@@ -8902,15 +8902,18 @@ function renderSheetBentos(data) {
 // under a heavy scrim; plain-language copy; arrows top-right; no hover motion.
 // Position is the per-image facial focus (verified by eye) so the subject
 // survives the tall crop instead of being sliced off.
+// Josh Timmermans photos from the Shelf Watch songs' own last shows (Alex
+// supplied, dates corrected 7/22): matched to each song by nearest show date.
+// pos = facial focus per image, set by eye.
 const SHELF_WATCH_PHOTOS = [
-  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-3.jpg", pos: "44% 30%" },
-  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000.jpg", pos: "52% 26%" },
-  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-2.jpg", pos: "50% 32%" },
-  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-4.jpg", pos: "40% 45%" },
-  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-27-2000-5.jpg", pos: "34% 46%" },
-  { url: "https://wranglerspace.s3-accelerate.amazonaws.com/2021/10/10-29-1999-1.jpg", pos: "60% 42%" }
+  { url: "/assets/shelf-watch/widespread-panic-20210627-red-rocks-1141.jpg", iso: "2021-06-27", pos: "50% 62%" },
+  { url: "/assets/shelf-watch/widespread-panic-20210627-red-rocks-1786.jpg", iso: "2021-06-27", pos: "38% 40%" },
+  { url: "/assets/shelf-watch/mempho-music-festival-widespread-panic-20211002-timmermans-0853.jpg", iso: "2021-10-02", pos: "34% 48%" },
+  { url: "/assets/shelf-watch/widespread-panic-20211023-timmermans-1113.jpg", iso: "2021-10-23", pos: "36% 30%" },
+  { url: "/assets/shelf-watch/widespread-panic-20211024-timmermans-0826.jpg", iso: "2021-10-24", pos: "50% 22%" },
+  { url: "/assets/shelf-watch/widespread-panic-20211024-timmermans-1222.jpg", iso: "2021-10-24", pos: "42% 24%" }
 ];
-const SHELF_WATCH_GALLERY = "https://widespreadpanic.com/galleries/2000-10-28-new-orleans-la-uno-lakefront-arena/";
+const SHELF_WATCH_GALLERY = "https://widespreadpanic.com/galleries/";
 
 // "From the stage": three Alex-approved official videos breaking up the two
 // dense data sections. Thumbnails only (no iframes); click opens the official
@@ -8924,8 +8927,8 @@ const FROM_THE_STAGE_VIDEO = {
   id: "mdKVMEjrqRQ",
   title: "Gradle (Live in Oakland, CA)",
   meta: "Oakland run \u00b7 2026 tour \u00b7 6:13",
-  poster: "/assets/setlists/2026/2026-07-17.jpg",
-  posterCredit: "Photo: Andy Tennille"
+  poster: "/assets/from-the-stage-poster.jpg",
+  posterCredit: "Photo: Josh Timmermans"
 };
 
 function renderFromTheStage() {
@@ -8975,10 +8978,17 @@ function renderShelfWatch(data) {
     const [year, month, day] = iso.split("-").map(Number);
     return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(Date.UTC(year, month - 1, day)));
   };
+  let lastPhotoUrl = "";
   const cards = songs.map((song, index) => {
     const remaining = Math.max(0, cutoff - song.effectiveSlp);
     const slug = data.songSlugMap?.get(song.key) || "";
-    const photo = SHELF_WATCH_PHOTOS[index % SHELF_WATCH_PHOTOS.length];
+    // Nearest-show photo: pick the Timmermans shot closest to this song's last
+    // play; ties/duplicates spread by index so adjacent cards vary.
+    const songTime = new Date(`${song.effectiveLastIso || "2021-01-01"}T12:00:00Z`).getTime();
+    const ranked = [...SHELF_WATCH_PHOTOS].sort((a, b) =>
+      Math.abs(new Date(`${a.iso}T12:00:00Z`).getTime() - songTime) - Math.abs(new Date(`${b.iso}T12:00:00Z`).getTime() - songTime));
+    const photo = ranked[0].url === lastPhotoUrl && ranked.length > 1 ? ranked[1] : ranked[0];
+    lastPhotoUrl = photo.url;
     const pct = Math.min(100, Math.round((song.effectiveSlp / cutoff) * 100));
     const hot = remaining <= 10;
     const inner = `<span class="sw-img" style="background-image:url('${photo.url}'); background-position:${photo.pos}" aria-hidden="true"></span>
@@ -9002,7 +9012,7 @@ function renderShelfWatch(data) {
     </div>
   </div>
   <div class="sw-rail" data-sw-rail>${cards}</div>
-  <p class="sw-credit">Photos by <a href="${SHELF_WATCH_GALLERY}">Thomas G. Smith</a></p>
+  <p class="sw-credit">Photos by <a href="${SHELF_WATCH_GALLERY}">Josh Timmermans</a></p>
   <script>
     (() => {
       const rail = document.querySelector("[data-sw-rail]");
@@ -15140,7 +15150,7 @@ body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; bo
 body.stagelight .from-the-stage { padding: 0; }
 body.stagelight .fs-player { position: relative; aspect-ratio: 21 / 9; border: 1px solid var(--sl-line); border-radius: var(--sl-r); overflow: hidden; background: #0d0d10; }
 body.stagelight .fs-poster { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; position: relative; text-align: left; }
-body.stagelight .fs-poster img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .fs-poster img { width: 100%; height: 100%; object-fit: cover; object-position: center 58%; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .fs-poster:hover img { transform: scale(1.015); }
 body.stagelight .fs-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.25) 0%, rgba(9,9,11,0.1) 40%, rgba(9,9,11,0.78) 88%); }
 body.stagelight .fs-play {

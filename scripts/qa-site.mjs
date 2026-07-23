@@ -121,8 +121,8 @@ function checkCorePageState(html, siteData) {
   record("From the stage: one cinematic featured video between Dork stats and Shelf Watch (our photo poster, click-to-play, zero shipped iframes)",
     indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="from-the-stage"') && indexOf(html, 'id="from-the-stage"') < indexOf(html, 'id="shelf-watch"')
     && sectionHtml(html, "from-the-stage").includes('data-video-id="mdKVMEjrqRQ"')
-    && sectionHtml(html, "from-the-stage").includes("/assets/setlists/2026/2026-07-17.jpg")
-    && sectionHtml(html, "from-the-stage").includes("Photo: Andy Tennille")
+    && sectionHtml(html, "from-the-stage").includes("/assets/from-the-stage-poster.jpg")
+    && sectionHtml(html, "from-the-stage").includes("Photo: Josh Timmermans")
     && !sectionHtml(html, "from-the-stage").includes("<iframe")
     && !sectionHtml(html, "from-the-stage").includes("i.ytimg.com")
     && sectionHtml(html, "from-the-stage").includes("youtube-nocookie.com/embed/")
@@ -274,7 +274,7 @@ function checkShelfWatch(html, siteData) {
     feature.includes("data-sw-prev") && feature.includes("data-sw-next") && !feature.includes("th-tip") && !feature.includes("SLP \u2014"),
     "arrows present, tooltip removed");
   record("Shelf Watch cards carry the archival photos with one credit line",
-    (feature.match(/class="sw-img"/g) || []).length >= 4 && feature.includes("Photos by") && feature.includes("Thomas G. Smith") && feature.includes("2000-10-28-new-orleans") && !feature.includes("New Orleans, "),
+    (feature.match(/class="sw-img"/g) || []).length >= 4 && feature.includes("Photos by") && feature.includes("Josh Timmermans") && feature.includes("/assets/shelf-watch/") && feature.includes("widespreadpanic.com/galleries"),
     "photo backgrounds + single linked credit");
   record(
     "Shelf Watch is derived from the closest eligible SLP values",
