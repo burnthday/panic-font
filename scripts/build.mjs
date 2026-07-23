@@ -3175,8 +3175,6 @@ function renderLivingPoster(cfg) {
         <canvas class="lp-layer lp-starfield"></canvas>
         <img class="lp-layer lp-plate" alt="" src="${escapeAttr(cfg.plate)}" width="${cfg.pw}" height="${cfg.ph}" loading="lazy" decoding="async">
         <canvas class="lp-layer lp-fx"></canvas>
-        <div class="lp-layer lp-grade"></div>
-        <div class="lp-layer lp-sheen"></div>
       </div>
     </div>
     <script>(${livingPosterRuntime.toString()})(${JSON.stringify(runtimeCfg)});</script>`;
@@ -8105,7 +8103,7 @@ function renderNickRankingScript() {
     const mobileSort = feature.querySelector("[data-nick-mobile-sort]");
     const typeButtons = [...feature.querySelectorAll("[data-nick-type]")];
     const songbook = feature.querySelector("[data-nick-songbook]");
-    const CAP = 6;
+    const CAP = 9;
     // Which data column drives each sort key, whether it is numeric, and its
     // natural default direction the first time you click that header.
     const COLS = {
@@ -8167,7 +8165,7 @@ function renderNickRankingScript() {
         songbook.textContent = expanded ? songbook.dataset.fewerLabel : songbook.dataset.moreLabel;
       }
       // Expanded = bounded scroll window with a sticky header + full column set
-      // (reuse the tour-stats capped-wrap treatment). Collapsed = six-row preview
+      // (reuse the tour-stats capped-wrap treatment). Collapsed = CAP-row preview
       // in the three-column Song / Why now / Heat presentation.
       if (wrap) {
         wrap.classList.toggle("is-capped", expanded);
@@ -9746,14 +9744,17 @@ function computeNickRankModel(rotation, setlistShows) {
 // last-played, last-with-Nick) so the inline handler can switch view + re-sort +
 // re-cap without a refetch. Columns literally change per view via a data-view
 // attribute on the <ol> (CSS toggles .nx / .pv cells). Default view = "most likely
-// next": only eligible songs show, top six by Heat visible, the rest ship hidden.
+// next": only eligible songs show, top NICK_PREVIEW_ROWS by Heat visible, rest hidden.
+// Preview row count. Raised from 6 to 9 so the odds list runs to roughly the same
+// depth as the 50%/rig card beside it — at 6 the right column ended ~350px short.
+const NICK_PREVIEW_ROWS = 9;
 function renderNickRanking(songs, modelByKey, nickLastByKey) {
   const tierClass = (h) => (h >= 75 ? "nk-hot" : h >= 45 ? "nk-warm" : "nk-long");
   const rows = songs.map((song) => ({ song, m: modelByKey.get(song.key) || { eligible: false, heat: 0, medianGap: null, c100: 0, overdueRatio: 0 } }));
-  // Default order: eligible by Heat desc first (so the visible top six are correct
+  // Default order: eligible by Heat desc first (so the visible top rows are correct
   // with JS off), then everything else by Heat desc, ties by title.
   rows.sort((a, b) => (b.m.eligible - a.m.eligible) || (b.m.heat - a.m.heat) || a.song.title.localeCompare(b.song.title));
-  const visibleKeys = new Set(rows.filter((r) => r.m.eligible).slice(0, 6).map((r) => r.song.key));
+  const visibleKeys = new Set(rows.filter((r) => r.m.eligible).slice(0, NICK_PREVIEW_ROWS).map((r) => r.song.key));
 
   return `<ol class="nick-ranking" data-view="next">${rows.map((row, index) => {
     const song = row.song;
@@ -14542,7 +14543,7 @@ body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; obj
 /* Media slot sits in normal flow under the hero-inner padding — no bleed. */
 body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
 /* Ticker: slow continuous crawl, pauses on hover; static scroll under 900px / reduced motion. */
-body.stagelight .hero-ticker { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
+body.stagelight .hero-ticker { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent); }
 body.stagelight .tk-track { display: inline-flex; align-items: center; gap: 18px; padding: 4px 2px 8px; white-space: nowrap; width: max-content; animation: tk-crawl 46s linear infinite; }
 body.stagelight .hero-ticker:hover .tk-track { animation-play-state: paused; }
 @keyframes tk-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -15039,6 +15040,7 @@ body.stagelight .nick-ranking-wrap.is-preview .nrh-why { display: block; }
 /* Strip the expanded-only cells + the row furniture the preview drops:
    rank, Type chip, Plays, Gap, Last, Last-with-Nick, the long sub-sentence,
    and the HOT/tier word (the Heat number stays). */
+body.stagelight .nick-ranking-wrap.is-preview .nrh-rank,
 body.stagelight .nick-ranking-wrap.is-preview .nick-rank,
 body.stagelight .nick-ranking-wrap.is-preview .nick-type,
 body.stagelight .nick-ranking-wrap.is-preview .nick-plays,
@@ -15082,7 +15084,7 @@ body.stagelight .xp-bg { position: absolute; inset: 0; z-index: -2; }
 body.stagelight .xp-bg img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
 body.stagelight .xp-card::after {
   content: ""; position: absolute; inset: 0; z-index: -1;
-  background: linear-gradient(200deg, rgba(9,9,11,0.28) 0%, rgba(9,9,11,0.62) 46%, rgba(9,9,11,0.94) 100%);
+  background: linear-gradient(200deg, rgba(9,9,11,0.06) 0%, rgba(9,9,11,0.30) 52%, rgba(9,9,11,0.88) 100%);
 }
 body.stagelight .xp-cover .xp-bg img { object-position: center 30%; }
 body.stagelight .xp-body { position: relative; z-index: 1; display: grid; gap: 6px; padding: 26px 28px; }
@@ -16049,7 +16051,8 @@ body.stagelight .page-deck b { color: var(--sl-ink); font-weight: 600; }
    All motion is transform/opacity only and contained.
    ============================================================ */
 body.stagelight .ph-wrap {
-  position: relative; isolation: isolate; contain: layout style;
+  position: relative; isolation: isolate; contain: layout paint style;
+  overflow: hidden;
   width: min(980px, calc(100vw - 48px));
   margin-left: 50%; transform: translateX(-50%);
 }
@@ -16071,13 +16074,19 @@ body.stagelight .ph-halo {
   background: var(--poster) center/cover; filter: blur(55px) saturate(1.6) brightness(1.25);
   opacity: 0.24; animation: phHalo 8s ease-in-out infinite alternate; pointer-events: none;
 }
+/* Atmosphere wash is strictly contained to the header: the wrap clips it (overflow
+   hidden + contain paint), and it never extends past the header's bottom — the
+   bottom inset is 0 and a mask fades it to full transparency well ABOVE the bottom
+   edge, so the first row of content cards below gets zero tint. */
 body.stagelight .ph-atmos {
-  position: absolute; inset: -15%; z-index: -1; pointer-events: none; overflow: hidden;
+  position: absolute; inset: -15% -15% 0 -15%; z-index: -1; pointer-events: none; overflow: hidden;
 }
 body.stagelight .ph-atmos::before {
   content: ""; position: absolute; inset: 0;
   background: var(--poster) center/cover; filter: blur(90px) saturate(1.35);
   opacity: 0.16; animation: phAtmos 18s ease-in-out infinite alternate;
+  -webkit-mask-image: linear-gradient(#000 55%, transparent 82%);
+  mask-image: linear-gradient(#000 55%, transparent 82%);
 }
 body.stagelight .ph-atmos::after {
   content: ""; position: absolute; inset: 0;
@@ -16110,31 +16119,26 @@ body.stagelight .ph-atmos::after {
    the header float, which the reduced-motion block above kills.
    ============================================================ */
 body.stagelight .living-poster { position: relative; }
+/* TRANSPARENT backing: the stage never fills with a solid colour, so at rest the
+   host surface (glass panel / header background) reads continuously through every
+   sky pixel and every gap between the dots — only the knocked-out art and the
+   synthetic stars are opaque. The starfield canvas clears to transparent each
+   frame; the fx canvas is additive (screen). No grade/sheen framing layers. */
 body.stagelight .lp-stage {
   position: relative; width: 100%; aspect-ratio: var(--lp-aspect, 1 / 1);
-  border-radius: 4px; overflow: hidden; background: #000;
-  box-shadow: 0 40px 120px -34px rgba(0,0,0,.95), 0 8px 40px -12px rgba(20,40,70,.35), 0 0 0 1px rgba(255,255,255,.035);
+  overflow: hidden; background: transparent;
 }
 body.stagelight .lp-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; transform: translateZ(0); }
 body.stagelight .lp-starfield { z-index: 1; }
 body.stagelight .lp-plate { z-index: 2; object-fit: cover; }
 body.stagelight .lp-fx { z-index: 3; mix-blend-mode: screen; }
-body.stagelight .lp-grade {
-  z-index: 4;
-  background:
-    radial-gradient(132% 100% at 50% 46%, rgba(0,0,0,0) 50%, rgba(0,0,0,.26) 80%, rgba(0,0,0,.52) 100%),
-    radial-gradient(85% 60% at 50% 116%, rgba(150,80,26,.12), rgba(0,0,0,0) 60%),
-    radial-gradient(70% 55% at 50% -10%, rgba(40,80,140,.10), rgba(0,0,0,0) 55%);
-}
-body.stagelight .lp-sheen { z-index: 5; background: linear-gradient(180deg, rgba(255,255,255,.026) 0%, rgba(255,255,255,0) 22%); mix-blend-mode: screen; }
 /* Homepage: drops into the Nick panel where the static rig art used to sit —
    capped small so it complements the ranking table, never dominates (owner note). */
 body.stagelight .nick-panel .living-poster { margin: 22px auto 6px; max-width: 468px; }
-/* Song Origins header: 200px stamp, no frame, masked fade + float to match the
-   static poster stamp it replaces; the sky knockout lets the halo glow through. */
+/* Song Origins header: 200px stamp, masked fade + float to match the static poster
+   stamp it replaces; the transparent sky knockout lets the header wash read through. */
 body.stagelight .ph-poster.is-living .living-poster { z-index: 1; animation: phFloat 9s ease-in-out infinite alternate; }
 body.stagelight .ph-poster.is-living .lp-stage {
-  border-radius: 0; box-shadow: none; background: transparent;
   -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
   mask-image: linear-gradient(#000 78%, transparent 99%);
 }

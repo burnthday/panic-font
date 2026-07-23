@@ -346,16 +346,19 @@ async function checkNickJohnsonFeature(html, siteData) {
     "nick-tiles present, old blocks gone");
 
   // Living poster (rig) in the Nick panel: synthetic starfield canvas BEHIND a
-  // knocked-out plate img, gear-light fx canvas above, grade + sheen. The plate
-  // is a FILE reference (never a multi-MB inline data URI); the compact dot table
-  // is inlined into this one page. rAF + timeout fallback + reduced-motion still.
+  // knocked-out plate img, gear-light fx canvas above. Backing is TRANSPARENT (no
+  // solid fill, no grade/sheen framing) so the glass panel reads through the sky.
+  // The plate is a FILE reference (never a multi-MB inline data URI); the compact
+  // dot table is inlined into this one page. rAF + timeout fallback + reduced still.
   record("Nick panel ships the living rig poster (starfield canvas behind a knocked-out plate)",
     /class="living-poster lp-rig" data-living="lp\d+"/.test(feature)
     && feature.includes('class="lp-layer lp-starfield"')
     && feature.includes('class="lp-layer lp-plate" alt="" src="/assets/living/nick-plate.webp"')
-    && feature.includes('class="lp-layer lp-fx"')
-    && feature.includes('class="lp-layer lp-grade"') && feature.includes('class="lp-layer lp-sheen"'),
+    && feature.includes('class="lp-layer lp-fx"'),
     "living rig stack present with plate referenced as a file");
+  record("Living poster drops the demo grade/sheen framing layers (no panel-like frame)",
+    !feature.includes("lp-grade") && !feature.includes("lp-sheen"),
+    "grade/sheen framing removed from the rig markup");
   record("Nick living plate stays a file reference, not an inline data URI",
     !/lp-plate[^>]*src="data:/.test(feature),
     "no inline plate data URI on homepage");
@@ -363,11 +366,23 @@ async function checkNickJohnsonFeature(html, siteData) {
     feature.includes("data-living=\"lp") && feature.includes("requestAnimationFrame")
     && feature.includes("setTimeout(boot") && /prefers-reduced-motion/.test(feature),
     "rig runtime animation-safe");
+  record("Living poster canvas backing is transparent (starfield clears each frame; no solid stage fill)",
+    /body\.stagelight \.lp-stage\s*\{[^}]*background:\s*transparent/.test(sl)
+    && feature.includes("sctx.clearRect(0, 0, W, H)")
+    && !/body\.stagelight \.lp-stage\s*\{[^}]*background:\s*#/.test(sl),
+    "lp-stage transparent + starfield clearRect present");
   record("Stagelight CSS defines the living poster layers + reduced-motion still",
     /body\.stagelight \.lp-stage\b/.test(sl) && /body\.stagelight \.lp-starfield\b/.test(sl)
     && /body\.stagelight \.lp-plate\b/.test(sl) && /body\.stagelight \.lp-fx\b/.test(sl)
     && /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.living-poster[\s\S]*?animation: none/.test(sl),
     "living poster CSS + reduced-motion present");
+  // Atmosphere wash is contained to the header (no overhang onto content cards below).
+  record("Poster-header atmosphere wash is clipped to the header wrapper (no overhang)",
+    /body\.stagelight \.ph-wrap\s*\{[^}]*overflow:\s*hidden/.test(sl)
+    && /body\.stagelight \.ph-wrap\s*\{[^}]*contain:\s*layout paint style/.test(sl)
+    && /body\.stagelight \.ph-atmos\s*\{[^}]*inset:\s*-15% -15% 0 -15%/.test(sl)
+    && /body\.stagelight \.ph-atmos::before\s*\{[^}]*mask-image:\s*linear-gradient\(#000 55%, transparent 82%\)/.test(sl),
+    "ph-wrap clips + atmos bottom-flush + faded before edge");
 
   assertIncludes(feature, 'class="nick-ranking" data-view="next"', "Nick Johnson feature presents a ranked most-likely-next view with a per-view column set");
 
@@ -461,14 +476,14 @@ async function checkNickJohnsonFeature(html, siteData) {
   const allRows = [...feature.matchAll(/<li class="nick-row[^>]*>/g)].map((match) => match[0]);
   const visibleRows = allRows.filter((li) => !/ hidden>/.test(li));
   const eligibleRows = allRows.filter((li) => /data-eligible="1"/.test(li));
-  const expectedVisible = Math.min(6, eligibleRows.length);
+  const expectedVisible = Math.min(9, eligibleRows.length);
   record(
     "Non-eligible songs ship hidden by default",
     allRows.filter((li) => /data-eligible="0"/.test(li)).every((li) => / hidden>/.test(li)),
     "every non-eligible row hidden"
   );
   record(
-    "Exactly the top six eligible most-likely-next rows are visible by default",
+    "Exactly the top nine eligible most-likely-next rows are visible by default",
     visibleRows.length === expectedVisible && visibleRows.every((li) => {
       const slp = li.match(/data-slp="(\d+)"/);
       return /data-eligible="1"/.test(li) && slp && Number(slp[1]) > 4;
