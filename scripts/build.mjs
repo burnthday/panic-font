@@ -7100,9 +7100,9 @@ function renderHtml(data) {
       ${renderRotationBoard(data)}
       ${renderSheetBentos(data)}
       ${renderTourStats(data)}
-      ${renderFromTheStage()}
       ${renderShelfWatch(data)}
       ${renderNickJohnsonFeature(data)}
+      ${renderFromTheStage()}
       ${renderSetlists(data)}
       ${renderCommunityLinks()}
     </main>
@@ -8926,7 +8926,10 @@ const FROM_THE_STAGE_VIDEO = {
 function renderFromTheStage() {
   const v = FROM_THE_STAGE_VIDEO;
   return `<section class="from-the-stage" id="from-the-stage">
-  <h2 class="sw-lead fs-lead"><b>Official videos from the stage</b> on Widespread Panic&#39;s tour of the west.</h2>
+  <div class="fs-head">
+    <h2 class="sw-lead fs-lead"><b>Official videos from the stage</b> on Widespread Panic&#39;s tour of the west.</h2>
+    <a class="sc-chip sc-chip-glass fs-yt" href="https://www.youtube.com/channel/UCKmXntvZFs9VBYknXMMzIbw">Widespread Panic on YouTube</a>
+  </div>
   <div class="fs-player" data-fs-player data-video-id="${v.id}">
     <button type="button" class="fs-poster" data-fs-play aria-label="Play ${escapeAttr(v.title)}">
       <img src="${v.poster}" alt="" loading="lazy" decoding="async">
@@ -8936,7 +8939,6 @@ function renderFromTheStage() {
       <span class="fs-credit">${v.posterCredit}</span>
     </button>
   </div>
-  <a class="link-quiet fs-more" href="https://www.youtube.com/channel/UCKmXntvZFs9VBYknXMMzIbw">Widespread Panic on YouTube <span aria-hidden="true">\u2192</span></a>
   <script>
     (() => {
       const wrap = document.querySelector("[data-fs-player]");
@@ -15139,10 +15141,13 @@ body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; bo
 /* ---- SHELF WATCH HEAT CARDS ---- */
 /* ---- FROM THE STAGE (one cinematic featured video, our photo as poster) ---- */
 body.stagelight .from-the-stage { padding: 0; }
-body.stagelight .fs-lead { margin: 0 0 30px; max-width: 34ch; }
-body.stagelight .fs-player { position: relative; aspect-ratio: 21 / 9; border: 1px solid var(--sl-line); border-radius: var(--sl-r); overflow: hidden; background: #0d0d10; }
+body.stagelight .fs-head { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 38px; }
+body.stagelight .fs-lead { margin: 0; max-width: 34ch; }
+body.stagelight .fs-yt { margin-left: auto; flex: none; margin-top: 6px; }
+@media (max-width: 760px) { body.stagelight .fs-head { flex-direction: column; gap: 18px; margin-bottom: 26px; } body.stagelight .fs-yt { margin-left: 0; } }
+body.stagelight .fs-player { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--sl-line); border-radius: var(--sl-r); overflow: hidden; background: #0d0d10; }
 body.stagelight .fs-poster { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; position: relative; text-align: left; }
-body.stagelight .fs-poster img { width: 100%; height: 100%; object-fit: cover; object-position: center 45%; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .fs-poster img { width: 100%; height: 100%; object-fit: cover; object-position: center 50%; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .fs-poster:hover img { transform: scale(1.015); }
 body.stagelight .fs-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.25) 0%, rgba(9,9,11,0.1) 40%, rgba(9,9,11,0.78) 88%); }
 body.stagelight .fs-play {
@@ -15159,9 +15164,7 @@ body.stagelight .fs-caption strong { font-family: var(--sl-display); font-size: 
 body.stagelight .fs-caption small { font-size: 13.5px; color: rgba(255,255,255,0.7); }
 body.stagelight .fs-credit { position: absolute; right: 12px; bottom: 10px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.6); }
 body.stagelight .fs-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-body.stagelight .fs-more { margin-top: 16px; }
 @media (max-width: 760px) {
-  body.stagelight .fs-player { aspect-ratio: 16 / 9; }
   body.stagelight .fs-caption strong { font-size: 17px; }
   body.stagelight .fs-play { width: 60px; height: 60px; }
 }
