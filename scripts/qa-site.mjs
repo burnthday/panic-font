@@ -118,6 +118,11 @@ function checkCorePageState(html, siteData) {
   record("Current tour-stop setlists appear above Song List", indexOf(html, 'id="latest-setlist"') < indexOf(html, 'id="song-list"'));
   record("Sheet key bento sits directly below the Song List", indexOf(html, 'id="song-list"') < indexOf(html, 'id="sheet-key"') && indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="tour-stats"'));
   record("Shelf, Purgatory, and Woodshed bentos share the sheet-key grid below the Song List", indexOf(html, 'id="sheet-key"') < indexOf(html, 'id="shelf"') && indexOf(html, 'id="shelf"') < indexOf(html, 'id="purgatory"') && indexOf(html, 'id="purgatory"') < indexOf(html, 'id="woodshed"') && indexOf(html, 'id="woodshed"') < indexOf(html, 'id="tour-stats"'));
+  record("From the stage sits between Dork stats and Shelf Watch with the three approved official videos (thumbnails only, no iframes)",
+    indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="from-the-stage"') && indexOf(html, 'id="from-the-stage"') < indexOf(html, 'id="shelf-watch"')
+    && ["mdKVMEjrqRQ", "vtw8-LTjJN0", "5x4gVol4iIM"].every((id) => html.includes(`youtube.com/watch?v=${id}`) && html.includes(`i.ytimg.com/vi/${id}/`))
+    && !sectionHtml(html, "from-the-stage").includes("<iframe")
+    && sectionHtml(html, "from-the-stage").includes("More from Widespread Panic on YouTube"));
   record("Shelf Watch appears below Tour Stats", indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="shelf-watch"'));
   record("Nick Stats appears below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="nick-johnson"'));
   record("Older setlists appear below Nick Stats", indexOf(html, 'id="nick-johnson"') < indexOf(html, 'id="setlists"'));
