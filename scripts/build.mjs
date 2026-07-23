@@ -14284,6 +14284,13 @@ body.stagelight :is(
   #purgatory-sheet, #woodshed-sheet
 ) { scroll-margin-top: 96px; }
 body.stagelight .head-actions { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+/* Mobile fix: the header inherits width:min(1380px, calc(100% - 40px)) (a 20px
+   gutter each side) AND 28px of internal padding = a 48px inset, which floats the
+   hamburger far off the right edge on a phone. Go full-width with a normal 16px
+   gutter under 600px so brand and hamburger sit on the real rails. */
+@media (max-width: 600px) {
+  body.stagelight .site-head { width: 100%; padding-left: 16px; padding-right: 16px; }
+}
 body.stagelight .head-cta {
   display: inline-flex; align-items: center; height: 40px; padding: 0 20px; border-radius: var(--sl-r-pill);
   font-size: 13.5px; font-weight: 580; color: var(--sl-ink);
@@ -15542,6 +15549,15 @@ body.stagelight .ss-song { display: block; font-size: 15px; line-height: 2.05; w
    whole sheet so titles fill the band ABOVE the cards and only the trailing
    greats (1-2 lines) clear the card bottoms. */
 body.stagelight .sheet-scrawl .ss-col { margin-bottom: 39px; }
+/* Mobile fix: the scrawl's decorative ±20px horizontal bleed (inset: -10px -20px 0)
+   relies on wide side-gutters to absorb it. Under a phone viewport there are no
+   gutters, so the bleed pushes the page ~10px wide and the whole site rocks
+   left-right. Zeroing the horizontal bleed below 600px stops the sideways scroll;
+   this also pulls the fixed .home-nav back to viewport width (it stretches to the
+   page's layout width). Desktop is byte-identical. */
+@media (max-width: 600px) {
+  body.stagelight .sheet-scrawl { left: 0; right: 0; }
+}
 /* Laid out like loose papers: shrunk, each sheet nudged and tilted its own way,
    the first pushed further off the left. Stagger sets how many trailing songs
    reach the light (~2, ~2, ~1.5, ~1, <1). */
