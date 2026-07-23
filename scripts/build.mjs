@@ -12,9 +12,13 @@ const analyticsMeasurementId = "G-R74CMVLLK1";
 let archiveMediaByName = new Map();
 // Living-poster printed-dot field tables (base64, 8-byte records), read once at
 // build start and inlined into the ONE page each drives (homepage Nick section,
-// Song Origins header). The plate art ships as a file via copyAssets — only these
-// compact dot tables (~45–90 KB) are inlined, never the multi-MB plate.
-const LIVING = { nickDots: "", songOriginsDots: "" };
+// and each poster header). The plate art ships as a file via copyAssets — only
+// these compact dot tables (~13–90 KB) are inlined, never the multi-MB plate, and
+// each is emitted on the single page that renders that poster.
+const LIVING = {
+  nickDots: "", songOriginsDots: "",
+  rumorsDots: "", aboutDots: "", shelfDots: "", tourDots: ""
+};
 
 const sheetRanges = {
   catalog: "'Overall Song Stats Sorted By Last Time Played'!A:H",
@@ -1403,6 +1407,10 @@ async function loadLivingDots() {
   };
   LIVING.nickDots = await read("nick-dots.b64.txt");
   LIVING.songOriginsDots = await read("song-origins-dots.b64.txt");
+  LIVING.rumorsDots = await read("rumors-dots.b64.txt");
+  LIVING.aboutDots = await read("about-dots.b64.txt");
+  LIVING.shelfDots = await read("the-shelf-dots.b64.txt");
+  LIVING.tourDots = await read("tour-in-review-dots.b64.txt");
 }
 
 async function copyDirectory(sourceDir, targetDir) {
@@ -3174,6 +3182,66 @@ const POSTER_PAGES = {
   shelf: "the-shelf"
 };
 
+// Every poster header (and the homepage Nick panel) is a living poster: a region-cut
+// print plate over a synthetic starfield, with each poster's own real light sources
+// named as a small light table. Keyed by ART slug. `dotsKey` names the inlined dot
+// field on LIVING; `plate` is the webp shipped via copyAssets; `pw/ph` are the plate
+// pixel dims (dot coords are in this space). Light coords were measured off the art
+// as fractions (x of width, y of height); radii are fractions of width so the field
+// rides the scroll push-in. Intensities sit at the shipped rig/aframe whisper level.
+const POSTER_LIVING = {
+  "song-origins": {
+    mode: "aframe", dotsKey: "songOriginsDots", plate: "song-origins-plate.webp",
+    pw: 1086, ph: 1448, rmax: 7.74, rmin: 0.9, srFloor: 0.45, srScale: 1.22,
+    lights: { FLAME: { x: 0.458, y: 0.606 }, MOON: { x: 0.529, y: 0.291 }, FACE: { x: 0.5, y: 0.56 }, CUP: { x: 0.47, y: 0.64 } }
+  },
+  // The blue crystal ball is a large SUBJECT region kept fully opaque — here it also
+  // glows and breathes cool blue; two faint green mushroom-cap embers flank the base.
+  rumors: {
+    mode: "lights", dotsKey: "rumorsDots", plate: "rumors-plate.webp",
+    pw: 1086, ph: 1448, rmax: 10.73, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      { k: "breathe", x: 0.498, y: 0.604, r: 0.30, rc: 0.16, c: [70, 175, 235], a: 0.15, core: 0.13, sp: 0.55 },
+      { k: "ambient", x: 0.135, y: 0.858, r: 0.06, c: [150, 205, 120], a: 0.045, sp: 0.7 },
+      { k: "ambient", x: 0.80, y: 0.87, r: 0.06, c: [150, 205, 120], a: 0.045, sp: 0.9 }
+    ]
+  },
+  // The white tiger's red eye catches a warm specular ONCE ~1.3s after arrival, then
+  // rests to a faint red ember; a whisper of teal ambient rises off the platform.
+  about: {
+    mode: "lights", dotsKey: "aboutDots", plate: "about-plate.webp",
+    pw: 1122, ph: 1402, rmax: 10.67, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      { k: "blink", x: 0.390, y: 0.404, r: 0.072, rc: 0.024, c: [255, 238, 210], a: 0.44, core: 0.48, t0: 1.3, dur: 0.95 },
+      { k: "core", x: 0.390, y: 0.404, r: 0.022, c: [255, 70, 55], a: 0.10, sp: 1.6 },
+      { k: "breathe", x: 0.5, y: 0.86, r: 0.34, c: [55, 150, 140], a: 0.045, sp: 0.5 }
+    ]
+  },
+  // The carousel tiger's teal eye glints ONCE on arrival, then rests; a faint warm
+  // highlight breathes on the barber-striped carousel pole.
+  "the-shelf": {
+    mode: "lights", dotsKey: "shelfDots", plate: "the-shelf-plate.webp",
+    pw: 1125, ph: 1398, rmax: 10.87, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      { k: "blink", x: 0.356, y: 0.285, r: 0.065, rc: 0.022, c: [200, 240, 255], a: 0.40, core: 0.44, t0: 1.3, dur: 0.95 },
+      { k: "core", x: 0.356, y: 0.285, r: 0.02, c: [80, 205, 215], a: 0.10, sp: 1.5 },
+      { k: "ambient", x: 0.49, y: 0.42, r: 0.06, c: [255, 215, 150], a: 0.045, sp: 0.6 }
+    ]
+  },
+  // Back-view stage shot — its only real light is the scatter of warm embers/sparks
+  // floating behind the boots; a soft warm wash breathes there with them.
+  "tour-in-review": {
+    mode: "lights", dotsKey: "tourDots", plate: "tour-in-review-plate.webp",
+    pw: 1086, ph: 1449, rmax: 10.76, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      {
+        k: "ember", x: 0.5, y: 0.66, r: 0.30, c: [255, 165, 85], a: 0.07, sp: 0.5,
+        pts: [[0.36, 0.63, 0.007], [0.44, 0.605, 0.006], [0.52, 0.665, 0.007], [0.60, 0.62, 0.006], [0.31, 0.70, 0.006], [0.66, 0.69, 0.007], [0.48, 0.725, 0.006]]
+      }
+    ]
+  }
+};
+
 // ── LIVING POSTER ────────────────────────────────────────────────────────────
 // A synthetic starfield canvas (z1) sits BEHIND a knocked-out print plate (z2,
 // true alpha — sky region flooded transparent), so the stars show only through
@@ -3300,29 +3368,30 @@ function livingPosterRuntime(CFG) {
   // ---- starfield (full field, occluded by plate alpha) ----
   function drawStars(t, still) {
     sctx.clearRect(0, 0, W, H);
-    var curPX = mx * W, curPY = my * H, pullR = 0.20 * W, pullR2 = pullR * pullR;
-    var gdx = Math.sin(t * 0.13) * 0.22, gdy = Math.cos(t * 0.11) * 0.17;
+    var curPX = mx * W, curPY = my * H, pullR = 0.30 * W, pullR2 = pullR * pullR;
+    var WU = W / 400;
+    var gdx = Math.sin(t * 0.13) * 0.6 * WU, gdy = Math.cos(t * 0.11) * 0.45 * WU;
     for (var k = 0; k < N; k++) {
       var ox, oy, r, alpha;
       if (still) {
         ox = curX[k]; oy = curY[k]; r = SR[k]; alpha = 1;
       } else {
-        var ax = (homeX[k] - curX[k]) * 0.022, ay = (homeY[k] - curY[k]) * 0.022;
+        var ax = (homeX[k] - curX[k]) * 0.020, ay = (homeY[k] - curY[k]) * 0.020;
         if (hasPointer) {
           var ddx = curPX - curX[k], ddy = curPY - curY[k], d2 = ddx * ddx + ddy * ddy;
-          if (d2 < pullR2) { var f = (1 - Math.sqrt(d2) / pullR) * 0.007 * (0.4 + dp[k]); ax += ddx * f; ay += ddy * f; }
+          if (d2 < pullR2) { var f = (1 - Math.sqrt(d2) / pullR) * 0.024 * (0.4 + dp[k]); ax += ddx * f; ay += ddy * f; }
         }
-        velX[k] = (velX[k] + ax) * 0.90; velY[k] = (velY[k] + ay) * 0.90;
+        velX[k] = (velX[k] + ax) * 0.91; velY[k] = (velY[k] + ay) * 0.91;
         curX[k] += velX[k]; curY[k] += velY[k];
-        var amp = 0.12 + dp[k] * 0.38;
-        var dxk = Math.sin(t * drS[k] * 0.5 + drP[k]) * amp + gdx * (0.3 + dp[k]);
-        var dyk = Math.cos(t * drS[k] * 0.45 + drP[k]) * amp * 0.7 + gdy * (0.3 + dp[k]);
-        var px = pSky.x * (0.4 + dp[k] * 0.9), py = pSky.y * (0.4 + dp[k] * 0.9);
+        var amp = (1.1 + dp[k] * 3.1) * WU;
+        var dxk = Math.sin(t * drS[k] * 0.6 + drP[k]) * amp + gdx * (0.3 + dp[k]);
+        var dyk = Math.cos(t * drS[k] * 0.5 + drP[k]) * amp * 0.7 + gdy * (0.3 + dp[k]);
+        var px = pSky.x * (0.4 + dp[k] * 1.1), py = pSky.y * (0.4 + dp[k] * 1.1);
         ox = curX[k] + dxk + px; oy = curY[k] + dyk + py;
-        var tw = Math.sin(t * twS[k] * 0.5 + twP[k]);
-        alpha = 0.90 + tw * (0.015 + dp[k] * 0.025);
-        if (alpha > 1) alpha = 1; if (alpha < 0.55) alpha = 0.55;
-        r = SR[k] * (dp[k] > 0.55 ? (1 + tw * 0.015) : 1);
+        var tw = Math.sin(t * twS[k] * 0.7 + twP[k]);
+        alpha = 0.86 + tw * (0.06 + dp[k] * 0.12);
+        if (alpha > 1) alpha = 1; if (alpha < 0.30) alpha = 0.30;
+        r = SR[k] * (dp[k] > 0.5 ? (1 + tw * 0.06) : 1);
       }
       sctx.globalAlpha = alpha;
       sctx.fillStyle = DCOL[k];
@@ -3342,45 +3411,45 @@ function livingPosterRuntime(CFG) {
   function drawFxRig(t, still) {
     var ox = pFx.x, oy = pFx.y;
     var TUBE = L.TUBE, ORANGE = L.ORANGE, CROWN1 = L.CROWN1, CROWN2 = L.CROWN2, TUNER = L.TUNER, PRS = L.PRS;
-    var tb = still ? 1.0 : (1 + Math.sin(t * 0.5) * 0.01), A = 0.022 * tb;
+    var tb = still ? 1.0 : (1 + Math.sin(t * 0.5) * 0.02), A = 0.040 * tb;
     radial(TUBE.x * W + ox * 0.5, TUBE.y * H + oy * 0.5, 0.52 * W, [
       [0, "rgba(255,176,96," + A.toFixed(3) + ")"],
       [0.32, "rgba(228,132,58," + (A * 0.55).toFixed(3) + ")"],
       [0.62, "rgba(150,74,30," + (A * 0.18).toFixed(3) + ")"],
       [1, "rgba(80,36,14,0)"]
     ]);
-    var ob = still ? 0.42 : (0.40 + 0.07 * (0.5 + 0.5 * Math.sin(t * 0.7 + 0.4)));
-    radial(ORANGE.x * W + ox, ORANGE.y * H + oy, 0.062 * W, [
-      [0, "rgba(255,214,150," + (0.11 * ob).toFixed(3) + ")"],
-      [0.4, "rgba(255,150,58," + (0.06 * ob).toFixed(3) + ")"],
+    var ob = still ? 0.5 : (0.42 + 0.14 * (0.5 + 0.5 * Math.sin(t * 0.7 + 0.4)));
+    radial(ORANGE.x * W + ox, ORANGE.y * H + oy, 0.068 * W, [
+      [0, "rgba(255,214,150," + (0.20 * ob).toFixed(3) + ")"],
+      [0.4, "rgba(255,150,58," + (0.11 * ob).toFixed(3) + ")"],
       [1, "rgba(210,90,30,0)"]
     ]);
-    radial(ORANGE.x * W + ox, ORANGE.y * H + oy, 0.020 * W, [
-      [0, "rgba(255,238,200," + (0.17 * ob).toFixed(3) + ")"],
+    radial(ORANGE.x * W + ox, ORANGE.y * H + oy, 0.022 * W, [
+      [0, "rgba(255,238,200," + (0.30 * ob).toFixed(3) + ")"],
       [1, "rgba(255,170,80,0)"]
     ]);
     function crown(c, seed) {
-      var fl = still ? 0.4 : (0.40 + 0.04 * (0.5 + 0.5 * Math.sin(t * 0.5 + seed)) + Math.max(0, fnoise(t * 1.4 + seed)) * 0.05);
-      radial(c.x * W + ox * 0.7, c.y * H + oy * 0.7, 0.048 * W, [
-        [0, "rgba(150,206,255," + (0.085 * fl).toFixed(3) + ")"],
-        [0.42, "rgba(88,150,235," + (0.04 * fl).toFixed(3) + ")"],
+      var fl = still ? 0.5 : (0.42 + 0.09 * (0.5 + 0.5 * Math.sin(t * 0.5 + seed)) + Math.max(0, fnoise(t * 1.4 + seed)) * 0.10);
+      radial(c.x * W + ox * 0.7, c.y * H + oy * 0.7, 0.052 * W, [
+        [0, "rgba(150,206,255," + (0.16 * fl).toFixed(3) + ")"],
+        [0.42, "rgba(88,150,235," + (0.075 * fl).toFixed(3) + ")"],
         [1, "rgba(40,86,180,0)"]
       ]);
-      radial(c.x * W + ox * 0.7, c.y * H + oy * 0.7, 0.015 * W, [
-        [0, "rgba(210,236,255," + (0.14 * fl).toFixed(3) + ")"],
+      radial(c.x * W + ox * 0.7, c.y * H + oy * 0.7, 0.016 * W, [
+        [0, "rgba(210,236,255," + (0.24 * fl).toFixed(3) + ")"],
         [1, "rgba(120,180,240,0)"]
       ]);
     }
     crown(CROWN1, 0.0); crown(CROWN2, 2.3);
     var blink;
-    if (still) { blink = 0.35; } else { var ph = (t * 0.32) % 1; blink = 0.5 + 0.5 * Math.pow(0.5 + 0.5 * Math.sin(ph * 6.2831), 3); }
-    radial(TUNER.x * W + ox, TUNER.y * H + oy, 0.040 * W, [
-      [0, "rgba(150,235,150," + (0.065 * blink).toFixed(3) + ")"],
-      [0.4, "rgba(96,210,120," + (0.03 * blink).toFixed(3) + ")"],
+    if (still) { blink = 0.5; } else { var ph = (t * 0.32) % 1; blink = 0.5 + 0.5 * Math.pow(0.5 + 0.5 * Math.sin(ph * 6.2831), 3); }
+    radial(TUNER.x * W + ox, TUNER.y * H + oy, 0.044 * W, [
+      [0, "rgba(150,235,150," + (0.12 * blink).toFixed(3) + ")"],
+      [0.4, "rgba(96,210,120," + (0.055 * blink).toFixed(3) + ")"],
       [1, "rgba(40,150,80,0)"]
     ]);
-    radial(TUNER.x * W + ox, TUNER.y * H + oy, 0.014 * W, [
-      [0, "rgba(215,255,210," + (0.12 * blink).toFixed(3) + ")"],
+    radial(TUNER.x * W + ox, TUNER.y * H + oy, 0.015 * W, [
+      [0, "rgba(215,255,210," + (0.22 * blink).toFixed(3) + ")"],
       [1, "rgba(120,220,140,0)"]
     ]);
     if (!still) {
@@ -3391,9 +3460,9 @@ function livingPosterRuntime(CFG) {
         var cy = (PRS.y - 0.055 + 0.11 * gp) * H + oy;
         fctx.save();
         fctx.translate(cx, cy); fctx.rotate(-0.62); fctx.scale(1, 2.5);
-        radial(0, 0, 0.078 * W, [
-          [0, "rgba(255,244,214," + (0.14 * env).toFixed(3) + ")"],
-          [0.35, "rgba(255,214,150," + (0.065 * env).toFixed(3) + ")"],
+        radial(0, 0, 0.082 * W, [
+          [0, "rgba(255,244,214," + (0.24 * env).toFixed(3) + ")"],
+          [0.35, "rgba(255,214,150," + (0.11 * env).toFixed(3) + ")"],
           [1, "rgba(255,180,110,0)"]
         ]);
         fctx.restore();
@@ -3413,7 +3482,7 @@ function livingPosterRuntime(CFG) {
     var jx = still ? 0 : (fnoise(t * 1.7) * 0.006 * W);
     var jy = still ? 0 : (fnoise(t * 1.3 + 9) * 0.005 * H);
     var fxp = FLAME.x * W + ox + jx, fyp = FLAME.y * H + oy + jy;
-    var wA = 0.11 * fl;
+    var wA = 0.20 * fl;
     var R1 = 0.250 * W * (0.96 + (fl - 1) * 0.6);
     var g1 = fctx.createRadialGradient(fxp, fyp - 0.02 * H, 0, fxp, fyp, R1);
     g1.addColorStop(0, "rgba(255,188,110," + wA.toFixed(3) + ")");
@@ -3421,29 +3490,29 @@ function livingPosterRuntime(CFG) {
     g1.addColorStop(0.58, "rgba(210,88,40," + (wA * 0.20).toFixed(3) + ")");
     g1.addColorStop(1, "rgba(120,40,20,0)");
     fctx.fillStyle = g1; fctx.beginPath(); fctx.arc(fxp, fyp, R1, 0, 6.2832); fctx.fill();
-    radial(FACE.x * W + ox, FACE.y * H + oy, 0.16 * W, [
-      [0, "rgba(255,196,130," + (0.055 * fl).toFixed(3) + ")"],
+    radial(FACE.x * W + ox, FACE.y * H + oy, 0.17 * W, [
+      [0, "rgba(255,196,130," + (0.12 * fl).toFixed(3) + ")"],
       [1, "rgba(255,150,80,0)"]
     ]);
-    radial(CUP.x * W + ox, CUP.y * H + oy, 0.14 * W, [
-      [0, "rgba(255,170,96," + (0.05 * fl).toFixed(3) + ")"],
+    radial(CUP.x * W + ox, CUP.y * H + oy, 0.15 * W, [
+      [0, "rgba(255,170,96," + (0.10 * fl).toFixed(3) + ")"],
       [1, "rgba(220,90,40,0)"]
     ]);
     var R2 = 0.050 * W * (0.9 + (fl - 1) * 1.4 + (still ? 0 : fnoise(t * 2.3) * 0.12));
     radial(fxp, fyp - 2, R2, [
-      [0, "rgba(255,246,220," + (0.30 * fl).toFixed(3) + ")"],
-      [0.4, "rgba(255,198,112," + (0.18 * fl).toFixed(3) + ")"],
+      [0, "rgba(255,246,220," + (0.46 * fl).toFixed(3) + ")"],
+      [0.4, "rgba(255,198,112," + (0.27 * fl).toFixed(3) + ")"],
       [1, "rgba(255,150,60,0)"]
     ]);
     var mxp = MOON.x * W + ox * 0.6, myp = MOON.y * H + oy * 0.6;
     var sh = still ? 0.5 : (0.5 + 0.5 * Math.sin(t * 0.6));
-    var Rh = 0.14 * W * (0.92 + sh * 0.12), hA = 0.05 + sh * 0.05;
+    var Rh = 0.15 * W * (0.92 + sh * 0.12), hA = 0.09 + sh * 0.08;
     radial(mxp, myp, Rh, [
       [0, "rgba(150,196,255," + hA.toFixed(3) + ")"],
       [0.4, "rgba(96,150,235," + (hA * 0.5).toFixed(3) + ")"],
       [1, "rgba(50,90,180,0)"]
     ]);
-    var Rm = 0.055 * W * (0.9 + sh * 0.2), mA = 0.06 + sh * 0.07;
+    var Rm = 0.058 * W * (0.9 + sh * 0.2), mA = 0.11 + sh * 0.10;
     radial(mxp, myp, Rm, [
       [0, "rgba(206,230,255," + mA.toFixed(3) + ")"],
       [0.5, "rgba(130,180,240," + (mA * 0.4).toFixed(3) + ")"],
@@ -3451,26 +3520,106 @@ function livingPosterRuntime(CFG) {
     ]);
   }
 
+  // ---- generic light-actor list (whisper level, additive) ----
+  // Each poster names its own real light sources as a small table of typed glows:
+  //   breathe/ambient — a soft radial that slowly pulses (crystal ball, platform wash)
+  //   blink           — a specular that fires ONCE t0s after arrival, then rests
+  //   core            — a steady faint coloured core (the eye's living ember)
+  //   ember           — a warm wash + a scatter of independently flickering embers
+  // Coordinates are fractions of the plate; radii are fractions of width, so the
+  // field tracks the plate through the scroll push-in and parallax exactly.
+  function glowRing(cx, cy, r, col, a) {
+    radial(cx, cy, r, [
+      [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + a.toFixed(3) + ")"],
+      [0.45, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (a * 0.4).toFixed(3) + ")"],
+      [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+    ]);
+  }
+  function drawFxLights(t, still) {
+    var ox = pFx.x, oy = pFx.y;
+    for (var i = 0; i < L.length; i++) {
+      var g = L[i], cx = g.x * W + ox, cy = g.y * H + oy, col = g.c, rW = g.r * W;
+      if (g.k === "breathe" || g.k === "ambient") {
+        var b = still ? 0.9 : (0.80 + 0.20 * (0.5 + 0.5 * Math.sin(t * (g.sp || 0.5) + i)));
+        glowRing(cx, cy, rW, col, g.a * b);
+        if (g.core) radial(cx, cy, (g.rc || g.r * 0.4) * W, [
+          [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.core * b).toFixed(3) + ")"],
+          [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+        ]);
+      } else if (g.k === "blink") {
+        var env;
+        if (still) { env = 0.34; }
+        else { var p = (t - (g.t0 || 1.3)) / (g.dur || 0.95); env = (p > 0 && p < 1) ? Math.sin(p * Math.PI) : 0; }
+        if (env > 0.001) {
+          glowRing(cx, cy, rW, col, g.a * env);
+          if (g.core) radial(cx, cy, (g.rc || g.r * 0.35) * W, [
+            [0, "rgba(255,255,250," + (g.core * env).toFixed(3) + ")"],
+            [1, "rgba(255,255,250,0)"]
+          ]);
+        }
+      } else if (g.k === "core") {
+        var cb = still ? 1 : (0.82 + 0.18 * Math.sin(t * (g.sp || 1.5) + i));
+        radial(cx, cy, rW, [
+          [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.a * cb).toFixed(3) + ")"],
+          [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+        ]);
+      } else if (g.k === "ember") {
+        var eb = still ? 0.7 : (0.55 + 0.30 * (0.5 + 0.5 * Math.sin(t * (g.sp || 0.5))));
+        radial(cx, cy, rW, [
+          [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.a * eb).toFixed(3) + ")"],
+          [0.5, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.a * eb * 0.32).toFixed(3) + ")"],
+          [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+        ]);
+        if (g.pts) for (var j = 0; j < g.pts.length; j++) {
+          var pp = g.pts[j], px = pp[0] * W + ox, py = pp[1] * H + oy;
+          var fl = still ? 0.6 : Math.max(0.05, 0.5 + fnoise(t * 1.6 + j * 3.1));
+          radial(px, py, (pp[2] || 0.008) * W, [
+            [0, "rgba(255,212,142," + (0.5 * fl).toFixed(3) + ")"],
+            [1, "rgba(255,182,92,0)"]
+          ]);
+        }
+      }
+    }
+  }
+
   function drawFx(t, still) {
     fctx.clearRect(0, 0, W, H);
     fctx.globalCompositeOperation = "lighter";
-    if (MODE === "aframe") drawFxAframe(t, still); else drawFxRig(t, still);
+    if (MODE === "aframe") drawFxAframe(t, still);
+    else if (MODE === "lights") drawFxLights(t, still);
+    else drawFxRig(t, still);
     fctx.globalAlpha = 1; fctx.globalCompositeOperation = "source-over";
   }
 
+  // ---- scroll camera push-in (Kid-Stays-in-the-Picture): the plate pushes toward
+  // the viewer as the poster travels up through the viewport; the starfield pushes
+  // less, so parallax opens real depth out of a flat image. ----
+  var push = 0, pushTarget = 0;
+  function computePush() {
+    var r = stage.getBoundingClientRect(), vh = window.innerHeight || 800;
+    if (!r.height) return;
+    var c = (r.top + r.height * 0.5) / vh;   // 1 = center at viewport bottom, 0 = at top
+    var p = 1 - c; if (p < 0) p = 0; if (p > 1) p = 1;
+    pushTarget = p * p * (3 - 2 * p);        // smoothstep
+  }
   function applyParallax() {
     var dx = (mx - 0.5), dy = (my - 0.5), now = performance.now();
     var idle = (!hasPointer || now - lastMove > 1400);
     if (idle && !reduce) {
       var ti = now * 0.00015;
-      dx = (Math.sin(ti) * 0.35 + Math.sin(ti * 0.53) * 0.15) * 0.5;
-      dy = (Math.cos(ti * 0.8) * 0.30) * 0.5;
+      dx = (Math.sin(ti) * 0.35 + Math.sin(ti * 0.53) * 0.15) * 0.6;
+      dy = (Math.cos(ti * 0.8) * 0.30) * 0.6;
     }
-    var k = reduce ? 1 : 0.06;
-    pSky.x += (-dx * 3.2 - pSky.x) * k; pSky.y += (-dy * 3.2 - pSky.y) * k;
-    pHouse.x += (dx * 0.9 - pHouse.x) * k; pHouse.y += (dy * 0.9 - pHouse.y) * k;
-    pFx.x += (-dx * 1.0 - pFx.x) * k; pFx.y += (-dy * 1.0 - pFx.y) * k;
-    plateImg.style.transform = "translate3d(" + pHouse.x.toFixed(2) + "px," + pHouse.y.toFixed(2) + "px,0) scale(1.008)";
+    var k = reduce ? 1 : 0.06, U = W || 400;
+    pSky.x += (-dx * 0.030 * U - pSky.x) * k; pSky.y += (-dy * 0.030 * U - pSky.y) * k;
+    pHouse.x += (dx * 0.011 * U - pHouse.x) * k; pHouse.y += (dy * 0.011 * U - pHouse.y) * k;
+    pFx.x += (-dx * 0.015 * U - pFx.x) * k; pFx.y += (-dy * 0.015 * U - pFx.y) * k;
+    push += (pushTarget - push) * (reduce ? 1 : 0.07);
+    var plateScale = (1.02 + push * 0.05).toFixed(4);
+    var starScale = (1.0 + push * 0.018).toFixed(4);
+    plateImg.style.transform = "translate3d(" + pHouse.x.toFixed(2) + "px," + pHouse.y.toFixed(2) + "px,0) scale(" + plateScale + ")";
+    fx.style.transform = "scale(" + plateScale + ")";
+    sf.style.transform = "scale(" + starScale + ")";
   }
 
   var startT = performance.now();
@@ -3486,6 +3635,7 @@ function livingPosterRuntime(CFG) {
   function frame(now) {
     var t = (now - startT) / 1000;
     mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
+    computePush();
     applyParallax();
     drawStars(t, false); drawFx(t, false);
     if (running()) { raf(frame); } else { looping = false; }
@@ -3499,6 +3649,7 @@ function livingPosterRuntime(CFG) {
     if (booted) return;
     if (!size()) return;
     booted = true;
+    host.classList.add("is-in");
     if (reduce) {
       mx = my = tmx = tmy = 0.5; applyParallax(); applyParallax();
       drawStars(0, true); drawFx(0, true);
@@ -3507,7 +3658,7 @@ function livingPosterRuntime(CFG) {
   try {
     new IntersectionObserver(function (entries) {
       onScreen = entries[entries.length - 1].isIntersecting;
-      if (onScreen) startLoop();
+      if (onScreen) { host.classList.add("is-in"); startLoop(); }
     }, { rootMargin: "150px" }).observe(host);
   } catch (e) {}
   document.addEventListener("visibilitychange", function () {
@@ -3524,27 +3675,34 @@ function livingPosterRuntime(CFG) {
 /* eslint-enable */
 
 function renderPosterFigure(slug) {
-  if (slug === "song-origins" && LIVING.songOriginsDots) {
+  const cfg = POSTER_LIVING[slug];
+  const dots = cfg && LIVING[cfg.dotsKey];
+  if (cfg && dots) {
     return `<div class="ph-poster is-living" aria-hidden="true">
-        <span class="ph-halo" style="--poster:url('/assets/posters/song-origins.png')"></span>
+        <span class="ph-halo" style="--poster:url('/assets/posters/${slug}.png')"></span>
         ${renderLivingPoster({
-          mode: "aframe",
-          className: "aframe",
-          plate: "/assets/living/song-origins-plate.webp",
-          dots: LIVING.songOriginsDots,
-          pw: 1086, ph: 1448, aspect: "1086 / 1448",
-          rmax: 7.74, rmin: 0.9, srFloor: 0.45, srScale: 1.22,
-          lights: { FLAME: { x: 0.458, y: 0.606 }, MOON: { x: 0.529, y: 0.291 }, FACE: { x: 0.5, y: 0.56 }, CUP: { x: 0.47, y: 0.64 } }
+          mode: cfg.mode,
+          className: cfg.mode,
+          plate: `/assets/living/${cfg.plate}`,
+          dots,
+          pw: cfg.pw, ph: cfg.ph, aspect: `${cfg.pw} / ${cfg.ph}`,
+          rmax: cfg.rmax, rmin: cfg.rmin, srFloor: cfg.srFloor, srScale: cfg.srScale,
+          lights: cfg.lights
         })}
       </div>`;
   }
   return `<div class="ph-poster" aria-hidden="true">
-        <span class="ph-halo" style="--poster:url('/assets/posters/${slug}.png')"></span>
         <picture>
           <source type="image/webp" srcset="/assets/posters/${slug}-knockout-480.webp">
           <img src="/assets/posters/${slug}-knockout.png" alt="" width="200" loading="lazy" decoding="async">
         </picture>
       </div>`;
+}
+
+// True when a poster slug has a living plate + its dot field inlined this build.
+function isLivingPoster(slug) {
+  const cfg = POSTER_LIVING[slug];
+  return !!(cfg && LIVING[cfg.dotsKey]);
 }
 
 function renderPosterAtmos(slug) {
@@ -3558,7 +3716,7 @@ function renderPageHeader({ crumbs, title, deck, poster = null, headerClass = ""
   const h1 = `<h1>${escapeTitle ? escapeHtml(title) : title}</h1>`;
   const deckHtml = deck ? `<p class="${deckClass}">${deck}</p>` : "";
   if (poster) {
-    const living = poster === "song-origins" && LIVING.songOriginsDots;
+    const living = isLivingPoster(poster);
     return `<div class="ph-wrap has-poster">
       ${living ? renderPosterAtmos(poster) : ""}
       <header class="archive-title poster-header${headerClass ? " " + headerClass : ""}">
@@ -16583,19 +16741,14 @@ body.stagelight .poster-header {
 }
 body.stagelight .ph-lede { min-width: 0; }
 body.stagelight .ph-poster { position: relative; justify-self: center; width: 200px; }
-/* pool of black behind the static poster so its plate melts into any backdrop */
-body.stagelight .ph-poster:not(.is-living)::before {
-  content: ""; position: absolute; inset: -18%; z-index: 0;
-  background: radial-gradient(100% 100% at 50% 50%, #000 40%, rgba(0,0,0,0) 78%);
-}
 /* Static poster stamp only — the :not(.lp-plate) guard keeps this off the living
    poster's plate <img>, which is an absolutely-positioned canvas layer (its float +
    fade come from .living-poster and the .lp-stage mask, not from here). */
 body.stagelight .ph-poster picture,
 body.stagelight .ph-poster img:not(.lp-plate) {
   display: block; width: 100%; height: auto; position: relative; z-index: 1;
-  -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
-  mask-image: linear-gradient(#000 78%, transparent 99%);
+  -webkit-mask-image: radial-gradient(100% 100% at 50% 50%, #000 45%, transparent 86%);
+  mask-image: radial-gradient(100% 100% at 50% 50%, #000 45%, transparent 86%);
   animation: phFloat 9s ease-in-out infinite alternate;
 }
 body.stagelight .ph-halo {
@@ -16661,6 +16814,11 @@ body.stagelight .lp-layer { position: absolute; inset: 0; width: 100%; height: 1
 body.stagelight .lp-starfield { z-index: 1; }
 body.stagelight .lp-plate { z-index: 2; object-fit: cover; }
 body.stagelight .lp-fx { z-index: 3; mix-blend-mode: screen; }
+/* arrival: the poster fades up as it scrolls into view (opacity only — never a
+   transform, which would fight the header float animation and the size probe). */
+body.stagelight .living-poster { opacity: 0; transition: opacity 1.1s ease; }
+body.stagelight .living-poster.is-in { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { body.stagelight .living-poster { transition: none; } }
 /* Homepage: drops into the Nick panel where the static rig art used to sit —
    capped small so it complements the ranking table, never dominates (owner note). */
 body.stagelight .nick-panel .living-poster { margin: 0 auto; max-width: 468px; }
