@@ -1951,12 +1951,14 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
     const albumCell = row.album ? escapeHtml(row.album) : `<span class="lr-none" aria-hidden="true">—</span>`;
     // TAB column: a real sibling <a> overlaying the reserved 5th grid track (nested
     // anchors inside the row link would be invalid HTML — mirrors .sr-resources on
-    // the Song Index). Only lights up where we HOST a sibling guitar-tab page; there
-    // is no external tab source in the data, so absent tabs show a muted dash rather
-    // than a guessed link.
+    // the Song Index). A hosted sibling guitar-tab page wins; otherwise fall back to
+    // the song's exact Everyday Companion page (lyrics + chords live there), which
+    // lands on the right song — never a search link. Dash only when EC lacks it too.
     const tabCell = row.tabHref
       ? `<a class="lr-tab" href="${escapeAttr(row.tabHref)}" aria-label="Guitar tab for ${escapeAttr(row.title)}">Tab</a>`
-      : `<span class="lr-tab lr-tab-empty" aria-hidden="true">—</span>`;
+      : (/^https?:\/\/everydaycompanion\.com\/.+\.asp$/i.test(row.ecHref || "")
+        ? `<a class="lr-tab lr-tab-ec" href="${escapeAttr(row.ecHref.replace(/^http:/i, "https:"))}" target="_blank" rel="noopener noreferrer" aria-label="Chords for ${escapeAttr(row.title)} on Everyday Companion">Chords<span class="lr-ext-arrow" aria-hidden="true"> ↗</span></a>`
+        : `<span class="lr-tab lr-tab-empty" aria-hidden="true">—</span>`);
     // Facets + sort keys ride on the WRAPPER so the whole row (and its sibling Tab
     // link) hide/reorder together. data-plays is the numeric sort key; data-transcription
     // and data-hastab double as the Lyrics/Tab has-resource sort keys.
@@ -16346,6 +16348,9 @@ body.stagelight a.lr-tab { border: 1px solid rgba(212,81,79,0.5); color: var(--s
 body.stagelight a.lr-tab:hover { background: rgba(212,81,79,0.16); }
 body.stagelight a.lr-tab:focus-visible { outline: 2px solid var(--sl-muted); outline-offset: 2px; }
 body.stagelight .lr-tab-empty { color: var(--sl-faint); border: 0; padding-left: 2px; }
+/* EC chords fallback: quiet tertiary, no coral (hosted Tab keeps the accent). */
+body.stagelight a.lr-tab-ec { border-color: var(--sl-line-strong); color: var(--sl-muted); }
+body.stagelight a.lr-tab-ec:hover { background: rgba(255,255,255,0.06); color: var(--sl-ink); }
 body.stagelight .lr-title { font-family: var(--sl-display); font-size: 15px; font-weight: 560; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.stagelight .lr-artist { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sl-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 body.stagelight .lr-sub { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--sl-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

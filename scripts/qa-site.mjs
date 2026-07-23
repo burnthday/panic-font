@@ -571,6 +571,12 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
   }
   record("Lyrics hub renders Tab links for sibling guitar-tab pages", tabHrefs.length > 0);
   record("Every Tab link resolves to a real dist page", missingTab.length === 0, missingTab.join("\n"));
+  // EC chords fallback: rows without a hosted tab link to the song's exact
+  // Everyday Companion page (never a search URL); dashes only where EC has nothing.
+  const ecTabHrefs = [...hub.matchAll(/<a class="lr-tab lr-tab-ec" href="([^"]+)"/g)].map((m) => m[1]);
+  const badEc = ecTabHrefs.filter((h) => !/^https:\/\/everydaycompanion\.com\/.+\.asp$/.test(h) || /search/i.test(h));
+  record("EC chords fallback links exist and outnumber hosted tabs", ecTabHrefs.length > tabHrefs.length);
+  record("Every EC chords fallback is a direct everydaycompanion.com song page, never a search", badEc.length === 0, badEc.join("\n"));
 
   // (10) Every internal song link on the homepage resolves to a real dist page.
   const home = await readText("dist/index.html").catch(() => "");
