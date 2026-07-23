@@ -875,8 +875,10 @@ async function checkLatestSetlist(html, siteData) {
   record("Section nav is fixed under the site header and hidden by default (no reserved space)",
     /\.home-nav \{[^}]*position: fixed[^}]*top: 66px[^}]*opacity: 0[^}]*pointer-events: none/.test(styles)
     && /body\.stagelight \{ --sl-breadcrumb-h: 0px; \}/.test(styles));
-  record("Section nav reveals (top:0, visible, clickable) only when the header hides",
-    /body\.stagelight\.nav-hidden \.home-nav \{ top: 0; opacity: 1; transform: none; pointer-events: auto; \}/.test(styles));
+  record("Section nav reveals once scrolled past the hero (crumb-on) and rides to top:0 when the header hides",
+    /body\.stagelight\.crumb-on \.home-nav \{ opacity: 1; transform: none; pointer-events: auto; \}/.test(styles)
+    && /body\.stagelight\.nav-hidden \.home-nav \{ top: 0; \}/.test(styles)
+    && /classList\.toggle\("crumb-on", y > 400\)/.test(html));
   record("Section nav highlights the active section", html.includes('data-nav-section') && html.includes('.home-nav') && html.includes('IntersectionObserver'));
   record("Latest-show hero keeps its blurred backdrop when open", /\.show-entry\.is-latest\[open\] \.sc-bg img \{[^}]*blur\(/.test(styles));
   const imageRule = styles.match(/\.setlist-image img\s*\{([^}]*)\}/)?.[1] || "";
@@ -1020,18 +1022,23 @@ async function checkSongPages(siteData) {
     && /body\.stagelight main\.archive-main\.songs-main > \.song-index-head/.test(songIndexCss)
     && /body\.stagelight main\.archive-main\.songs-main > \.lyric-head/.test(songIndexCss),
     "explicit main.archive-main.songs-main sticky repair present for search + column heads");
-  // Athens strip rework: solid quiet-ink fill + a brand-color tie-dye clipped to the LEFT
-  // of the line (drifting), seated on the footer with no gap, and a scroll-reveal. Guard the
-  // fill (no washed-out grey gradient), the drift keyframes, the zero footer gap, and reveal.
-  record("Athens strip uses the quiet-ink + left-clipped tie-dye fill (gradient text fill killed)",
+  // Athens strip rework: SOLID WHITE line fill + a brand-color tie-dye clipped to the LEFT
+  // CORNER (first letters) only, using coral/teal/gold and NO magenta, seated on the footer,
+  // sliding up from behind the footer line on scroll. Guard the white fill (0.92, not the old
+  // 0.14 quiet ink), the corner brand palette, the absence of magenta, and the drift keyframes.
+  record("Athens strip uses the solid-white line fill + left-corner brand tie-dye (coral/teal/gold, no magenta)",
     /@keyframes athens-tiedye/.test(songIndexCss)
-    && /body\.stagelight \.athens-strip span \{[\s\S]{0,420}rgba\(242,242,240,0\.14\)[\s\S]{0,200}background-clip: text/.test(songIndexCss)
-    && /body\.stagelight \.athens-strip span \{[\s\S]{0,420}#ef8b88/.test(songIndexCss),
-    "athens-strip span carries the tie-dye + quiet-ink layered fill and drift keyframes");
-  record("Athens strip is seated on the footer (no gap) and scroll-reveals",
-    /body\.stagelight \.athens-strip\.will-reveal\.is-revealed \{[^}]*opacity: 1/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip span \{[\s\S]{0,460}rgba\(242,242,240,0\.92\)[\s\S]{0,200}background-clip: text/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip span \{[\s\S]{0,460}#d4514f/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip span \{[\s\S]{0,460}rgba\(96,165,210,1\)/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip span \{[\s\S]{0,460}#c9a35f/.test(songIndexCss)
+    && !/body\.stagelight \.athens-strip span \{[\s\S]{0,460}#c65db8/.test(songIndexCss),
+    "athens-strip span carries the solid-white + corner brand tie-dye fill, no magenta, drift keyframes");
+  record("Athens strip slides up from the footer on reveal and is seated (no gap)",
+    /body\.stagelight \.athens-strip\.will-reveal span \{[\s\S]{0,120}transform: translateY\(100%\)/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip\.will-reveal\.is-revealed span \{ transform: translateY\(0\); \}/.test(songIndexCss)
     && /body\.stagelight \.site-foot \{[^}]*margin-top: 0/.test(songIndexCss),
-    "will-reveal seated state present and site-foot margin-top zeroed");
+    "span slide-up start/seated states present and site-foot margin-top zeroed");
   record("Song Index header + rows share one grid template",
     /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
     && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)
@@ -2370,12 +2377,18 @@ async function checkHeroTransitionEngine(homeHtml) {
     homeHtml.includes('classList.add("is-leaving")') && homeHtml.includes('classList.add(enterCls)')
     && homeHtml.includes('.hv[data-view="'),
     "is-leaving + enter-class swap present");
-  record("Hero stage is locked: every slot pinned to its tallest view, no swap height math",
+  record("Hero stage is locked pre-paint; the fonts.ready re-lock freezes heights (no post-paint setlist drop)",
     homeHtml.includes("const lockStage = () =>")
     && homeHtml.includes('slot.style.minHeight = max + "px"')
-    && homeHtml.includes("lockStage();") && homeHtml.includes("document.fonts.ready.then(() => lockStage())")
+    && homeHtml.includes("lockStage();")
+    // fonts.ready runs the CLAMPED relock, never a raw lockStage that could regrow
+    // from a taller hidden view and drop the setlist (Alex's load-shift report).
+    && homeHtml.includes("document.fonts.ready.then(relockStable)")
+    && homeHtml.includes("const relockStable = () =>")
+    && homeHtml.includes("Math.max(stageFrozen[i], need)")
+    && !homeHtml.includes("document.fonts.ready.then(() => lockStage())")
     && !homeHtml.includes("fromHeroH") && !homeHtml.includes("p.slot.style.height"),
-    "lockStage measurement + pinned min-heights present");
+    "pre-paint lockStage + frozen relockStable present, no raw fonts.ready regrow");
   record("Hero gates the swap on decoded target imagery, capped so slow networks never block",
     homeHtml.includes("readyImages") && homeHtml.includes("img.decode()") && homeHtml.includes("setTimeout(res, 350)"),
     "readyImages decode race present");

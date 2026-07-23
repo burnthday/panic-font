@@ -815,6 +815,12 @@ function buildSiteData(source, archiveEntries = [], songOrigins = []) {
       playedWithNick: nickCount > 0,
       playedFromShelf: playedThisTour && seedTotal > 1 && seedSlp >= config.rotationSlpLimit,
       playedFromPurgatory: playedThisTour && seedTotal === 1,
+      // True tour debut: a song whose FIRST-EVER play is during this tour (nothing
+      // before it — seedTotal 0). Distinct from a purgatory return (seedTotal 1).
+      // These render as hand add-ons on the sheet regardless of whether the EC
+      // playstats refresh has since folded them into the printed dataset (a debut
+      // stays a debut). e.g. Jack Straw, 1/23/26 Riviera Maya.
+      isTourDebut: playedThisTour && seedTotal === 0,
       effectiveSlp,
       effectiveLastIso,
       lastDisplay,
@@ -1020,16 +1026,24 @@ function buildMarkerLegend(dates, setlists, tourDates) {
 
 function buildBoards(songs) {
   const active = songs.filter((row) => row.effectiveSlp < config.rotationSlpLimit || row.playedThisTour);
-  const bustoutRows = songs.filter((row) => row.playedFromShelf || row.playedFromPurgatory).sort(byTitle);
-  const bustoutKeys = new Set(bustoutRows.map((row) => row.key));
+  // Hand-written add-ons on the sheet = songs that appeared THIS tour but weren't
+  // on the printed sheet at tour start: bustouts returned from the shelf/purgatory
+  // AND true debuts (first-ever play this tour). The debut case (seedTotal 0) is
+  // NOT covered by playedFromPurgatory (seedTotal 1), so a fresh debut like Jack
+  // Straw would otherwise print as a normal sheet row. Ordered by the date each
+  // first appeared this tour — sequential debut order (owner's rule).
+  const addOnRows = songs
+    .filter((row) => row.playedFromShelf || row.playedFromPurgatory || row.isTourDebut)
+    .sort((a, b) => String(a.tourFirstIso || "").localeCompare(String(b.tourFirstIso || "")) || byTitle(a, b));
+  const addOnKeys = new Set(addOnRows.map((row) => row.key));
 
   const rotationOriginals = withAddOns(
-    active.filter((row) => row.type === "Original" && !bustoutKeys.has(row.key)).sort(byTitle),
-    bustoutRows.filter((row) => row.type === "Original")
+    active.filter((row) => row.type === "Original" && !addOnKeys.has(row.key)).sort(byTitle),
+    addOnRows.filter((row) => row.type === "Original")
   );
   const rotationCovers = withAddOns(
-    active.filter((row) => row.type === "Cover" && !bustoutKeys.has(row.key)).sort(byTitle),
-    bustoutRows.filter((row) => row.type === "Cover")
+    active.filter((row) => row.type === "Cover" && !addOnKeys.has(row.key)).sort(byTitle),
+    addOnRows.filter((row) => row.type === "Cover")
   );
 
   const shelfRows = songs.filter((row) => row.total > 1 && (row.effectiveSlp >= config.rotationSlpLimit || row.playedFromShelf)).sort(byTitle);
@@ -5960,6 +5974,13 @@ function renderSongSearchScript() {
     const raritySelect = document.querySelector("[data-rarity-filter]");
     let selectedType = "all";
     const apply = () => {
+      // Hold the topmost on-screen row's viewport position across the filter.
+      // Showing/hiding rows above the viewport (e.g. clicking "All" re-adds every
+      // Original) changes the content height above the fold; the browser's own
+      // scroll-anchoring then lurches — dropping the rows you were reading under
+      // the sticky search/head. Capture an anchor, re-pin it after (Alex report).
+      const anchor = rows.find((r) => !r.hidden && r.getBoundingClientRect().top >= 0);
+      const anchorTop0 = anchor ? anchor.getBoundingClientRect().top : null;
       const q = input.value.trim().toLowerCase();
       const status = statusSelect ? (statusSelect.dataset.value || "") : "";
       const rarity = raritySelect ? (raritySelect.dataset.value || "") : "";
@@ -5978,6 +5999,11 @@ function renderSongSearchScript() {
       empty.hidden = shown !== 0;
       const filtered = q || selectedType !== "all" || status || rarity;
       count.textContent = filtered ? shown + " of " + total + " songs" : baseLabel;
+      // Re-pin the anchor if it survived the filter.
+      if (anchor && !anchor.hidden && anchorTop0 != null) {
+        const delta = anchor.getBoundingClientRect().top - anchorTop0;
+        if (Math.abs(delta) > 0.5) window.scrollBy(0, delta);
+      }
     };
     // Column sort: click a header to sort by that key; click again to flip direction.
     // STATUS (board rank), RARITY (frequency sortValue) and PLAYS (total) are numeric;
@@ -7399,9 +7425,34 @@ function renderHeroModalScript() {
     // NOW means the page arrives pre-sized — no post-load drop of the setlist
     // (Alex's report: rAF ran lockStage after first paint, growing slots late).
     lockStage();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => lockStage());
+    // Freeze the pre-paint heights. The lock-slot height is driven by the
+    // TALLEST view (including hidden ones), and a hidden view's measured height
+    // is width-sensitive — so a naive fonts.ready re-lock could re-measure a
+    // hidden view taller and push the frozen height UP, dropping the setlist a
+    // line or two after load (Alex's report, cold load, desktop + 375px). The
+    // fonts here are metric-matched (Bricolage↔Bricolage Fallback measure
+    // identically), so the ACTIVE content never grows on font swap. So the
+    // re-lock only ever GROWS a slot when its own active content genuinely
+    // overflows the frozen height — it never lets a taller hidden view move
+    // the setlist. Net: nothing above the setlist moves after first paint.
+    let stageFrozen = slots.map((s) => parseFloat(s.style.minHeight) || 0);
+    const relockStable = () => {
+      slots.forEach((slot, i) => {
+        const active = slot.querySelector(".hv:not([hidden])");
+        slot.style.minHeight = "";
+        const need = Math.max(active ? active.offsetHeight : 0, slot.offsetHeight);
+        slot.style.minHeight = Math.max(stageFrozen[i], need) + "px";
+        stageFrozen[i] = parseFloat(slot.style.minHeight);
+      });
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relockStable);
     let stageResizeT = null;
-    window.addEventListener("resize", () => { clearTimeout(stageResizeT); stageResizeT = setTimeout(lockStage, 220); });
+    // A real resize (viewport change) DOES want a full re-measure of every view;
+    // re-baseline the freeze afterward so the next font/paint event stays stable.
+    window.addEventListener("resize", () => {
+      clearTimeout(stageResizeT);
+      stageResizeT = setTimeout(() => { lockStage(); stageFrozen = slots.map((s) => parseFloat(s.style.minHeight) || 0); }, 220);
+    });
     // Fixed rail: slots never move. The two context slots refill (quick content
     // fade) with the nearest shows before the active view; latest + upcoming
     // are pinned. The card matching the active view carries the current-ring.
@@ -8358,6 +8409,10 @@ function renderStagelightHeaderScriptBody() {
           if (y > lastY + 6 && y > 180) { head.classList.add("is-hidden"); document.body.classList.add("nav-hidden"); }
           else if (y < lastY - 6 || y <= 180) { head.classList.remove("is-hidden"); document.body.classList.remove("nav-hidden"); }
         }
+        // Breadcrumb stays on once you're down the page (past ~the hero), whether
+        // the header is hidden (crumb sits at top:0) or has re-shown on scroll-up
+        // (crumb glides to top:66px, below the header). Hidden only near the top.
+        document.body.classList.toggle("crumb-on", y > 400);
         lastY = y;
         ticking = false;
       });
@@ -8883,7 +8938,7 @@ function renderSheetBentos(data) {
     ["L.A.", "STIR IT UP"],
     ["SYMPATHY FOR THE DEVIL"],
     ["HAVIN' A BALL"],
-    ["BALL OF CONFUSION", "JACK STRAW"]
+    ["BALL OF CONFUSION"]
   ];
   const TOTAL_LINES = 20;
   const sheetCols = Array.from({ length: 5 }, (unused, index) => {
@@ -10184,13 +10239,13 @@ function renderCommunityLinks() {
     {
       href: "/song-origins/",
       img: "/assets/song-origins/chilly-water.jpg",
-      title: "Where the songs come from",
+      title: "Learn the meanings behind the songs",
       tone: "photo"
     },
     {
       href: "/lyrics-chords/",
       img: "/assets/archive-media/dirty-side-down-cover.jpg",
-      title: "Words, chords, and tab",
+      title: "Get the lyrics and the chords right",
       tone: "cover"
     }
   ];
@@ -13885,11 +13940,11 @@ body.stagelight .hero-bg img.is-active { opacity: 0.55; }
    phase), brush same slow breath. Transform/opacity only; still frames under
    reduced motion. Real rigs never pulse in sync. */
 body.stagelight .hero-bg img.is-active { animation: hero-shimmer 20s ease-in-out infinite alternate; }
-@keyframes hero-shimmer { from { transform: scale(1.35); } to { transform: scale(1.385); } }
+@keyframes hero-shimmer { from { transform: scale(1.35); } to { transform: scale(1.42); } }
 body.stagelight .hero-bg::before { animation: hero-glow-breathe 8s ease-in-out 2s infinite alternate; }
-@keyframes hero-glow-breathe { from { opacity: 1; } to { opacity: 0.72; } }
+@keyframes hero-glow-breathe { from { opacity: 1; } to { opacity: 0.55; } }
 body.stagelight .hero-brush { animation: hero-brush-breathe 13s ease-in-out 5s infinite alternate; }
-@keyframes hero-brush-breathe { from { opacity: 0.85; } to { opacity: 0.66; } }
+@keyframes hero-brush-breathe { from { opacity: 0.9; } to { opacity: 0.55; } }
 @media (prefers-reduced-motion: reduce) {
   body.stagelight .hero-bg img.is-active, body.stagelight .hero-bg::before, body.stagelight .hero-brush { animation: none; }
 }
@@ -14551,47 +14606,50 @@ body.stagelight .setlist-section .setlist-text, body.stagelight .setlist-row-bod
 /* ---- FOOTER ---- */
 /* Garrie Vereen's line, stretched across the page and sitting right on the
    footer, Webflow-style: no borders, slight baseline crop, italic. */
-/* ATHENS STRIP — the oversized "ALL THE WAY FROM ATHENS GA" line seated on the
-   footer's top edge (zero gap; the span crop tucks the baseline onto the footer).
-   Sits close under the community cards (48px), no dead band above or below. */
+/* ATHENS STRIP — the oversized "ALL THE WAY FROM ATHENS GA" line, FULLY legible,
+   seated with only a slight baseline tuck onto the footer's top edge. The band is
+   overflow:hidden so the line can slide up out of the footer on reveal. Extra air
+   below the community cards (88px = the old 48 + Alex's +40). */
 body.stagelight .athens-strip {
-  width: 100vw; margin-left: calc(50% - 50vw); margin-top: 48px;
-  overflow: hidden; line-height: 0.78; pointer-events: none; user-select: none;
+  width: 100vw; margin-left: calc(50% - 50vw); margin-top: 88px;
+  overflow: hidden; line-height: 0.94; pointer-events: none; user-select: none;
 }
-/* Reveal-once: JS adds .will-reveal (arming the hidden start state) then .is-revealed
-   when the strip enters the viewport (IO threshold ~0.3). Default state is visible, so
-   a no-JS visitor still sees the strip; reduced-motion visitors are never armed. */
-body.stagelight .athens-strip.will-reveal {
-  opacity: 0; transform: translateY(24px);
-  transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1);
+/* Reveal-once: the line SLIDES UP from behind the footer line — the band clips it,
+   the span starts fully below (translateY 100%) and rises to seated, as if the
+   footer produced it. JS adds .will-reveal (arms the hidden start) then .is-revealed
+   when the strip enters the viewport (IO threshold ~0.3). Default (no-JS) is seated;
+   reduced-motion visitors are never armed. */
+body.stagelight .athens-strip.will-reveal span {
+  transform: translateY(100%);
+  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
 }
-body.stagelight .athens-strip.will-reveal.is-revealed { opacity: 1; transform: none; }
-/* Quiet ink base fill everywhere, PLUS a slow-drifting brand-color tie-dye clipped to
-   the LEFT ~35% of the line. Two background layers under background-clip:text: the
-   horizontal tie-dye gradient (top layer, packed into the left and fading to transparent
-   by ~42%) rides over a solid quiet-ink layer, so the right of the line stays quiet ink
-   and only the left shimmers. Only the tie-dye layer's position animates (the ink layer
-   is pinned at 0 0). Palette matches the Shelf Watch hot-number tie-dye. */
+body.stagelight .athens-strip.will-reveal.is-revealed span { transform: translateY(0); }
+/* Solid high-visibility white fill across the whole line, PLUS a slow-drifting brand
+   tie-dye clipped to the LEFT CORNER only (~the first few letters, fading out by ~16%).
+   Two background layers under background-clip:text: the corner tie-dye (top layer, coral
+   red -> teal/blue -> warm gold, transparent past ~16%) over a solid white layer, so the
+   whole line reads white and only the corner shimmers. NO pink/magenta. Only the tie-dye
+   layer's position animates; the white layer is pinned. */
 body.stagelight .athens-strip span {
   display: block; text-align: center; white-space: nowrap;
   font-family: var(--sl-display); font-style: italic; font-weight: 700;
   font-size: clamp(30px, 7.4vw, 118px); letter-spacing: -0.01em;
-  margin-bottom: -0.16em;
+  margin-bottom: -0.04em;
   background:
-    linear-gradient(100deg, #ef8b88 0%, #d4514f 11%, #ff9d6b 23%, #c65db8 33%, rgba(198,93,184,0) 42%),
-    linear-gradient(rgba(242,242,240,0.14), rgba(242,242,240,0.14));
-  background-size: 240% 100%, 100% 100%;
-  background-position: 8% 50%, 0 0;
+    linear-gradient(100deg, #d4514f 0%, #e0574f 5%, rgba(96,165,210,1) 10%, #c9a35f 14%, rgba(242,242,240,0) 17%),
+    linear-gradient(rgba(242,242,240,0.92), rgba(242,242,240,0.92));
+  background-size: 300% 100%, 100% 100%;
+  background-position: 4% 50%, 0 0;
   background-repeat: no-repeat;
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  animation: athens-tiedye 10s ease-in-out infinite alternate;
+  animation: athens-tiedye 11s ease-in-out infinite alternate;
 }
 @keyframes athens-tiedye {
-  from { background-position: 6% 50%, 0 0; }
-  to   { background-position: 34% 50%, 0 0; }
+  from { background-position: 2% 50%, 0 0; }
+  to   { background-position: 16% 50%, 0 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  body.stagelight .athens-strip { opacity: 1; transform: none; transition: none; }
+  body.stagelight .athens-strip.will-reveal span { transform: none; transition: none; }
   body.stagelight .athens-strip span { animation: none; }
 }
 body.stagelight .site-foot {
@@ -14899,8 +14957,14 @@ body.stagelight .af-clear:hover { color: var(--sl-ink); }
 /* ---- DORK STATS: intro row + single summary rail ---- */
 /* Compact intro, outside any card: title left, three quiet lines right on desktop,
    stacked below the title on mobile. Existing type + spacing only. */
-body.stagelight .ds-lead { margin: 0 0 40px; max-width: 65%; }
-@media (max-width: 900px) { body.stagelight .ds-lead { max-width: 100%; margin-bottom: 28px; } }
+/* The headline carries BOTH .sw-lead and .ds-lead; .sw-lead (max-width:30ch ≈
+   527px, margin:0) is defined later in source and, at equal specificity, was
+   winning — the sentence wrapped to 4 cramped lines short of the page midpoint
+   and sat flush on the stats rail. Target the combined class to out-specify it:
+   an explicit ~65% of the 1224px content rail (≈800px → ~3 lines, crosses the
+   page midpoint) and real breathing room over the rail. */
+body.stagelight .sw-lead.ds-lead { margin: 0 0 48px; max-width: 800px; }
+@media (max-width: 900px) { body.stagelight .sw-lead.ds-lead { max-width: 100%; margin-bottom: 32px; } }
 body.stagelight .af-row { display: flex; align-items: center; gap: 16px; }
 body.stagelight .af-row .show-filter-status { margin-left: auto; }
 body.stagelight .ds-title { font-family: var(--sl-display); font-size: 34px; font-weight: 640; letter-spacing: -0.01em; line-height: 1.12; color: var(--sl-ink); }
@@ -15213,7 +15277,11 @@ body.stagelight .home-nav {
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: rgba(11,11,13,0.62); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
 }
-body.stagelight.nav-hidden .home-nav { top: 0; opacity: 1; transform: none; pointer-events: auto; }
+/* Visible whenever scrolled past the hero (body.crumb-on), independent of the
+   header's own show/hide. Position follows the header: default top:66px (below
+   the visible header); when the header hides on scroll-down it glides to top:0. */
+body.stagelight.crumb-on .home-nav { opacity: 1; transform: none; pointer-events: auto; }
+body.stagelight.nav-hidden .home-nav { top: 0; }
 @media (prefers-reduced-motion: reduce) {
   body.stagelight .home-nav { transition: none; }
 }
@@ -15879,7 +15947,10 @@ body.stagelight .index-select select option { color: #111; }
    feedback. RESOURCES is a reserved empty track in the row anchor that .sr-resources
    overlays, so the whole row stays one clickable <a> while the chips are real siblings. */
 body.stagelight .songs-main { --sr-cols: minmax(0, 1fr) 82px 128px 148px 138px 84px; --sr-gap: 16px; }
-body.stagelight .song-list { display: grid; gap: 1px; }
+/* overflow-anchor: none stops the browser re-anchoring the scroll when rows above
+   the fold are shown/hidden by a filter — the JS re-pins the topmost visible row
+   itself, and browser anchoring only fights that. */
+body.stagelight .song-list { display: grid; gap: 1px; overflow-anchor: none; }
 /* Column-header row — mono/uppercase label idiom, sticky just under the sticky
    search bar (search sticks at top:78 and is ~48px tall, so ~128px lands it flush
    below). z-index sits under the search bar but over the scrolling rows. */
@@ -15937,6 +16008,9 @@ body.stagelight .song-row-wrap[hidden], body.stagelight .lyric-row-wrap[hidden] 
 body.stagelight .song-row-wrap {
   position: relative; display: grid; grid-template-columns: var(--sr-cols);
   align-items: center; gap: var(--sr-gap); padding: 0 10px; border-bottom: 1px solid var(--sl-line-faint);
+  /* clear the sticky search+head stack (~172px normal, ~106px nav-hidden) for any
+     anchor/scrollIntoView landing so a targeted row never hides behind the stack */
+  scroll-margin-top: 176px;
 }
 body.stagelight .song-row {
   grid-column: 1 / -1; grid-row: 1; display: grid; grid-template-columns: var(--sr-cols);
