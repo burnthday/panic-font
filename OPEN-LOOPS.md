@@ -2,8 +2,8 @@
 
 Unchecked items resurface at session start until cleared. Check the box or delete the line when done.
 
-- [ ] 2026-07-22 — Song Index toolbar rethink: always-sortable columns, rarity as a checkbox, kill the pill overload; decide which stats belong on which pages (home vs Song Index vs Lyrics & Chords) and why (raised in: Alex's 7/22 late QA notes, "you need to consider this")
-- [ ] 2026-07-23 — Tab fallback DECIDED by Alex: no Songsterr search links (half-way links not cool); use Everyday Companion per-song chord links (they have nearly all) — IN PROGRESS 7/23
+- [x] 2026-07-22 — Song Index toolbar rethink: DONE 7/23 — rarity dropdown (8 options) is now one 'Rare and up' checkbox, columns already all sortable, Links column deep-links EC chords instead of a Songsterr search. Stats split now: home = prediction//narrative, Song Index = status+rarity+plays, Lyrics & Chords = where to learn it
+- [x] 2026-07-23 — Tab fallback: DONE — EC per-song chords links on Lyrics & Chords (628 songs) AND the Song Index Links column; every Songsterr search URL removed sitewide (incl. song-page Learn It rows), guard asserts zero remain
 - [x] 2026-07-22 — Band FAQ images: Alex wants more image density on /faq/; hero + one inline break shipped, review whether more repo assets should go in (raised in: 7/22 FAQ feedback)
 - [x] 2026-07-22 — Sam Holt sit-in date: CLOSED by Alex 7/23 ("forget those") — role-only mention stands, stop asking
 - [x] 2026-07-22 — Alex reviews round-2 checklist (~/Desktop/qa-pass-checklist.html) — "we'll continue tomorrow"
@@ -24,3 +24,4 @@ Unchecked items resurface at session start until cleared. Check the box or delet
 - [ ] 2026-07-23 — Alex Round-9 sheet review incl. cold-load setlist-fix confirmation (structural grid-stack, attempt 4)
 - [ ] 2026-07-23 — Daily content op after each show: npm run postshow + gh workflow run setlistfm-sync.yml --ref claude/project-status-4jp3e7 + build/qa/push (scheduled sync only auto-runs on main). LA Orpheum run per the band's own site: 7/23 (TONIGHT) + 7/25. setlist.fm's empty LA stubs are dated 7/24/7/25 — misdated or a different night split; trust widespreadpanic.com tourDates, and match the sync entry by venue+nearest date when the setlist lands. Run the routine after each show
 - [ ] 2026-07-23 — Consider dismantling the blanket main>* stacking rule in a quiet session (four documented strikes)
+- [ ] 2026-07-23 — Subpage redesign list: Alex flagged "some subpages need to get redesigned" during QA; he'll name them on his mobile/sheet pass. Poster/subpage-design session owns unified subpage headers
