@@ -14393,34 +14393,29 @@ body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; bac
 body.stagelight .hero-bg::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(58% 46% at 68% 18%, var(--hero-glow, rgba(255,186,128,0.10)), transparent 72%); }
 /* Seamless: solid page color at the seam (no line), the mirrored light ghosts
    through just below it, then fades back to solid. Content always sits above. */
-body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 380px; margin-bottom: -380px; overflow: hidden; pointer-events: none; z-index: 0; }
+body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 380px; margin-bottom: -380px; overflow: hidden; pointer-events: none; z-index: -1; }
 body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.3; }
 body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
-/* Blanket stacking rule — MUST exclude anything that positions itself (this
-   silently flattened the fixed bento popups once already). */
-/* Blanket stacking rule — MUST exclude every element that positions itself, or
-   it silently out-specifies their own rules. This has flattened the sticky
-   breadcrumb THREE times now (blanket wins the specificity race and forces
-   position:relative). .home-nav and .bento-panel are excluded for exactly that
-   reason; do not remove them. */
-body.stagelight main > *:not(.hero-echo):not(.bento-panel):not(.home-nav) { position: relative; z-index: 1; }
+/* DISMANTLED 2026-07-23 — there used to be a blanket
+   main > *:not(...) with position:relative and z-index:1 here. Its only real job
+   was lifting content above .hero-echo, a decorative mirrored backdrop that pulls
+   itself up under the fold with a negative margin. Because the blanket restyled
+   EVERY main child, it silently out-specified components that position themselves
+   and caused five separate bugs (sticky breadcrumb flattened twice, fixed bento
+   popups rendered inline, subpage sticky stacks collapsed, the Song Index filter
+   popup painting behind the song list). The echo now sits at z-index:-1, behind
+   main's (transparent) background, so ordinary content stacks above it with no
+   rule at all and every component keeps its own declared position/z-index.
+   Do not reintroduce a blanket here — style the component that needs it. */
 body.stagelight main > .home-nav { position: fixed; z-index: 55; }
-/* Blanket repair (strike five, Song Index dropdown): the blanket above forces
-   every main child to z-index:1, so an open filter popup (z:40, inside the
-   toolbar's stacking context) painted BEHIND the later song list. These
-   double-class selectors tie the blanket's specificity and win by source order —
-   never touch the blanket itself. Sticky bars also get the site-head glass so
-   rows don't read through them. */
-body.stagelight main > .index-toolbar.index-toolbar.index-toolbar { z-index: 30; }
-body.stagelight main > .song-search.song-search,
-body.stagelight main > .song-index-head.song-index-head,
-body.stagelight main > .lyric-head.lyric-head {
+/* The sticky index bars carry the site-head glass so rows can't read through
+   them while scrolling (their own rules own position/z-index). */
+body.stagelight .song-search,
+body.stagelight .song-index-head,
+body.stagelight .lyric-head {
   background: linear-gradient(180deg, rgba(13,13,15,0.9), rgba(11,11,13,0.82));
   -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
 }
-body.stagelight main > .song-search.song-search.song-search { position: sticky; z-index: 12; }
-body.stagelight main > .song-index-head.song-index-head.song-index-head,
-body.stagelight main > .lyric-head.lyric-head.lyric-head { position: sticky; z-index: 11; }
 /* Paint stroke: a wide brushed band of the show's own sampled stage-light color
    swept behind the left column. Tinted per view via --hero-glow-strong (set by
    the same canvas sample as the spotlight), heavily blurred so it reads as

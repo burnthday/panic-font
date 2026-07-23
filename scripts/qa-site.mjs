@@ -2724,6 +2724,19 @@ async function checkEveryInternalLinkResolves(files, htmls) {
   }
   record("Sitewide: every internal link and asset resolves", broken.length === 0, broken.slice(0, 20).join("\n"));
   record("Sitewide link sweep covers the whole build", seen.size > 500 && htmls.length > 900, `${seen.size} unique targets across ${htmls.length} pages`);
+  // The blanket `main > *` stacking rule was dismantled 2026-07-23 after five
+  // documented bugs (it restyled every main child and silently out-specified any
+  // component that positions itself). .hero-echo now sits at z-index:-1, which is
+  // the only thing the blanket was ever really for. Both halves are asserted here
+  // so neither can regress: the blanket must not return, and the echo must stay
+  // negative (at z-index >= 0 it would cover the content that follows it).
+  const sl = await readText("dist/stagelight.css").catch(() => "");
+  record("The blanket main > * stacking rule stays dismantled",
+    !/main > \*:not\([^)]*\)\s*\{[^}]*z-index/.test(sl) && !/main > \*\s*\{[^}]*position:\s*relative/.test(sl),
+    "no blanket main > * position/z-index rule in the stylesheet");
+  record("Hero echo stays behind content at a negative z-index",
+    /\.hero-echo \{[^}]*z-index: -1/.test(sl),
+    ".hero-echo declares z-index:-1");
   // Half-way links are worse than nothing (Alex, 7/23): no search-URL stand-ins
   // anywhere — every outbound music link must land on the exact song.
   record("No Songsterr search URL survives anywhere in the build",
