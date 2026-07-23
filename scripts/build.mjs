@@ -13807,10 +13807,10 @@ body.stagelight .garrie-sep.armed .gs-l1, body.stagelight .garrie-sep.armed .gs-
 body.stagelight .garrie-sep.armed .gs-oo { stroke-dashoffset: 64; }
 body.stagelight .garrie-sep.armed .gs-p1, body.stagelight .garrie-sep.armed .gs-p2 { opacity: 0; }
 body.stagelight .garrie-sep.armed.draw .gs-l1 { animation: gs-draw 520ms cubic-bezier(0.45, 0.05, 0.4, 1) forwards; }
-body.stagelight .garrie-sep.armed.draw .gs-p1 { animation: gs-ink 300ms linear 120ms forwards; }
+body.stagelight .garrie-sep.armed.draw .gs-p1 { animation: gs-ink 240ms linear 60ms forwards; }
 body.stagelight .garrie-sep.armed.draw .gs-oo { animation: gs-draw 240ms cubic-bezier(0.5, 0.05, 0.35, 1.08) 480ms forwards; }
 body.stagelight .garrie-sep.armed.draw .gs-l2 { animation: gs-draw 520ms cubic-bezier(0.45, 0.05, 0.4, 1) 700ms forwards; }
-body.stagelight .garrie-sep.armed.draw .gs-p2 { animation: gs-ink 300ms linear 900ms forwards; }
+body.stagelight .garrie-sep.armed.draw .gs-p2 { animation: gs-ink 200ms linear 1100ms forwards; }
 @keyframes gs-draw { to { stroke-dashoffset: 0; } }
 @keyframes gs-ink { to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .garrie-sep.armed path { stroke-dashoffset: 0; opacity: 1; animation: none; } }
