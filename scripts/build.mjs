@@ -7374,30 +7374,59 @@ function renderNickRankingScript() {
     const list = feature && feature.querySelector(".nick-ranking");
     if (!list) return;
     const rows = [...list.children];
+    const head = feature.querySelector(".nick-ranking-head");
+    const wrap = feature.querySelector("[data-nick-scroll]");
     const viewDd = feature.querySelector("[data-nick-view-dd]");
-    const sortDd = feature.querySelector("[data-nick-sort-dd]");
+    const mobileSort = feature.querySelector("[data-nick-mobile-sort]");
+    const typeButtons = [...feature.querySelectorAll("[data-nick-type]")];
     const songbook = feature.querySelector("[data-nick-songbook]");
     const CAP = 6;
+    // Which data column drives each sort key, whether it is numeric, and its
+    // natural default direction the first time you click that header.
+    const COLS = {
+      title: { attr: "songTitle", numeric: false, dir: "asc" },
+      type: { attr: "type", numeric: false, dir: "asc" },
+      plays: { attr: "l100", numeric: true, dir: "desc" },
+      gap: { attr: "slp", numeric: true, dir: "desc" },
+      last: { attr: "last", numeric: false, dir: "desc" },
+      heat: { attr: "heat", numeric: true, dir: "desc" },
+      nickplays: { attr: "nickCount", numeric: true, dir: "desc" },
+      nicklast: { attr: "nicklast", numeric: false, dir: "desc" }
+    };
+    const DEFAULT_SORT = { next: "heat", woodshed: "plays", played: "nickplays" };
     let view = "next";
-    let sort = "score";
+    let sortCol = "heat";
+    let sortDir = "desc";
     let expanded = false;
     const num = (row, key) => Number(row.dataset[key] || 0);
-    const byTitle = (a, b) => a.dataset.songTitle.localeCompare(b.dataset.songTitle);
+    const byTitle = (a, b) => (a.dataset.songTitle || "").localeCompare(b.dataset.songTitle || "");
+    const compare = (a, b) => {
+      const col = COLS[sortCol] || COLS.heat;
+      let cmp;
+      if (col.numeric) cmp = num(a, col.attr) - num(b, col.attr);
+      else cmp = (a.dataset[col.attr] || "").localeCompare(b.dataset[col.attr] || "");
+      if (sortDir === "desc") cmp = -cmp;
+      return cmp || byTitle(a, b);
+    };
+    const inView = (row) => {
+      if (view === "played") return num(row, "nickCount") > 0;
+      if (view === "woodshed") return num(row, "nickCount") === 0;
+      return row.dataset.eligible === "1"; // "next" = eligible pool only
+    };
+    const matchType = (row) => selectedType === "all" || row.dataset.type === selectedType;
+    let selectedType = "all";
+    const syncHeaders = () => {
+      feature.querySelectorAll("[data-nick-col]").forEach((btn) => {
+        const active = btn.dataset.nickCol === sortCol;
+        btn.classList.toggle("is-sorted", active);
+        const arr = btn.querySelector(".nrh-arr");
+        if (arr) arr.textContent = active ? (sortDir === "asc" ? "↑" : "↓") : "↕";
+      });
+    };
     const apply = () => {
-      const visible = rows.filter((row) => {
-        const nick = num(row, "nickCount");
-        // "Most likely next" hard-filters the last-four-shows songs (data-slp <= 4).
-        if (view === "next") return num(row, "slp") > 4;
-        if (view === "woodshed") return nick === 0;
-        return nick > 0; // "played"
-      });
-      visible.sort((a, b) => {
-        if (sort === "plays") return num(b, "nickCount") - num(a, "nickCount") || byTitle(a, b);
-        if (sort === "gone") return num(b, "slp") - num(a, "slp") || byTitle(a, b);
-        if (sort === "recent") return (b.dataset.last || "").localeCompare(a.dataset.last || "") || byTitle(a, b);
-        if (sort === "title") return byTitle(a, b);
-        return num(b, "score") - num(a, "score") || byTitle(a, b); // "likelihood"
-      });
+      if (head) head.dataset.view = view;
+      list.dataset.view = view;
+      const visible = rows.filter((row) => inView(row) && matchType(row)).sort(compare);
       rows.forEach((row) => { row.hidden = true; });
       visible.forEach((row, index) => {
         list.appendChild(row);
@@ -7409,28 +7438,41 @@ function renderNickRankingScript() {
         const collapsible = visible.length > CAP;
         songbook.hidden = !collapsible;
         songbook.setAttribute("aria-expanded", String(expanded));
+        songbook.classList.toggle("is-pinned", expanded && collapsible);
         songbook.textContent = expanded ? songbook.dataset.fewerLabel : songbook.dataset.moreLabel;
       }
+      // Expanded = bounded scroll window with a sticky header (reuse the tour-stats
+      // capped-wrap treatment); collapsed = six rows, no cap.
+      if (wrap) wrap.classList.toggle("is-capped", expanded);
+      syncHeaders();
     };
-    viewDd?.addEventListener("cs:change", (event) => { view = event.detail.value; expanded = false; apply(); });
-    sortDd?.addEventListener("cs:change", (event) => { sort = event.detail.value; apply(); });
-    // Column headers sort too, keeping the Sort dropdown display in step.
-    const sortLabels = { score: "Likelihood", plays: "Most played", gone: "Longest gone", recent: "Most recently played", title: "Song name" };
-    feature.querySelectorAll("[data-nick-col]").forEach((btn) => btn.addEventListener("click", () => {
-      sort = btn.dataset.nickCol;
-      if (sortDd && sortLabels[sort]) {
-        sortDd.dataset.value = sort;
-        const valueEl = sortDd.querySelector("[data-cs-value]");
-        if (valueEl) valueEl.textContent = sortLabels[sort];
-        sortDd.querySelectorAll(".sf-option").forEach((opt) => opt.classList.toggle("is-active", opt.dataset.value === sort));
+    const setSort = (col, forceDir) => {
+      if (!COLS[col]) return;
+      if (forceDir) { sortCol = col; sortDir = forceDir; }
+      else if (sortCol === col) sortDir = sortDir === "asc" ? "desc" : "asc";
+      else { sortCol = col; sortDir = COLS[col].dir; }
+      if (mobileSort) {
+        mobileSort.dataset.value = sortCol;
+        const valueEl = mobileSort.querySelector("[data-cs-value]");
+        const opt = mobileSort.querySelector('.sf-option[data-value="' + sortCol + '"]');
+        if (valueEl && opt) valueEl.textContent = opt.textContent;
+        mobileSort.querySelectorAll(".sf-option").forEach((o) => o.classList.toggle("is-active", o.dataset.value === sortCol));
       }
-      apply();
-    }));
-    songbook?.addEventListener("click", (event) => {
-      event.preventDefault();
-      expanded = !expanded;
+    };
+    viewDd?.addEventListener("cs:change", (event) => {
+      view = event.detail.value;
+      expanded = false;
+      setSort(DEFAULT_SORT[view] || "heat", COLS[DEFAULT_SORT[view] || "heat"].dir);
       apply();
     });
+    mobileSort?.addEventListener("cs:change", (event) => { setSort(event.detail.value); apply(); });
+    typeButtons.forEach((btn) => btn.addEventListener("click", () => {
+      selectedType = btn.dataset.nickType;
+      typeButtons.forEach((b) => b.classList.toggle("is-active", b === btn));
+      apply();
+    }));
+    feature.querySelectorAll("[data-nick-col]").forEach((btn) => btn.addEventListener("click", () => { setSort(btn.dataset.nickCol); apply(); }));
+    songbook?.addEventListener("click", (event) => { event.preventDefault(); expanded = !expanded; apply(); });
     apply();
   })();`;
 }
@@ -8642,14 +8684,25 @@ function renderNickJohnsonFeature(data) {
   const overallWidth = rotation.length ? (played.length / rotation.length) * 100 : 0;
   const originalWidth = originals.length ? (playedOriginals / originals.length) * 100 : 0;
   const coverWidth = covers.length ? (playedCovers / covers.length) * 100 : 0;
+  const playedPct = rotation.length ? Math.round((played.length / rotation.length) * 100) : 0;
+
+  // Last-played-with-Nick date per song, from the Nick-era setlists (newest first,
+  // so the first hit is the most recent). Feeds the "Played with Nick" view column.
+  const nickLastByKey = new Map();
+  for (const show of (data.setlists || []).filter(isNickJohnsonShow)) {
+    for (const key of new Set((show.sets || []).flatMap((set) => set.songTitles || splitDisplaySetSongs(set.songs)).map(normalizeTitle))) {
+      if (key && !nickLastByKey.has(key)) nickLastByKey.set(key, show.isoDate);
+    }
+  }
+  const modelByKey = computeNickRankModel(rotation, data.setlistShows || []);
 
   return `<section class="nick-feature" id="nick-johnson">
   <div class="nick-feature-body nick-two-col">
   <div class="nick-left">
     <h2 class="sw-lead nick-headline"><b>Nick Johnson has played just over half</b> of the band&#39;s current rotation in ${formatNumber(shows)} shows. Here&#39;s what is most likely to come next.</h2>
     <div class="nick-panel">
-      <div class="nick-lead"><strong>${formatNumber(played.length)}</strong><span> of ${formatNumber(rotation.length)}</span></div>
-      <p class="nick-caption">Songs played with Nick</p>
+      <div class="nick-lead"><strong>${playedPct}%</strong></div>
+      <p class="nick-caption">${formatNumber(played.length)} of ${formatNumber(rotation.length)} songs in rotation played with Nick</p>
       <div class="nick-bars">
         <div class="nick-bar-row"><span class="nb-label">Overall</span><span class="nick-progress-track"><i class="is-overall" style="width:${overallWidth}%"></i></span><span class="nb-count">${formatNumber(played.length)}/${formatNumber(rotation.length)}</span></div>
         <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
@@ -8658,24 +8711,34 @@ function renderNickJohnsonFeature(data) {
       <div class="data-metrics nick-tiles" aria-label="Nick Johnson tour totals">
         ${renderNickStat(shows, "shows")}
         ${renderNickStat(plays, "song plays")}
-        ${renderNickStat(woodshed, "still in the Woodshed")}
+        ${renderNickStat(woodshed, "in the Woodshed")}
       </div>
     </div>
   </div>
   <div class="nick-right">
-    <div class="nick-controls" role="group" aria-label="Filter and sort the songs most likely to come next">
+    <div class="nick-controls" role="group" aria-label="Filter the songs most likely to come next">
       ${renderCustomSelect({ hook: "data-nick-view-dd", label: "View", active: "next", options: [{ value: "next", label: "Most likely next" }, { value: "woodshed", label: "Not yet played" }, { value: "played", label: "Played with Nick" }] })}
-      ${renderCustomSelect({ hook: "data-nick-sort-dd", label: "Sort", active: "score", options: [{ value: "score", label: "Likelihood" }, { value: "plays", label: "Most played" }, { value: "gone", label: "Longest gone" }, { value: "recent", label: "Most recently played" }] })}
+      <div class="type-filter" role="group" aria-label="Filter songs by type">
+        <button type="button" class="is-active" data-nick-type="all">All</button>
+        <button type="button" data-nick-type="original">Originals</button>
+        <button type="button" data-nick-type="cover">Covers</button>
+      </div>
+      <div class="mobile-sort">${renderCustomSelect({ hook: "data-nick-mobile-sort", label: "Sort by", active: "heat", options: [{ value: "heat", label: "Most likely" }, { value: "plays", label: "Most played" }, { value: "gap", label: "Longest gap" }, { value: "last", label: "Recently played" }, { value: "nickplays", label: "Nick plays" }, { value: "title", label: "Song name" }] })}</div>
     </div>
-    <div class="nick-ranking-head">
-      <span class="nrh-col" aria-hidden="true">#</span>
-      <button type="button" class="nrh-col nrh-sort" data-nick-col="title">Song <span aria-hidden="true">\u2195</span></button>
-      <span class="nrh-col nrh-type">Type</span>
-      <button type="button" class="nrh-col nrh-sort nrh-plays" data-nick-col="plays">Total plays <span aria-hidden="true">\u2195</span></button>
-      <button type="button" class="nrh-col nrh-sort nrh-last" data-nick-col="recent">Last played <span aria-hidden="true">\u2195</span></button>
-      <button type="button" class="nrh-col nrh-sort nrh-score" data-nick-col="score">Likelihood <span aria-hidden="true">\u2193</span></button>
+    <div class="nick-ranking-wrap" data-nick-scroll>
+      <div class="nick-ranking-head" data-view="next">
+        <span class="nrh-col nrh-rank" aria-hidden="true">#</span>
+        <button type="button" class="nrh-col nrh-sort nrh-song" data-nick-col="title">Song <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+        <button type="button" class="nrh-col nrh-sort nrh-type" data-nick-col="type">Type <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+        <button type="button" class="nrh-col nrh-sort nrh-plays nx" data-nick-col="plays">Plays <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+        <button type="button" class="nrh-col nrh-sort nrh-gap nx" data-nick-col="gap">Gap <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+        <button type="button" class="nrh-col nrh-sort nrh-last nx" data-nick-col="last">Last played <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+        <button type="button" class="nrh-col nrh-sort nrh-heat nx is-sorted" data-nick-col="heat">Heat <span class="nrh-arr" aria-hidden="true">\u2193</span></button>
+        <button type="button" class="nrh-col nrh-sort nrh-nickplays pv" data-nick-col="nickplays">Nick plays <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+        <button type="button" class="nrh-col nrh-sort nrh-nicklast pv" data-nick-col="nicklast">Last played with Nick <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+      </div>
+      ${renderNickRanking(rotation, modelByKey, nickLastByKey)}
     </div>
-    ${renderNickRanking(rotation)}
     <button type="button" class="stats-expand" aria-expanded="false" data-nick-songbook data-more-label="Explore Nick&#39;s full songbook \u2192" data-fewer-label="Show fewer">Explore Nick&#39;s full songbook \u2192</button>
   </div>
   </div>
@@ -8686,55 +8749,156 @@ function renderNickStat(value, label) {
   return `<div class="nick-stat"><strong>${formatNumber(value)}</strong><span>${escapeHtml(label)}</span></div>`;
 }
 
-// A "most likely next" ranking of the full rotation. Every rotation song ships in the
-// DOM carrying its facets (data-type, data-nick-count, data-slp, data-last, data-score,
-// data-played) so the inline nick-ranking handler can switch view + sort and re-cap to
-// six rows without a refetch. A transparent 0–100 likelihood SCORE (never a probability,
-// never a % sign) is computed per song from defensible signals — see nickLikelihood().
-// Default view = "most likely next": recently played songs (effectiveSlp <= 4, i.e. in
-// the last four shows) are excluded, the rest ranked by score desc; only the top six
-// render visible, the rest ship hidden for the songbook expand.
-function renderNickRanking(songs) {
-  // Likelihood signals, in the owner's priority order: (1) not yet played with Nick,
-  // (2) not played in the previous four shows, (3) historically frequent (l100),
-  // (4) active this tour, (5) longest since last play. Weights sum to a 0–100 raw max;
-  // the pool is then normalized so the top song lands in the 90s with a visible floor.
-  const maxL100 = Math.max(1, ...songs.map((song) => song.l100 || 0));
-  const nickLikelihood = (song) => {
-    const slp = Number.isFinite(song.effectiveSlp) ? song.effectiveSlp : 0;
-    return 30 * (song.nickCount === 0 ? 1 : 0)
-      + 20 * (slp > 4 ? 1 : 0)
-      + 30 * ((song.l100 || 0) / maxL100)
-      + 10 * (song.playedThisTour ? 1 : 0)
-      + 10 * (Math.min(slp, 40) / 40);
-  };
-  const scored = songs.map((song) => ({ song, raw: nickLikelihood(song) }));
-  const maxRaw = Math.max(1, ...scored.map((entry) => entry.raw));
-  scored.forEach((entry) => {
-    entry.score = Math.max(4, Math.round((entry.raw / maxRaw) * 94));
-  });
-  const byScore = (a, b) => b.score - a.score || a.song.title.localeCompare(b.song.title);
-  const nextPool = scored.filter((entry) => (entry.song.effectiveSlp ?? 0) > 4).sort(byScore);
-  const recent = scored.filter((entry) => (entry.song.effectiveSlp ?? 0) <= 4).sort(byScore);
-  const ordered = [...nextPool, ...recent];
-  const visibleTitles = new Set(nextPool.slice(0, 6).map((entry) => entry.song.title));
+// ── THE NICK "MOST LIKELY NEXT" MODEL ────────────────────────────────────────
+// Two-stage, fully computed from the real setlist.fm history (data.setlistShows,
+// oldest-first, each show carrying song keys). Stage 1 marks the eligible pool
+// (not-yet-played-with-Nick songs in live rotation, not one-offs, with meaningful
+// recent play). Stage 2 ranks them by a 0-100 Heat that fuses recent-rotation
+// strength (55%), an EMPIRICAL due-percentile from each song's own gap distribution
+// (35%), and a very-recent boost (10%), then applies reliability shrinkage
+// (low-evidence songs regress toward the middle). Heat is a comparative ranking,
+// NEVER a probability or percent. This function is duplicated verbatim in
+// scripts/nick-model-backtest.mjs (the walk-forward validator) — keep them in sync.
+function nickMedian(sorted) {
+  if (!sorted.length) return 0;
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+function nickHeatModel(entries, N, opts = {}) {
+  const weights = opts.weights || { recent: 0.55, due: 0.35, boost: 0.1 };
+  const shrinkK = opts.shrinkK ?? 5;
+  const applyNickGate = Boolean(opts.applyNickGate);
 
-  return `<ol class="nick-ranking">${ordered.map((entry, index) => {
-    const song = entry.song;
+  const rows = entries.map((entry) => {
+    const idx = entry.playedIdx;
+    const n = idx.length;
+    const countFrom = (lo) => { let c = 0; for (let k = idx.length - 1; k >= 0 && idx[k] >= lo; k -= 1) c += 1; return c; };
+    const c20 = countFrom(N - 20);
+    const c50 = countFrom(N - 50);
+    const c100 = countFrom(N - 100);
+    const c200 = countFrom(N - 200);
+    const c51_100 = c100 - c50;
+    const c101_200 = c200 - c100;
+    const strengthRaw = 3 * c50 + 2 * c51_100 + 1 * c101_200;
+    const gaps = [];
+    for (let k = 1; k < idx.length; k += 1) gaps.push(idx[k] - idx[k - 1]);
+    gaps.sort((a, b) => a - b);
+    const medianGap = gaps.length ? nickMedian(gaps) : null;
+    const currentGap = Number.isFinite(entry.currentGap) ? entry.currentGap : (n ? N - 1 - idx[idx.length - 1] : N);
+    const duePct = gaps.length ? gaps.filter((g) => g <= currentGap).length / gaps.length : 0;
+    const overdueRatio = medianGap ? currentGap / medianGap : 0;
+
+    const total = Number.isFinite(entry.total) ? entry.total : n;
+    const gateA = applyNickGate ? entry.nickCount === 0 : true;
+    const gateB = currentGap > 4;
+    const gateC = c100 >= 3 || c200 >= 5 || c50 >= 2;
+    const bothWithin150 = n === 2 && idx.every((i) => i >= N - 150);
+    const gateD = total > 1 && n > 1 && (n !== 2 || bothWithin150);
+    const eligible = gateA && gateB && gateC && gateD;
+
+    return { key: entry.key, n, c20, c50, c100, c200, c51_100, c101_200, strengthRaw, medianGap, currentGap, duePct, overdueRatio, total, eligible };
+  });
+
+  const maxStrength = Math.max(1, ...rows.map((r) => r.strengthRaw));
+  const maxC20 = Math.max(1, ...rows.map((r) => r.c20));
+  rows.forEach((r) => {
+    const recentStrength = r.strengthRaw / maxStrength;
+    const boost = r.c20 / maxC20;
+    r.raw = weights.recent * recentStrength + weights.due * r.duePct + weights.boost * boost;
+  });
+  const meanRaw = rows.reduce((s, r) => s + r.raw, 0) / (rows.length || 1);
+  rows.forEach((r) => {
+    const nMeaningful = r.c200;
+    r.shrunk = meanRaw + (r.raw - meanRaw) * (nMeaningful / (nMeaningful + shrinkK));
+  });
+  // Heat is normalized (min-max) over a display pool so it reads as a comparative
+  // 0-100 ranking within the songs that show a Heat column. Ranking ORDER is
+  // invariant to the pool choice, so backtest metrics are unaffected.
+  const heatPool = typeof opts.heatPool === "function" ? rows.filter((r) => opts.heatPool(r)) : rows;
+  const poolVals = (heatPool.length ? heatPool : rows).map((r) => r.shrunk);
+  const minS = Math.min(...poolVals);
+  const maxS = Math.max(...poolVals);
+  const span = maxS - minS || 1;
+  const out = new Map();
+  rows.forEach((r) => {
+    r.heat = Math.max(0, Math.min(100, Math.round(2 + ((r.shrunk - minS) / span) * 98)));
+    out.set(r.key, r);
+  });
+  return out;
+}
+
+// Bridge the live catalog to the model: build each rotation song's chronological
+// play-index list from the full history, then score with the real Nick gate and a
+// Heat normalized over the not-yet-played (Woodshed) pool so Heat reads high for the
+// genuine "next" candidates. Returns Map(songKey -> model row).
+function computeNickRankModel(rotation, setlistShows) {
+  const N = setlistShows.length;
+  const idxByKey = new Map();
+  setlistShows.forEach((show, i) => {
+    for (const song of show.songs || []) {
+      const key = song.key;
+      if (!key) continue;
+      const list = idxByKey.get(key);
+      if (list) { if (list[list.length - 1] !== i) list.push(i); }
+      else idxByKey.set(key, [i]);
+    }
+  });
+  const entries = rotation.map((song) => ({
+    key: song.key,
+    playedIdx: idxByKey.get(song.key) || [],
+    total: song.total,
+    nickCount: song.nickCount,
+    currentGap: Number.isFinite(song.effectiveSlp) ? song.effectiveSlp : 0
+  }));
+  const nickByKey = new Map(rotation.map((song) => [song.key, song.nickCount]));
+  return nickHeatModel(entries, N, { applyNickGate: true, heatPool: (r) => (nickByKey.get(r.key) || 0) === 0 });
+}
+
+// The ranked list. Every rotation song ships in the DOM once, carrying the full
+// facet set in data-* attributes (type, nick count, eligibility, Heat, plays, gap,
+// last-played, last-with-Nick) so the inline handler can switch view + re-sort +
+// re-cap without a refetch. Columns literally change per view via a data-view
+// attribute on the <ol> (CSS toggles .nx / .pv cells). Default view = "most likely
+// next": only eligible songs show, top six by Heat visible, the rest ship hidden.
+function renderNickRanking(songs, modelByKey, nickLastByKey) {
+  const tierClass = (h) => (h >= 75 ? "nk-hot" : h >= 45 ? "nk-warm" : "nk-long");
+  const tierWord = (h) => (h >= 75 ? "Hot" : h >= 45 ? "Warm" : "Long shot");
+  const rows = songs.map((song) => ({ song, m: modelByKey.get(song.key) || { eligible: false, heat: 0, medianGap: null, c100: 0, overdueRatio: 0 } }));
+  // Default order: eligible by Heat desc first (so the visible top six are correct
+  // with JS off), then everything else by Heat desc, ties by title.
+  rows.sort((a, b) => (b.m.eligible - a.m.eligible) || (b.m.heat - a.m.heat) || a.song.title.localeCompare(b.song.title));
+  const visibleKeys = new Set(rows.filter((r) => r.m.eligible).slice(0, 6).map((r) => r.song.key));
+
+  return `<ol class="nick-ranking" data-view="next">${rows.map((row, index) => {
+    const song = row.song;
+    const m = row.m;
     const played = song.nickCount > 0;
     const type = song.type === "Cover" ? "cover" : "original";
     const slp = Number.isFinite(song.effectiveSlp) ? song.effectiveSlp : 0;
-    const l100 = song.l100 || 0;
-    const usualGap = l100 >= 6 ? (100 / l100).toFixed(1) : "";
-    const visible = visibleTitles.has(song.title);
-    const agoSub = played && slp > 0 && slp <= 40 ? `<small>(${formatNumber(slp)} show${slp === 1 ? "" : "s"} ago)</small>` : "";
-    return `<li class="nick-row${played ? "" : " is-zero"}" data-type="${type}" data-song-title="${escapeAttr(song.title)}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-slp="${escapeAttr(String(slp))}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-score="${escapeAttr(String(entry.score))}" data-played="${played ? "yes" : "no"}"${visible ? "" : " hidden"}>
+    const l100 = m.c100 || 0;
+    const total = song.total || 0;
+    const usual = m.medianGap != null ? m.medianGap.toFixed(1) : "";
+    const heat = m.heat;
+    const visible = visibleKeys.has(song.key);
+    const overdueBy = m.medianGap != null ? Math.round(slp - m.medianGap) : 0;
+    // Concise context sub-line only when a song is genuinely overdue and still in
+    // real rotation (owner's threshold: overdue ratio >= 1.5 and >= 3 plays / 100).
+    const subline = (m.overdueRatio >= 1.5 && l100 >= 3 && usual)
+      ? `<small>Played every ${usual} shows · now ${formatNumber(Math.max(1, overdueBy))} shows overdue</small>`
+      : "";
+    const agoSub = slp > 0 && slp <= 40 ? `<small>(${formatNumber(slp)} show${slp === 1 ? "" : "s"} ago)</small>` : "";
+    const nickLastIso = nickLastByKey.get(song.key) || "";
+    const nickLastDisplay = nickLastIso ? isoToShortDate(nickLastIso) : "";
+    return `<li class="nick-row${played ? "" : " is-zero"}" data-song-title="${escapeAttr(song.title)}" data-type="${type}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-eligible="${m.eligible ? "1" : "0"}" data-heat="${escapeAttr(String(heat))}" data-l100="${escapeAttr(String(l100))}" data-total="${escapeAttr(String(total))}" data-slp="${escapeAttr(String(slp))}" data-usual="${escapeAttr(usual)}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-nicklast="${escapeAttr(nickLastIso)}" data-played="${played ? "yes" : "no"}"${visible ? "" : " hidden"}>
     <span class="nick-rank" aria-hidden="true">${index + 1}</span>
-    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong>${usualGap ? `<small>Played every ${usualGap} shows</small>` : ""}</span>
+    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong>${subline}</span>
     <span class="nick-type"><span class="nick-chip is-${type}">${type === "cover" ? "COVER" : "ORIGINAL"}</span></span>
-    <span class="nick-plays"><strong>${formatNumber(song.nickCount)}</strong></span>
-    <span class="nick-last">${escapeHtml(played && song.lastDisplay ? song.lastDisplay : "—")}${agoSub}</span>
-    <span class="nick-score tn-heat ${entry.score >= 75 ? "nk-hot" : entry.score >= 45 ? "nk-warm" : "nk-long"}"><span class="tn-tier">${entry.score >= 75 ? "Hot" : entry.score >= 45 ? "Warm" : "Long shot"}</span><b>${entry.score}</b></span>
+    <span class="nick-plays nx"><strong>${formatNumber(l100)}</strong>${total > l100 ? `<small>${formatNumber(total)} all-time</small>` : ""}</span>
+    <span class="nick-gap nx">${formatNumber(slp)} / ${usual || "—"}<small>shows</small></span>
+    <span class="nick-last nx">${escapeHtml(song.lastDisplay || "—")}${agoSub}</span>
+    <span class="nick-score tn-heat nx ${tierClass(heat)}"><span class="tn-tier">${tierWord(heat)}</span><b>${heat}</b></span>
+    <span class="nick-nickplays pv"><strong>${formatNumber(song.nickCount)}</strong></span>
+    <span class="nick-nicklast pv">${escapeHtml(nickLastDisplay || "—")}</span>
   </li>`;
   }).join("")}</ol>`;
 }
@@ -13658,11 +13822,16 @@ body.stagelight .nick-song small { display: block; margin-top: 3px; font-family:
 body.stagelight .nick-last { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 body.stagelight .nick-last small { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
 body.stagelight .nick-songbook { margin-top: 20px; }
-/* Narrow screens: drop the Type + Last played columns so the row stays legible. */
+/* Narrow screens: drop Type / Gap / Last columns so the row stays legible.
+   next/woodshed collapse to # | Song | Plays | Heat; played to # | Song | Nick plays. */
 @media (max-width: 560px) {
-  body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { grid-template-columns: 24px minmax(0, 1fr) 62px 64px; }
+  body.stagelight .nick-ranking-head[data-view="next"], body.stagelight .nick-ranking[data-view="next"] li,
+  body.stagelight .nick-ranking-head[data-view="woodshed"], body.stagelight .nick-ranking[data-view="woodshed"] li { grid-template-columns: 22px minmax(0, 1fr) 58px 62px; }
+  body.stagelight .nick-ranking-head[data-view="played"], body.stagelight .nick-ranking[data-view="played"] li { grid-template-columns: 22px minmax(0, 1fr) 66px; }
   body.stagelight .nrh-type, body.stagelight .nick-type,
-  body.stagelight .nrh-last, body.stagelight .nick-last { display: none; }
+  body.stagelight .nrh-gap, body.stagelight .nick-gap,
+  body.stagelight .nrh-last, body.stagelight .nick-last,
+  body.stagelight .nrh-nicklast, body.stagelight .nick-nicklast { display: none; }
 
   body.stagelight .nick-panel { padding: 22px 20px 20px; }
   body.stagelight .nick-lead strong { font-size: 40px; }
@@ -13674,17 +13843,38 @@ body.stagelight .nick-bar-row .nick-progress-track { margin: 0; }
 body.stagelight .nb-label { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sl-faint); }
 body.stagelight .nb-count { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
 body.stagelight .nick-progress-track i.is-overall { background: var(--sl-ink); }
-/* Ranking: four columns, headers styled like the tour-stats sheet. */
-body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { display: grid; grid-template-columns: 26px minmax(0, 1fr) 84px 78px 116px 82px; gap: 12px; align-items: baseline; }
+/* Ranking columns change per view. next/woodshed = 7 cols (with Heat); played = 5. */
+body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { display: grid; gap: 12px; align-items: baseline; }
+body.stagelight .nick-ranking-head[data-view="next"], body.stagelight .nick-ranking[data-view="next"] li,
+body.stagelight .nick-ranking-head[data-view="woodshed"], body.stagelight .nick-ranking[data-view="woodshed"] li { grid-template-columns: 26px minmax(0, 1fr) 80px 76px 92px 128px 86px; }
+body.stagelight .nick-ranking-head[data-view="played"], body.stagelight .nick-ranking[data-view="played"] li { grid-template-columns: 26px minmax(0, 1fr) 82px 92px minmax(130px, 1.1fr); }
+/* Per-view column visibility (.nx = next/woodshed only, .pv = played only). */
+body.stagelight .nick-ranking-head[data-view="played"] .nx, body.stagelight .nick-ranking[data-view="played"] .nx { display: none; }
+body.stagelight .nick-ranking-head[data-view="next"] .pv, body.stagelight .nick-ranking[data-view="next"] .pv,
+body.stagelight .nick-ranking-head[data-view="woodshed"] .pv, body.stagelight .nick-ranking[data-view="woodshed"] .pv { display: none; }
 /* display:grid would override the hidden attribute — never let hidden rows paint. */
 body.stagelight .nick-ranking li[hidden] { display: none; }
-body.stagelight .nick-ranking-head .nrh-plays, body.stagelight .nick-ranking-head .nrh-last, body.stagelight .nick-ranking-head .nrh-score { text-align: right; justify-self: end; }
-body.stagelight .nick-ranking-head { border-bottom: 1px solid var(--sl-line); }
-body.stagelight .nick-ranking-head .nrh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); text-transform: uppercase; }
-body.stagelight .nrh-sort { padding: 0; border: 0; background: none; text-align: left; cursor: pointer; transition: color 0.15s ease; }
-body.stagelight .nrh-sort:hover { color: var(--sl-ink); }
-body.stagelight .nick-ranking-head .nrh-plays, body.stagelight .nick-plays { text-align: right; justify-self: end; }
-body.stagelight .nick-ranking-head .nrh-last, body.stagelight .nick-last { text-align: right; justify-self: end; }
+body.stagelight .nick-ranking-head { border-bottom: 1px solid var(--sl-line); position: sticky; top: 0; z-index: 3; background: #101013; }
+body.stagelight .nick-ranking-head .nrh-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--sl-faint); text-transform: uppercase; white-space: nowrap; }
+body.stagelight .nrh-sort { padding: 0; border: 0; background: none; text-align: left; cursor: pointer; transition: color 0.15s ease; white-space: nowrap; display: inline-flex; align-items: baseline; gap: 4px; }
+body.stagelight .nrh-sort:hover, body.stagelight .nrh-sort:focus-visible { color: var(--sl-ink); }
+body.stagelight .nrh-sort.is-sorted { color: var(--sl-muted); }
+/* Active sort arrow always visible; inactive arrows show on hover/keyboard focus only. */
+body.stagelight .nrh-arr { opacity: 0; transition: opacity 0.15s ease; }
+body.stagelight .nrh-sort:hover .nrh-arr, body.stagelight .nrh-sort:focus-visible .nrh-arr { opacity: 0.55; }
+body.stagelight .nrh-sort.is-sorted .nrh-arr { opacity: 1; }
+/* Right-align the numeric / trailing columns (head + cells). */
+body.stagelight .nrh-plays, body.stagelight .nick-plays,
+body.stagelight .nrh-gap, body.stagelight .nick-gap,
+body.stagelight .nrh-last, body.stagelight .nick-last,
+body.stagelight .nrh-heat, body.stagelight .nick-score,
+body.stagelight .nrh-nickplays, body.stagelight .nick-nickplays,
+body.stagelight .nrh-nicklast, body.stagelight .nick-nicklast { text-align: right; justify-self: end; }
+body.stagelight .nick-gap { font-family: var(--sl-mono); font-size: 12.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; display: flex; align-items: baseline; gap: 5px; justify-content: flex-end; }
+body.stagelight .nick-gap small { color: var(--sl-faint); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+body.stagelight .nick-plays small { display: block; }
+body.stagelight .nick-nickplays strong { font-family: var(--sl-mono); font-size: 15px; font-weight: 620; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
+body.stagelight .nick-nicklast { font-family: var(--sl-mono); font-size: 12.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 body.stagelight .nick-last { font-family: var(--sl-mono); font-size: 12.5px; color: var(--sl-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 body.stagelight .nick-feature h2, body.stagelight .nick-feature h3 { color: var(--sl-ink); font-family: var(--sl-display); }
 body.stagelight .nick-feature p { color: var(--sl-muted); }
@@ -14067,8 +14257,17 @@ body.stagelight .nick-two-col .nick-progress { margin: 26px 0 0; }
 body.stagelight .nick-two-col .nick-controls { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
 body.stagelight .nick-two-col .nick-chip-group button { padding: 7px 13px; font-size: 12.5px; }
 @media (max-width: 900px) { body.stagelight .nick-two-col { grid-template-columns: 1fr; gap: 26px; } }
-/* Nick's ranking gets the same capped-scroll treatment as the Tour Stats table. */
-body.stagelight .nick-ranking-wrap.is-capped { max-height: 520px; overflow-y: auto; -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+/* Nick's ranking: when the songbook is expanded the wrap becomes a bounded scroll
+   window (same treatment as the Tour Stats table) with its header sticky inside. */
+body.stagelight .nick-ranking-wrap { position: relative; }
+body.stagelight .nick-ranking-wrap.is-capped { max-height: 560px; overflow-y: auto; border-radius: var(--sl-r-md); -webkit-mask-image: linear-gradient(180deg, #000 94%, transparent); mask-image: linear-gradient(180deg, #000 94%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
+body.stagelight .nick-ranking-wrap.is-capped::-webkit-scrollbar { width: 8px; }
+body.stagelight .nick-ranking-wrap.is-capped::-webkit-scrollbar-track { background: transparent; }
+body.stagelight .nick-ranking-wrap.is-capped::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+body.stagelight .nick-ranking-wrap.is-capped::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); border: 2px solid transparent; background-clip: content-box; }
+/* mobile-only Sort select in the Nick controls (desktop uses sortable headers). */
+body.stagelight .nick-controls .mobile-sort { display: none; }
+@media (max-width: 760px) { body.stagelight .nick-controls .mobile-sort { display: block; } }
 body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar { width: 8px; }
 body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar-track { background: transparent; }
 body.stagelight .tour-table-wrap.is-capped::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }

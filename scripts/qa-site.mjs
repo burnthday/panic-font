@@ -270,26 +270,25 @@ function checkNickJohnsonFeature(html, siteData) {
   const nickShows = (siteData.setlists || []).filter((show) => (show.notes || []).some((note) => /\bnick johnson\b/i.test(note) && /\bguitar\b/i.test(note))).length;
   const nickPlays = sum(played.map((song) => song.nickCount));
   const woodshed = [...(siteData.boards?.woodshedOriginals || []), ...(siteData.boards?.woodshedCovers || [])];
-  const nextCount = rotation.filter((song) => (song.effectiveSlp ?? 0) > 4).length;
-  const expectedVisible = Math.min(6, nextCount);
+  const playedPct = rotation.length ? Math.round((played.length / rotation.length) * 100) : 0;
 
   // Section is always open now: no accordion wrapper and no "Nick stats" heading.
   record("Nick feature drops the accordion wrapper and heading",
     !feature.includes("nick-disclosure") && !feature.includes("<h2>Nick stats</h2>") && !feature.includes("<details class=\"nick-disclosure"),
     "no nick-disclosure / summary heading");
 
-  // Headline with both coral accent spans and the computed show count.
+  // Headline unchanged: Shelf-Watch two-tone lead + computed show count.
   assertIncludes(feature, 'class="sw-lead nick-headline"', "Nick headline reuses the Shelf Watch two-tone headline style");
   assertIncludes(feature, '<b>Nick Johnson has played just over half</b>', "Headline lead is the white bolded phrase");
   assertIncludes(feature, `${fmt(nickShows)} shows. Here`, "Headline carries the computed show count");
   record("Headline has no coral accent spans", !feature.includes("nick-accent"), "coral accents removed");
   assertIncludes(feature, "most likely to come next", "Headline keeps the exact closing copy");
 
-  // Single grouped summary panel: lead "PLAYED of ROTATION", caption, three bars, three
-  // inline stats, and the current-through note. The old 4-tile block is gone.
+  // Left panel now LEADS with the 50% primary statistic, then the quieter
+  // "PLAYED of ROTATION songs in rotation played with Nick" line, three bars, three tiles.
   assertIncludes(feature, 'class="nick-panel"', "Nick feature groups the summary into one glass panel");
-  assertIncludes(feature, `<div class="nick-lead"><strong>${fmt(played.length)}</strong><span> of ${fmt(rotation.length)}</span></div>`, "Panel leads with the played/rotation count");
-  assertIncludes(feature, "Songs played with Nick", "Panel caption present");
+  assertIncludes(feature, `<div class="nick-lead"><strong>${playedPct}%</strong></div>`, "Panel leads with the 50% primary statistic");
+  assertIncludes(feature, `${fmt(played.length)} of ${fmt(rotation.length)} songs in rotation played with Nick`, "Panel caption gives the computed of-312 line");
   assertIncludes(feature, 'class="is-overall"', "Nick has a dedicated overall progress bar");
   assertIncludes(feature, 'class="is-original"', "Nick completion bar separates played originals");
   assertIncludes(feature, 'class="is-cover"', "Nick completion bar separates played covers");
@@ -297,7 +296,7 @@ function checkNickJohnsonFeature(html, siteData) {
   for (const [value, label] of [
     [nickShows, "shows"],
     [nickPlays, "song plays"],
-    [woodshed.length, "still in the Woodshed"]
+    [woodshed.length, "in the Woodshed"]
   ]) {
     assertIncludes(feature, `<strong>${fmt(value)}</strong><span>${label}</span>`, `Panel tile reports ${label}`);
   }
@@ -305,12 +304,13 @@ function checkNickJohnsonFeature(html, siteData) {
     feature.includes('class="data-metrics nick-tiles"') && !feature.includes("nick-summary") && !feature.includes("Stats current through"),
     "nick-tiles present, old blocks gone");
 
-  assertIncludes(feature, 'class="nick-ranking"', "Nick Johnson feature presents a ranked most-likely-next view");
+  assertIncludes(feature, 'class="nick-ranking" data-view="next"', "Nick Johnson feature presents a ranked most-likely-next view with a per-view column set");
 
-  // Every rotation song ships in the DOM carrying the full facet set.
-  const facetRows = [...feature.matchAll(/<li class="nick-row[^>]*data-type="(?:original|cover)"[^>]*data-nick-count="\d+"[^>]*data-slp="\d+"[^>]*data-score="\d+"[^>]*data-played="(?:yes|no)"/g)];
+  // Every rotation song ships in the DOM carrying the full facet set (type, nick count,
+  // eligibility, Heat, gap, played state).
+  const facetRows = [...feature.matchAll(/<li class="nick-row[^>]*data-type="(?:original|cover)"[^>]*data-nick-count="\d+"[^>]*data-eligible="[01]"[^>]*data-heat="\d+"[^>]*data-slp="\d+"[^>]*data-played="(?:yes|no)"/g)];
   record(
-    "Nick ranking rows carry type, play, gap, and likelihood facets",
+    "Nick ranking rows carry type, nick-count, eligibility, Heat, and gap facets",
     facetRows.length === rotation.length,
     `${facetRows.length} faceted rows vs ${rotation.length} expected`
   );
@@ -333,53 +333,68 @@ function checkNickJohnsonFeature(html, siteData) {
     chipCount === rotation.length && feature.includes(">ORIGINAL<") && feature.includes(">COVER<"),
     `${chipCount} chips vs ${rotation.length} rows`);
 
-  // Column headers, styled like the tour-stats sheet; sortable columns are buttons.
-  assertIncludes(feature, 'nrh-col nrh-type', "Ranking header column nrh-type present");
-  for (const header of ["nrh-plays", "nrh-last", "nrh-score"]) {
-    assertIncludes(feature, `nrh-col nrh-sort ${header}`, `Ranking header column ${header} is a sortable button`);
+  // Type SEGMENTED CONTROL (exact Tour Stats pattern, own data hook), all three options.
+  assertIncludes(feature, '<div class="type-filter" role="group"', "Type segmented control uses the Tour Stats type-filter pattern");
+  for (const [value, label] of [["all", "All"], ["original", "Originals"], ["cover", "Covers"]]) {
+    assertIncludes(feature, `data-nick-type="${value}">${label}<`, `Type control has the ${label} option`);
   }
-  for (const col of ["title", "plays", "recent", "score"]) {
+
+  // Sortable column headers with shared-state markup. Per-view column set: next/woodshed
+  // carry Plays/Gap/Last/Heat (.nx), the played view carries Nick plays/Last-with-Nick (.pv).
+  for (const col of ["title", "type", "plays", "gap", "last", "heat", "nickplays", "nicklast"]) {
     assertIncludes(feature, `data-nick-col="${col}"`, `Ranking header sorts by ${col} on click`);
   }
-  record("Ranking has the Likelihood column header", /data-nick-col="score">Likelihood /.test(feature));
+  assertIncludes(feature, 'class="nrh-col nrh-sort nrh-heat nx is-sorted" data-nick-col="heat"', "Heat is the default-active sortable header (shared sort state, active arrow shown)");
+  assertIncludes(feature, 'class="nrh-arr"', "Sort headers carry a shared active-arrow affordance");
+  record("Per-view columns present: Heat cells (.nx) and played-view cells (.pv)",
+    /class="nick-score tn-heat nx /.test(feature) && feature.includes('class="nick-nickplays pv"') && feature.includes('class="nick-nicklast pv"'),
+    "nick-score .nx + nick-nickplays/.nick-nicklast .pv present");
 
-  // Likelihood reads like Tonight's Odds: tier word + digit-only number, never a percent.
-  const scoreCells = [...feature.matchAll(/class="nick-score tn-heat (nk-\w+)"><span class="tn-tier">([^<]+)<\/span><b>(\d+)<\/b>/g)];
+  // Heat reads like Tonight's Odds: tier word + digit-only score, NEVER a percent sign.
+  const scoreCells = [...feature.matchAll(/class="nick-score tn-heat nx (nk-\w+)"><span class="tn-tier">([^<]+)<\/span><b>(\d+)<\/b>/g)];
   record(
-    "Likelihood renders Tonight's-Odds style: tier word + digit-only score, no percent sign",
-    scoreCells.length === rotation.length && scoreCells.every((match) => ["Hot", "Warm", "Long shot"].includes(match[2])) && !/%<\/?/.test(feature),
+    "Heat renders Tonight's-Odds style: tier word + digit-only score, no percent sign in a score cell",
+    scoreCells.length === rotation.length && scoreCells.every((match) => ["Hot", "Warm", "Long shot"].includes(match[2])) && !/<b>\d+%<\/b>/.test(feature),
     `${scoreCells.length} score cells`
   );
 
-  // View + Sort dropdowns; the old Show dropdown is retired.
+  // View dropdown stays; the DESKTOP Sort dropdown is removed; a mobile-only Sort select remains.
   assertIncludes(feature, 'data-nick-view-dd', "Nick ranking renders the View dropdown");
-  assertIncludes(feature, 'data-nick-sort-dd', "Nick ranking renders the Sort dropdown");
+  record("Desktop Sort dropdown is gone (header sorting replaces it)", !feature.includes("data-nick-sort-dd"), "data-nick-sort-dd removed");
+  record("A mobile-only Sort select is present, wrapped in .mobile-sort",
+    /<div class="mobile-sort">[\s\S]*?data-nick-mobile-sort/.test(feature),
+    "data-nick-mobile-sort inside .mobile-sort");
   record("Old Show dropdown is gone", !feature.includes("data-nick-show-dd"), "data-nick-show-dd removed");
 
-  // Songbook control matches the tour-stats "Show all N songs" expand treatment.
+  // Songbook expands into a BOUNDED scroll wrap (sticky header) with a sticky Show-fewer
+  // control — reuses the tour-stats capped-wrap + stats-expand treatment.
+  assertIncludes(feature, 'class="nick-ranking-wrap" data-nick-scroll', "Ranking sits inside the bounded-scroll wrap");
   assertIncludes(feature, 'class="stats-expand" aria-expanded="false" data-nick-songbook', "Songbook button uses the stats-expand treatment");
   assertIncludes(feature, "Explore Nick&#39;s full songbook", "Songbook button carries the songbook copy");
-  record("Old capped-scroll wrapper is gone",
-    !feature.includes("data-nick-scroll") && !feature.includes("data-nick-expand"),
-    "scroll wrapper removed");
 
-  // Default "most likely next" view: recently played rows (data-slp <= 4) ship hidden,
-  // exactly the top six of the rest render visible, and every visible row is slp > 4.
+  // Default "most likely next" view: only ELIGIBLE songs are visible, exactly the top
+  // six, every visible row eligible + slp > 4, and no visible row is a one-off (total<=1).
   const allRows = [...feature.matchAll(/<li class="nick-row[^>]*>/g)].map((match) => match[0]);
   const visibleRows = allRows.filter((li) => !/ hidden>/.test(li));
-  const recentRows = allRows.filter((li) => /data-slp="([0-4])"/.test(li));
+  const eligibleRows = allRows.filter((li) => /data-eligible="1"/.test(li));
+  const expectedVisible = Math.min(6, eligibleRows.length);
   record(
-    "Recently played songs (last four shows) ship hidden by default",
-    recentRows.length > 0 && recentRows.every((li) => / hidden>/.test(li)),
-    `${recentRows.length} recently-played rows`
+    "Non-eligible songs ship hidden by default",
+    allRows.filter((li) => /data-eligible="0"/.test(li)).every((li) => / hidden>/.test(li)),
+    "every non-eligible row hidden"
   );
   record(
-    "Exactly the top six most-likely-next rows are visible by default",
+    "Exactly the top six eligible most-likely-next rows are visible by default",
     visibleRows.length === expectedVisible && visibleRows.every((li) => {
-      const match = li.match(/data-slp="(\d+)"/);
-      return match && Number(match[1]) > 4;
+      const slp = li.match(/data-slp="(\d+)"/);
+      return /data-eligible="1"/.test(li) && slp && Number(slp[1]) > 4;
     }),
     `${visibleRows.length} visible vs ${expectedVisible} expected`
+  );
+  record(
+    "Eligibility floor: no visible top row is a one-off (data-total >= 2)",
+    visibleRows.every((li) => { const t = li.match(/data-total="(\d+)"/); return t && Number(t[1]) > 1; }),
+    "no data-total<=1 in the visible pool"
   );
   record("The Woodshed contains only songs not yet played with Nick", woodshed.every((song) => !song.playedWithNick), woodshed.filter((song) => song.playedWithNick).map((song) => song.title).join("\n"));
 }
