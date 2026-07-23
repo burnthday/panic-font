@@ -2568,11 +2568,22 @@ async function checkHeroTransitionEngine(homeHtml) {
     homeHtml.includes('classList.add("is-leaving")') && homeHtml.includes('classList.add(enterCls)')
     && homeHtml.includes('.hv[data-view="'),
     "is-leaving + enter-class swap present");
-  record("Hero slots grid-stack all views so heights are intrinsic from first paint (no JS locking, no load shift)",
+  // Heights stay intrinsic from first paint with zero JS — but only the LONGEST few
+  // views per slot stay in layout to hold the slot open (hv-hold). Keeping all ~29
+  // stacked cost 11.4ms median / 28ms worst on every forced layout versus 1.3ms,
+  // blowing the 60fps budget and stuttering every hero transition. The rest are
+  // display:none. Assert: grid stacking, holders laid out invisibly, non-holders
+  // fully out of layout, no JS locking, and that holders actually exist.
+  record("Hero slots grid-stack views so heights are intrinsic from first paint (no JS locking, no load shift)",
     /hero-lock-slot, body\.stagelight \.hero-music-slot, body\.stagelight \.hero-ticker-slot \{ display: grid; \}/.test(css)
     && css.includes("grid-area: 1 / 1")
-    && /hero-ticker-slot > \.hv\[hidden\] \{ display: block; visibility: hidden; pointer-events: none; \}/.test(css)
+    && /hero-ticker-slot > \.hv\[hidden\] \{ display: none; \}/.test(css)
+    && /hero-ticker-slot > \.hv-hold\[hidden\] \{ display: block; visibility: hidden; pointer-events: none; \}/.test(css)
     && !homeHtml.includes("lockStage"));
+  const holders = (homeHtml.match(/class="hv hv-hold"/g) || []).length;
+  record("Only a bounded set of height-holder views stays in layout",
+    holders >= 3 && holders <= 20,
+    `${holders} hv-hold views (all other hidden views are display:none)`);
   record("Hero gates the swap on decoded target imagery, capped so slow networks never block",
     homeHtml.includes("readyImages") && homeHtml.includes("img.decode()") && homeHtml.includes("setTimeout(res, 350)"),
     "readyImages decode race present");

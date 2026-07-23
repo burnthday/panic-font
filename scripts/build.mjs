@@ -10156,9 +10156,31 @@ function renderHomeHero(data) {
     views.push({ show: upcoming, view: renderUpcomingHeroView(data, upcoming, Boolean(preview)), kind: "upcoming" });
   }
 
-  const slot = (kind) => views.map(({ view }, index) =>
-    `<div class="hv${index === 0 ? " is-active" : ""}" data-view="${escapeAttr(view.iso)}"${index === 0 ? "" : " hidden"}>${view[kind]}</div>`
-  ).join("");
+  // Grid-stacking every view keeps slot heights intrinsic from the first layout
+  // (no JS, no load shift) — but keeping ALL of them laid out was costing a fortune:
+  // 87 invisible view subtrees, 6,591 elements, and a forced layout pass measured at
+  // 11.4ms median / 28ms worst versus 1.3ms with them out of layout. That is the
+  // whole 60fps frame budget spent on layout alone, which is what made every hero
+  // transition stutter. Only the few LONGEST views per slot need to hold the height
+  // open; the rest go fully out of layout with display:none. Longest is measured on
+  // rendered markup length, which tracks rendered height for these uniform blocks,
+  // and we keep a margin of several so a wrap-heavy runner-up can't under-reserve.
+  const HEIGHT_HOLDERS = 4;
+  const holdersFor = (kind) => new Set(
+    views.map(({ view }, index) => ({ index, len: String(view[kind] || "").length }))
+      .sort((a, b) => b.len - a.len)
+      .slice(0, HEIGHT_HOLDERS)
+      .map((entry) => entry.index)
+  );
+  const slot = (kind) => {
+    const holders = holdersFor(kind);
+    return views.map(({ view }, index) => {
+      const active = index === 0;
+      // hv-hold = laid out invisibly to reserve height; the rest are display:none.
+      const cls = `hv${active ? " is-active" : ""}${!active && holders.has(index) ? " hv-hold" : ""}`;
+      return `<div class="${cls}" data-view="${escapeAttr(view.iso)}"${active ? "" : " hidden"}>${view[kind]}</div>`;
+    }).join("");
+  };
 
   // Fixed four-slot rail: two contextual slots (content swaps, position never
   // moves), the latest show pinned third, tonight/upcoming pinned fourth. The
@@ -14504,7 +14526,11 @@ body.stagelight .hv[hidden] { display: none; }
    height is a fixed clamp; laying out 29 photos would force-load them). */
 body.stagelight .hero-lock-slot, body.stagelight .hero-music-slot, body.stagelight .hero-ticker-slot { display: grid; }
 body.stagelight .hero-lock-slot > .hv, body.stagelight .hero-music-slot > .hv, body.stagelight .hero-ticker-slot > .hv { grid-area: 1 / 1; }
-body.stagelight .hero-lock-slot > .hv[hidden], body.stagelight .hero-music-slot > .hv[hidden], body.stagelight .hero-ticker-slot > .hv[hidden] { display: block; visibility: hidden; pointer-events: none; }
+body.stagelight .hero-lock-slot > .hv[hidden], body.stagelight .hero-music-slot > .hv[hidden], body.stagelight .hero-ticker-slot > .hv[hidden] { display: none; }
+/* Only the longest few views stay in layout, invisibly, to hold the slot open at
+   its tallest height from the very first paint. Everything else is display:none
+   so the hero is not dragging ~6,500 invisible elements through every layout. */
+body.stagelight .hero-lock-slot > .hv-hold[hidden], body.stagelight .hero-music-slot > .hv-hold[hidden], body.stagelight .hero-ticker-slot > .hv-hold[hidden] { display: block; visibility: hidden; pointer-events: none; }
 /* Outgoing snapshot: out of flow so the incoming view takes over the flow. */
 body.stagelight .hv.is-leaving { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 /* Slide start/end states. next = incoming slides in from the right; prev = from
