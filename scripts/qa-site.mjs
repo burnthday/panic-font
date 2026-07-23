@@ -1588,7 +1588,10 @@ async function checkLyricsChords(files, htmlByFile, siteData) {
   // just the ~53 songs with an internal transcription.
   const rowCount = (hub.match(/class="lyric-row"/g) || []).length;
   record("Lyrics & Chords hub lists the full catalog", catalog.length > 0 && rowCount === catalog.length, `${rowCount} lyric rows vs ${catalog.length} catalog songs`);
-  assertIncludes(hub, "link out to Everyday Companion", "Lyrics & Chords hub credits Everyday Companion for untranscribed songs");
+  // Intent is the CREDIT, not one phrasing — the deck is Alex's copy and can be
+  // reworded. Guard on the attribution surviving, not the exact sentence.
+  record("Lyrics & Chords hub credits Everyday Companion for untranscribed songs",
+    /links? out to Everyday Companion/.test(hub), "hub must credit EC for untranscribed songs");
 
   // PART 3: the redundant hub eyebrow (duplicate of the H1 + breadcrumb crumb) is
   // gone. It stays on the categorizing lyric SUBPAGES (checked below).

@@ -1913,7 +1913,7 @@ function renderAboutPage(entry, data, cache) {
         <header class="archive-title">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">About</span></nav>
           <h1>About Burnthday</h1>
-          <p class="page-deck">Alex Moura, creator of Burnthday — the Widespread Panic tour song list and data spreadsheet.</p>
+          <p class="page-deck">Hi! Alex Moura here... thanks for stopping in. I've been running this song list since June of 2007.</p>
         </header>
         <div class="archive-content prose-plate">
           <img class="about-portrait" src="/assets/archive-media/Alex-1_zps04c65eda.png" alt="Alex Moura">
@@ -2013,7 +2013,7 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Lyrics &amp; Chords</span></nav>
         <h1>Lyrics &amp; Chords</h1>
-        <p class="page-deck">The full songbook: lyrics for every song, and guitar chords wherever they exist. Songs we have not transcribed link out to Everyday Companion, which has nearly all of them.</p>
+        <p class="page-deck">Lyrics for every song and chords wherever I've got them. What I haven't transcribed links out to Everyday Companion. They've got just about all of it.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -2654,7 +2654,7 @@ function renderFaqPage(data) {
           <div class="ph-lede">
             <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">FAQ</span></nav>
             <h1>The questions we actually get</h1>
-            <p class="page-deck">New to the band? Here's the name, the story, the people, where they stand right now, and where to start listening. Written by fans who've been in the room.</p>
+            <p class="page-deck">New to the band? Start here for the name, the story, and the people... plus what I'd put on first.</p>
           </div>
           ${renderPosterFigure(POSTER_PAGES.faq)}
         </header>
@@ -3783,7 +3783,7 @@ function renderShelfInfoPage(data, options = {}) {
         ${renderPageHeader({
           crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">The Shelf</span></nav>`,
           title: "The Shelf",
-          deck: escapeHtml(`${formatNumber(shelfCount)} songs have gone ${formatNumber(limit)} shows without a play. They are off the sheet, not forgotten. Some may never return. Others are one night away.`),
+          deck: escapeHtml(`${formatNumber(shelfCount)} songs have gone ${formatNumber(limit)} shows without a play. Off the sheet but not forgotten. I wrote that rule when the boys played 100 shows a year and ${formatNumber(limit)} meant about two years gone. They play about 40 now so it is closer to five. I am rethinking where the line goes... and I have always worried that moving a song here is what keeps it gone.`),
           poster: POSTER_PAGES.shelf,
           escapeTitle: false
         })}
@@ -3918,7 +3918,7 @@ function renderRumorsPage(data, oldRumorsEntry) {
         ${renderPageHeader({
           crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Rumors</span></nav>`,
           title: "Rumors",
-          deck: "Tour rumors making the rounds for the coming season. All of it is speculation the band has not confirmed, kept clearly flagged as such.",
+          deck: "Tour rumors making the rounds for the coming season. Don't go booking flights... it's 100% pure speculation until the band says otherwise. Check WidespreadPanic.com/Tour for official dates and call before you haul!",
           poster: POSTER_PAGES.rumors
         })}
         ${renderCurrentRumors(data)}
@@ -6376,7 +6376,7 @@ function renderSongsIndex(data, slugMap) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Songs</span></nav>
         <h1>Song Index</h1>
-        <p class="page-deck">The master catalog. Every song the band has played, with its live status, rarity, and where to go deeper.</p>
+        <p class="page-deck">Every song the boys have ever played and where each one stands right now. What's still in rotation and what's gone rare. Pick one and go as deep as you want.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -7242,7 +7242,7 @@ function renderAlbumsIndex(albums, data) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Albums</span></nav>
         <h1>Albums</h1>
-        <p class="page-deck">Every studio album, and what the band still plays from each.</p>
+        <p class="page-deck">Every studio album and what's still in rotation off each one. Some records never left the setlist. Others barely come up anymore.</p>
       </header>
       <div class="album-grid">
         ${albums.map((album) => `<a class="album-tile" href="/albums/${escapeAttr(album.slug)}/">
@@ -7357,7 +7357,7 @@ function renderAlbumPage(album, albums, data) {
 // and page, grouped by year (newest first) into scannable tokenized rows, with a
 // client-side title search. Clean and fast — no laminate, no heavy design.
 function renderArchiveIndex(entries, data) {
-  const deck = `${formatNumber(entries.length)} preserved Blogger posts and pages from the Takeout export — grouped by year and searchable by title.`;
+  const deck = `Everything I've posted here going back to the beginning. ${formatNumber(entries.length)} posts and pages grouped by year and searchable by title. Nothing thrown out.`;
   // Entries arrive newest-first. Group by published year; anything undated falls
   // into a trailing "Undated" bucket so nothing is dropped.
   const byYear = new Map();
