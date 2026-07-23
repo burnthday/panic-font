@@ -2327,8 +2327,9 @@ function renderPrivacyPage(data) {
     <main class="archive-main">
       <article class="archive-page privacy-page">
         <header class="archive-title">
-          <p>Last updated July 18, 2026</p>
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Privacy</span></nav>
           <h1>Privacy</h1>
+          <p class="page-meta">Last updated July 18, 2026</p>
         </header>
         <div class="archive-content prose-plate">
           <p>Burnthday is an independent Widespread Panic fan site. You do not need an account, and the site does not ask for your name, email address, or payment information.</p>
@@ -2631,11 +2632,14 @@ function renderFaqPage(data) {
     <!-- ${held} FAQ entr${held === 1 ? "y is" : "ies are"} held back for human verification (verify:true) and not rendered. -->
     <main class="archive-main">
       <article class="archive-page faq-page">
-        <header class="faq-hero">
-          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">FAQ</span></nav>
-          <p class="faq-eyebrow">Widespread Panic</p>
-          <h1>The questions we actually get</h1>
-          <p class="faq-deck">New to the band? Here's the name, the story, the people, where they stand right now, and where to start listening. Written by fans who've been in the room.</p>
+        <header class="faq-hero has-poster">
+          ${renderPosterAtmos(POSTER_PAGES.faq)}
+          <div class="ph-lede">
+            <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">FAQ</span></nav>
+            <h1>The questions we actually get</h1>
+            <p class="page-deck">New to the band? Here's the name, the story, the people, where they stand right now, and where to start listening. Written by fans who've been in the room.</p>
+          </div>
+          ${renderPosterFigure(POSTER_PAGES.faq)}
         </header>
         <div class="faq-list">
         ${items}
@@ -2659,24 +2663,22 @@ function renderFaqCss() {
         border: 1px solid var(--sl-line); border-radius: var(--sl-r);
         padding: clamp(30px, 6vw, 60px) clamp(22px, 5vw, 44px) clamp(24px, 4vw, 34px);
         box-shadow: var(--sl-glass-shadow);
+        display: grid; grid-template-columns: minmax(0, 1fr) 190px;
+        gap: clamp(24px, 4vw, 48px); align-items: center;
       }
       .faq-hero::before {
         content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
         background-image: linear-gradient(180deg, rgba(9,9,11,0.34) 0%, rgba(11,11,12,0.62) 100%);
       }
+      .faq-hero .ph-lede { min-width: 0; }
+      .faq-hero .ph-atmos { z-index: -2; }
+      .faq-hero .ph-poster { width: 190px; }
       .faq-hero .crumbs { position: relative; }
-      .faq-eyebrow {
-        margin: 18px 0 8px; font-family: var(--sl-mono); text-transform: uppercase;
-        letter-spacing: 0.22em; font-size: 11px; color: var(--sl-faint);
-      }
       .faq-hero h1 {
         margin: 0; line-height: 1.04; letter-spacing: -0.01em;
         font-size: clamp(1.9rem, 5.4vw, 3rem);
       }
-      .faq-deck {
-        margin: 16px 0 0; font-size: 1.02rem; line-height: 1.6; color: var(--sl-muted);
-        max-width: 58ch;
-      }
+      @media (max-width: 1100px) { .faq-hero { display: block; } }
       .faq-credit {
         margin: 20px 0 0; font-family: var(--sl-mono); font-size: 9.5px;
         letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint);
@@ -2924,7 +2926,6 @@ function renderAlmanacPage(data) {
 function renderAlmanacCss() {
   return `
       .almanac-page { max-width: 940px; }
-      body.stagelight .archive-title p.alm-deck { font-family: var(--sl-display); font-size: 17px; line-height: 1.6; letter-spacing: -0.01em; text-transform: none; color: var(--sl-muted); opacity: 1; max-width: 66ch; margin: 14px 0 0; }
       .alm-section { margin-top: 2.6rem; }
       .alm-section-head h2 { font-family: var(--sl-display); font-size: 1.5rem; letter-spacing: -.01em; margin: 0 0 .3rem; }
       .alm-section-head p { margin: 0 0 1.1rem; opacity: .72; max-width: 62ch; line-height: 1.55; font-size: .95rem; }
@@ -7100,6 +7101,7 @@ function renderArchiveSearchScript() {
 function renderPagesIndex(entries, data) {
   return renderArchiveListPage({
     title: "Burnthday Pages",
+    crumbLabel: "Pages",
     deck: `${entries.length} preserved Blogger pages from the Takeout export, including About, Song Origins, lyrics, downloads, and old live stream pages.`,
     canonicalPath: "/archive/",
     noindex: true,
@@ -7110,6 +7112,7 @@ function renderPagesIndex(entries, data) {
 
 function renderTourReviewIndex(entries, data) {
   return renderArchiveListPage({
+    crumbLabel: "Tour In Review",
     title: "Tour In Review",
     deck: `${entries.length} preserved Tour In Review pages and related review posts.`,
     canonicalPath: "/tour-in-review/",
@@ -7118,7 +7121,7 @@ function renderTourReviewIndex(entries, data) {
   });
 }
 
-function renderArchiveListPage({ title, deck, canonicalPath, noindex = false, entries, data }) {
+function renderArchiveListPage({ title, deck, canonicalPath, crumbLabel, noindex = false, entries, data }) {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -7142,8 +7145,9 @@ function renderArchiveListPage({ title, deck, canonicalPath, noindex = false, en
     <main class="archive-main">
       <section class="archive-index">
         <header class="archive-title">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">${escapeHtml(crumbLabel || title)}</span></nav>
           <h1>${escapeHtml(title)}</h1>
-          <p>${escapeHtml(deck)}</p>
+          <p class="page-deck">${escapeHtml(deck)}</p>
         </header>
         <ol class="archive-list">
           ${entries.map((entry) => `<li>
@@ -15930,10 +15934,6 @@ body.stagelight .archive-list em { grid-column: 1 / -1; font-family: var(--sl-mo
 
 /* ---- ARCHIVE INDEX: grouped-by-year, searchable utility list ---- */
 body.stagelight .archive-hub-title { border-bottom: 0; margin-bottom: 20px; padding-bottom: 0; }
-body.stagelight .archive-hub-deck, body.stagelight .archive-title p.archive-hub-deck {
-  font-family: var(--sl-display); font-size: 17px; line-height: 1.55; letter-spacing: -0.01em;
-  text-transform: none; color: var(--sl-muted); margin: 14px 0 0; max-width: 66ch;
-}
 body.stagelight .archive-groups { display: grid; gap: 8px; }
 body.stagelight .archive-year { padding: 6px 0; }
 body.stagelight .archive-year[hidden] { display: none; }
@@ -15962,7 +15962,6 @@ body.stagelight .albums-main { width: min(1400px, calc(100% - 56px)); }
 /* Detail pages share the SAME left margin line as the index: left edge pinned to
    the 1400 rail, content keeps its narrower 1180 reading measure to the right. */
 body.stagelight .album-main { width: min(1180px, calc(100% - 56px)); margin-left: max(28px, calc((100% - 1400px) / 2)); margin-right: auto; }
-body.stagelight .albums-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
 body.stagelight .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 22px; }
 body.stagelight .album-tile { display: block; color: var(--sl-ink); }
 body.stagelight .album-cover, body.stagelight .album-cover-lg {
@@ -16049,12 +16048,10 @@ body.stagelight .album-nav a:hover strong { color: #fff; }
 body.stagelight .songs-main { width: min(1180px, calc(100% - 28px)); }
 body.stagelight .song-main { width: min(820px, calc(100% - 48px)); }
 body.stagelight .shelf-main { width: min(1000px, calc(100% - 48px)); }
-body.stagelight .songs-deck { font-size: 15px; color: var(--sl-muted); margin-top: 12px; }
 
 /* ---- THE SHELF: designed data page (hero deck, stat strip via .song-stat,
    designed row list with gap meter, related-sheet cards) ---- */
 body.stagelight .shelf-info-page .archive-title { border-bottom: 0; margin-bottom: 22px; padding-bottom: 0; }
-body.stagelight .archive-title p.shelf-deck { font-family: var(--sl-display); font-size: 17px; line-height: 1.55; letter-spacing: -0.01em; text-transform: none; color: var(--sl-muted); margin: 14px 0 0; max-width: 62ch; }
 body.stagelight .shelf-list-section, body.stagelight .shelf-neighbors { margin-top: 52px; }
 body.stagelight .shelf-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; padding-bottom: 14px; border-bottom: 1px solid var(--sl-line); }
 body.stagelight .shelf-section-head h2 { font-family: var(--sl-display); font-size: 21px; font-weight: 640; letter-spacing: -0.01em; color: var(--sl-ink); }
@@ -16775,11 +16772,6 @@ body.stagelight .ti-meta { flex: none; font-family: var(--sl-mono); font-size: 1
 /* ---- TOUR IN REVIEW HUB: landing (hero deck, featured written reviews,
         decade-grouped searchable index of every generated tour) ---- */
 body.stagelight .tour-hub-title { border-bottom: 0; margin-bottom: 20px; padding-bottom: 0; }
-body.stagelight .tour-hub-deck, body.stagelight .archive-title p.tour-hub-deck {
-  font-family: var(--sl-display); font-size: 17px; line-height: 1.55; letter-spacing: -0.01em;
-  text-transform: none; color: var(--sl-muted); margin: 14px 0 0; max-width: 66ch;
-}
-body.stagelight .tour-hub-deck b { color: var(--sl-ink); font-weight: 600; }
 body.stagelight .tour-featured { margin: 0 0 40px; }
 body.stagelight .tour-featured-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
 body.stagelight .tour-featured-grid a {

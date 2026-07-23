@@ -1625,6 +1625,50 @@ function checkEyebrowAudit(files, htmlByFile) {
   record("Album detail pages omit the Studio Album eyebrow (removed per owner)", !anyMatch(`${path.sep}albums${path.sep}`, /class="album-eyebrow"/), "eyebrow should not render");
   // Lyric SUBPAGES keep their categorizing eyebrow (verified in checkLyricsChords too).
   record("Lyric subpages drop the redundant LYRICS & CHORDS eyebrow", !files.some((file, index) => /lyrics\.html$/.test(file) && htmlByFile[index].includes('class="archive-eyebrow">LYRICS &amp; CHORDS')), "lyric subpage eyebrow removed");
+
+  // ---- Unified subpage header system (crumbs -> h1 -> page-deck -> hairline) ----
+  // The FAQ and About headers had eyebrow stacks; they are deleted per the owner
+  // rule against eyebrow+headline+subheadline stacks.
+  const faqPage = htmlAt("faq/index.html");
+  const aboutPage = htmlAt("about/index.html");
+  record("FAQ header drops the eyebrow stack", faqPage.length > 0 && !faqPage.includes('class="faq-eyebrow"'), "faq-eyebrow must be gone");
+  record("About header drops the eyebrow stack", aboutPage.length > 0 && !aboutPage.includes('class="archive-eyebrow"'), "archive-eyebrow must be gone");
+  record("Song Origins index retires the off-system origin-hero header", htmlAt("song-origins/index.html").length > 0 && !htmlAt("song-origins/index.html").includes('class="origin-hero"'), "origin-hero header should be replaced by the unified header");
+  record("Rumors retires the off-system page-graphic-title header", htmlAt("rumors/index.html").length > 0 && !htmlAt("rumors/index.html").includes('class="page-graphic-title"'), "page-graphic-title should be replaced by the unified header");
+
+  // The five poster subpages each carry their tour-poster knockout <img>.
+  const posterPages = [
+    ["faq/index.html", "about-knockout"],
+    ["shelf/index.html", "the-shelf-knockout"],
+    ["song-origins/index.html", "song-origins-knockout"],
+    ["tour-in-review/index.html", "tour-in-review-knockout"],
+    ["rumors/index.html", "rumors-knockout"]
+  ];
+  for (const [page, poster] of posterPages) {
+    const html = htmlAt(page);
+    record(`${page} carries the ${poster} poster image`,
+      html.length > 0 && html.includes('class="ph-poster"') && html.includes(`/assets/posters/${poster}.png`),
+      `expected ph-poster with /assets/posters/${poster}.png`);
+  }
+
+  // Every subpage header uses the ONE shared deck class (the fix that stops the
+  // mono-uppercase default from leaking into full deck sentences).
+  const deckPages = [
+    "about/index.html", "lyrics-chords/index.html", "songs/index.html", "albums/index.html",
+    "archive/index.html", "faq/index.html", "rumors/index.html", "shelf/index.html",
+    "tour-in-review/index.html", "song-origins/index.html", "pages/index.html"
+  ];
+  for (const page of deckPages) {
+    const html = htmlAt(page);
+    record(`${page} header uses the unified page-deck class`,
+      html.length > 0 && html.includes('class="page-deck"'),
+      "page-deck missing from the subpage header");
+  }
+  // The retired per-page deck classes must not resurface anywhere.
+  const deadDeckClass = /class="(songs-deck|albums-deck|shelf-deck|tour-hub-deck|archive-hub-deck|alm-deck|faq-deck)"/;
+  record("Retired per-page deck classes are gone from all pages",
+    !files.some((file, index) => deadDeckClass.test(htmlByFile[index])),
+    "a legacy deck class (songs-deck/albums-deck/shelf-deck/tour-hub-deck/archive-hub-deck/alm-deck/faq-deck) is still rendered");
 }
 
 function checkMarkerLegend(html, siteData) {
