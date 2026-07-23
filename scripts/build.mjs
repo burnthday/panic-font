@@ -8150,12 +8150,11 @@ function renderNickRankingScript() {
     const mobileSort = feature.querySelector("[data-nick-mobile-sort]");
     const typeButtons = [...feature.querySelectorAll("[data-nick-type]")];
     const songbook = feature.querySelector("[data-nick-songbook]");
-    const CAP = 9;
+    const CAP = ${NICK_PREVIEW_ROWS};
     // Which data column drives each sort key, whether it is numeric, and its
     // natural default direction the first time you click that header.
     const COLS = {
       title: { attr: "songTitle", numeric: false, dir: "asc" },
-      type: { attr: "type", numeric: false, dir: "asc" },
       plays: { attr: "l100", numeric: true, dir: "desc" },
       gap: { attr: "slp", numeric: true, dir: "desc" },
       last: { attr: "last", numeric: false, dir: "desc" },
@@ -9621,33 +9620,40 @@ function renderNickJohnsonFeature(data) {
   return `<section class="nick-feature" id="nick-johnson">
   <div class="nick-feature-body nick-two-col">
   <div class="nick-left">
-    <h2 class="sw-lead nick-headline"><b>Nick Johnson has played just over half</b> of the band&#39;s current rotation in ${formatNumber(shows)} shows. Here&#39;s what is most likely to come next.</h2>
-    <div class="nick-panel">
-      <div class="nick-lead"><strong>${playedPct}%</strong></div>
-      <p class="nick-caption">${formatNumber(played.length)} of ${formatNumber(rotation.length)} songs in rotation played with Nick</p>
-      <div class="nick-bars">
-        <div class="nick-bar-row"><span class="nb-label">Overall</span><span class="nick-progress-track"><i class="is-overall" style="width:${overallWidth}%"></i></span><span class="nb-count">${formatNumber(played.length)}/${formatNumber(rotation.length)}</span></div>
-        <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
-        <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${coverWidth}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
-      </div>
-      ${LIVING.nickDots ? renderLivingPoster({
-        mode: "rig",
-        className: "rig",
-        plate: "/assets/living/nick-plate.webp",
-        dots: LIVING.nickDots,
-        pw: 1254, ph: 1096, aspect: "1254 / 1096",
-        rmax: 9.08, rmin: 0.8, srFloor: 0.40, srScale: 1.06,
-        lights: { ORANGE: { x: 0.801, y: 0.721 }, CROWN1: { x: 0.773, y: 0.540 }, CROWN2: { x: 0.773, y: 0.588 }, TUNER: { x: 0.188, y: 0.887 }, PRS: { x: 0.638, y: 0.778 }, TUBE: { x: 0.500, y: 0.807 } }
-      }) : `<img class="nick-gear" src="/assets/nick-gear.png" alt="Nick Johnson's rig: PRS guitar, Mesa/Boogie, Sound City and Orange cabs, pedalboard" loading="lazy" decoding="async" width="1000" height="837">`}
+    <div class="nick-head-row">
+      <h2 class="sw-lead nick-headline"><b>Nick Johnson has played just over half</b> of the band&#39;s current rotation in ${formatNumber(shows)} shows. Here&#39;s what is most likely to come next.</h2>
       <div class="data-metrics nick-tiles" aria-label="Nick Johnson tour totals">
         ${renderNickStat(shows, "shows")}
         ${renderNickStat(plays, "song plays")}
         ${renderNickStat(woodshed, "in the Woodshed")}
       </div>
     </div>
+    <div class="nick-panel nick-bento">
+      <span class="nick-atmo" aria-hidden="true"></span>
+      <div class="nick-bento-art">
+        ${LIVING.nickDots ? renderLivingPoster({
+          mode: "rig",
+          className: "rig",
+          plate: "/assets/living/nick-plate.webp",
+          dots: LIVING.nickDots,
+          pw: 1254, ph: 1096, aspect: "1254 / 1096",
+          rmax: 9.08, rmin: 0.8, srFloor: 0.40, srScale: 1.06,
+          lights: { ORANGE: { x: 0.801, y: 0.721 }, CROWN1: { x: 0.773, y: 0.540 }, CROWN2: { x: 0.773, y: 0.588 }, TUNER: { x: 0.188, y: 0.887 }, PRS: { x: 0.638, y: 0.778 }, TUBE: { x: 0.500, y: 0.807 } }
+        }) : `<img class="nick-gear" src="/assets/nick-gear.png" alt="Nick Johnson's rig: PRS guitar, Mesa/Boogie, Sound City and Orange cabs, pedalboard" loading="lazy" decoding="async" width="1000" height="837">`}
+      </div>
+      <div class="nick-bento-figures">
+        <div class="nick-lead"><strong>${playedPct}%</strong></div>
+        <p class="nick-caption">${formatNumber(played.length)} of ${formatNumber(rotation.length)} songs in rotation played with Nick</p>
+        <div class="nick-bars">
+          <div class="nick-bar-row"><span class="nb-label">Overall</span><span class="nick-progress-track"><i class="is-overall" style="width:${overallWidth}%"></i></span><span class="nb-count">${formatNumber(played.length)}/${formatNumber(rotation.length)}</span></div>
+          <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
+          <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${coverWidth}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="nick-right">
-    <div class="nick-controls" role="group" aria-label="Filter the songs most likely to come next">
+    <div class="data-toolbar nick-controls" role="group" aria-label="Filter the songs most likely to come next">
       ${renderCustomSelect({ hook: "data-nick-view-dd", label: "View", active: "next", options: [{ value: "next", label: "Most likely next" }, { value: "woodshed", label: "Not yet played" }, { value: "played", label: "Played with Nick" }] })}
       <div class="type-filter" role="group" aria-label="Filter songs by type">
         <button type="button" class="is-active" data-nick-type="all">All</button>
@@ -9661,7 +9667,6 @@ function renderNickJohnsonFeature(data) {
         <span class="nrh-col nrh-rank" aria-hidden="true">#</span>
         <button type="button" class="nrh-col nrh-sort nrh-song" data-nick-col="title">Song <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
         <span class="nrh-col nrh-why" aria-hidden="true">Why now</span>
-        <button type="button" class="nrh-col nrh-sort nrh-type" data-nick-col="type">Type <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
         <button type="button" class="nrh-col nrh-sort nrh-plays nx" data-nick-col="plays">Plays <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
         <button type="button" class="nrh-col nrh-sort nrh-gap nx" data-nick-col="gap">Gap <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
         <button type="button" class="nrh-col nrh-sort nrh-last nx" data-nick-col="last">Last played <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
@@ -9792,9 +9797,10 @@ function computeNickRankModel(rotation, setlistShows) {
 // re-cap without a refetch. Columns literally change per view via a data-view
 // attribute on the <ol> (CSS toggles .nx / .pv cells). Default view = "most likely
 // next": only eligible songs show, top NICK_PREVIEW_ROWS by Heat visible, rest hidden.
-// Preview row count. Raised from 6 to 9 so the odds list runs to roughly the same
-// depth as the 50%/rig card beside it — at 6 the right column ended ~350px short.
-const NICK_PREVIEW_ROWS = 9;
+// Preview row count. Raised 6 -> 9 -> 10 so the odds list runs to the same depth
+// as the headline + tiles + bento stack beside it. The collapsed preview must fill
+// the right column without ever producing a scrollbar.
+const NICK_PREVIEW_ROWS = 10;
 function renderNickRanking(songs, modelByKey, nickLastByKey) {
   const tierClass = (h) => (h >= 75 ? "nk-hot" : h >= 45 ? "nk-warm" : "nk-long");
   const rows = songs.map((song) => ({ song, m: modelByKey.get(song.key) || { eligible: false, heat: 0, medianGap: null, c100: 0, overdueRatio: 0 } }));
@@ -9832,7 +9838,6 @@ function renderNickRanking(songs, modelByKey, nickLastByKey) {
     <span class="nick-song"><strong>${escapeHtml(song.title)}</strong></span>
     <span class="nick-why nx">${escapeHtml(whyNext)}</span>
     <span class="nick-why-nick pv">${whyNick}</span>
-    <span class="nick-type"><span class="nick-chip is-${type}">${type === "cover" ? "COVER" : "ORIGINAL"}</span></span>
     <span class="nick-plays nx"><strong>${formatNumber(l100)}</strong></span>
     <span class="nick-gap nx">${formatNumber(slp)}</span>
     <span class="nick-last nx">${escapeHtml(song.lastDisplay || "—")}</span>
@@ -15007,7 +15012,6 @@ body.stagelight .nick-songbook { margin-top: 20px; }
   body.stagelight .nick-ranking-head[data-view="next"], body.stagelight .nick-ranking[data-view="next"] li,
   body.stagelight .nick-ranking-head[data-view="woodshed"], body.stagelight .nick-ranking[data-view="woodshed"] li { grid-template-columns: 22px minmax(0, 1fr) 58px 62px; }
   body.stagelight .nick-ranking-head[data-view="played"], body.stagelight .nick-ranking[data-view="played"] li { grid-template-columns: 22px minmax(0, 1fr) 66px; }
-  body.stagelight .nrh-type, body.stagelight .nick-type,
   body.stagelight .nrh-gap, body.stagelight .nick-gap,
   body.stagelight .nrh-last, body.stagelight .nick-last,
   body.stagelight .nrh-nicklast, body.stagelight .nick-nicklast { display: none; }
@@ -15025,8 +15029,8 @@ body.stagelight .nick-progress-track i.is-overall { background: var(--sl-ink); }
 /* Ranking columns change per view. next/woodshed = 7 cols (with Heat); played = 5. */
 body.stagelight .nick-ranking-head, body.stagelight .nick-ranking li { display: grid; gap: 12px; align-items: baseline; }
 body.stagelight .nick-ranking-head[data-view="next"], body.stagelight .nick-ranking[data-view="next"] li,
-body.stagelight .nick-ranking-head[data-view="woodshed"], body.stagelight .nick-ranking[data-view="woodshed"] li { grid-template-columns: 26px minmax(0, 1fr) 80px 76px 92px 128px 86px; }
-body.stagelight .nick-ranking-head[data-view="played"], body.stagelight .nick-ranking[data-view="played"] li { grid-template-columns: 26px minmax(0, 1fr) 82px 92px minmax(130px, 1.1fr); }
+body.stagelight .nick-ranking-head[data-view="woodshed"], body.stagelight .nick-ranking[data-view="woodshed"] li { grid-template-columns: 26px minmax(0, 1fr) 76px 62px 108px 74px; }
+body.stagelight .nick-ranking-head[data-view="played"], body.stagelight .nick-ranking[data-view="played"] li { grid-template-columns: 26px minmax(0, 1fr) 92px minmax(130px, 1.1fr); }
 /* Per-view column visibility (.nx = next/woodshed only, .pv = played only). */
 body.stagelight .nick-ranking-head[data-view="played"] .nx, body.stagelight .nick-ranking[data-view="played"] .nx { display: none; }
 body.stagelight .nick-ranking-head[data-view="next"] .pv, body.stagelight .nick-ranking[data-view="next"] .pv,
@@ -15074,7 +15078,10 @@ body.stagelight .nick-ranking li { padding: 12px 10px; }
 body.stagelight .nick-ranking li:hover { background: rgba(255,255,255,0.025); }
 body.stagelight .nick-rank { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); font-variant-numeric: tabular-nums; }
 body.stagelight .nick-song { display: block; min-width: 0; }
-body.stagelight .nick-song strong { display: block; font-size: 15px; font-weight: 600; color: var(--sl-ink); letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Song titles never truncate. Dropping the Type column freed the width, so a long
+   title wraps to a second line instead of ellipsing ("No Sugar Tonight/New Mother
+   Nature" used to clip in the expanded table). */
+body.stagelight .nick-song strong { display: block; font-size: 15px; font-weight: 600; color: var(--sl-ink); letter-spacing: 0.01em; white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
 body.stagelight .nick-song small { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; color: var(--sl-faint); text-transform: uppercase; flex: none; }
 body.stagelight .nick-plays { display: flex; align-items: baseline; gap: 6px; justify-self: end; }
 body.stagelight .nick-plays strong { font-family: var(--sl-mono); font-size: 15px; font-weight: 620; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
@@ -15118,14 +15125,12 @@ body.stagelight .nick-ranking-wrap.is-preview .nrh-why { display: block; }
    and the HOT/tier word (the Heat number stays). */
 body.stagelight .nick-ranking-wrap.is-preview .nrh-rank,
 body.stagelight .nick-ranking-wrap.is-preview .nick-rank,
-body.stagelight .nick-ranking-wrap.is-preview .nick-type,
 body.stagelight .nick-ranking-wrap.is-preview .nick-plays,
 body.stagelight .nick-ranking-wrap.is-preview .nick-gap,
 body.stagelight .nick-ranking-wrap.is-preview .nick-last,
 body.stagelight .nick-ranking-wrap.is-preview .nick-nicklast,
 body.stagelight .nick-ranking-wrap.is-preview .nick-song small,
 body.stagelight .nick-ranking-wrap.is-preview .nick-score .tn-tier,
-body.stagelight .nick-ranking-wrap.is-preview .nrh-type,
 body.stagelight .nick-ranking-wrap.is-preview .nrh-plays,
 body.stagelight .nick-ranking-wrap.is-preview .nrh-gap,
 body.stagelight .nick-ranking-wrap.is-preview .nrh-last,
@@ -15137,9 +15142,12 @@ body.stagelight .nick-ranking-wrap.is-preview .nick-song strong { white-space: n
 /* "Why now" reads as a quiet supporting metric line (mono, muted, wraps freely). */
 body.stagelight .nick-ranking-wrap.is-preview .nick-why,
 body.stagelight .nick-ranking-wrap.is-preview .nick-why-nick { font-family: var(--sl-mono); font-size: 12.5px; line-height: 1.45; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
-/* Preview header labels sit on one line and do not act as sort controls. */
-body.stagelight .nick-ranking-wrap.is-preview .nrh-sort { pointer-events: none; cursor: default; }
-body.stagelight .nick-ranking-wrap.is-preview .nrh-arr { display: none; }
+/* The collapsed preview sorts too. Clicking Song or Heat re-orders the preview rows
+   in place, and the state carries into the expanded table (one shared sort state).
+   Previously the preview killed pointer events, so the header looked live but did
+   nothing until you expanded the songbook. */
+body.stagelight .nick-ranking-wrap.is-preview .nrh-sort { pointer-events: auto; cursor: pointer; }
+body.stagelight .nick-ranking-wrap.is-preview .nrh-arr { display: inline; }
 
 /* ---- COMMUNITY LINKS ---- */
 body.stagelight .ticket-link {
@@ -15590,12 +15598,77 @@ body.stagelight .stats-rail .stat-col span { font-family: var(--sl-mono); font-s
 body.stagelight .tour-table-wrap.is-capped { max-height: 560px; overflow-y: auto; position: relative; border-radius: var(--sl-r-md); -webkit-mask-image: linear-gradient(180deg, #000 92%, transparent); mask-image: linear-gradient(180deg, #000 92%, transparent); scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.18) transparent; }
 /* Nick stats: stat tiles + progress on the left; a slim, simply-filtered list on
    the right. Kills the second full-width spreadsheet on the page. */
-body.stagelight .nick-two-col { display: grid; grid-template-columns: 1fr 1.35fr; gap: 44px 56px; align-items: start; }
+/* Near-equal columns. The left now carries headline + the three tour totals on one
+   row and a wide bento under it, so it needs real width. Both columns share the
+   grid row and the bento absorbs the slack, so the two sides finish level instead
+   of the songbook running ~163px long. */
+body.stagelight .nick-two-col { display: grid; grid-template-columns: 1.06fr 1fr; gap: 44px 56px; align-items: stretch; }
+body.stagelight .nick-two-col .nick-left { display: flex; flex-direction: column; min-width: 0; }
+body.stagelight .nick-two-col .nick-left .nick-bento { flex: 1 1 auto; }
 body.stagelight .nick-two-col .nick-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 body.stagelight .nick-two-col .nick-progress { margin: 26px 0 0; }
-body.stagelight .nick-two-col .nick-controls { margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+/* The control row IS the house toolbar: .nick-controls also carries .data-toolbar,
+   so the View dropdown and the All/Originals/Covers segmented control inherit the
+   exact Tour Stats pill treatment (same 40px height, pill radius, border,
+   background and active-segment fill). Only the bottom margin is Nick-specific. */
+body.stagelight .nick-two-col .nick-controls { margin: 0 0 14px; }
 body.stagelight .nick-two-col .nick-chip-group button { padding: 7px 13px; font-size: 12.5px; }
 @media (max-width: 900px) { body.stagelight .nick-two-col { grid-template-columns: 1fr; gap: 26px; } }
+
+/* ---- NICK LEFT COLUMN: headline beside the three tour totals, then the bento ---- */
+/* The three totals (shows / song plays / Woodshed) sit to the RIGHT of the headline
+   at the top of the left column; the one bento below holds the rig on the left and
+   the 50%, its caption and the three bars on the right. */
+body.stagelight .nick-head-row { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 24px 32px; align-items: start; margin-bottom: 26px; }
+body.stagelight .nick-head-row .nick-headline { margin: 0; }
+body.stagelight .nick-head-row .nick-tiles { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 4px 0 0; }
+body.stagelight .nick-head-row .nick-tiles .nick-stat { display: flex; align-items: baseline; gap: 8px; text-align: left; }
+body.stagelight .nick-head-row .nick-tiles .nick-stat strong { display: inline; }
+body.stagelight .nick-head-row .nick-tiles .nick-stat span { display: inline; margin-top: 0; }
+
+body.stagelight .nick-bento { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 20px 30px; align-items: center; }
+body.stagelight .nick-bento > * { position: relative; z-index: 1; }
+/* The rig fills the width of its cell and stays vertically centred in the panel.
+   Sizing and position only: the plate, the dot layers, the poster runtime and the
+   1254x1096 aspect ratio are untouched. */
+body.stagelight .nick-bento .nick-bento-art { min-width: 0; align-self: center; }
+body.stagelight .nick-bento .nick-bento-art .living-poster { max-width: none; width: 100%; margin: 0; }
+body.stagelight .nick-bento .nick-bento-art .nick-gear { display: block; width: 100%; height: auto; margin: 0; }
+body.stagelight .nick-bento .nick-bento-figures { min-width: 0; }
+body.stagelight .nick-bento .nick-caption { margin: 8px 0 18px; }
+body.stagelight .nick-bento .nick-bars { margin-top: 0; }
+@media (max-width: 900px) {
+  body.stagelight .nick-head-row { grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+  body.stagelight .nick-head-row .nick-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body.stagelight .nick-head-row .nick-tiles .nick-stat { display: block; text-align: left; }
+  body.stagelight .nick-bento { grid-template-columns: 1fr; }
+}
+
+/* ---- BENTO ATMOSPHERE ----
+   An ambient, low-intensity version of the footer "ALL THE WAY FROM ATHENS GA"
+   tie-dye: the same coral -> blue -> gold hue run at a fraction of the opacity,
+   heavily blurred and drifting slowly behind the panel like stage wash rather than
+   a printed gradient. It sits under every child (z-index 0 vs 1) so it never
+   touches text contrast, and it holds still under prefers-reduced-motion. */
+body.stagelight .nick-atmo {
+  position: absolute; inset: -20%; z-index: 0; pointer-events: none;
+  opacity: 0.4;
+  background:
+    linear-gradient(100deg, rgba(212,81,79,0.30) 0%, rgba(224,87,79,0.24) 6%, rgba(96,165,210,0.30) 13%, rgba(201,163,95,0.24) 19%, rgba(242,242,240,0) 27%),
+    radial-gradient(120% 90% at 18% 22%, rgba(96,165,210,0.16), rgba(0,0,0,0) 62%);
+  background-size: 300% 100%, 100% 100%;
+  background-position: 4% 50%, 0 0;
+  background-repeat: no-repeat;
+  filter: blur(52px) saturate(1.15);
+  animation: nick-atmo-drift 26s ease-in-out infinite alternate;
+}
+@keyframes nick-atmo-drift {
+  from { background-position: 2% 46%, 0 0; }
+  to   { background-position: 22% 56%, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .nick-atmo { animation: none; }
+}
 /* Nick's ranking: when the songbook is expanded the wrap becomes a bounded scroll
    window (same treatment as the Tour Stats table) with its header sticky inside. */
 body.stagelight .nick-ranking-wrap { position: relative; }
@@ -16213,7 +16286,7 @@ body.stagelight .lp-plate { z-index: 2; object-fit: cover; }
 body.stagelight .lp-fx { z-index: 3; mix-blend-mode: screen; }
 /* Homepage: drops into the Nick panel where the static rig art used to sit —
    capped small so it complements the ranking table, never dominates (owner note). */
-body.stagelight .nick-panel .living-poster { margin: 22px auto 6px; max-width: 468px; }
+body.stagelight .nick-panel .living-poster { margin: 0 auto; max-width: 468px; }
 /* Song Origins header: 200px stamp, masked fade + float to match the static poster
    stamp it replaces; the transparent sky knockout lets the header wash read through. */
 body.stagelight .ph-poster.is-living .living-poster { z-index: 1; animation: phFloat 9s ease-in-out infinite alternate; }
@@ -17406,6 +17479,13 @@ function renderRedirects(archiveEntries = [], generatedReviews = [], tourInRevie
     "/tour-in-review /tour-in-review/ 301",
     `/2025/02/widespread-panic-2025-tour.html ${review2025Path} 301`,
     `/2025/02/widespread-panic-2025-tour ${review2025Path} 301`,
+    // Pages removed from the build (see ARCHIVE_EXCLUDED_PATHS) that were
+    // already in the deployed sitemap. 301 each to where its content lives so
+    // crawler-known URLs never 404 after a deploy.
+    "/2000/05/marker / 301",
+    "/archive/2025/entry-28 /archive/ 301",
+    "/archive/2025/entry-191 /2025/12/widespread-panic-2025-tour-in-review 301",
+    "/archive/2013/entry-85 /2013/04/Widespread-Panic-2013-Spring-Tour 301",
     "/search /archive/ 301",
     "/search/* /archive/ 301",
     "/feeds/posts/default /archive/ 301",
