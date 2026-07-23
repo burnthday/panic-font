@@ -7152,6 +7152,18 @@ function renderSheetArrowScript() {
   return `(() => {
     const arrows = [...document.querySelectorAll(".sheet-arrow")];
     const grid = document.querySelector(".key-grid");
+    // The Garrie separator (above the board intro) shares the ink system: arm it
+    // and draw once on its own viewport entry.
+    const sep = document.querySelector(".garrie-sep");
+    if (sep && "IntersectionObserver" in window && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      sep.classList.add("armed");
+      const sepIo = new IntersectionObserver((entries, obs) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) { sep.classList.add("draw"); obs.disconnect(); }
+        }
+      }, { threshold: 0.6 });
+      sepIo.observe(sep);
+    }
     if (!arrows.length || !grid) return;
     if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     arrows.forEach((arrow) => arrow.classList.add("armed"));
@@ -8419,7 +8431,16 @@ function renderBoardIntro(data) {
     const run = numeral ? ` ${numeral}` : "";
     return `<li class="bi-swipe" style="--mc:${color}; --cut:${cuts[index] || "96%"}" data-date="${escapeAttr(item.isoDate)}"><b>${escapeHtml(city)}${run}</b></li>`;
   }).join("");
-  return `<div class="board-intro">
+  return `<div class="garrie-sep" aria-hidden="true">
+    <svg viewBox="0 0 560 26" fill="none" xmlns="http://www.w3.org/2000/svg" class="garrie-sep-svg">
+      <path class="gs-l1" d="M10 16 C62 13.5 128 14.5 186 13.8 C214 13.5 236 14 249 13.6"/>
+      <path class="gs-p1" d="M14 15.7 C30 14.6 46 14.4 60 14.2"/>
+      <path class="gs-oo" d="M266 10.5 C270.5 7.8 280 8.2 282.5 11.4 C284.6 14.2 280.8 17.6 274.6 17.3 C269.3 17 264.9 14.4 266.6 11.2"/>
+      <path class="gs-l2" d="M300 13.4 C348 12.6 420 14.6 478 13.2 C506 12.6 534 13.4 550 12.8"/>
+      <path class="gs-p2" d="M494 13 C512 12.7 530 13 544 12.9"/>
+    </svg>
+  </div>
+  <div class="board-intro">
     <div class="bi-copy">
       <h2 class="board-intro-line"><span class="bi-lead">Widespread Panic song possibilities</span> <span class="bi-rest">for ${escapeHtml(where)}. Learn what songs are available with the last 4 shows marked out in colors and how many times each song has been played this year.</span></h2>
     </div>
@@ -13772,6 +13793,27 @@ body.stagelight .hero-bg::before { content: ""; position: absolute; inset: 0; z-
 body.stagelight .hero-echo { position: relative; width: 100vw; margin-left: calc(50% - 50vw); height: 380px; margin-bottom: -380px; overflow: hidden; pointer-events: none; z-index: 0; }
 body.stagelight .hero-echo img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transform: scale(1.35) scaleY(-1); filter: blur(26px) saturate(1.05); opacity: 0.3; }
 body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, #0b0b0d 0%, rgba(11,11,13,0.55) 26%, rgba(11,11,13,0.8) 60%, #0b0b0d 100%); }
+/* Garrie separator: two lazy strokes meeting a hand-looped o (traced from the
+   sheet scans, straightened per Alex). Draws with pen pacing when scrolled into
+   view. Dash gaps exceed path lengths so no cap-dot artifact paints early. */
+body.stagelight .garrie-sep { margin: 96px auto -56px; width: min(560px, 74%); line-height: 0; position: relative; z-index: 1; }
+body.stagelight .garrie-sep-svg { display: block; width: 100%; height: auto; overflow: visible; }
+body.stagelight .garrie-sep path { fill: none; stroke: rgba(255,255,255,0.62); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+body.stagelight .garrie-sep .gs-p1, body.stagelight .garrie-sep .gs-p2 { stroke-width: 3.6; stroke: rgba(255,255,255,0.4); }
+body.stagelight .garrie-sep .gs-oo { stroke-width: 2; }
+body.stagelight .garrie-sep .gs-l1, body.stagelight .garrie-sep .gs-l2 { stroke-dasharray: 244; stroke-dashoffset: 0; }
+body.stagelight .garrie-sep .gs-oo { stroke-dasharray: 64; stroke-dashoffset: 0; }
+body.stagelight .garrie-sep.armed .gs-l1, body.stagelight .garrie-sep.armed .gs-l2 { stroke-dashoffset: 244; }
+body.stagelight .garrie-sep.armed .gs-oo { stroke-dashoffset: 64; }
+body.stagelight .garrie-sep.armed .gs-p1, body.stagelight .garrie-sep.armed .gs-p2 { opacity: 0; }
+body.stagelight .garrie-sep.armed.draw .gs-l1 { animation: gs-draw 520ms cubic-bezier(0.45, 0.05, 0.4, 1) forwards; }
+body.stagelight .garrie-sep.armed.draw .gs-p1 { animation: gs-ink 300ms linear 120ms forwards; }
+body.stagelight .garrie-sep.armed.draw .gs-oo { animation: gs-draw 240ms cubic-bezier(0.5, 0.05, 0.35, 1.08) 480ms forwards; }
+body.stagelight .garrie-sep.armed.draw .gs-l2 { animation: gs-draw 520ms cubic-bezier(0.45, 0.05, 0.4, 1) 700ms forwards; }
+body.stagelight .garrie-sep.armed.draw .gs-p2 { animation: gs-ink 300ms linear 900ms forwards; }
+@keyframes gs-draw { to { stroke-dashoffset: 0; } }
+@keyframes gs-ink { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .garrie-sep.armed path { stroke-dashoffset: 0; opacity: 1; animation: none; } }
 /* Blanket stacking rule — MUST exclude anything that positions itself (this
    silently flattened the fixed bento popups once already). */
 /* Blanket stacking rule — MUST exclude every element that positions itself, or
@@ -14976,16 +15018,16 @@ body.stagelight .sheet-key { margin-bottom: 34px; }
 body.stagelight .key-col { min-width: 0; }
 body.stagelight .sheet-arrow { margin: 0 0 10px; line-height: 0; transform: rotate(var(--ar, 0deg)); transform-origin: left center; }
 body.stagelight .sheet-arrow-svg { display: block; width: clamp(96px, 7vw, 124px); height: auto; overflow: visible; }
-body.stagelight .sheet-arrow .sa-press { stroke-dasharray: 34; stroke-dashoffset: 0; }
-body.stagelight .sheet-arrow.armed .sa-press { stroke-dashoffset: 34; }
+body.stagelight .sheet-arrow .sa-press { stroke-dasharray: 40; stroke-dashoffset: 0; }
+body.stagelight .sheet-arrow.armed .sa-press { stroke-dashoffset: 40; }
 body.stagelight .sheet-arrow.armed.draw .sa-press { animation: sa-draw-press 140ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--ad, 0ms) + 230ms) forwards; }
 @keyframes sa-draw-press { to { stroke-dashoffset: 0; } }
 /* Complete by default (no-JS / no-IO / reduced-motion all show a finished
    arrow); JS arms the hidden state only when it can animate. */
-body.stagelight .sheet-arrow .sa-line { stroke-dasharray: 155; stroke-dashoffset: 0; }
-body.stagelight .sheet-arrow .sa-head { stroke-dasharray: 48; stroke-dashoffset: 0; }
-body.stagelight .sheet-arrow.armed .sa-line { stroke-dashoffset: 155; }
-body.stagelight .sheet-arrow.armed .sa-head { stroke-dashoffset: 48; }
+body.stagelight .sheet-arrow .sa-line { stroke-dasharray: 161; stroke-dashoffset: 0; }
+body.stagelight .sheet-arrow .sa-head { stroke-dasharray: 54; stroke-dashoffset: 0; }
+body.stagelight .sheet-arrow.armed .sa-line { stroke-dashoffset: 161; }
+body.stagelight .sheet-arrow.armed .sa-head { stroke-dashoffset: 54; }
 /* draw-on once on viewport entry (see renderSheetArrowScript): line then head. */
 body.stagelight .sheet-arrow.armed.draw .sa-line { animation: sa-draw-line 350ms cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0ms) forwards; }
 body.stagelight .sheet-arrow.armed.draw .sa-head { animation: sa-draw-head 150ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--ad, 0ms) + 340ms) forwards; }
