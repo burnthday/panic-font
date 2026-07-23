@@ -107,6 +107,7 @@ THEN INLINE (quick, in order):
 1. Song Index /songs/ rows render 5 cells in a 6-col grid — Links cell missing from the row template ("Tab" link folded into sr-plays), all columns misaligned. Find the song-index row renderer, restore the 6th cell. Page stays up.
 2. Tour stats headline .ds-lead: max-width 50% -> 65% (should wrap 3 lines), keep/ensure padding below (40px), desktop only.
 3. Shrink the gap between .bento-region and the Tour stats headline slightly.
+4. From-the-stage header: .fs-head align-items flex-start -> center (drop .fs-yt margin-top 6px) so the YouTube button vertically centers with the headline.
 
 THEN POLISH AGENT (Opus, full spec agreed with Alex):
 - Athens strip: attach baseline to footer top edge (zero gap, slight crop), KILL the gradient fill -> solid quiet ink + subtle animated brand-color tie-dye clipped to LEFT side of text only (Webflow steal, shelf-number restraint), scroll-reveal once, reduced-motion seated.
