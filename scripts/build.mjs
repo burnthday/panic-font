@@ -297,6 +297,18 @@ async function attachLocalSetlistImages(payload, tourYear = 0) {
   return payload;
 }
 
+// Blogger-export entries that must never publish. The source entries stay in
+// blogger-feed.atom untouched; these are excluded from the BUILD only.
+const ARCHIVE_EXCLUDED_PATHS = new Set([
+  // Superseded by the generated Song Origins section.
+  "/p/widespread-panic-song-origins-and.html",
+  // Alex's CSS workbench for the marker/highlighter effect, backdated to
+  // 2000-05-15 to keep it off Blogger's front page. Not a real post: raw CSS
+  // leaks into its meta description, and it made the archive claim a year 2000
+  // when the site started in June 2007.
+  "/2000/05/marker.html"
+]);
+
 async function loadBloggerArchive() {
   let raw = "";
   try {
@@ -323,7 +335,7 @@ async function loadBloggerArchive() {
         isReview: isReviewEntry(entry, pagePath)
       };
     })
-    .filter((entry) => entry.path !== "/p/widespread-panic-song-origins-and.html");
+    .filter((entry) => !ARCHIVE_EXCLUDED_PATHS.has(entry.path));
   const titleCounts = new Map();
   for (const entry of prepared) {
     const key = clean(entry.title).toLowerCase();
@@ -16194,8 +16206,8 @@ body.stagelight .nick-panel .living-poster { margin: 22px auto 6px; max-width: 4
    stamp it replaces; the transparent sky knockout lets the header wash read through. */
 body.stagelight .ph-poster.is-living .living-poster { z-index: 1; animation: phFloat 9s ease-in-out infinite alternate; }
 body.stagelight .ph-poster.is-living .lp-stage {
-  -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
-  mask-image: linear-gradient(#000 78%, transparent 99%);
+  -webkit-mask-image: linear-gradient(#000 68%, transparent 84%);
+  mask-image: linear-gradient(#000 68%, transparent 84%);
 }
 /* breadcrumbs */
 body.stagelight .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
