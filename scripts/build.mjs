@@ -14808,7 +14808,7 @@ body.stagelight .af-clear:hover { color: var(--sl-ink); }
 /* ---- DORK STATS: intro row + single summary rail ---- */
 /* Compact intro, outside any card: title left, three quiet lines right on desktop,
    stacked below the title on mobile. Existing type + spacing only. */
-body.stagelight .ds-lead { margin: 0 0 30px; max-width: 44ch; }
+body.stagelight .ds-lead { margin: 0 0 40px; max-width: 50%; }
 body.stagelight .af-row { display: flex; align-items: center; gap: 16px; }
 body.stagelight .af-row .show-filter-status { margin-left: auto; }
 body.stagelight .ds-title { font-family: var(--sl-display); font-size: 34px; font-weight: 640; letter-spacing: -0.01em; line-height: 1.12; color: var(--sl-ink); }
