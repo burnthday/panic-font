@@ -15213,10 +15213,13 @@ body.stagelight .nick-disclosure > summary { width: 100%; }
    + an extra class so they outrank both the desktop and the <=560px grid rules. */
 body.stagelight .nick-why, body.stagelight .nick-why-nick { display: none; }
 body.stagelight .nick-ranking-head .nrh-why { display: none; }
-/* Preview grid: Song | Why now | (Heat / Nick plays). Explicit placement so the
-   hidden expanded cells never disturb the three tracks, regardless of DOM order. */
+/* Preview grid: Song | Why now. The 0-100 Heat number is dropped from the preview
+   (Alex 7/23: "the heat scale is goofy") — the rows are still ORDERED by heat
+   (most likely next), so the ranking survives; only the abstract score is hidden.
+   The plain-language "Why now" cell carries the reasoning. The score cells stay in
+   the markup (they drive sort + the expanded table) but are not shown in preview. */
 body.stagelight .nick-ranking-wrap.is-preview .nick-ranking-head,
-body.stagelight .nick-ranking-wrap.is-preview .nick-ranking li { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.7fr) auto; gap: 16px; }
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking li { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1.85fr); gap: 16px; }
 body.stagelight .nick-ranking-wrap.is-preview .nick-song,
 body.stagelight .nick-ranking-wrap.is-preview .nrh-song { grid-column: 1; }
 body.stagelight .nick-ranking-wrap.is-preview .nick-why,
@@ -15225,7 +15228,7 @@ body.stagelight .nick-ranking-wrap.is-preview .nrh-why { grid-column: 2; }
 body.stagelight .nick-ranking-wrap.is-preview .nick-score,
 body.stagelight .nick-ranking-wrap.is-preview .nick-nickplays,
 body.stagelight .nick-ranking-wrap.is-preview .nrh-heat,
-body.stagelight .nick-ranking-wrap.is-preview .nrh-nickplays { grid-column: 3; }
+body.stagelight .nick-ranking-wrap.is-preview .nrh-nickplays { display: none; }
 /* Show the "why" cell + header only in preview; per-view via .nx/.pv. */
 body.stagelight .nick-ranking-wrap.is-preview .nick-ranking[data-view="next"] .nick-why,
 body.stagelight .nick-ranking-wrap.is-preview .nick-ranking[data-view="woodshed"] .nick-why { display: block; }
