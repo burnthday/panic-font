@@ -1207,11 +1207,29 @@ async function checkSongPages(siteData) {
     && /body\.stagelight \.athens-strip span \{[\s\S]{0,460}#c9a35f/.test(songIndexCss)
     && !/body\.stagelight \.athens-strip span \{[\s\S]{0,460}#c65db8/.test(songIndexCss),
     "athens-strip span carries the solid-white + corner brand tie-dye fill, no magenta, drift keyframes");
-  record("Athens strip slides up from the footer on reveal and is seated (no gap)",
-    /body\.stagelight \.athens-strip\.will-reveal span \{[\s\S]{0,120}transform: translateY\(100%\)/.test(songIndexCss)
-    && /body\.stagelight \.athens-strip\.will-reveal\.is-revealed span \{ transform: translateY\(0\); \}/.test(songIndexCss)
+  // The JS slide-up was replaced 2026-07-23 with a scroll-driven CSS reveal: the
+  // line wipes on like a stage light and the footer unrolls downward from it. The
+  // point of the rewrite is the failure mode — a JS reveal must HIDE the footer and
+  // trust a later event to restore it, and if that event never fires the footer is
+  // invisible on every page (the preview pane, which throttles timers, observers and
+  // rAF, could not verify it fired). Scroll-driven animation degrades to the finished
+  // state instead. Assert BOTH the motion and, crucially, that nothing hides the
+  // footer outside the @supports/no-reduced-motion guard.
+  record("Athens reveal is scroll-driven CSS with no JS and no way to leave the footer hidden",
+    /@supports \(animation-timeline: view\(\)\)/.test(songIndexCss)
+    && /animation-timeline: view\(\)/.test(songIndexCss)
+    && /@keyframes sl-athens-sweep/.test(songIndexCss)
+    && /@keyframes sl-foot-unroll/.test(songIndexCss)
+    && /@keyframes sl-foot-settle/.test(songIndexCss)
+    && !songIndexCss.includes("athens-strip.will-reveal")
+    // every hiding declaration must live inside the @supports + no-preference block
+    && !/^body\.stagelight \.site-foot-inner \{[^}]*clip-path: inset\(0 0 100%/m.test(songIndexCss)
     && /body\.stagelight \.site-foot \{[^}]*margin-top: 0/.test(songIndexCss),
-    "span slide-up start/seated states present and site-foot margin-top zeroed");
+    "scroll-driven sweep + unroll keyframes present, no JS reveal classes, nothing hides the footer unconditionally");
+  record("Athens line is oversized and cropped by its own band, never the page",
+    /\.athens-strip span \{[\s\S]{0,200}font-size: clamp\(38px, 7\.3vw, 190px\)/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip \{[^}]*overflow: hidden/.test(songIndexCss),
+    "oversized clamp with the band clipping the overhang (no horizontal page scroll)");
   record("Song Index header + rows share one grid template",
     /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
     && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)

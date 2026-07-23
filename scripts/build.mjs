@@ -8935,19 +8935,7 @@ function renderSiteFooter(data, options = {}) {
   const year = data?.site?.year || new Date().getFullYear();
   if (options.stagelight) {
     return `<div class="athens-strip" aria-hidden="true"><span>ALL THE WAY FROM ATHENS GA</span></div>
-<script>(() => {
-  const strip = document.querySelector(".athens-strip");
-  if (!strip) return;
-  // Reduced-motion or no-IO visitors are left seated (never armed).
-  if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  strip.classList.add("will-reveal");
-  const io = new IntersectionObserver((entries, obs) => {
-    for (const entry of entries) {
-      if (entry.isIntersecting) { strip.classList.add("is-revealed"); obs.disconnect(); }
-    }
-  }, { threshold: 0.3 });
-  io.observe(strip);
-})();</script>
+
 <footer class="site-foot">
   <div class="site-foot-inner">
     <div class="footer-lead">
@@ -15223,11 +15211,50 @@ body.stagelight .athens-strip {
    footer produced it. JS adds .will-reveal (arms the hidden start) then .is-revealed
    when the strip enters the viewport (IO threshold ~0.3). Default (no-JS) is seated;
    reduced-motion visitors are never armed. */
-body.stagelight .athens-strip.will-reveal span {
-  transform: translateY(100%);
-  transition: transform 0.6s cubic-bezier(0.22,1,0.36,1);
+/* SCROLL-DRIVEN REVEAL — no JavaScript, and deliberately so. A JS reveal has to
+   HIDE the footer first and trust a later event to bring it back; if that event
+   never lands the footer is invisible on every page. Here the animation is driven
+   by the scroll position itself, so the failure mode inverts: a browser without
+   scroll-driven animation support, or a reduced-motion visitor, simply sees the
+   finished state. Nothing can hide content permanently.
+
+   The sign turns on rather than sliding in: a stage light wipes the line into
+   view left to right, and the footer unrolls downward out from under it, as if the
+   line were the lip it hangs from. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    body.stagelight .athens-strip span {
+      animation: sl-athens-sweep linear both;
+      animation-timeline: view();
+      animation-range: entry 4% entry 62%;
+    }
+    body.stagelight .site-foot-inner {
+      animation: sl-foot-unroll linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 46%;
+    }
+    body.stagelight .site-foot-inner > * {
+      animation: sl-foot-settle linear both;
+      animation-timeline: view();
+      animation-range: entry 6% entry 58%;
+    }
+    body.stagelight .site-foot-inner > *:nth-child(2) { animation-range: entry 10% entry 64%; }
+    body.stagelight .site-foot-inner > *:nth-child(3) { animation-range: entry 13% entry 68%; }
+    body.stagelight .site-foot-inner > *:nth-child(4) { animation-range: entry 16% entry 72%; }
+    body.stagelight .site-foot-inner > *:nth-child(n+5) { animation-range: entry 19% entry 76%; }
+  }
 }
-body.stagelight .athens-strip.will-reveal.is-revealed span { transform: translateY(0); }
+@keyframes sl-athens-sweep {
+  from { clip-path: inset(0 100% -18% 0); transform: translateY(9%) scaleY(1.05); }
+  to { clip-path: inset(0 0 -18% 0); transform: translateY(0) scaleY(1); }
+}
+@keyframes sl-foot-unroll {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes sl-foot-settle {
+  from { transform: translateY(-26px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 /* Solid high-visibility white fill across the whole line, PLUS a slow-drifting brand
    tie-dye clipped to the LEFT CORNER only (~the first few letters, fading out by ~16%).
    Two background layers under background-clip:text: the corner tie-dye (top layer, coral
@@ -15237,8 +15264,8 @@ body.stagelight .athens-strip.will-reveal.is-revealed span { transform: translat
 body.stagelight .athens-strip span {
   display: block; text-align: center; white-space: nowrap;
   font-family: var(--sl-display); font-style: italic; font-weight: 700;
-  font-size: clamp(30px, 7.4vw, 118px); letter-spacing: -0.01em;
-  margin-bottom: -0.04em;
+  font-size: clamp(38px, 7.3vw, 190px); letter-spacing: -0.018em;
+  margin-bottom: -0.085em;
   background:
     linear-gradient(100deg, #d4514f 0%, #e0574f 5%, rgba(96,165,210,1) 10%, #c9a35f 14%, rgba(242,242,240,0) 17%),
     linear-gradient(rgba(242,242,240,0.92), rgba(242,242,240,0.92));
@@ -15253,7 +15280,8 @@ body.stagelight .athens-strip span {
   to   { background-position: 16% 50%, 0 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  body.stagelight .athens-strip.will-reveal span { transform: none; transition: none; }
+  body.stagelight .athens-strip span { animation: none; clip-path: none; transform: none; }
+  body.stagelight .site-foot-inner, body.stagelight .site-foot-inner > * { animation: none; clip-path: none; transform: none; opacity: 1; }
   body.stagelight .athens-strip span { animation: none; }
 }
 body.stagelight .site-foot {
