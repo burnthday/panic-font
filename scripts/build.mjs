@@ -7659,6 +7659,7 @@ function renderHtml(data) {
       ${renderStatsAutoCollapseScript()}
       ${renderHomeNavScript()}
       ${renderHeroModalScript()}
+      ${renderNickRigScript()}
       ${renderStrikeScriptBody()}
       ${renderSheetArrowScript()}
       ${renderCustomSelectScript()}
@@ -9631,6 +9632,7 @@ function renderNickJohnsonFeature(data) {
           rmax: 9.08, rmin: 0.8, srFloor: 0.40, srScale: 1.06,
           lights: { ORANGE: { x: 0.801, y: 0.721 }, CROWN1: { x: 0.773, y: 0.540 }, CROWN2: { x: 0.773, y: 0.588 }, TUNER: { x: 0.188, y: 0.887 }, PRS: { x: 0.638, y: 0.778 }, TUBE: { x: 0.500, y: 0.807 } }
         }) : `<img class="nick-gear" src="/assets/nick-gear.png" alt="Nick Johnson's rig: PRS guitar, Mesa/Boogie, Sound City and Orange cabs, pedalboard" loading="lazy" decoding="async" width="1000" height="837">`}
+        <button type="button" class="nick-rig-open" data-rig-open>Explore the rig →</button>
       </div>
       <div class="nick-bento-figures">
         <div class="nick-lead"><strong>${playedPct}%</strong></div>
@@ -9670,7 +9672,116 @@ function renderNickJohnsonFeature(data) {
     <button type="button" class="stats-expand" aria-expanded="false" data-nick-songbook data-more-label="Explore Nick&#39;s full songbook \u2192" data-fewer-label="Show fewer">Explore Nick&#39;s full songbook \u2192</button>
   </div>
   </div>
+  ${renderNickRigModal()}
 </section>`;
+}
+
+// \u2500\u2500 NICK'S RIG RUNDOWN MODAL \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// Show-don't-tell gear breakdown: the rig art itself is the gear list. Each
+// hotspot dot opens a short caption card. Solid dots = gear seen on stage;
+// dashed = carried over from Jimmy's documented rig. Video slots render only
+// once a YouTube id is filled in (the tech walkthroughs live on band socials;
+// ids pending), so nothing half-built ever ships.
+const NICK_RIG_VIDEOS = [
+  { title: "Guitar Review", sub: "Zel on \u201cAmber\u201d", yt: "" },
+  { title: "Rig Rundown", sub: "Joel at Red Rocks", yt: "" },
+];
+
+const NICK_RIG_SPOTS = [
+  { id: "amber", x: 63, y: 72, tag: "Confirmed", name: "PRS DGT \u2014 \u201cAmber\u201d", note: "Flame maple, light amber stain. Started as a Mexico backline rental; Nick bought it after the run. Trem arm custom-bent, volume knobs swapped." },
+  { id: "hometeam", x: 46, y: 53.5, tag: "Confirmed", name: "\u201chometeam\u201d head", note: "Custom Soldano SLO clone built by a friend of Nick's \u2014 the same breed of amp Mikey ran." },
+  { id: "soundcity", x: 20, y: 71, tag: "Confirmed", name: "Sound City 4x12", note: "Mikey's original cabinet from back in the day, loaded with Tone Tubby ceramics. Still moving air." },
+  { id: "mesa", x: 44, y: 71, tag: "Confirmed", name: "Mesa/Boogie 4x12", note: "Sits under the hometeam head on stage." },
+  { id: "steve", x: 19, y: 49, tag: "Confirmed", name: "\u201cSTEVE\u201d", note: "50-watt Marshall-style head \u2014 the rig's main amp before the SLO clone showed up at Red Rocks." },
+  { id: "crown", x: 78, y: 53, tag: "Confirmed", name: "Crown XLS power amps", note: "The muscle behind the wet rig \u2014 Jimmy's setup, one live and one spare." },
+  { id: "orange", x: 80, y: 72.5, tag: "Confirmed", name: "Orange 4x12", note: "Runs in stereo for the wet side \u2014 the reverb half of the sound." },
+  { id: "brownbox", x: 39, y: 47, tag: "From Jimmy's rig", assumed: true, name: "Brown Box", note: "Voltage attenuator, Col. Bruce Hampton sticker on top." },
+  { id: "tuner", x: 18.5, y: 90, tag: "Confirmed", name: "Boss tuner", note: "Battered chromatic tuner, straight off Jimmy's floor." },
+  { id: "polytune", x: 25.5, y: 90, tag: "Confirmed", name: "TC PolyTune", note: "Tuner." },
+  { id: "dd3t", x: 33, y: 91, tag: "Confirmed", name: "Boss DD-3T", note: "Mikey ran the original DD-3. This one adds tap tempo." },
+  { id: "vol", x: 41.5, y: 89.5, tag: "Confirmed", name: "Ernie Ball volume", note: "First thing the guitar hits. Swells live here." },
+  { id: "green", x: 47, y: 91.5, tag: "Confirmed", name: "The green box", note: "Overdrive wrapped in green gaffer tape, \u201cSAT BASS\u201d scrawled on top." },
+];
+
+function renderNickRigModal() {
+  const spots = NICK_RIG_SPOTS.map((s) =>
+    `<button type="button" class="rig-spot${s.assumed ? " is-assumed" : ""}" style="left:${s.x}%;top:${s.y}%" data-tip="${s.id}" aria-label="${escapeAttr(s.name)}"></button>`).join("\n        ");
+  const tips = NICK_RIG_SPOTS.map((s) =>
+    `<div class="rig-tip" id="rig-tip-${s.id}"><span class="rig-tag${s.assumed ? " is-assumed" : ""}">${escapeHtml(s.tag)}</span><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.note)}</p></div>`).join("\n        ");
+  const vids = NICK_RIG_VIDEOS.filter((v) => v.yt);
+  const vidRow = vids.length ? `<div class="rig-vids">
+        ${vids.map((v) => `<figure class="rig-vid">${renderLiteEmbed(v.yt, { title: `${v.title} \u2014 ${v.sub}` })}<figcaption><b>${escapeHtml(v.title)}</b><span>${escapeHtml(v.sub)}</span></figcaption></figure>`).join("\n        ")}
+      </div>` : "";
+  return `<div class="rig-modal" id="nick-rig-modal" hidden>
+    <div class="rig-backdrop" data-rig-close></div>
+    <div class="rig-panel" role="dialog" aria-modal="true" aria-labelledby="nick-rig-title">
+      <div class="hero-modal-head rig-head"><h3 id="nick-rig-title">Nick's Rig</h3><span>HALF-JIMMY \u00b7 HALF-MIKEY</span><button type="button" class="hero-modal-x" data-rig-close aria-label="Close rig rundown">\u2715</button></div>
+      <div class="rig-art">
+        <img src="/assets/nick-gear.png" alt="Nick Johnson's rig, illustrated: PRS guitar, hometeam head, Sound City, Mesa/Boogie and Orange cabs, Crown power amps, pedals on the rug" loading="lazy" decoding="async" width="1000" height="837">
+        <div class="rig-hint">Tap the gear</div>
+        ${spots}
+        ${tips}
+      </div>
+      <div class="rig-legend">
+        <span class="rl-conf"><i></i>Seen on stage</span>
+        <span class="rl-assumed"><i></i>Carried over from Jimmy's rig</span>
+      </div>
+      ${vidRow}
+    </div>
+  </div>`;
+}
+
+// Open/close for the rig modal plus tap-a-hotspot caption cards. Mirrors the
+// cmdk dialog conventions: backdrop click and Esc close, body scroll locks via
+// the shared cmdk-lock class, focus moves to the close button on open.
+function renderNickRigScript() {
+  return `(() => {
+    const modal = document.getElementById("nick-rig-modal");
+    if (!modal) return;
+    let lastFocus = null;
+    const open = () => {
+      lastFocus = document.activeElement;
+      modal.hidden = false;
+      window.requestAnimationFrame(() => modal.classList.add("is-open"));
+      document.body.classList.add("cmdk-lock");
+      modal.querySelector(".hero-modal-x")?.focus();
+    };
+    const close = () => {
+      modal.classList.remove("is-open");
+      document.body.classList.remove("cmdk-lock");
+      window.setTimeout(() => { modal.hidden = true; }, 200);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    };
+    document.querySelectorAll("[data-rig-open]").forEach((btn) => btn.addEventListener("click", open));
+    modal.addEventListener("click", (event) => { if (event.target.closest("[data-rig-close]")) close(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !modal.hidden) close(); });
+
+    const art = modal.querySelector(".rig-art");
+    let openTip = null;
+    const clearTip = () => {
+      if (!openTip) return;
+      openTip.classList.remove("show");
+      openTip = null;
+      art.querySelectorAll(".rig-spot").forEach((s) => s.classList.remove("is-active"));
+    };
+    art.querySelectorAll(".rig-spot").forEach((spot) => {
+      spot.addEventListener("click", (event) => {
+        event.stopPropagation();
+        const tip = modal.querySelector("#rig-tip-" + spot.dataset.tip);
+        const wasOpen = openTip === tip;
+        clearTip();
+        if (wasOpen || !tip) return;
+        const left = parseFloat(spot.style.left);
+        const top = parseFloat(spot.style.top);
+        tip.style.left = Math.min(Math.max(left, 22), 78) + "%";
+        tip.style.top = (top > 68 ? top - 30 : top + 5) + "%";
+        tip.classList.add("show");
+        spot.classList.add("is-active");
+        openTip = tip;
+      });
+    });
+    modal.addEventListener("click", clearTip);
+  })();`;
 }
 
 function renderNickStat(value, label) {
@@ -15211,6 +15322,11 @@ body.stagelight .athens-strip {
    footer produced it. JS adds .will-reveal (arms the hidden start) then .is-revealed
    when the strip enters the viewport (IO threshold ~0.3). Default (no-JS) is seated;
    reduced-motion visitors are never armed. */
+/* The sign turns on rather than sliding in: a stage light sweeps left to right,
+   wiping the line into view, and the footer unfolds downward out from under it as
+   though the line were the lip it hangs from. The wipe is clip-path (compositor
+   friendly), the footer is a clip-path unroll plus a short staggered settle on its
+   own columns. A lazy translate was the old behaviour; this replaces it. */
 /* SCROLL-DRIVEN REVEAL — no JavaScript, and deliberately so. A JS reveal has to
    HIDE the footer first and trust a later event to bring it back; if that event
    never lands the footer is invisible on every page. Here the animation is driven
@@ -15255,6 +15371,7 @@ body.stagelight .athens-strip {
 @keyframes sl-foot-settle {
   from { transform: translateY(-26px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
+}
 /* Solid high-visibility white fill across the whole line, PLUS a slow-drifting brand
    tie-dye clipped to the LEFT CORNER only (~the first few letters, fading out by ~16%).
    Two background layers under background-clip:text: the corner tie-dye (top layer, coral
@@ -15668,6 +15785,45 @@ body.stagelight .nick-bento .nick-bento-art .nick-gear { display: block; width: 
 body.stagelight .nick-bento .nick-bento-figures { min-width: 0; }
 body.stagelight .nick-bento .nick-caption { margin: 8px 0 18px; }
 body.stagelight .nick-bento .nick-bars { margin-top: 0; }
+
+/* ---- NICK'S RIG RUNDOWN: trigger pill + modal ---- */
+body.stagelight .nick-bento .nick-bento-art { position: relative; }
+body.stagelight .nick-rig-open { position: absolute; left: 14px; bottom: 14px; z-index: 2; display: inline-flex; align-items: center; height: 34px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--sl-line-strong); background: rgba(10,10,12,0.66); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-size: 12.5px; font-weight: 600; letter-spacing: 0.02em; color: var(--sl-ink); transition: background 0.15s ease, border-color 0.15s ease; }
+body.stagelight .nick-rig-open:hover { background: rgba(255,255,255,0.1); border-color: var(--sl-muted); }
+body.stagelight .rig-modal { position: fixed; inset: 0; z-index: 120; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; padding: min(7vh, 64px) 16px 64px; }
+body.stagelight .rig-modal[hidden] { display: none; }
+body.stagelight .rig-backdrop { position: fixed; inset: 0; background: rgba(5,5,6,0.66); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); opacity: 0; transition: opacity 0.2s ease; }
+body.stagelight .rig-modal.is-open .rig-backdrop { opacity: 1; }
+body.stagelight .rig-panel { position: relative; z-index: 1; width: min(880px, 100%); background: linear-gradient(180deg, rgba(30,30,34,0.92), rgba(16,16,19,0.94)); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-lg); box-shadow: var(--sl-shadow-3); overflow: hidden; opacity: 0; transform: translateY(-8px) scale(0.985); transition: opacity 0.2s ease, transform 0.2s ease; }
+body.stagelight .rig-modal.is-open .rig-panel { opacity: 1; transform: none; }
+body.stagelight .rig-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--sl-line); margin-bottom: 0; }
+body.stagelight .rig-art { position: relative; background: #000; }
+body.stagelight .rig-art > img { display: block; width: 100%; height: auto; }
+body.stagelight .rig-hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(242,242,240,0.55); background: rgba(0,0,0,0.55); border: 1px solid var(--sl-line); border-radius: 999px; padding: 5px 14px; pointer-events: none; white-space: nowrap; }
+body.stagelight .rig-spot { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; padding: 0; background: rgba(94,158,255,0.22); outline: 1.5px solid rgba(94,158,255,0.9); box-shadow: 0 0 0 4px rgba(94,158,255,0.12), 0 0 14px rgba(94,158,255,0.45); transition: transform 0.15s ease; }
+body.stagelight .rig-spot:hover { transform: scale(1.25); }
+body.stagelight .rig-spot.is-assumed { outline-style: dashed; outline-color: rgba(212,150,66,0.9); background: rgba(212,150,66,0.18); box-shadow: 0 0 0 4px rgba(212,150,66,0.12), 0 0 14px rgba(212,150,66,0.4); }
+body.stagelight .rig-spot.is-active { background: rgba(94,158,255,0.85); }
+body.stagelight .rig-tip { position: absolute; z-index: 5; width: min(320px, 76vw); background: rgba(20,20,24,0.97); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-md, 12px); padding: 14px 16px; box-shadow: var(--sl-shadow-3); transform: translate(-50%, 12px); display: none; }
+body.stagelight .rig-tip.show { display: block; }
+body.stagelight .rig-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(94,158,255); }
+body.stagelight .rig-tag.is-assumed { color: rgb(212,150,66); }
+body.stagelight .rig-tip h4 { margin: 4px 0; font-size: 15px; font-weight: 650; }
+body.stagelight .rig-tip p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sl-muted); }
+body.stagelight .rig-legend { display: flex; gap: 22px; align-items: center; padding: 12px 22px; border-top: 1px solid var(--sl-line); font-family: var(--sl-mono); font-size: 10.5px; color: var(--sl-faint); letter-spacing: 0.05em; text-transform: uppercase; }
+body.stagelight .rig-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; }
+body.stagelight .rig-legend .rl-conf i { outline: 1.5px solid rgba(94,158,255,0.9); background: rgba(94,158,255,0.22); }
+body.stagelight .rig-legend .rl-assumed i { outline: 1.5px dashed rgba(212,150,66,0.9); background: rgba(212,150,66,0.18); }
+body.stagelight .rig-vids { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 18px 22px 22px; border-top: 1px solid var(--sl-line); }
+body.stagelight .rig-vid { margin: 0; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md, 12px); overflow: hidden; background: #000; }
+body.stagelight .rig-vid figcaption { padding: 12px 14px; }
+body.stagelight .rig-vid figcaption b { display: block; font-size: 14px; font-weight: 650; }
+body.stagelight .rig-vid figcaption span { font-family: var(--sl-mono); font-size: 10.5px; color: var(--sl-faint); }
+@media (max-width: 640px) {
+  body.stagelight .rig-vids { grid-template-columns: 1fr; }
+  body.stagelight .rig-modal { padding: 0; }
+  body.stagelight .rig-panel { border-radius: 0; border: 0; min-height: 100vh; }
+}
 @media (max-width: 900px) {
   body.stagelight .nick-head-row { grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
   body.stagelight .nick-head-row .nick-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }

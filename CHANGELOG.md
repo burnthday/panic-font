@@ -3,6 +3,16 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-23 (nick's rig rundown)
+
+### Added
+- **Nick's Rig popup on the homepage.** "Explore the rig →" pill on the Nick
+  bento art opens a modal in the site's cmdk/glass style: the rig illustration
+  with 13 tappable hotspots (each opens a short caption card — gear name, the
+  story, confirmed vs carried-over-from-Jimmy tag), a legend, and video slots
+  for the two tech walkthroughs (Zel's guitar review, Joel's Red Rocks rig
+  rundown) that render only once their YouTube ids are filled in.
+
 ## 2026-07-23 (transitions)
 
 ### Fixed
