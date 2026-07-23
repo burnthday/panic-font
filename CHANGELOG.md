@@ -3,6 +3,24 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-23 (later)
+
+### Reverted
+- The blanket `main > *` stacking rule is BACK. Its removal earlier tonight
+  (`3d8598b`) was verified for layout only — painted geometry and paint order
+  across ten pages, all identical — but never for motion, and it landed in the same
+  window Alex reported transitions stopped being smooth. Removing `z-index` from
+  every section changes which elements the browser gives their own compositing
+  layer, which can genuinely affect animation. Restored rather than defended.
+  Re-attempt only with a real frame-rate measurement in a real browser. (`1fde74c`)
+
+### Still open
+- Motion regression not yet isolated. Two candidates remain: the living-poster
+  canvases (`1ec3a0c`, see below) and something not yet identified. An independent
+  technical review was requested; it declined to name a culprit without frame-rate
+  data, and agreed on exactly one concrete point — the rAF loop should pause when
+  off-screen or when the tab is hidden.
+
 ## 2026-07-23
 
 ### Fixed
