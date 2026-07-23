@@ -136,7 +136,7 @@ function checkCorePageState(html, siteData) {
   record("Garrie separator renders once above the board intro with all five ink paths",
     (html.match(/class="garrie-sep"/g) || []).length === 1
     && html.indexOf('class="garrie-sep"') < html.indexOf('class="board-intro"')
-    && ["gs-l1", "gs-p1", "gs-oo", "gs-l2", "gs-p2"].every((c) => html.includes(`class="${c}"`)));
+    && ["gs-l1", "gs-oo", "gs-l2"].every((c) => html.includes(`class="${c}"`)) && !html.includes('class="gs-p1"'));
   assertIncludes(html, "The Woodshed", "Sheet key includes The Woodshed");
   record("The Woodshed explains the Nick Johnson logic", html.includes("The Woodshed lists rotation songs") && html.includes("hasn&#39;t played yet") || html.includes("The Woodshed lists rotation songs"), "Woodshed Ramp column present");
   record("The Woodshed laminate omits the redundant explanatory count", !sectionHtml(html, "woodshed-sheet").includes("songs not yet played with Nick Johnson"));
