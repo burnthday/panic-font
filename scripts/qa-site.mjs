@@ -327,7 +327,7 @@ async function checkNickJohnsonFeature(html, siteData) {
 
   // Left panel now LEADS with the 50% primary statistic, then the quieter
   // "PLAYED of ROTATION songs in rotation played with Nick" line, three bars, three tiles.
-  assertIncludes(feature, 'class="nick-panel"', "Nick feature groups the summary into one glass panel");
+  assertIncludes(feature, 'class="nick-panel nick-bento"', "Nick feature groups the summary into one glass bento panel");
   assertIncludes(feature, `<div class="nick-lead"><strong>${playedPct}%</strong></div>`, "Panel leads with the 50% primary statistic");
   assertIncludes(feature, `${fmt(played.length)} of ${fmt(rotation.length)} songs in rotation played with Nick`, "Panel caption gives the computed of-312 line");
   assertIncludes(feature, 'class="is-overall"', "Nick has a dedicated overall progress bar");
@@ -341,9 +341,42 @@ async function checkNickJohnsonFeature(html, siteData) {
   ]) {
     assertIncludes(feature, `<strong>${fmt(value)}</strong><span>${label}</span>`, `Panel tile reports ${label}`);
   }
-  record("Nick totals render as the three centered tour-stats tiles (no 4-tile block, no stats-through note)",
+  record("Nick totals render as the three tour-stats tiles (no 4-tile block, no stats-through note)",
     feature.includes('class="data-metrics nick-tiles"') && !feature.includes("nick-summary") && !feature.includes("Stats current through"),
     "nick-tiles present, old blocks gone");
+
+  // LAYOUT (Alex, 7/23): the three tour totals sit BESIDE the headline at the top of
+  // the left column, and the bento below holds the rig on the left with the 50%,
+  // its caption and the three bars on the right. One bento, not two panels.
+  record("The three tour totals sit beside the headline, above the bento (not inside it)",
+    /<div class="nick-head-row">\s*<h2 class="sw-lead nick-headline">[\s\S]*?<\/h2>\s*<div class="data-metrics nick-tiles"[\s\S]*?<\/div>\s*<\/div>\s*<div class="nick-panel nick-bento">/.test(feature)
+      && feature.indexOf('class="data-metrics nick-tiles"') < feature.indexOf('class="nick-panel nick-bento"'),
+    "nick-head-row wraps headline + tiles, and closes before the bento opens");
+  record("Bento splits into the rig art on the left and the 50% / caption / bars on the right",
+    /<div class="nick-panel nick-bento">[\s\S]*?<div class="nick-bento-art">[\s\S]*?<\/div>\s*<div class="nick-bento-figures">\s*<div class="nick-lead">/.test(feature)
+      && /<div class="nick-bento-figures">[\s\S]*?class="nick-caption"[\s\S]*?class="nick-bars"/.test(feature),
+    "nick-bento-art precedes nick-bento-figures, figures hold lead/caption/bars");
+  record("Stagelight CSS lays the head row and the bento out as two-column grids",
+    /body\.stagelight \.nick-head-row\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*minmax\(0, 1\.55fr\) minmax\(0, 1fr\)/.test(sl)
+      && /body\.stagelight \.nick-bento\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*minmax\(0, 1\.9fr\) minmax\(0, 1fr\)/.test(sl),
+    "head-row + bento grid templates present");
+
+  // BENTO ATMOSPHERE (Alex, 7/23): an ambient low-intensity version of the footer
+  // "ALL THE WAY FROM ATHENS GA" tie-dye washing the panel. It must sit BEHIND the
+  // content and hold still under reduced motion.
+  assertIncludes(feature, '<span class="nick-atmo" aria-hidden="true"></span>', "Bento ships a decorative atmosphere layer, hidden from assistive tech");
+  record("Bento atmosphere reuses the Athens tie-dye hue run, sits behind the content, and is blurred to a wash",
+    /body\.stagelight \.nick-atmo\s*\{[^}]*z-index:\s*0/.test(sl)
+      && /body\.stagelight \.nick-atmo\s*\{[^}]*linear-gradient\(100deg, rgba\(212,81,79,[\d.]+\)[^}]*rgba\(96,165,210,[\d.]+\)[^}]*rgba\(201,163,95,[\d.]+\)/.test(sl)
+      && /body\.stagelight \.nick-atmo\s*\{[^}]*filter:\s*blur\(/.test(sl)
+      && /body\.stagelight \.nick-bento > \*\s*\{[^}]*z-index:\s*1/.test(sl)
+      && /body\.stagelight \.nick-bento\s*\{[^}]*overflow:\s*hidden/.test(sl),
+    "atmo layer behind content, Athens hue run, blurred, clipped by the panel");
+  record("Bento atmosphere animates by default and holds still under prefers-reduced-motion",
+    /body\.stagelight \.nick-atmo\s*\{[^}]*animation:\s*nick-atmo-drift/.test(sl)
+      && /@keyframes nick-atmo-drift/.test(sl)
+      && /@media \(prefers-reduced-motion: reduce\)\s*\{\s*body\.stagelight \.nick-atmo\s*\{\s*animation:\s*none/.test(sl),
+    "nick-atmo-drift keyframes + reduced-motion still");
 
   // Living poster (rig) in the Nick panel: synthetic starfield canvas BEHIND a
   // knocked-out plate img, gear-light fx canvas above. Backing is TRANSPARENT (no
@@ -407,11 +440,17 @@ async function checkNickJohnsonFeature(html, siteData) {
     countMismatches.slice(0, 10).map((song) => `${song.title}: ${renderedByTitle.get(song.title)} vs ${song.nickCount}`).join("\n")
   );
 
-  // TYPE chips live in their own column.
-  const chipCount = (feature.match(/class="nick-chip is-(?:original|cover)"/g) || []).length;
-  record("Type chips render in their own column for every row",
-    chipCount === rotation.length && feature.includes(">ORIGINAL<") && feature.includes(">COVER<"),
-    `${chipCount} chips vs ${rotation.length} rows`);
+  // TYPE IS A FILTER, NOT A COLUMN (Alex, 7/23: "we definitely don't need original
+  // or cover"). The per-row Type cell, its chip and its sortable header are gone
+  // from every view; type survives only as the data-type facet the filter reads.
+  record("No Type cell, chip or sortable Type header survives in any row or view",
+    !feature.includes('class="nick-type"') && !/class="nick-chip is-(?:original|cover)"/.test(feature)
+      && !feature.includes('data-nick-col="type"') && !feature.includes("nrh-type")
+      && !feature.includes(">ORIGINAL<") && !feature.includes(">COVER<"),
+    "nick-type / nick-chip / nrh-type / data-nick-col=type all absent");
+  record("Type still ships as a per-row data facet so the All/Originals/Covers filter keeps working",
+    (feature.match(/data-type="(?:original|cover)"/g) || []).length === rotation.length,
+    `${(feature.match(/data-type="(?:original|cover)"/g) || []).length} data-type facets vs ${rotation.length} rows`);
 
   // Type SEGMENTED CONTROL (exact Tour Stats pattern, own data hook), all three options.
   assertIncludes(feature, '<div class="type-filter" role="group"', "Type segmented control uses the Tour Stats type-filter pattern");
@@ -421,9 +460,13 @@ async function checkNickJohnsonFeature(html, siteData) {
 
   // Sortable column headers with shared-state markup. Per-view column set: next/woodshed
   // carry Plays/Gap/Last/Heat (.nx), the played view carries Nick plays/Last-with-Nick (.pv).
-  for (const col of ["title", "type", "plays", "gap", "last", "heat", "nickplays", "nicklast"]) {
+  // Columns are Song | Plays | Gap | Last played | Heat for next/woodshed (plus the
+  // narrow rank number), and Song | Nick plays | Last played with Nick for the
+  // played view. Type is deliberately NOT in this list.
+  for (const col of ["title", "plays", "gap", "last", "heat", "nickplays", "nicklast"]) {
     assertIncludes(feature, `data-nick-col="${col}"`, `Ranking header sorts by ${col} on click`);
   }
+  assertIncludes(feature, '<span class="nrh-col nrh-rank" aria-hidden="true">#</span>', "Expanded table keeps the narrow rank-number column");
   assertIncludes(feature, 'class="nrh-col nrh-sort nrh-heat nx is-sorted" data-nick-col="heat"', "Heat is the default-active sortable header (shared sort state, active arrow shown)");
   assertIncludes(feature, 'class="nrh-arr"', "Sort headers carry a shared active-arrow affordance");
   record("Per-view columns present: Heat cells (.nx) and played-view cells (.pv)",
@@ -469,21 +512,68 @@ async function checkNickJohnsonFeature(html, siteData) {
   record("Preview stylesheet drives the three-column Song / Why now / Heat grid and hides the expanded-only cells",
     /\.nick-ranking-wrap\.is-preview\b[\s\S]*?grid-template-columns/.test(sl)
       && /\.nick-ranking-wrap\.is-preview[\s\S]*?\.nick-rank[\s\S]*?display:\s*none/.test(sl),
-    "is-preview grid + hidden rank/type/plays/gap/last rules present");
+    "is-preview grid + hidden rank/plays/gap/last rules present");
+
+  // SORTING WORKS COLLAPSED (Alex, 7/23: "if you do not click the button on the
+  // bottom, then the sorting area at the top doesn't work"). The preview used to
+  // kill pointer events on the headers and hide their arrows, so the header looked
+  // live but did nothing until the songbook was expanded. One shared sort state
+  // spans collapsed and expanded — the click handler is bound once, not per state.
+  record("Column headers sort in the COLLAPSED preview too (pointer events live, arrows visible)",
+    /\.nick-ranking-wrap\.is-preview \.nrh-sort\s*\{[^}]*pointer-events:\s*auto/.test(sl)
+      && !/\.nick-ranking-wrap\.is-preview \.nrh-sort\s*\{[^}]*pointer-events:\s*none/.test(sl)
+      && /\.nick-ranking-wrap\.is-preview \.nrh-arr\s*\{[^}]*display:\s*inline/.test(sl)
+      && !/\.nick-ranking-wrap\.is-preview \.nrh-arr\s*\{[^}]*display:\s*none/.test(sl),
+    "is-preview no longer disables the sort headers");
+  record("Sorting is one shared state: the header click handler is bound once and re-applies in either state",
+    /querySelectorAll\("\[data-nick-col\]"\)\.forEach\(\(btn\) => btn\.addEventListener\("click"/.test(html)
+      && /is-preview", !expanded/.test(html),
+    "single delegated header binding + preview class driven by expanded flag");
+  record("Inactive sort arrows stay hidden until hover or focus; the active column keeps its arrow",
+    /body\.stagelight \.nrh-arr\s*\{[^}]*opacity:\s*0/.test(sl)
+      && /body\.stagelight \.nrh-sort:hover \.nrh-arr, body\.stagelight \.nrh-sort:focus-visible \.nrh-arr\s*\{[^}]*opacity/.test(sl)
+      && /body\.stagelight \.nrh-sort\.is-sorted \.nrh-arr\s*\{[^}]*opacity:\s*1/.test(sl),
+    "arrow affordance rules intact");
+
+  // SONG TITLES NEVER TRUNCATE (Alex, 7/23). Dropping Type freed the width; long
+  // titles wrap instead of ellipsing, in the preview AND the expanded table.
+  record("Song titles wrap instead of truncating in both the preview and the expanded table",
+    /body\.stagelight \.nick-song strong\s*\{[^}]*white-space:\s*normal/.test(sl)
+      && !/body\.stagelight \.nick-song strong\s*\{[^}]*text-overflow:\s*ellipsis/.test(sl)
+      && /body\.stagelight \.nick-ranking-wrap\.is-preview \.nick-song strong\s*\{[^}]*white-space:\s*normal/.test(sl),
+    "no ellipsis on .nick-song strong in either state");
+
+  // The control row matches the house pill pattern exactly by reusing .data-toolbar
+  // (the Tour Stats / Dork stats toolbar) rather than a Nick-only control shape.
+  record("Nick control row reuses the house data-toolbar shell (same pill treatment as Tour Stats)",
+    feature.includes('class="data-toolbar nick-controls"')
+      && /body\.stagelight \.nick-two-col \.nick-controls\s*\{\s*margin:\s*0 0 14px;\s*\}/.test(sl),
+    "data-toolbar class present, Nick override reduced to margin only");
+
+  // The two columns finish level: the left column is a flex stack whose bento
+  // absorbs the slack, and the grid row stretches both sides to the same height.
+  record("Left and right columns are laid out to finish at the same height",
+    /body\.stagelight \.nick-two-col\s*\{[^}]*align-items:\s*stretch/.test(sl)
+      && /body\.stagelight \.nick-two-col \.nick-left\s*\{[^}]*display:\s*flex[^}]*flex-direction:\s*column/.test(sl)
+      && /body\.stagelight \.nick-two-col \.nick-left \.nick-bento\s*\{[^}]*flex:\s*1 1 auto/.test(sl),
+    "stretch + flex-column left + growing bento");
 
   // Default "most likely next" view: only ELIGIBLE songs are visible, exactly the top
   // six, every visible row eligible + slp > 4, and no visible row is a one-off (total<=1).
   const allRows = [...feature.matchAll(/<li class="nick-row[^>]*>/g)].map((match) => match[0]);
   const visibleRows = allRows.filter((li) => !/ hidden>/.test(li));
   const eligibleRows = allRows.filter((li) => /data-eligible="1"/.test(li));
-  const expectedVisible = Math.min(9, eligibleRows.length);
+  // Preview depth: raised 9 -> 10 so the collapsed songbook fills the right column
+  // beside the taller left stack without ever producing a scrollbar.
+  const NICK_PREVIEW_ROWS = 10;
+  const expectedVisible = Math.min(NICK_PREVIEW_ROWS, eligibleRows.length);
   record(
     "Non-eligible songs ship hidden by default",
     allRows.filter((li) => /data-eligible="0"/.test(li)).every((li) => / hidden>/.test(li)),
     "every non-eligible row hidden"
   );
   record(
-    "Exactly the top nine eligible most-likely-next rows are visible by default",
+    `Exactly the top ${NICK_PREVIEW_ROWS} eligible most-likely-next rows are visible by default`,
     visibleRows.length === expectedVisible && visibleRows.every((li) => {
       const slp = li.match(/data-slp="(\d+)"/);
       return /data-eligible="1"/.test(li) && slp && Number(slp[1]) > 4;
