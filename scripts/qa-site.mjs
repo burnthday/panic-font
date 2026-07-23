@@ -654,6 +654,7 @@ async function checkLatestSetlist(html, siteData) {
   const featured = sectionHtml(html, "latest-setlist");
   const posted = siteData.setlists || [];
   const feat = posted[0];
+  const css = await readText("dist/stagelight.css").catch(() => "");
 
   // The full run (contiguous same-venue posted shows) mirrors the build's scan.
   const runShows = [];
@@ -686,7 +687,7 @@ async function checkLatestSetlist(html, siteData) {
     heroCard.includes('<div class="hero-bg"') && heroCard.includes('hero-bg-layer is-active')
     && (!feat?.image || new RegExp(`hero-bg-layer is-active" data-view-bg="${feat.isoDate}"`).test(heroCard)),
     feat?.image || "");
-  record("Hero frames the sharp photo top-right in the lockup", !feat?.image || heroCard.includes('<figure class="hero-photo">'), feat?.image || "");
+  record("Hero frames the sharp photo top-right in the lockup", !feat?.image || /<figure class="hero-photo"[ >]/.test(heroCard), feat?.image || "");
   const heroOnly = heroCard.slice(heroCard.indexOf('<section class="home-hero'), heroCard.indexOf('</section>') + '</section>'.length);
   record("Hero is a section, not the collapsible setlist card", heroOnly.startsWith('<section class="home-hero') && !heroOnly.includes('class="show-entry') && !heroOnly.includes('sc-chev'), "no card chrome (the inner Song-stats <details> is fine)");
   record("Hero keeps the listen links", !feat?.streamUrl || heroCard.includes("nugs.net"));
@@ -716,13 +717,35 @@ async function checkLatestSetlist(html, siteData) {
   record("Rail is three fixed slots (two context + upcoming pinned last), no pinned-latest card",
     heroOnly.includes('data-card-slot="a"') && heroOnly.includes('data-card-slot="b"') && !heroOnly.includes('data-card-slot="latest"') && heroOnly.includes("hero-card-upcoming") && heroOnly.includes('id="hero-card-meta"'),
     "slots a/b + upcoming + card meta present, latest slot gone");
-  // Rail context skips the 2 most recent setlists and the featured city's run-mates.
-  const featCityQa = String(feat?.location || "").split(",")[0];
-  const excluded = (siteData.setlists || []).slice(0, 2).map((entry) => entry.isoDate)
-    .concat((siteData.setlists || []).filter((entry) => String(entry.location || "").split(",")[0] === featCityQa).map((entry) => entry.isoDate));
+  // Rail context = the two posted shows immediately preceding the active (default:
+  // featured) view chronologically, run-mates INCLUDED (owner decision 2026-07-22).
+  // Default markup is active-on-featured, so slots a/b = posted[1] + posted[2].
+  const expectedContext = (siteData.setlists || []).slice(1, 3).map((entry) => entry.isoDate);
   const slotIsos = [...heroOnly.matchAll(/data-card-slot="[ab]"[^>]*data-view-btn="([^"]+)"/g)].map((m) => m[1]);
-  record("Rail context cards skip the two most recent setlists and same-city run-mates",
-    slotIsos.length > 0 && slotIsos.every((iso) => !excluded.includes(iso)), JSON.stringify({ slotIsos, excluded }));
+  record("Rail context rows are the two shows immediately preceding the featured view",
+    slotIsos.length === expectedContext.length && slotIsos.every((iso, i) => iso === expectedContext[i]),
+    JSON.stringify({ slotIsos, expectedContext }));
+  // History context rows are flat (.hero-row), the pinned upcoming stays a full dashed bento card.
+  const contextRowsFlat = [...heroOnly.matchAll(/data-card-slot="[ab]"/g)].length === 2
+    && (heroOnly.match(/class="hero-card hero-row"/g) || []).length === 2;
+  record("Rail context rows carry the flat hero-row class (not a permanent card)", contextRowsFlat,
+    (heroOnly.match(/class="hero-card hero-row"/g) || []).length + " flat rows");
+  record("Pinned upcoming card keeps its full dashed bento treatment (not a flat row)",
+    /class="hero-card hero-card-upcoming"/.test(heroOnly) && !/hero-card-upcoming[^>]*hero-row/.test(heroOnly)
+    && css.includes("body.stagelight .hero-card-upcoming { border-style: dashed"),
+    "hero-card-upcoming full card present");
+  // No Photos chip in the hero — it moved to the quiet "Show photos" tertiary link.
+  record("Hero drops the outlined Photos chip in favor of a quiet Show photos link",
+    !heroOnly.includes(">Photos</a>") && (!feat?.sourceUrl || heroOnly.includes("Show photos")),
+    feat?.sourceUrl ? "Show photos link expected" : "no sourceUrl on featured");
+  record("Hero Show photos tertiary link uses the featured show's source URL when present",
+    !feat?.sourceUrl || heroOnly.includes(`class="link-quiet sc-photos-link" href="${escapeHtml(feat.sourceUrl)}"`),
+    feat?.sourceUrl || "no sourceUrl");
+  // Left-edge dissolve: sharp photo masked + blurred ::before copy, desktop only.
+  record("Hero photo dissolves at the left edge (mask + blurred copy, desktop only)",
+    !feat?.image || (heroOnly.includes("--hp:url(") && css.includes("body.stagelight .hero-photo::before")
+      && /body\.stagelight \.hero-photo img \{[^}]*mask-image: linear-gradient\(90deg, transparent 0, #000 110px\)/.test(css)),
+    feat?.image || "no featured image");
   record("Date pager has working prev/next wiring, wraps, and shows no count",
     heroOnly.includes("data-page-prev") && heroOnly.includes("data-page-next") && !heroOnly.includes("hero-page-count")
     && html.includes('[data-page-prev]') && html.includes("% order.length"),

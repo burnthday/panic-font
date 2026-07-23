@@ -7227,12 +7227,15 @@ function renderHeroModalScript() {
     const slotB = hero.querySelector('[data-card-slot="b"]');
     const upcomingCardEl = hero.querySelector(".hero-card-upcoming");
     const upcomingIso = upcomingCardEl?.dataset.viewBtn;
-    const fillSlot = (slotEl, iso) => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Refill a context row's content, then (unless reduced motion) play a short
+    // direction-aware enter: prev navigation = rows arrive from above, next =
+    // from below. Only the two context rows ever move; Sacramento is pinned.
+    const fillSlot = (slotEl, iso, dir) => {
       if (!slotEl) return;
       if (!iso || !meta[iso]) { slotEl.hidden = true; return; }
       slotEl.hidden = false;
       if (slotEl.dataset.viewBtn === iso) return;
-      slotEl.classList.add("is-refilling");
       const paint = () => {
         slotEl.dataset.viewBtn = iso;
         const m = meta[iso];
@@ -7240,22 +7243,39 @@ function renderHeroModalScript() {
         time.textContent = m.d; time.setAttribute("datetime", iso);
         slotEl.querySelector(".hc-place strong").textContent = m.c;
         slotEl.querySelector(".hc-place small").textContent = m.v + (m.n ? " · " + m.n : "");
-        slotEl.classList.remove("is-refilling");
       };
-      setTimeout(paint, 160);
+      if (reduceMotion || !dir) {
+        paint();
+        slotEl.classList.remove("is-refilling", "is-entering-up", "is-entering-down");
+        return;
+      }
+      slotEl.classList.add("is-refilling");
+      setTimeout(() => {
+        paint();
+        slotEl.classList.remove("is-refilling");
+        const enter = dir === "prev" ? "is-entering-up" : "is-entering-down";
+        slotEl.classList.add(enter);
+        requestAnimationFrame(() => requestAnimationFrame(() => slotEl.classList.remove(enter)));
+      }, 140);
     };
+    let lastActiveIso = null;
     const updateCards = (activeIso) => {
       const order = hero.querySelector(".hero-pager")?.dataset.pagerOrder.split(",") || [];
       // Pager order is oldest-first; the rail thinks newest-first.
       const posted = order.filter((iso) => iso !== upcomingIso).reverse();
-      // Never show the two most recent setlists (the hero features them), the
-      // active view itself, or run-mates from the active view's city.
-      const cityOf = (iso) => String(meta[iso]?.c || "").split(",")[0];
-      const activeCity = cityOf(activeIso);
-      const pool = posted.filter((iso, index) =>
-        index > 1 && iso !== activeIso && (!activeCity || cityOf(iso) !== activeCity));
-      fillSlot(slotA, pool[0]);
-      fillSlot(slotB, pool[1]);
+      // Context slots = the two posted shows immediately preceding the active
+      // view chronologically (run-mates included). When the upcoming show is
+      // active, that is just the two most recent posted shows.
+      const idx = activeIso === upcomingIso ? -1 : posted.indexOf(activeIso);
+      const pool = posted.slice(idx + 1, idx + 3);
+      // Navigation direction from the previous active view: earlier show = prev.
+      let dir = null;
+      if (lastActiveIso && activeIso && lastActiveIso !== activeIso) {
+        dir = activeIso < lastActiveIso ? "prev" : "next";
+      }
+      lastActiveIso = activeIso;
+      fillSlot(slotA, pool[0], dir);
+      fillSlot(slotB, pool[1], dir);
       [slotA, slotB, upcomingCardEl].forEach((card) => {
         if (!card) return;
         const on = card.dataset.viewBtn === activeIso;
@@ -9103,11 +9123,16 @@ function renderHeroView(data, show, opts = {}) {
   const longDate = formatLongDate(iso || show.date);
   const ariaHeading = escapeAttr(formatSetlistHeading(show));
   const relistenUrl = (data.relistenDates || new Set()).has(iso) ? relistenUrlFor(iso) : "";
+  // nugs.net primary, Relisten secondary. The Photos action moved out of the
+  // chip row to a quiet tertiary link below (see photosLink) so the two listen
+  // actions read as the clear primary/secondary pair.
   const chips = [
     show.streamUrl ? `<a class="sc-chip sc-chip-primary" href="${escapeAttr(show.streamUrl)}" aria-label="Listen to ${ariaHeading} at Nugs.net"><svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path d="M1.5 1.2c0-.66.72-1.07 1.29-.73l8 4.8a.85.85 0 0 1 0 1.46l-8 4.8A.85.85 0 0 1 1.5 10.8V1.2Z" fill="currentColor"/></svg>nugs.net</a>` : "",
-    relistenUrl ? `<a class="sc-chip sc-chip-glass sc-chip-relisten" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Listen to ${ariaHeading} on Relisten">Listen on Relisten</a>` : "",
-    show.sourceUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(show.sourceUrl)}" aria-label="Official setlist and photos for ${ariaHeading}">Photos</a>` : ""
+    relistenUrl ? `<a class="sc-chip sc-chip-glass sc-chip-relisten" href="${escapeAttr(relistenUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Listen to ${ariaHeading} on Relisten">Listen on Relisten</a>` : ""
   ].filter(Boolean).join("");
+  const photosLink = show.sourceUrl
+    ? `<a class="link-quiet sc-photos-link" href="${escapeAttr(show.sourceUrl)}" aria-label="Show photos for ${ariaHeading}">Show photos <span aria-hidden="true">→</span></a>`
+    : "";
   const setRows = sets.map((set) => `<div class="sc-row"><span class="sc-label">${escapeHtml(formatSetLabel(set.label))}</span><p class="sc-prose">${renderSetSongs(set, annotations)}</p></div>`).join("");
   const pullGroups = hasSetlist ? computeShowPulls(data, show) : [];
   const ltpRows = hasSetlist ? computeLastPlayedRows(data, show) : [];
@@ -9157,7 +9182,7 @@ function renderHeroView(data, show, opts = {}) {
     : "";
   const credit = show.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(show.photoCredit)}</figcaption>` : "";
   const photo = show.image
-    ? `<figure class="hero-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" crossorigin="anonymous" decoding="async"${opts.eager ? ' fetchpriority="high"' : ' loading="lazy"'}>${credit}</figure>`
+    ? `<figure class="hero-photo" style="--hp:url(${escapeAttr(show.image)})"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" crossorigin="anonymous" decoding="async"${opts.eager ? ' fetchpriority="high"' : ' loading="lazy"'}>${credit}</figure>`
     : "";
   // Mobile: the button floats on the photo itself (tap swaps photo for stats).
   const statsOverlay = photo && ltpRows.length
@@ -9169,7 +9194,7 @@ function renderHeroView(data, show, opts = {}) {
     lock: `<time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
         <h2 class="sc-city">${escapeHtml(show.location)}</h2>
         <span class="sc-venue">${escapeHtml(venueLine)}</span>
-        ${chips ? `<span class="sc-chips">${chips}</span>` : ""}`,
+        ${chips ? `<span class="sc-chips">${chips}</span>` : ""}${photosLink}`,
     music: `<div class="hero-sets sc-sets">${setRows}${annotations.guestNotes.length ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}</div></div>` : ""}</div>${footnote}${statsButton}`,
     media: `<div class="hero-media">${photo}${statsOverlay}${statsPanel}</div>`,
     ticker
@@ -9211,7 +9236,7 @@ function renderUpcomingHeroView(data, upcoming, isTonight) {
     : `<p class="hero-table-note"><span class="sc-label">On deck</span>The setlist posts here after the show, verified against the official page.</p>`;
   const credit = upcoming.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(upcoming.photoCredit)}</figcaption>` : "";
   const photo = upcoming.image
-    ? `<figure class="hero-photo"><img src="${escapeAttr(upcoming.image)}" alt="${escapeAttr(`${upcoming.date} ${upcoming.location}`)}" crossorigin="anonymous" decoding="async">${credit}</figure>`
+    ? `<figure class="hero-photo" style="--hp:url(${escapeAttr(upcoming.image)})"><img src="${escapeAttr(upcoming.image)}" alt="${escapeAttr(`${upcoming.date} ${upcoming.location}`)}" crossorigin="anonymous" decoding="async">${credit}</figure>`
     : "";
   return {
     iso,
@@ -9261,12 +9286,13 @@ function renderHomeHero(data) {
       <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${nightFor(entry) ? ` · ${nightFor(entry)}` : ""}</small></span>
       <span class="hc-go" aria-hidden="true">→</span>
     </button>`;
-  // Context picks skip the two most recent setlists (the hero already features
-  // them) and any run-mate from the featured show's city (Alex: redundant).
-  const featCity = String(featured.location || "").split(",")[0];
-  const contextShows = posted.slice(2)
-    .filter((entry) => String(entry.location || "").split(",")[0] !== featCity)
-    .slice(0, 2);
+  // Context = the two posted shows immediately preceding the active view
+  // chronologically, INCLUDING same-city run-mates (owner decision 2026-07-22,
+  // supersedes the older skip-recent/skip-run-mate rule). The default markup's
+  // active view is the featured (most recent) show, so slots a/b start on
+  // posted[1] and posted[2]; the client script (updateCards) reslots them
+  // relative to whichever show becomes active. Flat rows (.hero-row), not cards.
+  const contextShows = posted.slice(1, 3);
   const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
   const upcomingCard = upcoming ? `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(upcoming.isoDate)}" aria-pressed="false">
         <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
@@ -9275,8 +9301,8 @@ function renderHomeHero(data) {
       </button>` : "";
   // Three cards only: two context slots + the upcoming show pinned last.
   const cards = [
-    contextShows[0] ? slotCard(contextShows[0], "", "a") : "",
-    contextShows[1] ? slotCard(contextShows[1], "", "b") : "",
+    contextShows[0] ? slotCard(contextShows[0], " hero-row", "a") : "",
+    contextShows[1] ? slotCard(contextShows[1], " hero-row", "b") : "",
     upcomingCard
   ].join("");
   const cardMetaJson = `<script type="application/json" id="hero-card-meta">${JSON.stringify(cardMeta).replace(/</g, "\\u003c")}</script>`;
@@ -13438,7 +13464,10 @@ body.stagelight .home-hero { position: relative; width: 100vw; margin-left: calc
 body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
 body.stagelight .hero-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); transition: opacity 0.6s ease; }
 body.stagelight .hero-bg img.is-active { opacity: 0.55; }
-body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.30) 0%, rgba(10,10,12,0.6) 52%, rgba(11,11,12,0.92) 84%, #0b0b0d 100%); }
+/* Top stop deepened so only ~10-15% of the photo reads behind the sticky nav +
+   breadcrumb bars (no recognizable second face/body) while the mid/lower hero
+   keeps its stage light. The bars carry their own contrast below this. */
+body.stagelight .hero-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.74) 0%, rgba(9,9,11,0.44) 13%, rgba(10,10,12,0.6) 52%, rgba(11,11,12,0.92) 84%, #0b0b0d 100%); }
 /* Mirrored continuation of the hero backdrop under the fold + tinted spotlight. */
 body.stagelight .hero-bg::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(58% 46% at 68% 18%, var(--hero-glow, rgba(255,186,128,0.10)), transparent 72%); }
 /* Seamless: solid page color at the seam (no line), the mirrored light ghosts
@@ -13463,7 +13492,7 @@ body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gri
 body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
 body.stagelight .hero-slot, body.stagelight .hero-rail { min-width: 0; }
 body.stagelight .hero-lockwrap { grid-column: 1; grid-row: 1; align-self: center; min-width: 0; }
-body.stagelight .hero-pager { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+body.stagelight .hero-pager { display: flex; align-items: center; gap: 8px; margin-top: -10px; margin-bottom: 16px; }
 body.stagelight .hero-page {
   width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--sl-line-strong);
   border-radius: 50%; background: transparent; color: var(--sl-muted); font-size: 17px; line-height: 1;
@@ -13482,6 +13511,10 @@ body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-m
 body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-display); font-size: 52px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
 body.stagelight .home-hero .sc-venue { display: block; margin-top: 10px; font-size: 16px; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+/* Quiet tertiary "Show photos →" — sits a line below the listen chips, clearly
+   clickable but not competing with the primary/secondary actions. */
+body.stagelight .home-hero .sc-photos-link { display: inline-flex; margin-top: 12px; font-size: 14px; color: rgba(255,255,255,0.6); }
+body.stagelight .home-hero .sc-photos-link:hover { color: var(--sl-ink); }
 body.stagelight .hero-sets { display: grid; gap: 12px; }
 /* No divider: the base .sc-sets card styling doesn't apply in the hero — the two
    columns start on one shared line and alignment does the separating. */
@@ -13519,8 +13552,22 @@ body.stagelight .hsb-ring {
 body.stagelight .hero-stats-btn:hover .hsb-ring { animation-play-state: paused; }
 @keyframes hsb-orbit { to { --hsb-a: 360deg; } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .hsb-ring { animation: none; } }
-body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(300px, 44vh, 460px); border-radius: 0; overflow: hidden; border: 0; box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
+body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(288px, 42vh, 442px); border-radius: 0; overflow: hidden; border: 0; box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
 body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+/* Left-edge dissolve (desktop only): the sharp photo fades out over its left
+   ~110px via a mask, and a blurred copy of the same image (::before) fills that
+   band with 14px blur — softening the transition zone so the subject stays sharp
+   while the frame melts into the dark page. No hard seam, no rectangle-of-blur. */
+@media (min-width: 901px) {
+  body.stagelight .hero-photo img { position: relative; z-index: 1; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 110px); mask-image: linear-gradient(90deg, transparent 0, #000 110px); }
+  body.stagelight .hero-photo::before {
+    content: ""; position: absolute; inset: 0; z-index: 0;
+    background: var(--hp) center 20% / cover no-repeat;
+    filter: blur(14px);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 55px, transparent 120px);
+    mask-image: linear-gradient(90deg, transparent 0, #000 55px, transparent 120px);
+  }
+}
 /* The photo bleeds: flush to the bar above, left edge on the page's center
    mark (eating half the column gap), right edge off the viewport. */
 body.stagelight .hero-media-slot { margin-top: -30px; margin-left: -32px; margin-right: calc(-1 * var(--hero-pad)); }
@@ -13561,7 +13608,30 @@ body.stagelight .hc-place { display: flex; flex-direction: column; min-width: 0;
 body.stagelight .hc-place strong { font-size: 15px; font-weight: 620; }
 body.stagelight .hc-place small { font-size: 12.5px; color: var(--sl-faint); }
 body.stagelight .hc-go { color: var(--sl-faint); }
-body.stagelight .hero-card-upcoming { border-style: dashed; }
+/* Pinned upcoming (Sacramento) keeps the full bento card, made a touch more
+   distinct from the flat history rows: dashed border + TONIGHT flag, lifted off
+   the rows by a hair more surface and spacing. It never moves while browsing. */
+body.stagelight .hero-card-upcoming { border-style: dashed; border-color: var(--sl-line-strong); background: rgba(16,16,20,0.42); margin-top: 4px; }
+/* History context rows: flat, no permanent card surface. Thin dividers separate
+   them; a faint surface appears only on hover/focus. Same content + view-swap
+   behavior as before (they stay <button data-view-btn> with data-card-slot). */
+body.stagelight .hero-row.hero-card {
+  background: transparent; border: 0; border-radius: 0; -webkit-backdrop-filter: none; backdrop-filter: none;
+  padding: 12px 10px; border-top: 1px solid var(--sl-line);
+  transition: background 0.15s ease, transform 0.22s cubic-bezier(0.22,1,0.36,1), opacity 0.22s cubic-bezier(0.22,1,0.36,1);
+}
+body.stagelight .hero-row.hero-card:hover,
+body.stagelight .hero-row.hero-card:focus-visible { background: rgba(255,255,255,0.04); border-color: var(--sl-line); transform: none; }
+body.stagelight .hero-row.hero-card.is-current { background: rgba(255,255,255,0.04); border-color: var(--sl-line); box-shadow: none; }
+body.stagelight .hero-row.hero-card.is-current:hover { background: rgba(255,255,255,0.04); }
+/* Direction-aware row swap: prev = enter from above, next = from below. */
+body.stagelight .hero-row.is-refilling { opacity: 0; }
+body.stagelight .hero-row.is-entering-up { opacity: 0; transform: translateY(-10px); transition: none; }
+body.stagelight .hero-row.is-entering-down { opacity: 0; transform: translateY(10px); transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .hero-row.hero-card { transition: background 0.15s ease; }
+  body.stagelight .hero-row.is-refilling, body.stagelight .hero-row.is-entering-up, body.stagelight .hero-row.is-entering-down { opacity: 1; transform: none; }
+}
 /* Quiet link utility — bare text action, used sparingly (tertiary actions only). */
 body.stagelight .link-quiet { display: inline-flex; align-items: baseline; gap: 7px; font-size: 14px; color: var(--sl-muted); transition: color 0.15s ease; }
 body.stagelight .link-quiet span { transition: transform 0.18s ease; }
@@ -13572,7 +13642,7 @@ body.stagelight .hero-all { justify-self: end; margin-top: 4px; }
    (.hero-media, sized by the photo cap); toggling .stats-open crossfades the
    photo away and slides the panel up into its place — cards stay put, hero
    height never changes. */
-body.stagelight .hero-media { position: relative; height: clamp(300px, 44vh, 460px); }
+body.stagelight .hero-media { position: relative; height: clamp(288px, 42vh, 442px); }
 body.stagelight .hero-media .hero-photo { position: absolute; inset: 0; height: 100%; transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hero-stats-panel {
   position: absolute; inset: 0; display: flex; flex-direction: column;
