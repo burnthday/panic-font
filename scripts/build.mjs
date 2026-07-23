@@ -2673,7 +2673,7 @@ function renderFaqPage(data) {
     <main class="archive-main">
       <article class="archive-page faq-page">
         <header class="faq-hero has-poster">
-          ${renderPosterAtmos(POSTER_PAGES.faq)}
+          
           <div class="ph-lede">
             <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">FAQ</span></nav>
             <h1>The questions we actually get</h1>
@@ -3558,8 +3558,9 @@ function renderPageHeader({ crumbs, title, deck, poster = null, headerClass = ""
   const h1 = `<h1>${escapeTitle ? escapeHtml(title) : title}</h1>`;
   const deckHtml = deck ? `<p class="${deckClass}">${deck}</p>` : "";
   if (poster) {
+    const living = poster === "song-origins" && LIVING.songOriginsDots;
     return `<div class="ph-wrap has-poster">
-      ${renderPosterAtmos(poster)}
+      ${living ? renderPosterAtmos(poster) : ""}
       <header class="archive-title poster-header${headerClass ? " " + headerClass : ""}">
         <div class="ph-lede">
           ${crumbs}
@@ -16399,6 +16400,11 @@ body.stagelight .poster-header {
 }
 body.stagelight .ph-lede { min-width: 0; }
 body.stagelight .ph-poster { position: relative; justify-self: center; width: 200px; }
+/* pool of black behind the static poster so its plate melts into any backdrop */
+body.stagelight .ph-poster:not(.is-living)::before {
+  content: ""; position: absolute; inset: -18%; z-index: 0;
+  background: radial-gradient(100% 100% at 50% 50%, #000 40%, rgba(0,0,0,0) 78%);
+}
 /* Static poster stamp only — the :not(.lp-plate) guard keeps this off the living
    poster's plate <img>, which is an absolutely-positioned canvas layer (its float +
    fade come from .living-poster and the .lp-stage mask, not from here). */
