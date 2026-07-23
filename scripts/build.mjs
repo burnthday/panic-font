@@ -14012,6 +14012,10 @@ body.stagelight .hero-page {
   cursor: pointer; transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 body.stagelight .hero-page:hover:not(:disabled) { color: var(--sl-ink); border-color: var(--sl-muted); background: rgba(255,255,255,0.05); }
+/* Touch target: the visible circle stays 30px; a transparent pseudo-element
+   extends the hit area to 44px (minimum touch size) without shifting layout. */
+body.stagelight .hero-page { position: relative; }
+body.stagelight .hero-page::after { content: ""; position: absolute; inset: -7px; border-radius: 50%; }
 body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
 /* Fixed 28px gap below the lock content — identical on every screen height, no
    negative margin, no vh coupling. This is the fix for both the overlap and the
