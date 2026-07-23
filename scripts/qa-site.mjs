@@ -1014,11 +1014,17 @@ async function checkSongPages(siteData) {
     && index.includes('data-cs-value>All songs<')
     && index.includes('data-value="tour">') && index.includes('data-value="shelf">') && index.includes('data-value="purgatory">'),
     "data-status-filter custom-select present with All songs default + tour/shelf/purgatory options");
-  record("Song Index RARITY is a custom-select dropdown defaulting to All rarities",
-    /data-cs data-cs-managed data-rarity-filter data-value=""/.test(index)
-    && index.includes('data-cs-value>All rarities<')
-    && ["common", "uncommon", "rare", "ultra", "hyper", "bustout", "mega", "new"].every((tier) => index.includes(`data-value="${tier}">`)),
-    "data-rarity-filter custom-select present with All rarities default + every tier option");
+  // Rarity is ONE checkbox, not an eight-option menu (Alex 7/22: kill the pill
+  // overload — the Rarity column already sorts). Unchecked by default.
+  record("Song Index RARITY is a single unchecked 'Rare and up' checkbox, not a dropdown",
+    /<label class="index-check"><input type="checkbox" data-rare-filter> Rare and up<\/label>/.test(index)
+    && !index.includes("data-rarity-filter")
+    && !index.includes("All rarities"),
+    "data-rare-filter checkbox present and the tier dropdown is gone");
+  record("Song Index rarity checkbox filters the rare tiers and nothing else",
+    /RARE_TIERS = \["rare", "ultra", "hyper", "bustout", "mega"\]/.test(index)
+    && /!rareOnly \|\| RARE_TIERS\.includes\(row\.dataset\.rarityTier\)/.test(index),
+    "rareOnly gate reads the row's rarity tier against the rare set");
   record("Song Index rows carry the filter + sort data-* attributes",
     /class="song-row-wrap"[^>]*data-type="[^"]*"[^>]*data-tour="(?:yes|no)"[^>]*data-tier="[a-z]+"[^>]*data-status="[0-2]"[^>]*data-rarity="-?\d+"[^>]*data-rarity-tier="[a-z]*"[^>]*data-plays="\d+"/.test(index),
     "song-row-wrap carries data-type/data-tour/data-tier/data-status/data-rarity/data-rarity-tier/data-plays");
@@ -1094,14 +1100,16 @@ async function checkSongPages(siteData) {
   record("Song Index rows expose Song Origin resource links (30+)", originChipCount >= 30, `${originChipCount} rows link a song origin`);
   const lyricsChipCount = (index.match(/aria-label="[^"]*lyrics and chords"/g) || []).length;
   record("Song Index rows expose lyrics/chords resource links", lyricsChipCount >= 1, `${lyricsChipCount} rows link a lyrics/chords page`);
-  const tabChipCount = (index.match(/aria-label="[^"]*guitar tab on Songsterr"/g) || []).length;
-  record("Song Index rows expose Songsterr tab resource links", tabChipCount >= 1, `${tabChipCount} rows link a guitar tab`);
+  // Chords chips deep-link the song's own Everyday Companion page. Songsterr SEARCH
+  // links were removed sitewide 7/23 (Alex: half-way links are worse than nothing).
+  const chordChipCount = (index.match(/aria-label="[^"]*chords on Everyday Companion"/g) || []).length;
+  record("Song Index rows expose Everyday Companion chords links (500+)", chordChipCount >= 500, `${chordChipCount} rows link EC chords`);
   record("Song Index resource links are real, separate anchors (not nested inside the row link)",
     index.includes('class="sr-resources"><a class="sr-chip')
     && !/<a class="song-row"[^>]*>(?:(?!<\/a>)[\s\S])*?<a\b/.test(index),
     "the .song-row anchor closes before the sibling .sr-resources links");
-  record("Song Index Songsterr tab link opens in a new tab safely and carries an aria-label",
-    /class="sr-chip sr-chip-ext" href="https:\/\/www\.songsterr\.com\/[^"]*" target="_blank" rel="noopener noreferrer" aria-label="/.test(index),
+  record("Song Index chords link opens in a new tab safely and carries an aria-label",
+    /class="sr-chip sr-chip-ext" href="https:\/\/everydaycompanion\.com\/[^"]*\.asp" target="_blank" rel="noopener noreferrer" aria-label="/.test(index),
     "sr-chip-ext has target=_blank + rel=noopener + aria-label");
   record("Song Index resource column has a CSS home and hides on mobile",
     /body\.stagelight \.sr-resources \{[^}]*grid-column: 5/.test(songIndexCss)
@@ -1201,11 +1209,13 @@ async function checkSongLearnBlock(siteData) {
       `learn=${learnIdx} perf=${perfIdx} back=${backIdx}`);
   }
 
-  // Every song page must offer the Everyday Companion and Songsterr chips.
+  // Every song page must offer the Everyday Companion chip, deep-linked to that
+  // song's own EC page. The Songsterr SEARCH chip was removed 7/23 (Alex: half-way
+  // links are worse than nothing) — assert its absence at equal strength.
   const missingEc = pages.filter((page) => !/class="learn-chip[^"]*"[^>]*>Everyday Companion/.test(page.html));
-  const missingSongsterr = pages.filter((page) => !page.html.includes("Songsterr tab"));
+  const missingSongsterr = pages.filter((page) => page.html.includes("Songsterr"));
   record("Every song page carries the Everyday Companion chip", missingEc.length === 0, missingEc.slice(0, 5).map((p) => p.filePath).join("\n"));
-  record("Every song page carries the Songsterr tab chip", missingSongsterr.length === 0, missingSongsterr.slice(0, 5).map((p) => p.filePath).join("\n"));
+  record("No song page carries a Songsterr search chip", missingSongsterr.length === 0, missingSongsterr.slice(0, 5).map((p) => p.filePath).join("\n"));
 
   // Internal "Lyrics on Burnthday" chips must resolve to a real file in dist —
   // never a fabricated or dead internal target.
@@ -2656,6 +2666,11 @@ async function checkEveryInternalLinkResolves(files, htmls) {
   }
   record("Sitewide: every internal link and asset resolves", broken.length === 0, broken.slice(0, 20).join("\n"));
   record("Sitewide link sweep covers the whole build", seen.size > 500 && htmls.length > 900, `${seen.size} unique targets across ${htmls.length} pages`);
+  // Half-way links are worse than nothing (Alex, 7/23): no search-URL stand-ins
+  // anywhere — every outbound music link must land on the exact song.
+  record("No Songsterr search URL survives anywhere in the build",
+    !htmls.some((html) => /songsterr\.com\/\?pattern=/i.test(html)),
+    "zero songsterr.com/?pattern= links sitewide");
 }
 
 function safeDecodePath(value) {

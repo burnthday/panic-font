@@ -5963,8 +5963,9 @@ function renderSongsIndex(data, slugMap) {
     // dedicated grid column (see .song-row-wrap / .sr-resources in renderStagelightCss)
     // that overlays the reserved RESOURCES track, so the whole row stays clickable
     // while each chip is independently tabbable with its own aria-label. Origin +
-    // Lyrics light up only when the data join exists; Tab (Songsterr search) mirrors
-    // the /song/ page link and is always available.
+    // Lyrics light up only when the data join exists; Chords deep-links the song's
+    // exact Everyday Companion page (Alex 7/23: search links that land half-way are
+    // worse than nothing), and is omitted when EC has no page for it.
     const resChips = [];
     const origin = data.originsByTitle?.get(song.key);
     if (origin && origin.slug) {
@@ -5974,7 +5975,10 @@ function renderSongsIndex(data, slugMap) {
     if (lyricsHref) {
       resChips.push(`<a class="sr-chip" href="${escapeAttr(lyricsHref)}" aria-label="${escapeAttr(song.title)} lyrics and chords">Lyrics</a>`);
     }
-    resChips.push(`<a class="sr-chip sr-chip-ext" href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(song.title)} guitar tab on Songsterr">Tab</a>`);
+    const ecChordsHref = ecLinkFor(song, data).href;
+    if (/^https?:\/\/everydaycompanion\.com\/.+\.asp$/i.test(ecChordsHref || "")) {
+      resChips.push(`<a class="sr-chip sr-chip-ext" href="${escapeAttr(ecChordsHref.replace(/^http:/i, "https:"))}" target="_blank" rel="noopener noreferrer" aria-label="${escapeAttr(song.title)} chords on Everyday Companion">Chords</a>`);
+    }
     // Sortable/filterable data axes. STATUS sorts by a board rank (rotation → shelf →
     // purgatory); RARITY sorts by the frequency sortValue but ONLY for In-Rotation
     // songs — parked songs show a dash in the rarity column, so they carry an empty
@@ -6035,17 +6039,7 @@ function renderSongsIndex(data, slugMap) {
           { value: "shelf", label: "The Shelf" },
           { value: "purgatory", label: "Purgatory" }
         ] })}
-        ${renderCustomSelect({ hook: "data-rarity-filter", label: "Rarity", active: "", options: [
-          { value: "", label: "All rarities" },
-          { value: "common", label: "Common" },
-          { value: "uncommon", label: "Uncommon" },
-          { value: "rare", label: "Rare" },
-          { value: "ultra", label: "Ultra Rare" },
-          { value: "hyper", label: "Hyper Rare" },
-          { value: "bustout", label: "Bustout" },
-          { value: "mega", label: "Mega Bustout" },
-          { value: "new", label: "New this tour" }
-        ] })}
+        <label class="index-check"><input type="checkbox" data-rare-filter> Rare and up</label>
       </div>
       <div class="song-index-head" role="row">
         <button type="button" class="sih-col sih-sort" data-sort="title" aria-sort="ascending">Title <span class="sih-arrow" aria-hidden="true">↑</span></button>
@@ -6082,7 +6076,10 @@ function renderSongSearchScript() {
     const baseLabel = count.textContent;
     const typeButtons = [...document.querySelectorAll(".index-toolbar [data-type-filter]")];
     const statusSelect = document.querySelector("[data-status-filter]");
-    const raritySelect = document.querySelector("[data-rarity-filter]");
+    // Rarity is one checkbox, not an eight-option menu: the column itself sorts, so
+    // the filter only needs to answer "show me the rare stuff" (Alex, 7/22).
+    const rareBox = document.querySelector("[data-rare-filter]");
+    const RARE_TIERS = ["rare", "ultra", "hyper", "bustout", "mega"];
     let selectedType = "all";
     const apply = () => {
       // Hold the topmost on-screen row's viewport position across the filter.
@@ -6094,7 +6091,7 @@ function renderSongSearchScript() {
       const anchorTop0 = anchor ? anchor.getBoundingClientRect().top : null;
       const q = input.value.trim().toLowerCase();
       const status = statusSelect ? (statusSelect.dataset.value || "") : "";
-      const rarity = raritySelect ? (raritySelect.dataset.value || "") : "";
+      const rareOnly = Boolean(rareBox && rareBox.checked);
       // STATUS: "tour" reads the this-tour flag; "shelf"/"purgatory" read the board tier.
       let shown = 0;
       rows.forEach((row) => {
@@ -6103,12 +6100,12 @@ function renderSongSearchScript() {
         const hit = (!q || row.dataset.title.includes(q))
           && (selectedType === "all" || row.dataset.type === selectedType)
           && statusHit
-          && (!rarity || row.dataset.rarityTier === rarity);
+          && (!rareOnly || RARE_TIERS.includes(row.dataset.rarityTier));
         row.hidden = !hit;
         if (hit) shown++;
       });
       empty.hidden = shown !== 0;
-      const filtered = q || selectedType !== "all" || status || rarity;
+      const filtered = q || selectedType !== "all" || status || rareOnly;
       count.textContent = filtered ? shown + " of " + total + " songs" : baseLabel;
       // Re-pin the anchor if it survived the filter.
       if (anchor && !anchor.hidden && anchorTop0 != null) {
@@ -6156,7 +6153,7 @@ function renderSongSearchScript() {
       apply();
     }));
     if (statusSelect) statusSelect.addEventListener("cs:change", apply);
-    if (raritySelect) raritySelect.addEventListener("cs:change", apply);
+    if (rareBox) rareBox.addEventListener("change", apply);
     input.addEventListener("input", apply);
     input.focus();
   })();
@@ -6503,8 +6500,9 @@ function ecKnownFor(song, data) {
 }
 
 // The guitarist-facing "Learn It" resource row: internal lyrics (only when a real
-// archive page exists), Everyday Companion (community canon, deep-linked when
-// verified), and a Songsterr tab search. Sits right after the song facts.
+// archive page exists) and Everyday Companion (community canon, deep-linked to the
+// song's own page). The Songsterr tab SEARCH chip was removed 7/23 — Alex: links
+// that land half-way are worse than nothing. Only exact destinations ship.
 function renderSongLearnIt(song, data) {
   const chips = [];
   const internal = data.lyricsResourceByKey?.get(song.key);
@@ -6513,7 +6511,6 @@ function renderSongLearnIt(song, data) {
   }
   const ecHref = ecLinkFor(song, data).href;
   chips.push(`<a class="learn-chip learn-ext" href="${escapeAttr(ecHref)}" target="_blank" rel="noopener noreferrer">Everyday Companion <span class="learn-go" aria-hidden="true">↗</span><small>lyrics &amp; chords</small></a>`);
-  chips.push(`<a class="learn-chip learn-ext" href="https://www.songsterr.com/?pattern=${encodeURIComponent(song.title)}" target="_blank" rel="noopener noreferrer">Songsterr tab <span class="learn-go" aria-hidden="true">↗</span></a>`);
   return `<section class="song-learn" aria-labelledby="song-learn-h">
         <h2 class="song-learn-eyebrow" id="song-learn-h">LEARN IT</h2>
         <div class="song-learn-chips">${chips.join("")}</div>
