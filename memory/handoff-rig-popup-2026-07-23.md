@@ -122,7 +122,7 @@ Assert: legend reads Mikey's/Jimmy's/Nick's (3 owners); no `rig-tag` says "Confi
 
 ### OPEN — Alex must still call these (do NOT decide unilaterally)
 1. **Top bar:** the `.rig-head` has extra padding + a border-bottom divider the other modals (`.hero-modal-head`, e.g. song-stats) don't — reads heavier. Proposal: match the standard modal header. AWAITING ALEX.
-2. **Tagline** RESOLVED (Alex 7/23): drop "HALF-JIMMY · HALF-MIKEY". Replace with a one-line STATEMENT under "Nick's Rig" (sentence case, not a mono caps label). Working line: "Worlds collide. A hybrid rig of Jimmy Herring's and Mikey Houser's sounds, played by Nick." (shorter alt on file: "Worlds collide: Herring's and Houser's rigs, fused.") This means the header markup changes from <span> micro-label to a deck line; fold into the top-bar work.
+2. **Tagline** RESOLVED (Alex 7/23, Katherine-gated): drop "HALF-JIMMY · HALF-MIKEY". STATEMENT LINE LOCKED: "Mikey's old cabinet and an SLO clone running through Jimmy's wet rig." (sentence case deck line under the title, no commas, signal-chain accurate). COINED PHRASE for Nick still pending Alex's pick: front-runner "The Velvet Gun" (velvet = Houser's lingering wash/swells, gun = Herring's machine-gun precision); runner-up "Velvet Sniper". Header becomes: coined phrase as the title-adjacent line + the statement line as the deck. This changes header markup from a <span> micro-label to a two-line block; fold into the top-bar work.
 
 ### Ship path
 All edits on `claude/project-status-4jp3e7` → preview only. Live requires a merge to main with Alex's explicit deploy word. Build `node scripts/build.mjs`, gate `npm run qa` must stay green, then `show` Alex the preview before any deploy talk.
