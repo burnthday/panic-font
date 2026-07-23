@@ -35,6 +35,7 @@ async function main() {
   await checkHeroTransitionEngine(homeHtml);
   checkRivieraDisplaySweep(allHtmlFiles, allHtml);
   checkGuestAnnotations(homeHtml, review2025Html);
+  await checkEveryInternalLinkResolves(allHtmlFiles, allHtml);
   checkNavigation(homeHtml, siteData);
   await checkSongPages(siteData);
   await checkSongLearnBlock(siteData);
@@ -2618,6 +2619,43 @@ async function readImageDimensions(publicPath) {
   }
 
   return { width: 0, height: 0 };
+}
+
+// Sitewide dead-link sweep. Every internal href/src on every built page must
+// resolve to a real file, honouring the same fallbacks the host applies:
+// extension-less .html, directory index.html, percent-decoding, and _redirects.
+// Added after Shelf Watch + ticker shipped 312 links to /songs/<slug>/ when the
+// song pages live at /song/<slug>/ — a whole class of 404 no guard was watching.
+async function checkEveryInternalLinkResolves(files, htmls) {
+  let redirectSources = new Set();
+  try {
+    const raw = await readText("dist/_redirects");
+    redirectSources = new Set(raw.split("\n").map((line) => line.trim().split(/\s+/)[0]).filter(Boolean).map((v) => v.replace(/\/$/, "")));
+  } catch {}
+  const resolves = async (href) => {
+    const clean = safeDecodePath(href.split("#")[0].split("?")[0]);
+    if (!clean.startsWith("/") || clean.startsWith("//")) return true;
+    const candidates = [clean, clean + ".html", clean.replace(/\/$/, "") + ".html", clean.replace(/\/$/, "") + "/index.html"];
+    for (const candidate of candidates) {
+      const ok = await stat(distDir + candidate).then((s) => s.isFile()).catch(() => false);
+      if (ok) return true;
+    }
+    return redirectSources.has(clean.replace(/\/$/, ""));
+  };
+  const seen = new Map();
+  htmls.forEach((html, index) => {
+    // data-* attributes are inert payloads (dead social widgets in archived
+    // posts), so anchor the match to a real href=/src= attribute boundary.
+    for (const match of html.matchAll(/(?:^|[\s"'])(?:href|src)="(\/[^"]*)"/g)) {
+      if (!seen.has(match[1])) seen.set(match[1], files[index].replace(distDir, ""));
+    }
+  });
+  const broken = [];
+  for (const [href, from] of seen) {
+    if (!(await resolves(href))) broken.push(`${href} <- ${from}`);
+  }
+  record("Sitewide: every internal link and asset resolves", broken.length === 0, broken.slice(0, 20).join("\n"));
+  record("Sitewide link sweep covers the whole build", seen.size > 500 && htmls.length > 900, `${seen.size} unique targets across ${htmls.length} pages`);
 }
 
 function safeDecodePath(value) {
