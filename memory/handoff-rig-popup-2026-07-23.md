@@ -122,10 +122,13 @@ Assert: legend reads Mikey's/Jimmy's/Nick's (3 owners); no `rig-tag` says "Confi
 
 ### OPEN — Alex must still call these (do NOT decide unilaterally)
 1. **Top bar:** the `.rig-head` has extra padding + a border-bottom divider the other modals (`.hero-modal-head`, e.g. song-stats) don't — reads heavier. Proposal: match the standard modal header. AWAITING ALEX.
-2. **Tagline** FULLY RESOLVED (Alex 7/23, Katherine-gated). Drop "HALF-JIMMY · HALF-MIKEY". The header becomes a bold HEADLINE + a body line:
-   - **HEADLINE (bold, the site's headline style):** "An honest tone with a blistering lead."
-   - **BODY line under it:** "Nick's playing through Mikey's old cabinet and an SLO clone running through Jimmy's wet rig."
-   NOTE for the executing session: the headline deliberately ECHOES a Widespread Panic lyric from "Driving Song" (a Houser co-write, founding era): "an honest tune with a lingering lead has taken me this far." Alex adapted it on purpose to "tone" + "blistering lead" so it is Nick's own line and NOT a lyric reproduction. DO NOT "correct" it back to the lyric or flag it as a typo. No attribution shown. This replaces the <span> micro-label with a headline+body block; do it as part of the top-bar header rework.
+2. **Header copy FINAL (Alex-locked 7/23, Katherine-gated).** Drop "HALF-JIMMY · HALF-MIKEY". The header is ONE bold statement (site's bold-headline style):
+   "An honest tone with a blistering lead. Mikey's old cabinet and an SLO clone running through Jimmy's wet rig. Same guy, same breath."
+   Notes for the executing session:
+   - It is ONE line/block, bold, not headline+separate-deck. No em-dashes. No attribution shown.
+   - "An honest tone with a blistering lead" deliberately echoes the Widespread Panic song "Driving Song" (a Houser co-write) but is adapted on purpose ("tone" + "blistering", not the lyric's "tune" + "lingering") so it is Nick's own line, NOT a lyric reproduction. Do NOT "correct" it toward the lyric.
+   - HARD TONE RULE: this popup celebrates the gear and the playing. It must NEVER reference Houser's death or Herring's illness. Alex rejected every loss/eulogy framing flatly. Keep it gearhead-celebratory.
+   - Replaces the old <span> micro-label with a bold statement block; fold into the top-bar header rework.
 
 ### Ship path
 All edits on `claude/project-status-4jp3e7` → preview only. Live requires a merge to main with Alex's explicit deploy word. Build `node scripts/build.mjs`, gate `npm run qa` must stay green, then `show` Alex the preview before any deploy talk.
