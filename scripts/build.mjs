@@ -13799,7 +13799,7 @@ body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; b
 body.stagelight .garrie-sep { margin: 96px auto -56px; width: min(560px, 74%); line-height: 0; position: relative; z-index: 1; }
 body.stagelight .garrie-sep-svg { display: block; width: 100%; height: auto; overflow: visible; }
 body.stagelight .garrie-sep path { fill: none; stroke: rgba(255,255,255,0.62); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-body.stagelight .garrie-sep .gs-p1, body.stagelight .garrie-sep .gs-p2 { stroke-width: 3.6; stroke: rgba(255,255,255,0.4); }
+body.stagelight .garrie-sep .gs-p1, body.stagelight .garrie-sep .gs-p2 { stroke-width: 3.2; stroke: rgba(255,255,255,0.78); }
 body.stagelight .garrie-sep .gs-oo { stroke-width: 2; }
 body.stagelight .garrie-sep .gs-l1, body.stagelight .garrie-sep .gs-l2 { stroke-dasharray: 244; stroke-dashoffset: 0; }
 body.stagelight .garrie-sep .gs-oo { stroke-dasharray: 64; stroke-dashoffset: 0; }
