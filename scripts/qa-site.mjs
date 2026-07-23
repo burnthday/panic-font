@@ -478,7 +478,7 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
     /<div class="sheet-scrawl" aria-hidden="true"><div class="ss-layer ss-behind">/.test(homeHtml)
       && homeHtml.includes('class="ss-layer ss-above"') && homeHtml.includes('class="ss-layer ss-below"'));
   record("The three scrawl zones carry distinct blur tiers (heavy behind, light above, clearest below)",
-    /\.ss-behind\s*\{[^}]*blur\(5\.5px\)/.test(sl) && /\.ss-above\s*\{[^}]*blur\(1\.75px\)/.test(sl) && /\.ss-below\s*\{[^}]*blur\(1px\)/.test(sl));
+    /\.ss-behind\s*\{[^}]*blur\(6\.5px\)/.test(sl) && /\.ss-above\s*\{[^}]*blur\(3\.2px\)/.test(sl) && /\.ss-below\s*\{[^}]*blur\(1px\)/.test(sl));
   record("Card group is lifted 72px so setlist shows above the card tops",
     /\.bento-region\s+\.bento-grid\s*\{[^}]*translateY\(-72px\)/.test(sl));
 
@@ -800,10 +800,10 @@ async function checkLatestSetlist(html, siteData) {
     !feat?.sourceUrl || heroOnly.includes(`class="link-quiet sc-photos-link" href="${escapeHtml(feat.sourceUrl)}"`),
     feat?.sourceUrl || "no sourceUrl");
   // Left-edge dissolve: sharp photo masked + blurred ::before copy, desktop only.
-  record("Hero photo dissolves at the left edge (mask + blurred copy, desktop only)",
-    !feat?.image || (heroOnly.includes("--hp:url(") && css.includes("body.stagelight .hero-photo::before")
-      && /body\.stagelight \.hero-photo img \{[^}]*mask-image: linear-gradient\(90deg, transparent 0, #000 110px\)/.test(css)),
-    feat?.image || "no featured image");
+  record("Hero photo keeps a whisper-soft left edge; the tinted paint stroke supplies the left atmosphere",
+    /mask-image: linear-gradient\(90deg, transparent 0, #000 24px\)/.test(css)
+    && css.includes(".hero-brush") && heroOnly.includes('class="hero-brush"')
+    && css.includes("--hero-glow-strong") && html.includes("--hero-glow-strong"));
   record("Date pager has working prev/next wiring, wraps, and shows no count",
     heroOnly.includes("data-page-prev") && heroOnly.includes("data-page-next") && !heroOnly.includes("hero-page-count")
     && html.includes('[data-page-prev]') && html.includes("% order.length"),
@@ -2284,9 +2284,9 @@ async function checkHeroTransitionEngine(homeHtml) {
   record("Hero swap clips slots and tweens ONLY the section height (slide engine v2)",
     /body\.stagelight \.hero-slot \{ position: relative; \}/.test(css)
     && /body\.stagelight \.hero-slot\.is-swapping \{ overflow: hidden; \}/.test(css)
-    && /body\.stagelight \.home-hero\.is-swapping \{ transition: height 0\.32s cubic-bezier\(0\.22,1,0\.36,1\)/.test(css)
-    && !/hero-slot\.is-swapping \{[^}]*transition: height/.test(css),
-    "section-level height tween, no per-slot height transitions");
+    && !/hero-slot\.is-swapping \{[^}]*transition: height/.test(css)
+    && !/home-hero\.is-swapping \{ transition: height/.test(css),
+    "no height transitions anywhere - the stage is locked");
   record("Hero views slide horizontally with direction (photos crossfade in place)",
     /body\.stagelight \.hv \{ transition: opacity 0\.28s cubic-bezier\(0\.22,1,0\.36,1\), transform 0\.28s/.test(css)
     && css.includes(".hv.is-leaving { position: absolute")
@@ -2308,14 +2308,12 @@ async function checkHeroTransitionEngine(homeHtml) {
     homeHtml.includes('classList.add("is-leaving")') && homeHtml.includes('classList.add(enterCls)')
     && homeHtml.includes('.hv[data-view="'),
     "is-leaving + enter-class swap present");
-  record("Hero swap tweens the hero section height once between measured from/to heights",
-    homeHtml.includes("const fromHeroH = hero.offsetHeight")
-    && homeHtml.includes("const toHeroH = hero.offsetHeight")
-    && homeHtml.includes('hero.style.height = fromHeroH + "px"')
-    && homeHtml.includes('hero.style.height = toHeroH + "px"')
-    && homeHtml.includes('hero.style.height = "";')
-    && !homeHtml.includes("p.slot.style.height"),
-    "height measure + tween + clear present");
+  record("Hero stage is locked: every slot pinned to its tallest view, no swap height math",
+    homeHtml.includes("const lockStage = () =>")
+    && homeHtml.includes('slot.style.minHeight = max + "px"')
+    && homeHtml.includes("requestAnimationFrame(lockStage)")
+    && !homeHtml.includes("fromHeroH") && !homeHtml.includes("p.slot.style.height"),
+    "lockStage measurement + pinned min-heights present");
   record("Hero gates the swap on decoded target imagery, capped so slow networks never block",
     homeHtml.includes("readyImages") && homeHtml.includes("img.decode()") && homeHtml.includes("setTimeout(res, 350)"),
     "readyImages decode race present");

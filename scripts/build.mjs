@@ -7346,21 +7346,14 @@ function renderHeroModalScript() {
         // Slide engine: lift outgoing views out of flow, reveal incoming ones,
         // and tween ONLY the hero section's total height (one smooth move) while
         // content slides horizontally. Nothing inside ever repositions.
-        const fromHeroH = hero.offsetHeight;
         plans.forEach((p) => {
           if (p.out) p.out.classList.add("is-leaving");
           if (p.inc) { p.inc.hidden = false; p.inc.classList.add(enterCls); }
           p.slot.classList.add("is-swapping");
         });
-        const toHeroH = hero.offsetHeight;
-        if (toHeroH !== fromHeroH) {
-          hero.classList.add("is-swapping");
-          hero.style.height = fromHeroH + "px";
-        }
         activateBg(iso);
         void hero.offsetHeight;
         nextFrame(() => {
-          if (toHeroH !== fromHeroH) hero.style.height = toHeroH + "px";
           plans.forEach((p) => {
             if (p.inc) { p.inc.classList.remove(enterCls); p.inc.classList.add("is-active"); }
             if (p.out) { p.out.classList.remove("is-active"); p.out.classList.add(leaveCls); }
@@ -7372,8 +7365,6 @@ function renderHeroModalScript() {
               if (p.inc) p.inc.classList.remove("is-enter-next", "is-enter-prev");
               p.slot.classList.remove("is-swapping");
             });
-            hero.classList.remove("is-swapping");
-            hero.style.height = "";
             finishSwap(iso);
           });
         });
@@ -7386,6 +7377,27 @@ function renderHeroModalScript() {
       swapping = true;
       doSwap(iso);
     };
+    // LOCKED STAGE: the hero (and everything below it) never changes size.
+    // Measure every view's natural height per slot once, pin each slot's
+    // min-height to its tallest view; re-measure on real resizes.
+    const lockStage = () => {
+      slots.forEach((slot) => {
+        slot.style.minHeight = "";
+        let max = slot.offsetHeight;
+        const width = slot.clientWidth;
+        slot.querySelectorAll(".hv[hidden]").forEach((view) => {
+          view.style.cssText = "visibility:hidden;position:absolute;left:0;top:0;width:" + width + "px";
+          view.hidden = false;
+          max = Math.max(max, view.offsetHeight);
+          view.hidden = true;
+          view.style.cssText = "";
+        });
+        slot.style.minHeight = max + "px";
+      });
+    };
+    requestAnimationFrame(lockStage);
+    let stageResizeT = null;
+    window.addEventListener("resize", () => { clearTimeout(stageResizeT); stageResizeT = setTimeout(lockStage, 220); });
     // Fixed rail: slots never move. The two context slots refill (quick content
     // fade) with the nearest shows before the active view; latest + upcoming
     // are pinned. The card matching the active view carries the current-ring.
@@ -7501,8 +7513,9 @@ function renderHeroModalScript() {
         r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
         const max = Math.max(r, g, b, 1);
         const boost = 200 / max;
-        document.documentElement.style.setProperty("--hero-glow",
-          "rgba(" + Math.min(255, Math.round(r * boost)) + "," + Math.min(255, Math.round(g * boost)) + "," + Math.min(255, Math.round(b * boost)) + ",0.12)");
+        const tr = Math.min(255, Math.round(r * boost)), tg = Math.min(255, Math.round(g * boost)), tb = Math.min(255, Math.round(b * boost));
+        document.documentElement.style.setProperty("--hero-glow", "rgba(" + tr + "," + tg + "," + tb + ",0.12)");
+        document.documentElement.style.setProperty("--hero-glow-strong", "rgba(" + tr + "," + tg + "," + tb + ",0.24)");
       } catch (err) { /* tainted canvas: keep the default glow */ }
     }
     const heroImg = hero.querySelector(".hero-bg img");
@@ -9616,6 +9629,7 @@ function renderHomeHero(data) {
     </div>` : "";
   return `<section class="home-hero${featured.image ? "" : " no-image"}" id="latest-setlist" aria-label="Latest setlist: ${views[0].view.ariaHeading}">
     ${bg}
+    <div class="hero-brush" aria-hidden="true"><svg viewBox="0 0 900 340" preserveAspectRatio="none"><path d="M-60 128 C140 92 330 156 520 124 C670 100 800 142 940 116 L940 216 C780 248 610 200 450 232 C290 262 120 216 -60 248 Z"/><path class="hb2" d="M-60 180 C120 158 300 196 470 172 C610 152 730 184 860 164 L860 226 C710 248 560 214 410 238 C260 260 100 232 -60 252 Z"/></svg></div>
     <div class="hero-inner">
       <div class="hero-lockwrap">${pager}<div class="hero-slot hero-lock-slot">${slot("lock")}</div></div>
       <div class="hero-slot hero-media-slot">${slot("media")}</div>
@@ -13819,6 +13833,14 @@ body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; b
    reason; do not remove them. */
 body.stagelight main > *:not(.hero-echo):not(.bento-panel):not(.home-nav) { position: relative; z-index: 1; }
 body.stagelight main > .home-nav { position: sticky; z-index: 55; }
+/* Paint stroke: a wide brushed band of the show's own sampled stage-light color
+   swept behind the left column. Tinted per view via --hero-glow-strong (set by
+   the same canvas sample as the spotlight), heavily blurred so it reads as
+   pigment light, not a shape. */
+body.stagelight .hero-brush { position: absolute; left: 0; top: 96px; width: min(52vw, 760px); height: 340px; z-index: 0; pointer-events: none; filter: blur(46px) saturate(1.25); opacity: 0.85; transform: rotate(-2deg); }
+body.stagelight .hero-brush svg { width: 100%; height: 100%; }
+body.stagelight .hero-brush path { fill: var(--hero-glow-strong, rgba(255,186,128,0.2)); transition: fill 0.6s ease; }
+body.stagelight .hero-brush .hb2 { opacity: 0.55; }
 body.stagelight .hero-inner { --hero-pad: max(28px, calc((100vw - 1400px) / 2)); position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) var(--hero-pad) 38px; }
 /* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
    setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
@@ -13838,7 +13860,7 @@ body.stagelight .hero-page {
 body.stagelight .hero-page:hover:not(:disabled) { color: var(--sl-ink); border-color: var(--sl-muted); background: rgba(255,255,255,0.05); }
 body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
 body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
-body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; margin-top: -34px; }
+body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; margin-top: -61px; }
 body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
 /* Slide engine (v2, Alex: "the hero needs to slide"). Content slides
    horizontally in the direction of navigation; the ONLY height that animates is
@@ -13848,7 +13870,6 @@ body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
 body.stagelight .hero-slot { position: relative; }
 body.stagelight .hero-slot.is-swapping { overflow: hidden; }
 body.stagelight .hero-media-slot.is-swapping { overflow: visible; }
-body.stagelight .home-hero.is-swapping { transition: height 0.32s cubic-bezier(0.22,1,0.36,1); will-change: height; }
 body.stagelight .hv { transition: opacity 0.28s cubic-bezier(0.22,1,0.36,1), transform 0.28s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hv[hidden] { display: none; }
 /* Outgoing snapshot: out of flow so the incoming view takes over the flow. */
@@ -13864,7 +13885,6 @@ body.stagelight .hero-media-slot .hv.is-enter-next, body.stagelight .hero-media-
 body.stagelight .hero-media-slot .hv.is-leave-next, body.stagelight .hero-media-slot .hv.is-leave-prev { transform: none; }
 @media (prefers-reduced-motion: reduce) {
   body.stagelight .hv { transition: none; }
-  body.stagelight .home-hero.is-swapping { transition: none; }
 }
 body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-display); font-size: 52px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
@@ -13913,19 +13933,11 @@ body.stagelight .hero-stats-btn:hover .hsb-ring { animation-play-state: paused; 
 @media (prefers-reduced-motion: reduce) { body.stagelight .hsb-ring { animation: none; } }
 body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(288px, 42vh, 442px); border-radius: 0; overflow: hidden; border: 0; box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
 body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-/* Left-edge dissolve (desktop only): the sharp photo fades out over its left
-   ~110px via a mask, and a blurred copy of the same image (::before) fills that
-   band with 14px blur — softening the transition zone so the subject stays sharp
-   while the frame melts into the dark page. No hard seam, no rectangle-of-blur. */
+/* Dissolve retired (Alex): clean photo edge with only a whisper-soft 24px fade
+   so the crop isn't razor-hard. The left-side atmosphere now comes from the
+   tinted paint stroke behind the identity column instead. */
 @media (min-width: 901px) {
-  body.stagelight .hero-photo img { position: relative; z-index: 1; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 110px); mask-image: linear-gradient(90deg, transparent 0, #000 110px); }
-  body.stagelight .hero-photo::before {
-    content: ""; position: absolute; inset: 0; z-index: 0;
-    background: var(--hp) center 20% / cover no-repeat;
-    filter: blur(14px);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 55px, transparent 120px);
-    mask-image: linear-gradient(90deg, transparent 0, #000 55px, transparent 120px);
-  }
+  body.stagelight .hero-photo img { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px); mask-image: linear-gradient(90deg, transparent 0, #000 24px); }
 }
 /* The photo bleeds: flush to the bar above, left edge on the page's center
    mark (eating half the column gap), right edge off the viewport. */
@@ -14005,7 +14017,7 @@ body.stagelight .hero-media { position: relative; height: clamp(288px, 42vh, 442
 body.stagelight .hero-media .hero-photo { position: absolute; inset: 0; height: 100%; transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hero-stats-panel {
   position: absolute; inset: 0; display: flex; flex-direction: column;
-  padding: 20px 26px 18px; border: 0; border-radius: 0;
+  padding: 20px 26px 18px; border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-md);
   background:
     radial-gradient(70% 55% at 12% 108%, var(--hero-glow, rgba(255,186,128,0.14)), transparent 70%),
     radial-gradient(55% 45% at 96% -6%, var(--hero-glow, rgba(255,186,128,0.1)), transparent 74%),
@@ -14017,6 +14029,21 @@ body.stagelight .hero-stats-panel {
 }
 body.stagelight .hero-media.stats-open .hero-photo { opacity: 0; transform: scale(0.985) translateY(-6px); pointer-events: none; }
 body.stagelight .hero-media.stats-open .hero-stats-panel { opacity: 1; transform: none; pointer-events: auto; }
+@property --hsp-a { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+body.stagelight .hero-stats-panel::after {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  background: conic-gradient(from var(--hsp-a), transparent 0deg 300deg, var(--hero-glow-strong, rgba(255,186,128,0.6)) 330deg, transparent 358deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  padding: 1px; opacity: 0;
+}
+body.stagelight .hero-media.stats-open .hero-stats-panel::after { animation: hsp-ignite 0.9s cubic-bezier(0.22,1,0.36,1) 0.1s; }
+@keyframes hsp-ignite {
+  0% { --hsp-a: 0deg; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { --hsp-a: 360deg; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { body.stagelight .hero-media.stats-open .hero-stats-panel::after { animation: none; } }
 @media (prefers-reduced-motion: reduce) {
   body.stagelight .hero-media .hero-photo, body.stagelight .hero-stats-panel { transition: none; }
 }
@@ -14571,13 +14598,13 @@ body.stagelight .ss-layer {
 }
 /* Behind the cards: heaviest blur, faintest — barely there through the glass. */
 body.stagelight .ss-behind {
-  filter: blur(5.5px); color: rgba(255,255,255,0.11);
+  filter: blur(6.5px); color: rgba(255,255,255,0.11);
   -webkit-mask-image: linear-gradient(180deg, transparent 20%, #000 34%, #000 66%, transparent 82%);
   mask-image: linear-gradient(180deg, transparent 20%, #000 34%, #000 66%, transparent 82%);
 }
 /* Above the cards: light blur, mid opacity — the shows peeking over the tops. */
 body.stagelight .ss-above {
-  filter: blur(1.75px); color: rgba(255,255,255,0.22);
+  filter: blur(3.2px); color: rgba(255,255,255,0.22);
   -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 24%, transparent 40%);
   mask-image: linear-gradient(180deg, #000 0%, #000 24%, transparent 40%);
 }
@@ -14592,7 +14619,7 @@ body.stagelight .ss-song { display: block; font-size: 15px; line-height: 2.05; w
 /* Columns are bottom-anchored (flex-end): a positive bottom margin lifts the
    whole sheet so titles fill the band ABOVE the cards and only the trailing
    greats (1-2 lines) clear the card bottoms. */
-body.stagelight .sheet-scrawl .ss-col { margin-bottom: 70px; }
+body.stagelight .sheet-scrawl .ss-col { margin-bottom: 39px; }
 /* Laid out like loose papers: shrunk, each sheet nudged and tilted its own way,
    the first pushed further off the left. Stagger sets how many trailing songs
    reach the light (~2, ~2, ~1.5, ~1, <1). */
@@ -14968,7 +14995,7 @@ body.stagelight .rarity-cell strong { gap: 6px; }
 body.stagelight .rarity-cell .rarity-symbol { min-width: 0; margin-right: 0; }
 
 /* ---- BOARD INTRO ---- */
-body.stagelight .board-intro { position: relative; margin-top: 96px; }
+body.stagelight .board-intro { position: relative; margin-top: 56px; }
 /* Stage light: a soft beam falls on the intro, tinted from the hero photo. */
 body.stagelight .board-intro::before {
   content: ""; position: absolute; left: -12%; top: -170px; width: 74%; height: 340px;
