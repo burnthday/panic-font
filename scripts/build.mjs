@@ -7395,7 +7395,11 @@ function renderHeroModalScript() {
         slot.style.minHeight = max + "px";
       });
     };
-    requestAnimationFrame(lockStage);
+    // Pre-paint: the script executes before first render, so locking heights
+    // NOW means the page arrives pre-sized — no post-load drop of the setlist
+    // (Alex's report: rAF ran lockStage after first paint, growing slots late).
+    lockStage();
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => lockStage());
     let stageResizeT = null;
     window.addEventListener("resize", () => { clearTimeout(stageResizeT); stageResizeT = setTimeout(lockStage, 220); });
     // Fixed rail: slots never move. The two context slots refill (quick content
@@ -8406,6 +8410,19 @@ function renderSiteFooter(data, options = {}) {
   const year = data?.site?.year || new Date().getFullYear();
   if (options.stagelight) {
     return `<div class="athens-strip" aria-hidden="true"><span>ALL THE WAY FROM ATHENS GA</span></div>
+<script>(() => {
+  const strip = document.querySelector(".athens-strip");
+  if (!strip) return;
+  // Reduced-motion or no-IO visitors are left seated (never armed).
+  if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  strip.classList.add("will-reveal");
+  const io = new IntersectionObserver((entries, obs) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) { strip.classList.add("is-revealed"); obs.disconnect(); }
+    }
+  }, { threshold: 0.3 });
+  io.observe(strip);
+})();</script>
 <footer class="site-foot">
   <div class="site-foot-inner">
     <div class="footer-lead">
@@ -8866,7 +8883,7 @@ function renderSheetBentos(data) {
     ["L.A.", "STIR IT UP"],
     ["SYMPATHY FOR THE DEVIL"],
     ["HAVIN' A BALL"],
-    ["BALL OF CONFUSION"]
+    ["BALL OF CONFUSION", "JACK STRAW"]
   ];
   const TOTAL_LINES = 20;
   const sheetCols = Array.from({ length: 5 }, (unused, index) => {
@@ -10160,21 +10177,20 @@ function splitDisplaySetSongs(value) {
 }
 
 function renderCommunityLinks() {
+  // Owner standing rule: NEVER eyebrow+headline+subheadline. Each card carries ONE
+  // display line over the image scrim, and the site's bc-open rounded-square affordance
+  // (quarter-turn-left arrow on hover) instead of a circular arrow.
   const cards = [
     {
       href: "/song-origins/",
       img: "/assets/song-origins/chilly-water.jpg",
-      eyebrow: "Song Origins",
       title: "Where the songs come from",
-      desc: "Sourced stories behind the catalog — quotes, not guesses.",
       tone: "photo"
     },
     {
       href: "/lyrics-chords/",
       img: "/assets/archive-media/dirty-side-down-cover.jpg",
-      eyebrow: "Lyrics & Chords",
       title: "Words, chords, and tab",
-      desc: "Every song, with our transcriptions where they exist.",
       tone: "cover"
     }
   ];
@@ -10182,11 +10198,9 @@ function renderCommunityLinks() {
   ${cards.map((card) => `<a class="xp-card xp-${card.tone}" href="${escapeAttr(card.href)}">
     <span class="xp-bg" aria-hidden="true"><img src="${escapeAttr(card.img)}" alt="" loading="lazy" decoding="async"></span>
     <span class="xp-body">
-      <span class="xp-eyebrow">${escapeHtml(card.eyebrow)}</span>
       <span class="xp-title">${escapeHtml(card.title)}</span>
-      <span class="xp-desc">${escapeHtml(card.desc)}</span>
     </span>
-    <span class="xp-arrow" aria-hidden="true">→</span>
+    <span class="bc-open" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8h11M8.5 3.5 13 8l-4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
   </a>`).join("")}
 </section>`;
 }
@@ -13867,6 +13881,18 @@ body.stagelight .home-hero { position: relative; width: 100vw; margin-left: calc
 body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
 body.stagelight .hero-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); transition: opacity 0.5s ease; }
 body.stagelight .hero-bg img.is-active { opacity: 0.55; }
+/* The stage light breathes: wash shimmer (~20s), glow pulse (~8s, offset
+   phase), brush same slow breath. Transform/opacity only; still frames under
+   reduced motion. Real rigs never pulse in sync. */
+body.stagelight .hero-bg img.is-active { animation: hero-shimmer 20s ease-in-out infinite alternate; }
+@keyframes hero-shimmer { from { transform: scale(1.35); } to { transform: scale(1.385); } }
+body.stagelight .hero-bg::before { animation: hero-glow-breathe 8s ease-in-out 2s infinite alternate; }
+@keyframes hero-glow-breathe { from { opacity: 1; } to { opacity: 0.72; } }
+body.stagelight .hero-brush { animation: hero-brush-breathe 13s ease-in-out 5s infinite alternate; }
+@keyframes hero-brush-breathe { from { opacity: 0.85; } to { opacity: 0.66; } }
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .hero-bg img.is-active, body.stagelight .hero-bg::before, body.stagelight .hero-brush { animation: none; }
+}
 /* Top stop deepened so only ~10-15% of the photo reads behind the sticky nav +
    breadcrumb bars (no recognizable second face/body) while the mid/lower hero
    keeps its stage light. The bars carry their own contrast below this. */
@@ -14477,7 +14503,7 @@ body.stagelight .ticket-link:hover { background: #fff; }
 /* ---- CROSS-PROMO BAND ---- */
 body.stagelight .cross-promo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 body.stagelight .xp-card {
-  position: relative; display: flex; align-items: flex-end; min-height: 260px; overflow: hidden;
+  position: relative; display: flex; align-items: flex-end; min-height: 344px; overflow: hidden;
   border-radius: var(--sl-r); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
   text-decoration: none; isolation: isolate;
   transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
@@ -14490,20 +14516,16 @@ body.stagelight .xp-card::after {
 }
 body.stagelight .xp-cover .xp-bg img { object-position: center 30%; }
 body.stagelight .xp-body { position: relative; z-index: 1; display: grid; gap: 6px; padding: 26px 28px; }
-body.stagelight .xp-eyebrow { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .xp-title { font-family: var(--sl-display); font-weight: 640; font-size: 24px; letter-spacing: -0.01em; color: var(--sl-ink); }
-body.stagelight .xp-desc { font-size: 14px; color: var(--sl-muted); max-width: 34ch; }
-body.stagelight .xp-arrow {
-  position: absolute; z-index: 1; top: 24px; right: 26px; width: 40px; height: 40px;
-  display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
-  background: rgba(24,24,27,0.55); border: 1px solid var(--sl-line-strong); color: var(--sl-ink);
-  font-size: 17px; transition: transform 0.28s ease, background 0.28s ease;
-}
+body.stagelight .xp-title { font-family: var(--sl-display); font-weight: 640; font-size: 26px; letter-spacing: -0.01em; color: var(--sl-ink); }
+/* Community cards use the shared bc-open rounded-square affordance (base styles at
+   .bc-open above); these rules give it the same quarter-turn-left hover the bento
+   cards use, scoped to .xp-card so the pattern matches exactly. */
 body.stagelight .xp-card:hover { transform: translateY(-4px); box-shadow: 0 26px 60px -22px rgba(0,0,0,0.85); border-color: rgba(255,255,255,0.24); }
 body.stagelight .xp-card:hover .xp-bg img { transform: scale(1.05); }
-body.stagelight .xp-card:hover .xp-arrow { transform: translateX(3px); background: rgba(38,38,42,0.75); }
+body.stagelight .xp-card:hover .bc-open { border-color: var(--sl-ink); color: var(--sl-ink); background: rgba(255,255,255,0.06); }
+body.stagelight .xp-card:hover .bc-open svg { transform: rotate(-90deg); }
 @media (prefers-reduced-motion: reduce) {
-  body.stagelight .xp-card, body.stagelight .xp-bg img, body.stagelight .xp-arrow { transition: none; }
+  body.stagelight .xp-card, body.stagelight .xp-bg img { transition: none; }
   body.stagelight .xp-card:hover { transform: none; }
   body.stagelight .xp-card:hover .xp-bg img { transform: none; }
 }
@@ -14529,20 +14551,51 @@ body.stagelight .setlist-section .setlist-text, body.stagelight .setlist-row-bod
 /* ---- FOOTER ---- */
 /* Garrie Vereen's line, stretched across the page and sitting right on the
    footer, Webflow-style: no borders, slight baseline crop, italic. */
+/* ATHENS STRIP — the oversized "ALL THE WAY FROM ATHENS GA" line seated on the
+   footer's top edge (zero gap; the span crop tucks the baseline onto the footer).
+   Sits close under the community cards (48px), no dead band above or below. */
 body.stagelight .athens-strip {
-  width: 100vw; margin-left: calc(50% - 50vw); margin-top: 96px;
+  width: 100vw; margin-left: calc(50% - 50vw); margin-top: 48px;
   overflow: hidden; line-height: 0.78; pointer-events: none; user-select: none;
 }
+/* Reveal-once: JS adds .will-reveal (arming the hidden start state) then .is-revealed
+   when the strip enters the viewport (IO threshold ~0.3). Default state is visible, so
+   a no-JS visitor still sees the strip; reduced-motion visitors are never armed. */
+body.stagelight .athens-strip.will-reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1);
+}
+body.stagelight .athens-strip.will-reveal.is-revealed { opacity: 1; transform: none; }
+/* Quiet ink base fill everywhere, PLUS a slow-drifting brand-color tie-dye clipped to
+   the LEFT ~35% of the line. Two background layers under background-clip:text: the
+   horizontal tie-dye gradient (top layer, packed into the left and fading to transparent
+   by ~42%) rides over a solid quiet-ink layer, so the right of the line stays quiet ink
+   and only the left shimmers. Only the tie-dye layer's position animates (the ink layer
+   is pinned at 0 0). Palette matches the Shelf Watch hot-number tie-dye. */
 body.stagelight .athens-strip span {
   display: block; text-align: center; white-space: nowrap;
   font-family: var(--sl-display); font-style: italic; font-weight: 700;
   font-size: clamp(30px, 7.4vw, 118px); letter-spacing: -0.01em;
   margin-bottom: -0.16em;
-  background: linear-gradient(180deg, rgba(242,242,240,0.22), rgba(242,242,240,0.05));
+  background:
+    linear-gradient(100deg, #ef8b88 0%, #d4514f 11%, #ff9d6b 23%, #c65db8 33%, rgba(198,93,184,0) 42%),
+    linear-gradient(rgba(242,242,240,0.14), rgba(242,242,240,0.14));
+  background-size: 240% 100%, 100% 100%;
+  background-position: 8% 50%, 0 0;
+  background-repeat: no-repeat;
   -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: athens-tiedye 10s ease-in-out infinite alternate;
+}
+@keyframes athens-tiedye {
+  from { background-position: 6% 50%, 0 0; }
+  to   { background-position: 34% 50%, 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .athens-strip { opacity: 1; transform: none; transition: none; }
+  body.stagelight .athens-strip span { animation: none; }
 }
 body.stagelight .site-foot {
-  margin-top: 120px; position: relative;
+  margin-top: 0; position: relative;
   background: linear-gradient(180deg, rgba(15,15,17,0.72), rgba(9,9,11,0.92));
   -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
   border-top: 1px solid var(--sl-line); color: var(--sl-muted);
@@ -14846,7 +14899,7 @@ body.stagelight .af-clear:hover { color: var(--sl-ink); }
 /* ---- DORK STATS: intro row + single summary rail ---- */
 /* Compact intro, outside any card: title left, three quiet lines right on desktop,
    stacked below the title on mobile. Existing type + spacing only. */
-body.stagelight .ds-lead { margin: 0 0 40px; max-width: 50%; }
+body.stagelight .ds-lead { margin: 0 0 40px; max-width: 65%; }
 @media (max-width: 900px) { body.stagelight .ds-lead { max-width: 100%; margin-bottom: 28px; } }
 body.stagelight .af-row { display: flex; align-items: center; gap: 16px; }
 body.stagelight .af-row .show-filter-status { margin-left: auto; }
@@ -15098,6 +15151,11 @@ body.stagelight .bi-swipe b { font-family: "PanicHand", "MilkRun", var(--sl-disp
   body.stagelight .bi-swipe b { font-size: 17px; }
 }
 body.stagelight main > .board-intro + section { margin-top: 68px; }
+/* Tighten the bento-region -> Dork/Tour stats seam by 28px (96 -> 68): the bento
+   region already carries 136px of visual air below its cards (64px padding + the
+   -72px grid pull that lets the scrawl tails trail), so the full 96px section gap
+   on top read as a dead band. Padding-bottom left intact so the scrawl tails clear. */
+body.stagelight main > section.tour-stats { margin-top: 68px; }
 
 /* ---- SHEET KEY (the four explainer columns, held close under the song sheet
    so "the band uses this color-coded song list" reads as its caption) ---- */
@@ -15187,9 +15245,9 @@ body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; bo
 /* ---- SHELF WATCH HEAT CARDS ---- */
 /* ---- FROM THE STAGE (one cinematic featured video, our photo as poster) ---- */
 body.stagelight .from-the-stage { padding: 0; }
-body.stagelight .fs-head { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 38px; }
+body.stagelight .fs-head { display: flex; align-items: center; gap: 24px; margin-bottom: 38px; }
 body.stagelight .fs-lead { margin: 0; max-width: 34ch; }
-body.stagelight .fs-yt { margin-left: auto; flex: none; margin-top: 6px; }
+body.stagelight .fs-yt { margin-left: auto; flex: none; }
 @media (max-width: 760px) { body.stagelight .fs-head { flex-direction: column; gap: 18px; margin-bottom: 26px; } body.stagelight .fs-yt { margin-left: 0; } }
 body.stagelight .fs-player { position: relative; aspect-ratio: 16 / 9; border: 1px solid var(--sl-line); border-radius: var(--sl-r); overflow: hidden; background: #0d0d10; }
 body.stagelight .fs-poster { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; position: relative; text-align: left; }
@@ -15838,6 +15896,20 @@ body.stagelight .song-index-head {
    instead of leaving a dead gap where the menu was. */
 body.stagelight.nav-hidden .song-search { top: 12px; }
 body.stagelight.nav-hidden .song-index-head { top: 62px; }
+/* --- Sticky-stack repair (Song Index + Lyrics & Chords hub) ---
+   The blanket body.stagelight main > star:not(.hero-echo):not(.bento-panel):not(.home-nav)
+   rule (position:relative; specificity ~0,4,2) out-specifies the sticky defs above
+   (~0,2,1) and flattens the search bar, toolbar and column head to position:relative.
+   Their 78/128px top offsets then apply as RELATIVE displacement, pushing each element
+   out of normal flow — the search bar overlaps the toolbar, the column head ghosts on top
+   of a song row ~200px down, and a dead gap opens under the title. Re-assert sticky with a
+   matching-specificity explicit selector (both pages carry main.archive-main.songs-main;
+   ties the blanket, wins by source order). Deliberately NOT fixed by adding a :not() to the
+   blanket — that raises the blanket's own specificity and risks tipping homepage
+   positioned-child races (documented hero trap). */
+body.stagelight main.archive-main.songs-main > .song-search,
+body.stagelight main.archive-main.songs-main > .song-index-head,
+body.stagelight main.archive-main.songs-main > .lyric-head { position: sticky; }
 body.stagelight .sih-col { font-family: var(--sl-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
 /* Sortable column headers — buttons styled to read as the same mono/uppercase label
    idiom as the static .sih-col, with an arrow glyph that lights up on the active sort.

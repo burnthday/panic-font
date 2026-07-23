@@ -520,6 +520,17 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
 
   // (4) Bottom cross-promo band replaced the stray Get Tickets pill.
   record("Bottom cross-promo band is present", homeHtml.includes('class="cross-promo"') && (homeHtml.match(/class="xp-card/g) || []).length === 2);
+  // Owner standing rule: community cards carry ONE display line only (no eyebrow /
+  // subheadline stack) and use the shared bc-open rounded-square affordance, not a
+  // circular arrow. Guard the rework so a future pass can't reintroduce the stack.
+  record("Community cards carry a single display line (no eyebrow/subheadline stack)",
+    (homeHtml.match(/class="xp-title"/g) || []).length === 2
+    && !homeHtml.includes('class="xp-eyebrow"') && !homeHtml.includes('class="xp-desc"'),
+    "xp-eyebrow / xp-desc must not return; two xp-title lines only");
+  record("Community cards use the bc-open rounded-square affordance (not xp-arrow)",
+    (homeHtml.match(/class="xp-card[^"]*"[^>]*>[\s\S]*?class="bc-open"/g) || []).length === 2
+    && !homeHtml.includes('class="xp-arrow"'),
+    "each xp-card carries a bc-open; the circular xp-arrow is gone");
   record("Stray standalone Get Tickets pill is gone from the homepage body", !homeHtml.includes('class="ticket-link"'));
 
   // (5) One dropdown look sitewide — no native <select> on stagelight pages.
@@ -1000,6 +1011,27 @@ async function checkSongPages(siteData) {
     /body\.stagelight \.song-row-wrap \{[^}]*padding: 0 10px/.test(songIndexCss)
     && /body\.stagelight \.song-row \{[^}]*padding: 14px 0/.test(songIndexCss),
     "song-row-wrap and song-index-head share horizontal padding; row content sits flush");
+  // The blanket `main > *:not(...)` rule (position:relative, higher specificity) out-specifies
+  // the plain .song-search / .song-index-head sticky rules and flattens them to relative — the
+  // top offsets then displace them and they overlap/ghost. A matching-specificity explicit
+  // selector re-asserts sticky WITHOUT touching the blanket. Guard it so the fix can't vanish.
+  record("Song Index sticky stack is re-asserted above the blanket position:relative rule",
+    /body\.stagelight main\.archive-main\.songs-main > \.song-search[\s\S]{0,220}position: sticky/.test(songIndexCss)
+    && /body\.stagelight main\.archive-main\.songs-main > \.song-index-head/.test(songIndexCss)
+    && /body\.stagelight main\.archive-main\.songs-main > \.lyric-head/.test(songIndexCss),
+    "explicit main.archive-main.songs-main sticky repair present for search + column heads");
+  // Athens strip rework: solid quiet-ink fill + a brand-color tie-dye clipped to the LEFT
+  // of the line (drifting), seated on the footer with no gap, and a scroll-reveal. Guard the
+  // fill (no washed-out grey gradient), the drift keyframes, the zero footer gap, and reveal.
+  record("Athens strip uses the quiet-ink + left-clipped tie-dye fill (gradient text fill killed)",
+    /@keyframes athens-tiedye/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip span \{[\s\S]{0,420}rgba\(242,242,240,0\.14\)[\s\S]{0,200}background-clip: text/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip span \{[\s\S]{0,420}#ef8b88/.test(songIndexCss),
+    "athens-strip span carries the tie-dye + quiet-ink layered fill and drift keyframes");
+  record("Athens strip is seated on the footer (no gap) and scroll-reveals",
+    /body\.stagelight \.athens-strip\.will-reveal\.is-revealed \{[^}]*opacity: 1/.test(songIndexCss)
+    && /body\.stagelight \.site-foot \{[^}]*margin-top: 0/.test(songIndexCss),
+    "will-reveal seated state present and site-foot margin-top zeroed");
   record("Song Index header + rows share one grid template",
     /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
     && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)
@@ -2341,7 +2373,7 @@ async function checkHeroTransitionEngine(homeHtml) {
   record("Hero stage is locked: every slot pinned to its tallest view, no swap height math",
     homeHtml.includes("const lockStage = () =>")
     && homeHtml.includes('slot.style.minHeight = max + "px"')
-    && homeHtml.includes("requestAnimationFrame(lockStage)")
+    && homeHtml.includes("lockStage();") && homeHtml.includes("document.fonts.ready.then(() => lockStage())")
     && !homeHtml.includes("fromHeroH") && !homeHtml.includes("p.slot.style.height"),
     "lockStage measurement + pinned min-heights present");
   record("Hero gates the swap on decoded target imagery, capped so slow networks never block",
