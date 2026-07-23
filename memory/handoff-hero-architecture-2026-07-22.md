@@ -81,3 +81,20 @@ Alex is not a coder: show rendered results (`show <file>` → his Chrome) and pl
 ## Session close ritual
 
 Commit + push branch (auto-deploys preview), reconcile OPEN-LOOPS.md checkboxes, add a dated line here if the architecture moves again.
+
+---
+
+## CHECKPOINT 2026-07-22 (late) — consolidated design pass shipped
+
+Everything below is BUILT, verified against painted output, and on the preview branch (QA 587/587 + 50/50 at last push, commit a2f744c):
+
+- **Hero:** photo −4% with 110px left-edge dissolve; Photos chip → quiet "Show photos →" tertiary; pager up 10px; glass bars faint-stage-color only; gutter INTENTIONALLY kept 64px (brief's 56 assumed wrong baseline; Alex approved).
+- **Rail:** two immediately-preceding shows (run-mates INCLUDED — supersedes the earlier no-run-mates rule, Alex approved) as flat divider rows w/ 220ms direction-aware motion; Sacramento the lone pinned bento.
+- **Song sheet:** strikes = stacked physical strokes, black (most recent) on top, 12px base, slight tilt/jitter, staggered draw.
+- **Four Garrie ink arrows** (traced from Alex's scans: wave→open V + pressure stroke, unique tilts, left→right gesture stagger) leading the four explanation columns; sheet→explanations gap ~58px.
+- **Bento scrawl:** three focus zones; columns are BOTTOM-ANCHORED — position with margin-BOTTOM, not margin-top (a margin-top "fix" was a silent no-op); tuned to 2 titles above cards, 1 great below.
+- **Dork stats** (renamed from Tour stats, anchors unchanged): always open, intro row, single stats rail, Tonight's odds closed w/ live top-3 teaser, Find-a-song, applied-filter chips + Clear all, bounded 68vh expand.
+- **Nick stats:** predictive two-column feature; Heat model (two-stage eligibility+ranking) validated by walk-forward backtest (Top-5 95%, MRR .724, beats both baselines); tool: scripts/nick-model-backtest.mjs [DEV-ONLY].
+- **Shelf Watch:** editorial photo rail, 6 Thomas G. Smith archival photos w/ facial-focus crops [photo display permission = Alex's pre-production call].
+
+STILL OPEN: "From the stage" video section (awaiting Alex's sign-off on Gradle/Smokestack/Rig-Rundown trio, IDs in chat + build sheet); Alex's round-7 review pass (build sheet ~/Desktop/qa-pass-checklist.html has the tracker); Nick top-10 fan-eye review; mobile sweep; Sacramento setlist still songs:[] in cache; production deploy HELD.
