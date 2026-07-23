@@ -98,3 +98,19 @@ Everything below is BUILT, verified against painted output, and on the preview b
 - **Shelf Watch:** editorial photo rail, 6 Thomas G. Smith archival photos w/ facial-focus crops [photo display permission = Alex's pre-production call].
 
 STILL OPEN: "From the stage" video section (awaiting Alex's sign-off on Gradle/Smokestack/Rig-Rundown trio, IDs in chat + build sheet); Alex's round-7 review pass (build sheet ~/Desktop/qa-pass-checklist.html has the tracker); Nick top-10 fan-eye review; mobile sweep; Sacramento setlist still songs:[] in cache; production deploy HELD.
+
+## CHECKPOINT 2026-07-23 (early AM) — live queue, exact state
+
+IN FLIGHT: Opus agent restructuring the hero in scripts/build.mjs (hero-left/right column wrappers killing the -61px viewport-fragile pull, photo back in bento frame, breadcrumb hidden until body.nav-hidden then slides into header strip, 88px gutter, rail refill idempotency fix). On completion: verify at 1280x900 AND 1280x700, push.
+
+THEN INLINE (quick, in order):
+1. Song Index /songs/ rows render 5 cells in a 6-col grid — Links cell missing from the row template ("Tab" link folded into sr-plays), all columns misaligned. Find the song-index row renderer, restore the 6th cell. Page stays up.
+2. Tour stats headline .ds-lead: max-width 50% -> 65% (should wrap 3 lines), keep/ensure padding below (40px), desktop only.
+3. Shrink the gap between .bento-region and the Tour stats headline slightly.
+
+THEN POLISH AGENT (Opus, full spec agreed with Alex):
+- Athens strip: attach baseline to footer top edge (zero gap, slight crop), KILL the gradient fill -> solid quiet ink + subtle animated brand-color tie-dye clipped to LEFT side of text only (Webflow steal, shelf-number restraint), scroll-reveal once, reduced-motion seated.
+- Community cards (Song Origins / Lyrics & Chords): taller, DELETE eyebrow+headline+subheadline (one line each only), replace circular arrow with our bc-open rounded-square quarter-turn arrow. STANDING RULE from Alex: he hates eyebrow+headline+subheadline stacks — never build them.
+- Full-page rhythm audit: one spacing scale between sections, unified two-tone headlines, left-rail alignment, consistent card padding, measured before/after values. Portfolio-grade bar.
+
+STANDING: Alex mandates Opus agents for all sizable builds (token conservation). Production HELD (mobile sweep + photo-permission gates). Build sheet = ~/Desktop/qa-pass-checklist.html. Preview = stagelight-preview.burnthday-d3j.pages.dev. QA was 605/605+50/50 pre-agent.
