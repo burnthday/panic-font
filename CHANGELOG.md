@@ -3,6 +3,15 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-23 (rig videos live)
+
+### Added
+- **Rig popup video slots filled.** Both official Widespread Panic walkthroughs
+  now embed in the Nick's Rig popup via the yt-lite facade: "What's the deal
+  with Nick's guitar?" (Guitar Review — Zoel on "Amber", h9Weuskqsvw) and "Nick
+  Johnson's Rig Rundown with Guitar Tech Joel Byron" (5x4gVol4iIM). Correction
+  to the prior entry: the guitar-review tech is Zoel, not Zel.
+
 ## 2026-07-23 (nick's rig rundown)
 
 ### Added

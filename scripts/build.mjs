@@ -7652,6 +7652,7 @@ function renderHtml(data) {
 
     ${renderSiteFooter(data, { stagelight: true })}
 
+    ${LITE_EMBED_SCRIPT}
     <script>
       ${renderFitScriptBody()}
       ${renderNickRankingScript()}
@@ -9683,8 +9684,8 @@ function renderNickJohnsonFeature(data) {
 // once a YouTube id is filled in (the tech walkthroughs live on band socials;
 // ids pending), so nothing half-built ever ships.
 const NICK_RIG_VIDEOS = [
-  { title: "Guitar Review", sub: "Zel on \u201cAmber\u201d", yt: "" },
-  { title: "Rig Rundown", sub: "Joel at Red Rocks", yt: "" },
+  { title: "Guitar Review", sub: "Zoel on \u201cAmber\u201d", yt: "h9Weuskqsvw" },
+  { title: "Rig Rundown", sub: "Joel Byron at Red Rocks", yt: "5x4gVol4iIM" },
 ];
 
 const NICK_RIG_SPOTS = [
