@@ -166,14 +166,12 @@ function checkTourStats(html, siteData) {
   const average = shows ? (plays / shows).toFixed(1) : "0";
 
   // The outer accordion is gone: the section is always open, headed by a compact
-  // "Dork stats" intro row (title + three quiet lines), no disclosure/summary/chevron.
-  assertNotIncludes(feature, "stats-disclosure", "Dork stats has no outer accordion wrapper");
-  assertIncludes(feature, '<h2 class="ds-title">Dork stats</h2>', "Homepage has a separate Dork stats section");
-  for (const line of [
-    "Every song played this tour, how often it shows up, and how long it has been gone.",
-    "Highlight any show to mark its songs in the table.",
-    "Filter, sort, and open the full list when you want the whole rabbit hole."
-  ]) assertIncludes(feature, line, "Dork stats intro carries its three lede lines");
+  // Two-tone headline (renamed back to Tour stats, Alex 7/23), lede lines gone,
+  // no disclosure/summary/chevron.
+  assertNotIncludes(feature, "stats-disclosure", "Tour stats has no outer accordion wrapper");
+  assertIncludes(feature, '<b>Tour stats follows the songs on tour</b>', "Tour stats leads with the two-tone headline");
+  record("Tour stats intro has no lede filler or Dork branding",
+    !feature.includes("ds-title") && !feature.includes("rabbit hole") && !feature.includes("Dork stats"));
 
   // Summary stats: ONE horizontal rail (single surface, four equal columns), not
   // the old four-tile bento and not the Nick section's .nick-stat tiles.
@@ -461,8 +459,10 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
   const multiColorStrikes = strikeClusters
     .map((c) => [...c.matchAll(/--mc:(#[0-9a-fA-F]{3,6})/g)].map((x) => x[1].toLowerCase()))
     .filter((cols) => cols.length >= 2);
-  record("Overlapping strikes stack oldest->newest as separate elements with black (most recent) last/on top",
-    multiColorStrikes.length > 0 && multiColorStrikes.every((cols) => cols[cols.length - 1] === "#131313"));
+  // Zero multi-colour clusters is legitimate (a window where no song repeated
+  // across the last four shows — e.g. 7/16-7/21/26); when they exist, black last.
+  record("Overlapping strikes (when present) stack oldest->newest with black (most recent) on top; strikes render at all",
+    strikeClusters.length > 0 && multiColorStrikes.every((cols) => cols[cols.length - 1] === "#131313"));
 
   // (1c) Hand-ink arrow flourish between the sheet and the explanations: one SVG,
   // two draw-on paths, IntersectionObserver at threshold 0.35, reduced-motion safe.
@@ -732,7 +732,7 @@ async function checkLatestSetlist(html, siteData) {
   assertIncludes(html, '<nav class="home-nav" aria-label="Jump to a section">', "Homepage has a section nav");
   record("Section nav sits above the hero", indexOf(html, 'class="home-nav"') >= 0 && indexOf(html, 'class="home-nav"') < indexOf(html, 'id="latest-setlist"'));
   assertIncludes(html, '<a href="/#song-list" data-nav-section="song-list">Song possibilities</a>', "Section nav links to Song possibilities");
-  assertIncludes(html, '<a href="/#tour-stats" data-nav-section="tour-stats">Dork stats</a>', "Section nav links to Dork stats");
+  assertIncludes(html, '<a href="/#tour-stats" data-nav-section="tour-stats">Tour stats</a>', "Section nav links to Tour stats");
   assertIncludes(html, `<a href="/#setlists" data-nav-section="setlists">${siteData.site.year} setlists</a>`, "Section nav links to the year setlists");
 
   // ---- Single hero: the latest posted show, no variants, no swap bento ----
@@ -1140,7 +1140,7 @@ async function checkSongLearnBlock(siteData) {
 }
 
 function checkNavigation(html, siteData) {
-  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Dork Stats", `${siteData.site.year} Setlists`, "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
+  const expectedMega = ["Home", "Song Possibilities", "Song Index", "Tour Stats", `${siteData.site.year} Setlists`, "Albums", "Lyrics & Chords", "Song Origins", "Rumors", "Tour In Review", "The Shelf", "About"];
   // Footer is now grouped into three labeled columns; every legacy destination
   // remains present (Privacy moved to the bottom bar, asserted separately).
   const expectedColumnLabels = ["Live", "Songbook", "The Sheet"];

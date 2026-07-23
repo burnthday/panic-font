@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-19T00:00:00.000Z",
+  "importedAt": "2026-07-23T04:09:35.991Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -231,8 +231,8 @@
         }
       ],
       "notes": [
-        "And It Stoned Me and Pickin' Up The Pieces with Sierra Hull – Mandolin & Vocals",
-        "Second Skin, Red Hot Mama, and Spoonful w/Adam MacDougall – Keys"
+        "And It Stoned Me and Pickin' Up The Pieces with Sierra Hull \u2013 Mandolin & Vocals",
+        "Second Skin, Red Hot Mama, and Spoonful w/Adam MacDougall \u2013 Keys"
       ],
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/01/Widespread-Panic-20260123-Timmermans-4393.jpg",
       "imageWidth": 0,
@@ -416,7 +416,7 @@
       "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/03/Widespread-Panic-20260320-Timmermans-1575.jpg",
       "imageWidth": 0,
       "imageHeight": 0,
-      "transitionSourceUrl": "https://archive.org/details/wsp2026-03-20.ak40.flac24",
+      "transitionSourceUrl": "https://archive.org/details/WSP2026-03-20.SP",
       "transitionSourceTitle": "Widespread Panic Live at St. Augustine Amphitheatre on 2026-03-20"
     },
     {
@@ -1613,7 +1613,7 @@
         },
         {
           "label": "2",
-          "songs": "Holden Oversoul, Proving Ground, The Last Straw, Dyin' Man, Aunt Avis, Impossible, Drums, Honky Red, Ain't Life Grand, Love Tractor",
+          "songs": "Holden Oversoul, Proving Ground, The Last Straw, Dyin' Man, Aunt Avis, Impossible > Drums > Honky Red, Ain't Life Grand, Love Tractor",
           "songTitles": [
             "Holden Oversoul",
             "Proving Ground",
@@ -1640,10 +1640,70 @@
         "Entire show with Nick Johnson on guitar"
       ],
       "image": "/assets/setlists/2026/2026-07-18.jpg",
-      "imageWidth": 2646,
-      "imageHeight": 1710,
-      "transitionSourceUrl": "https://www.setlist.fm/setlist/widespread-panic/2026/fox-theater-oakland-ca-5349d779.html",
-      "transitionSourceTitle": "Widespread Panic Setlist at Fox Theater, Oakland, CA on July 18, 2026"
+      "imageWidth": 0,
+      "imageHeight": 0,
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-18.4ch",
+      "transitionSourceTitle": "Widespread Panic - Live at Fox Theater - Oakland, CA on 2026-07-18 (4ch)"
+    },
+    {
+      "date": "07/21/2026",
+      "isoDate": "2026-07-21",
+      "venue": "Channel 24",
+      "city": "Sacramento",
+      "state": "CA",
+      "location": "Sacramento, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-21-sacramento-ca-channel-24/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-channel-24-sacramento-ca-07-21-2026-mp3-flac-or-online-music-streaming/47023.html?cgid=ARTIST-58",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "Let's Get The Show On The Road > Wondering, Bear's Gone Fishin' > Blackout Blues, Just Kissed My Baby > Radio Child > Machine > Barstools and Dreamers > Flat Foot Flewzy",
+          "songTitles": [
+            "Let's Get The Show On The Road",
+            "Wondering",
+            "Bear's Gone Fishin'",
+            "Blackout Blues",
+            "Just Kissed My Baby",
+            "Radio Child",
+            "Machine",
+            "Barstools and Dreamers",
+            "Flat Foot Flewzy"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Contentment Blues > Conrad The Caterpillar, Trashy > Gimme > Diner > Fishing > Pilgrims, Up All Night > Red Hot Mama",
+          "songTitles": [
+            "Contentment Blues",
+            "Conrad The Caterpillar",
+            "Trashy",
+            "Gimme",
+            "Diner",
+            "Fishing",
+            "Pilgrims",
+            "Up All Night",
+            "Red Hot Mama"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Nobody's Loss > Ophelia",
+          "songTitles": [
+            "Nobody's Loss",
+            "Ophelia"
+          ]
+        }
+      ],
+      "notes": [
+        "Entire show with Nick Johnson on guitar"
+      ],
+      "image": "/assets/setlists/2026/2026-07-21.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0,
+      "bgImage": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260721-Sacramento-California-Andy-Tennille-4728.jpg",
+      "photoCredit": "Andy Tennille",
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-21",
+      "transitionSourceTitle": "Widespread Panic Live at Channel 24 on 2026-07-21"
     }
   ],
   "tourDates": [
@@ -2029,7 +2089,7 @@
   "transitionSource": {
     "label": "Internet Archive Live Music Archive",
     "sourceUrl": "https://archive.org/details/WidespreadPanic",
-    "importedAt": "2026-07-18T15:11:48.606Z",
+    "importedAt": "2026-07-23T04:11:54.686Z",
     "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
   }
 }

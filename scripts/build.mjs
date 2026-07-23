@@ -61,7 +61,7 @@ const navSubLinks = {
   "Home": [
     ["Song Possibilities", "/#song-list"],
     ["Song Index", "/songs/"],
-    ["Dork Stats", "/#tour-stats"],
+    ["Tour Stats", "/#tour-stats"],
     ["{YEAR} Setlists", "/#setlists"]
   ],
   "Albums": [
@@ -1664,7 +1664,7 @@ function renderLlmsTxt(data) {
 - [Song Possibilities (the working list)](https://burnthday.com/)
 - [Song Index — every song with live history](https://burnthday.com/songs/)
 - [Setlists](https://burnthday.com/#setlists)
-- [Dork Stats](https://burnthday.com/#tour-stats)
+- [Tour Stats](https://burnthday.com/#tour-stats)
 - [Albums](https://burnthday.com/albums/)
 - [Song Origins — researched song stories](https://burnthday.com/song-origins/)
 - [Lyrics & Chords](https://burnthday.com/lyrics-chords/)
@@ -8596,14 +8596,7 @@ function renderTourStats(data) {
   const gapTip = thTip("Shows since it was last played against its usual gap. Context, not a prediction.");
 
   return `<section class="tour-stats" id="tour-stats">
-  <div class="ds-intro">
-    <h2 class="ds-title">Dork stats</h2>
-    <div class="ds-lede">
-      <p>Every song played this tour, how often it shows up, and how long it has been gone.</p>
-      <p>Highlight any show to mark its songs in the table.</p>
-      <p>Filter, sort, and open the full list when you want the whole rabbit hole.</p>
-    </div>
-  </div>
+  <h2 class="sw-lead ds-lead"><b>Tour stats follows the songs on tour</b>, the ones we haven&#39;t heard in a while, and the ones that may tell us something new when they return.</h2>
   <div class="stats-rail" aria-label="Current tour summary">
     <div class="stat-col"><strong>${formatNumber(shows)}</strong><span>shows played</span></div>
     <div class="stat-col"><strong>${formatNumber(unique)}</strong><span>unique songs</span></div>
@@ -8611,7 +8604,7 @@ function renderTourStats(data) {
     <div class="stat-col"><strong>${formatNumber(average)}</strong><span>songs per show</span></div>
   </div>
   ${renderTonightOdds(data.tonightOdds)}
-  <div class="data-toolbar" aria-label="Dork stats filters">
+  <div class="data-toolbar" aria-label="Tour stats filters">
     <details class="show-filter" data-show-filter-dd data-cs>
       <summary aria-label="Highlight a show"><span>Highlight a show</span><span class="sf-dot" data-show-filter-dot hidden></span><b class="sf-value" data-show-filter-value>All ${formatNumber(shows)} shows</b><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
       <div class="sf-pop">
@@ -8634,9 +8627,8 @@ function renderTourStats(data) {
       <input type="search" class="find-song-input" data-song-search placeholder="Find a song" aria-label="Find a song" autocomplete="off">
     </div>
     <div class="mobile-sort">${renderCustomSelect({ hook: "data-mobile-sort", label: "Sort by", active: "count", options: [{ value: "count", label: "Most played" }, { value: "rarity", label: "Rarest" }, { value: "heat", label: "Longest wait" }, { value: "title", label: "Song name" }] })}</div>
-    <span class="show-filter-status" aria-live="polite"></span>
   </div>
-  <div class="applied-filters" data-applied-filters hidden></div>
+  <div class="af-row"><div class="applied-filters" data-applied-filters hidden></div><span class="show-filter-status" aria-live="polite"></span></div>
   <div class="tour-table-wrap is-capped" data-table-scroll>
     <table class="tour-table">
       <thead><tr>
@@ -9424,7 +9416,7 @@ function renderSong(row, options = {}) {
 function renderHomeSectionNav(data) {
   const links = [
     { id: "song-list", label: "Song possibilities" },
-    { id: "tour-stats", label: "Dork stats" },
+    { id: "tour-stats", label: "Tour stats" },
     { id: "setlists", label: `${escapeHtml(String(data.site.year))} setlists` }
   ];
   return `<nav class="home-nav" aria-label="Jump to a section">
@@ -14814,7 +14806,9 @@ body.stagelight .af-clear:hover { color: var(--sl-ink); }
 /* ---- DORK STATS: intro row + single summary rail ---- */
 /* Compact intro, outside any card: title left, three quiet lines right on desktop,
    stacked below the title on mobile. Existing type + spacing only. */
-body.stagelight .ds-intro { display: flex; align-items: baseline; justify-content: space-between; gap: 20px 40px; flex-wrap: wrap; margin-bottom: 22px; }
+body.stagelight .ds-lead { margin: 0 0 30px; max-width: 44ch; }
+body.stagelight .af-row { display: flex; align-items: center; gap: 16px; }
+body.stagelight .af-row .show-filter-status { margin-left: auto; }
 body.stagelight .ds-title { font-family: var(--sl-display); font-size: 34px; font-weight: 640; letter-spacing: -0.01em; line-height: 1.12; color: var(--sl-ink); }
 body.stagelight .ds-lede { display: flex; flex-direction: column; gap: 3px; text-align: right; max-width: 40ch; }
 body.stagelight .ds-lede p { font-size: 13.5px; line-height: 1.5; color: var(--sl-muted); }

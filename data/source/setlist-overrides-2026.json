@@ -1,17 +1,17 @@
 {
-  "2026-07-17": {
-    "image": "/assets/setlists/2026/2026-07-17.jpg",
-    "notes": [
-      "Entire show with Nick Johnson on guitar"
-    ]
-  },
-  "2026-07-21": {
-    "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260721-Sacramento-California-Andy-Tennille-4276.jpg",
-    "bgImage": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260721-Sacramento-California-Andy-Tennille-4728.jpg",
-    "photoCredit": "Andy Tennille"
-  },
-  "2026-07-23": {
-    "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260721-Sacramento-California-Andy-Tennille-3703.jpg",
-    "photoCredit": "Andy Tennille"
-  }
+ "2026-07-17": {
+  "image": "/assets/setlists/2026/2026-07-17.jpg",
+  "notes": [
+   "Entire show with Nick Johnson on guitar"
+  ]
+ },
+ "2026-07-21": {
+  "image": "/assets/setlists/2026/2026-07-21.jpg",
+  "bgImage": "/assets/setlists/2026/2026-07-21-bg.jpg",
+  "photoCredit": "Andy Tennille"
+ },
+ "2026-07-23": {
+  "image": "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260721-Sacramento-California-Andy-Tennille-3703.jpg",
+  "photoCredit": "Andy Tennille"
+ }
 }
