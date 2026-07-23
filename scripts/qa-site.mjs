@@ -571,6 +571,17 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
   }
   record("Lyrics hub renders Tab links for sibling guitar-tab pages", tabHrefs.length > 0);
   record("Every Tab link resolves to a real dist page", missingTab.length === 0, missingTab.join("\n"));
+
+  // (10) Every internal song link on the homepage resolves to a real dist page.
+  const home = await readText("dist/index.html").catch(() => "");
+  const songHrefs = [...new Set([...home.matchAll(/href="(\/songs?\/[a-z0-9-]+\/)"/g)].map((m) => m[1]))];
+  const missingSong = [];
+  for (const href of songHrefs) {
+    const ok = await stat(distDir + href + "index.html").then(() => true).catch(() => false);
+    if (!ok) missingSong.push(href);
+  }
+  record("Homepage song links exist", songHrefs.length > 0);
+  record("Every homepage song link resolves to a real dist page", missingSong.length === 0, missingSong.join("\n"));
 }
 
 function checkTourDates(html, siteData) {

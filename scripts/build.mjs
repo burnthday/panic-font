@@ -1897,9 +1897,8 @@ function renderAboutPage(entry, data, cache) {
       <article class="archive-page">
         <header class="archive-title">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">About</span></nav>
-          <p class="archive-eyebrow">ABOUT</p>
           <h1>About Burnthday</h1>
-          <p class="songs-deck">Alex Moura, creator of Burnthday — the Widespread Panic tour song list and data spreadsheet.</p>
+          <p class="page-deck">Alex Moura, creator of Burnthday — the Widespread Panic tour song list and data spreadsheet.</p>
         </header>
         <div class="archive-content prose-plate">
           <img class="about-portrait" src="/assets/archive-media/Alex-1_zps04c65eda.png" alt="Alex Moura">
@@ -1997,7 +1996,7 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Lyrics &amp; Chords</span></nav>
         <h1>Lyrics &amp; Chords</h1>
-        <p class="songs-deck">The full songbook: lyrics for every song, and guitar chords wherever they exist. Songs we have not transcribed link out to Everyday Companion, which has nearly all of them.</p>
+        <p class="page-deck">The full songbook: lyrics for every song, and guitar chords wherever they exist. Songs we have not transcribed link out to Everyday Companion, which has nearly all of them.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -2880,7 +2879,7 @@ function renderAlmanacPage(data) {
         <header class="archive-title">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">The Almanac</span></nav>
           <h1>The Almanac</h1>
-          <p class="alm-deck">Some Widespread Panic songs carry the day of the week — or the holiday — right in their lyrics. Fans have long noticed that the band leans into those lines when the calendar lines up. This is the ledger of those traditions: each one a lyric-predicted hunch, then tested against ${totalShows} shows of setlist history to see whether the numbers actually back it up.</p>
+          <p class="page-deck">Some Widespread Panic songs carry the day of the week — or the holiday — right in their lyrics. Fans have long noticed that the band leans into those lines when the calendar lines up. This is the ledger of those traditions: each one a lyric-predicted hunch, then tested against ${totalShows} shows of setlist history to see whether the numbers actually back it up.</p>
         </header>
 
         <section class="alm-section" aria-labelledby="alm-weekly-h">
@@ -3121,6 +3120,57 @@ function renderPageGraphicTitle(title) {
   return `<header class="page-graphic-title">
     <h1>${escapeHtml(title)}</h1>
   </header>`;
+}
+
+// The five poster subpages (song-origins, tour-in-review, faq, rumors, shelf).
+// `poster` is the file slug in /assets/posters/. The knockout PNG (true alpha)
+// is the visible <img>; the original PNG feeds the blurred halo + atmosphere.
+const POSTER_PAGES = {
+  "song-origins": "song-origins",
+  "tour-in-review": "tour-in-review",
+  faq: "about",
+  rumors: "rumors",
+  shelf: "the-shelf"
+};
+
+function renderPosterFigure(slug) {
+  return `<div class="ph-poster" aria-hidden="true">
+        <span class="ph-halo" style="--poster:url('/assets/posters/${slug}.png')"></span>
+        <picture>
+          <source type="image/webp" srcset="/assets/posters/${slug}-knockout-480.webp">
+          <img src="/assets/posters/${slug}-knockout.png" alt="" width="200" loading="lazy" decoding="async">
+        </picture>
+      </div>`;
+}
+
+function renderPosterAtmos(slug) {
+  return `<span class="ph-atmos" style="--poster:url('/assets/posters/${slug}.png')" aria-hidden="true"></span>`;
+}
+
+// Unified subpage header. Every subpage: crumbs -> h1 -> one deck sentence ->
+// hairline (from .archive-title). No eyebrows. `poster` (a file slug) wraps the
+// header in a wider grid row with the tour-poster stamp + atmosphere wash.
+function renderPageHeader({ crumbs, title, deck, poster = null, headerClass = "", deckClass = "page-deck", escapeTitle = true }) {
+  const h1 = `<h1>${escapeTitle ? escapeHtml(title) : title}</h1>`;
+  const deckHtml = deck ? `<p class="${deckClass}">${deck}</p>` : "";
+  if (poster) {
+    return `<div class="ph-wrap has-poster">
+      ${renderPosterAtmos(poster)}
+      <header class="archive-title poster-header${headerClass ? " " + headerClass : ""}">
+        <div class="ph-lede">
+          ${crumbs}
+          ${h1}
+          ${deckHtml}
+        </div>
+        ${renderPosterFigure(poster)}
+      </header>
+    </div>`;
+  }
+  return `<header class="archive-title${headerClass ? " " + headerClass : ""}">
+        ${crumbs}
+        ${h1}
+        ${deckHtml}
+      </header>`;
 }
 
 // Strip the Blogger "Microsoft Word" inline formatting so imported prose
@@ -3371,11 +3421,13 @@ function renderShelfInfoPage(data, options = {}) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main shelf-main">
       <article class="archive-page shelf-info-page">
-        <header class="archive-title">
-          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">The Shelf</span></nav>
-          <h1>The Shelf</h1>
-          <p class="shelf-deck">${escapeHtml(`${formatNumber(shelfCount)} songs have gone ${formatNumber(limit)} shows without a play. They are off the sheet, not forgotten. Some may never return. Others are one night away.`)}</p>
-        </header>
+        ${renderPageHeader({
+          crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">The Shelf</span></nav>`,
+          title: "The Shelf",
+          deck: escapeHtml(`${formatNumber(shelfCount)} songs have gone ${formatNumber(limit)} shows without a play. They are off the sheet, not forgotten. Some may never return. Others are one night away.`),
+          poster: POSTER_PAGES.shelf,
+          escapeTitle: false
+        })}
         ${statTiles.length ? `<div class="song-stat-grid">${statTiles.join("")}</div>` : ""}
         <section class="shelf-list-section">
           <div class="shelf-section-head">
@@ -3440,7 +3492,7 @@ function renderShelfUpdatesPage(data, historicalContent) {
         <header class="archive-title">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/shelf/">The Shelf</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Previous Updates</span></nav>
           <h1>Previous Shelf updates</h1>
-          <p class="shelf-deck">${escapeHtml("Every dated note from the Shelf, newest first, kept exactly as it was written.")}</p>
+          <p class="page-deck">${escapeHtml("Every dated note from the Shelf, newest first, kept exactly as it was written.")}</p>
         </header>
         <section class="legacy-shelf-notes"><div class="archive-content prose-plate">${historicalContent}</div></section>
         <p class="shelf-more shelf-updates-link"><a class="link-quiet" href="/shelf/">Back to the Shelf <span aria-hidden="true">→</span></a></p>
@@ -3504,7 +3556,12 @@ function renderRumorsPage(data, oldRumorsEntry) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
       <article class="archive-page rumors-page">
-        ${renderPageGraphicTitle("Rumors", "crystalball.png")}
+        ${renderPageHeader({
+          crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Rumors</span></nav>`,
+          title: "Rumors",
+          deck: "Tour rumors making the rounds for the coming season. All of it is speculation the band has not confirmed, kept clearly flagged as such.",
+          poster: POSTER_PAGES.rumors
+        })}
         ${renderCurrentRumors(data)}
       </article>
     </main>
@@ -3775,11 +3832,14 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main songs-main">
-      <header class="archive-title tour-hub-title">
-        <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Tour In Review</span></nav>
-        <h1>Tour In Review</h1>
-        <p class="tour-hub-deck">Burnthday's Widespread Panic Tour In Review pages — one page per tour, computed from setlist.fm and unified with Alex's hand-written reviews. <b>${escapeHtml(countLine)}.</b></p>
-      </header>
+      ${renderPageHeader({
+        crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Tour In Review</span></nav>`,
+        title: "Tour In Review",
+        deck: `Burnthday's Widespread Panic Tour In Review pages — one page per tour, computed from setlist.fm and unified with Alex's hand-written reviews. <b>${escapeHtml(countLine)}.</b>`,
+        poster: POSTER_PAGES["tour-in-review"],
+        headerClass: "tour-hub-title",
+        escapeTitle: false
+      })}
       ${featured}
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -4396,13 +4456,12 @@ function renderSongOriginsIndex(origins, options = {}) {
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main origins-main">
       <section class="archive-index origin-index">
-        <header class="origin-hero">
-          <img class="origin-fish" src="/assets/archive-media/SongOriginsOriginalWSPfish.png" alt="">
-          <div>
-            <h1>Widespread Panic Song Origins</h1>
-            <span>The stories behind the songs: how they got written, where they came from, and the people in them. Pulled from band interviews and old fan newsletters, with play history and Burnthday's picks.</span>
-          </div>
-        </header>
+        ${renderPageHeader({
+          crumbs: `<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Song Origins</span></nav>`,
+          title: "Widespread Panic Song Origins",
+          deck: "The stories behind the songs: how they got written, where they came from, and the people in them. Pulled from band interviews and old fan newsletters, with play history and Burnthday's picks.",
+          poster: POSTER_PAGES["song-origins"]
+        })}
         <div class="origin-grid">
           ${mainOrigins.map((origin) => renderSongOriginCard(origin, data, albums)).join("")}
         </div>
@@ -5954,7 +6013,7 @@ function renderSongsIndex(data, slugMap) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Songs</span></nav>
         <h1>Song Index</h1>
-        <p class="songs-deck">The master catalog. Every song the band has played, with its live status, rarity, and where to go deeper.</p>
+        <p class="page-deck">The master catalog. Every song the band has played, with its live status, rarity, and where to go deeper.</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -6827,7 +6886,7 @@ function renderAlbumsIndex(albums, data) {
       <header class="archive-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Albums</span></nav>
         <h1>Albums</h1>
-        <p class="albums-deck">Every studio album, and what the band still plays from each.</p>
+        <p class="page-deck">Every studio album, and what the band still plays from each.</p>
       </header>
       <div class="album-grid">
         ${albums.map((album) => `<a class="album-tile" href="/albums/${escapeAttr(album.slug)}/">
@@ -6991,7 +7050,7 @@ function renderArchiveIndex(entries, data) {
       <header class="archive-title archive-hub-title">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Archive</span></nav>
         <h1>Archive</h1>
-        <p class="archive-hub-deck">${escapeHtml(deck)}</p>
+        <p class="page-deck">${escapeHtml(deck)}</p>
       </header>
       <div class="song-search">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -8690,7 +8749,7 @@ function renderTourStats(data) {
   };
   const songLink = (song) => {
     const slug = data.songSlugMap?.get(song.key) || "";
-    return slug ? `<a class="tt-song-link" href="/songs/${escapeAttr(slug)}/">${escapeHtml(song.title)}</a>` : escapeHtml(song.title);
+    return slug ? `<a class="tt-song-link" href="/song/${escapeAttr(slug)}/">${escapeHtml(song.title)}</a>` : escapeHtml(song.title);
   };
   // Header tooltips replace the long-winded "What these mean" block: hover on
   // desktop, tap/focus on touch (the trigger is focusable).
@@ -9094,7 +9153,7 @@ function renderShelfWatch(data) {
         <span class="sw-count">${formatNumber(song.effectiveSlp)} / ${formatNumber(cutoff)}</span>
       </span>`;
     const attrs = `class="sw-card${hot ? " is-hot" : ""}" data-song-title="${escapeAttr(song.title)}" data-slp="${escapeAttr(String(song.effectiveSlp))}"`;
-    return slug ? `<a ${attrs} href="/songs/${escapeAttr(slug)}/">${inner}</a>` : `<div ${attrs}>${inner}</div>`;
+    return slug ? `<a ${attrs} href="/song/${escapeAttr(slug)}/">${inner}</a>` : `<div ${attrs}>${inner}</div>`;
   }).join("");
 
   return `<section class="shelf-watch" id="shelf-watch">
@@ -15588,6 +15647,81 @@ body.stagelight .archive-title h1 {
 }
 body.stagelight .archive-title { margin-bottom: 34px; border-bottom: 1px solid var(--sl-line); padding-bottom: 24px; }
 body.stagelight .archive-title p { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin-bottom: 12px; }
+
+/* ============================================================
+   UNIFIED SUBPAGE DECK — one system for every subpage's single
+   deck sentence (replaces the old per-page songs-deck / albums-deck
+   / shelf-deck / tour-hub-deck / archive-hub-deck / alm-deck / faq
+   patches, several of which never reset the mono-uppercase default
+   above, leaking tiny all-caps mono into full sentences). The
+   .archive-title p.page-deck arm out-specifies the mono default;
+   the bare .page-deck arm covers the FAQ glass panel.
+   ============================================================ */
+body.stagelight .page-deck,
+body.stagelight .archive-title p.page-deck {
+  font-family: var(--sl-display); font-size: 17px; line-height: 1.55;
+  letter-spacing: -0.01em; text-transform: none; color: var(--sl-muted);
+  max-width: 64ch; margin: 14px 0 0;
+}
+body.stagelight .page-deck b { color: var(--sl-ink); font-weight: 600; }
+
+/* ============================================================
+   POSTER HEADER — five subpages (song-origins, tour-in-review,
+   faq, rumors, shelf) pair the unified header with a small tour
+   poster that sits as a stamp beside the title. The .ph-wrap
+   breaks OUT of the narrow reading column to a wider header row
+   using a viewport-centred width (never touches the blanket
+   main > * rule); page content below stays in its own column.
+   All motion is transform/opacity only and contained.
+   ============================================================ */
+body.stagelight .ph-wrap {
+  position: relative; isolation: isolate; contain: layout style;
+  width: min(980px, calc(100vw - 48px));
+  margin-left: 50%; transform: translateX(-50%);
+}
+body.stagelight .poster-header {
+  display: grid; grid-template-columns: minmax(0, 1fr) 200px;
+  gap: clamp(24px, 4vw, 56px); align-items: center;
+}
+body.stagelight .ph-lede { min-width: 0; }
+body.stagelight .ph-poster { position: relative; justify-self: center; width: 200px; }
+body.stagelight .ph-poster picture,
+body.stagelight .ph-poster img {
+  display: block; width: 100%; height: auto; position: relative; z-index: 1;
+  -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
+  mask-image: linear-gradient(#000 78%, transparent 99%);
+  animation: phFloat 9s ease-in-out infinite alternate;
+}
+body.stagelight .ph-halo {
+  position: absolute; inset: -22%; z-index: 0; border-radius: 50%;
+  background: var(--poster) center/cover; filter: blur(55px) saturate(1.6) brightness(1.25);
+  opacity: 0.24; animation: phHalo 8s ease-in-out infinite alternate; pointer-events: none;
+}
+body.stagelight .ph-atmos {
+  position: absolute; inset: -15%; z-index: -1; pointer-events: none; overflow: hidden;
+}
+body.stagelight .ph-atmos::before {
+  content: ""; position: absolute; inset: 0;
+  background: var(--poster) center/cover; filter: blur(90px) saturate(1.35);
+  opacity: 0.16; animation: phAtmos 18s ease-in-out infinite alternate;
+}
+body.stagelight .ph-atmos::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 60% 50%, transparent 30%, #0b0b0c 100%);
+}
+@keyframes phFloat { from { transform: translateY(0) rotate(-0.4deg); } to { transform: translateY(-4px) rotate(0.4deg); } }
+@keyframes phHalo { from { opacity: 0.16; } to { opacity: 0.30; } }
+@keyframes phAtmos { from { opacity: 0.14; } to { opacity: 0.22; } }
+@media (max-width: 1100px) {
+  body.stagelight .poster-header { display: block; }
+  body.stagelight .ph-poster { display: none; }
+  body.stagelight .ph-atmos::before { opacity: 0.08; animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .ph-poster img,
+  body.stagelight .ph-halo,
+  body.stagelight .ph-atmos::before { animation: none; }
+}
 /* breadcrumbs */
 body.stagelight .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
 body.stagelight .crumbs a { color: var(--sl-faint); }
