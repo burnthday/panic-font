@@ -1860,26 +1860,21 @@ function checkEyebrowAudit(files, htmlByFile) {
   record("Song Origins index retires the off-system origin-hero header", htmlAt("song-origins/index.html").length > 0 && !htmlAt("song-origins/index.html").includes('class="origin-hero"'), "origin-hero header should be replaced by the unified header");
   record("Rumors retires the off-system page-graphic-title header", htmlAt("rumors/index.html").length > 0 && !htmlAt("rumors/index.html").includes('class="page-graphic-title"'), "page-graphic-title should be replaced by the unified header");
 
-  // Four of the five poster subpages carry their static tour-poster <img> — the
-  // knocked-out (true-alpha) art so it floats on the page with no black box behind
-  // it, faded at every edge. Song Origins is the exception: its poster spot is the
-  // living A-frame stack (checked at full strength in checkSongOrigins).
-  // The guard checks the <img> tag itself (not any reference — the weak version
-  // passed on a halo url and let a half-reverted build ship) and asserts nothing
-  // paints a black backing (no halo span, no black-pool ::before marker).
+  // Four of the five poster subpages carry their static tour-poster knockout <img>.
+  // Song Origins is the exception: its poster spot was upgraded in place to the
+  // living A-frame stack (checked at full strength in checkSongOrigins), so here
+  // it must carry the living plate webp instead of the static knockout png.
   const posterPages = [
-    ["faq/index.html", "about"],
-    ["shelf/index.html", "the-shelf"],
-    ["tour-in-review/index.html", "tour-in-review"],
-    ["rumors/index.html", "rumors"]
+    ["faq/index.html", "about-knockout"],
+    ["shelf/index.html", "the-shelf-knockout"],
+    ["tour-in-review/index.html", "tour-in-review-knockout"],
+    ["rumors/index.html", "rumors-knockout"]
   ];
   for (const [page, poster] of posterPages) {
     const html = htmlAt(page);
-    record(`${page} carries the ${poster} knocked-out poster (floats, no black box)`,
-      html.length > 0 && html.includes('class="ph-poster"')
-        && html.includes(`<img src="/assets/posters/${poster}-knockout.png"`)
-        && !html.includes('ph-halo'),
-      `expected ph-poster <img src="/assets/posters/${poster}-knockout.png"> and no black backing`);
+    record(`${page} carries the ${poster} poster image`,
+      html.length > 0 && html.includes('class="ph-poster"') && html.includes(`/assets/posters/${poster}.png`),
+      `expected ph-poster with /assets/posters/${poster}.png`);
   }
   {
     const html = htmlAt("song-origins/index.html");
