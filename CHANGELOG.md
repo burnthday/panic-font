@@ -3,6 +3,25 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-23 night (PUBLISHED)
+
+### Fixed
+- **Rig popup factual corrections, live** (`9bea83f`, deploy 30044749838 green).
+  Sound City 4x12 reattributed to Jimmy — the shipped caption said "Mikey's
+  original cabinet"; Premier Guitar documents it as Herring's dry cab and Mikey
+  never had one. Boss tuner named TU-2. The Confirmed/assumed scheme (which had
+  stamped "Confirmed" on conflated claims) is replaced by whose-gear-it-is:
+  Mikey's gold · Jimmy's blue · Nick's warm white, colors as --c tokens.
+- **PolyTune + the green "SAT BASS" box stay.** The retag spec cut them as AI
+  photo-reads; Alex produced a Red Rocks frame showing both on Nick's board.
+  Reinstated as Nick's with captions that claim only what the frame shows.
+  Five new QA guards lock the whole scheme (682/682).
+
+### Changed
+- **Rig popup header** — "An honest tone with a blistering lead." in the Athens
+  tie-dye wash over the Mikey's-cabinet/SLO/Jimmy's-wet-rig sentence in house
+  grey (`e441b7d`). Replaces HALF-JIMMY · HALF-MIKEY.
+
 ## 2026-07-23 evening (PUBLISHED)
 
 ### Changed
