@@ -399,6 +399,35 @@ async function checkNickJohnsonFeature(html, siteData) {
     feature.includes("data-living=\"lp") && feature.includes("requestAnimationFrame")
     && feature.includes("setTimeout(boot") && /prefers-reduced-motion/.test(feature),
     "rig runtime animation-safe");
+  // Rig popup retag (7/23): hotspots are colored by OWNER (Mikey's/Jimmy's/Nick's),
+  // never by a "Confirmed"/"assumed" scheme — that scheme stamped "Confirmed" on
+  // AI-conflated claims about a real person's gear. soundcity is pinned to jimmy
+  // because the exact conflation that shipped was "Mikey's Sound City" (Premier
+  // Guitar documents it as Herring's dry cab, and Mikey never had one).
+  // polytune + green are pinned to nick: they were nearly cut as AI photo-reads
+  // until Alex produced a Red Rocks frame showing both on Nick's board.
+  record("Rig legend is the three-owner read (Mikey's / Jimmy's / Nick's)",
+    /<div class="rig-legend">\s*<span class="rig-mikey"><i><\/i>Mikey's<\/span>\s*<span class="rig-jimmy"><i><\/i>Jimmy's<\/span>\s*<span class="rig-nick"><i><\/i>Nick's<\/span>/.test(html),
+    "three owner legend entries, in order");
+  record("Rig popup carries no Confirmed/assumed scheme anywhere",
+    !/rig-(?:tag|spot)[^>]*is-assumed/.test(html) && !/rl-conf|rl-assumed/.test(html)
+    && !/<span class="rig-tag[^"]*">Confirmed</.test(html),
+    "owner classes only — no is-assumed, no rl-conf/rl-assumed, no Confirmed tag");
+  record("Sound City is owned by Jimmy (the Mikey conflation must not return)",
+    /data-tip="soundcity"/.test(html) && /class="rig-spot rig-jimmy"[^>]*aria-label="Sound City 4x12"/.test(html)
+    && /id="rig-tip-soundcity"><span class="rig-tag rig-jimmy">/.test(html)
+    && !/Mikey's original cabinet/.test(html),
+    "soundcity spot + tip both carry rig-jimmy; old caption gone");
+  record("PolyTune and the green box stay, owned by Nick (Red Rocks frame, 7/23)",
+    /id="rig-tip-polytune"><span class="rig-tag rig-nick">/.test(html)
+    && /id="rig-tip-green"><span class="rig-tag rig-nick">/.test(html),
+    "both Red Rocks-verified pedals present as Nick's");
+  record("Rig owner colors are tokens, not hardcoded rgb",
+    /body\.stagelight \.rig-mikey \{ --c: 201,163,95; \}/.test(sl)
+    && /body\.stagelight \.rig-jimmy \{ --c: 94,158,210; \}/.test(sl)
+    && /body\.stagelight \.rig-nick \{ --c: 242,242,240; \}/.test(sl)
+    && /\.rig-spot \{[^}]*rgba\(var\(--c\), 0\.22\)/.test(sl),
+    "--c triples defined per owner; spot derives from rgba(var(--c))");
   record("Living poster canvas backing is transparent (starfield clears each frame; no solid stage fill)",
     /body\.stagelight \.lp-stage\s*\{[^}]*background:\s*transparent/.test(sl)
     && feature.includes("sctx.clearRect(0, 0, W, H)")
