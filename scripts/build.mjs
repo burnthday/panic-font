@@ -4133,7 +4133,7 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
   const minYear = yearsAll.length ? Math.min(...yearsAll) : 0;
   const maxYear = yearsAll.length ? Math.max(...yearsAll) : 0;
   const spanLabel = minYear && maxYear ? (minYear === maxYear ? String(minYear) : `${minYear}–${maxYear}`) : "";
-  const countLine = `${formatNumber(sorted.length)} tours · ${spanLabel} · ${formatNumber(writtenCount)} with written reviews`;
+  const countLine = `${formatNumber(sorted.length)} tours · ${spanLabel}`;
 
   // Group into decades, newest first; each decade keeps its tours newest first.
   const byDecade = new Map();
@@ -4171,10 +4171,14 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
           </div>`).join("")}
         </section>` : "";
 
-  const featured = writtenCount ? `<section class="tour-featured" aria-label="Tours Alex reviewed by hand">
+  // The span is computed from the matched reviews so it never goes stale if
+  // another legacy write-up gets matched (currently 2008-2016).
+  const writtenYears = sorted.filter((tour) => proseByRoute.has(tour.route)).map((tour) => tour.year).filter(Boolean);
+  const writtenSpan = writtenYears.length ? `${Math.min(...writtenYears)} to ${Math.max(...writtenYears)}` : "";
+  const featured = writtenCount ? `<section class="tour-featured" aria-label="The write-up years">
           <div class="tour-index-head">
-            <h2>Written Reviews</h2>
-            <span>${formatNumber(writtenCount)} tours reviewed by hand</span>
+            <h2>The Write-Up Years</h2>
+            <span>${escapeHtml(`There was a stretch... ${writtenSpan}... when I listened to every word and transcribed every rap. Those days are gone but the write-ups aren't.`)}</span>
           </div>
           <ul class="tour-featured-grid">
             ${sorted.filter((tour) => proseByRoute.has(tour.route)).map((tour) => {
@@ -9610,9 +9614,9 @@ function renderNickJohnsonFeature(data) {
         className: "rig",
         plate: "/assets/living/nick-plate.webp",
         dots: LIVING.nickDots,
-        pw: 1254, ph: 1254, aspect: "1 / 1",
+        pw: 1254, ph: 1096, aspect: "1254 / 1096",
         rmax: 9.08, rmin: 0.8, srFloor: 0.40, srScale: 1.06,
-        lights: { ORANGE: { x: 0.801, y: 0.630 }, CROWN1: { x: 0.773, y: 0.472 }, CROWN2: { x: 0.773, y: 0.514 }, TUNER: { x: 0.188, y: 0.775 }, PRS: { x: 0.638, y: 0.680 }, TUBE: { x: 0.500, y: 0.705 } }
+        lights: { ORANGE: { x: 0.801, y: 0.721 }, CROWN1: { x: 0.773, y: 0.540 }, CROWN2: { x: 0.773, y: 0.588 }, TUNER: { x: 0.188, y: 0.887 }, PRS: { x: 0.638, y: 0.778 }, TUBE: { x: 0.500, y: 0.807 } }
       }) : `<img class="nick-gear" src="/assets/nick-gear.png" alt="Nick Johnson's rig: PRS guitar, Mesa/Boogie, Sound City and Orange cabs, pedalboard" loading="lazy" decoding="async" width="1000" height="837">`}
       <div class="data-metrics nick-tiles" aria-label="Nick Johnson tour totals">
         ${renderNickStat(shows, "shows")}
