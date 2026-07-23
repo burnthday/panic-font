@@ -345,6 +345,30 @@ async function checkNickJohnsonFeature(html, siteData) {
     feature.includes('class="data-metrics nick-tiles"') && !feature.includes("nick-summary") && !feature.includes("Stats current through"),
     "nick-tiles present, old blocks gone");
 
+  // Living poster (rig) in the Nick panel: synthetic starfield canvas BEHIND a
+  // knocked-out plate img, gear-light fx canvas above, grade + sheen. The plate
+  // is a FILE reference (never a multi-MB inline data URI); the compact dot table
+  // is inlined into this one page. rAF + timeout fallback + reduced-motion still.
+  record("Nick panel ships the living rig poster (starfield canvas behind a knocked-out plate)",
+    /class="living-poster lp-rig" data-living="lp\d+"/.test(feature)
+    && feature.includes('class="lp-layer lp-starfield"')
+    && feature.includes('class="lp-layer lp-plate" alt="" src="/assets/living/nick-plate.webp"')
+    && feature.includes('class="lp-layer lp-fx"')
+    && feature.includes('class="lp-layer lp-grade"') && feature.includes('class="lp-layer lp-sheen"'),
+    "living rig stack present with plate referenced as a file");
+  record("Nick living plate stays a file reference, not an inline data URI",
+    !/lp-plate[^>]*src="data:/.test(feature),
+    "no inline plate data URI on homepage");
+  record("Nick living runtime has rAF + timeout fallback and a reduced-motion still",
+    feature.includes("data-living=\"lp") && feature.includes("requestAnimationFrame")
+    && feature.includes("setTimeout(boot") && /prefers-reduced-motion/.test(feature),
+    "rig runtime animation-safe");
+  record("Stagelight CSS defines the living poster layers + reduced-motion still",
+    /body\.stagelight \.lp-stage\b/.test(sl) && /body\.stagelight \.lp-starfield\b/.test(sl)
+    && /body\.stagelight \.lp-plate\b/.test(sl) && /body\.stagelight \.lp-fx\b/.test(sl)
+    && /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.living-poster[\s\S]*?animation: none/.test(sl),
+    "living poster CSS + reduced-motion present");
+
   assertIncludes(feature, 'class="nick-ranking" data-view="next"', "Nick Johnson feature presents a ranked most-likely-next view with a per-view column set");
 
   // Every rotation song ships in the DOM carrying the full facet set (type, nick count,
@@ -1407,6 +1431,30 @@ async function checkSongOrigins(files, htmlByFile, siteData) {
   record("A matched Song Origin's stat strip shows a lifetime plays number", stripWithPlays > 0, `${stripWithPlays} matched origins show a plays tile`);
   record("A matched Song Origin links Full live history to a real /song/ page in dist", liveHistoryVerified > 0 && liveHistoryVerified === withStrip.filter((p) => p.html.includes("Full live history")).length, `${liveHistoryVerified} verified /song/ targets`);
 
+  // The unified Song Origins header replaces the static ~200px knockout PNG with
+  // the living A-frame: synthetic starfield canvas BEHIND the sky-knocked-out
+  // plate (true alpha), whisper candle-flame + moon-glint fx canvas above. The
+  // plate is a FILE reference; the compact dot table is inlined into this one page.
+  const soCss = await readText("dist/stagelight.css").catch(() => "");
+  record("Song Origins header ships the living A-frame poster in place of the static knockout img",
+    /class="ph-poster is-living"/.test(indexHtml)
+    && /class="living-poster lp-aframe" data-living="lp\d+"/.test(indexHtml)
+    && indexHtml.includes('class="lp-layer lp-starfield"')
+    && indexHtml.includes('class="lp-layer lp-plate" alt="" src="/assets/living/song-origins-plate.webp"')
+    && indexHtml.includes('class="lp-layer lp-fx"')
+    && !/class="ph-poster"[^>]*>\s*<span class="ph-halo"[^>]*>\s*<picture>/.test(indexHtml),
+    "living aframe stack present, static picture replaced");
+  record("Song Origins living plate stays a file reference, not an inline data URI",
+    !/lp-plate[^>]*src="data:/.test(indexHtml),
+    "no inline plate data URI on song-origins");
+  record("Song Origins living runtime has rAF + timeout fallback and a reduced-motion still",
+    indexHtml.includes("requestAnimationFrame") && indexHtml.includes("setTimeout(boot")
+    && /prefers-reduced-motion/.test(indexHtml),
+    "aframe runtime animation-safe");
+  record("Song Origins living header float is disabled under reduced motion",
+    /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.ph-poster\.is-living \.living-poster[\s\S]*?animation: none/.test(soCss),
+    "reduced-motion kills the header float");
+
   // The index still lists every origin.
   const expected = siteData.songOrigins?.totalEntries || 0;
   const cardCount = (indexHtml.match(/class="origin-card"/g) || []).length;
@@ -1654,11 +1702,13 @@ function checkEyebrowAudit(files, htmlByFile) {
   record("Song Origins index retires the off-system origin-hero header", htmlAt("song-origins/index.html").length > 0 && !htmlAt("song-origins/index.html").includes('class="origin-hero"'), "origin-hero header should be replaced by the unified header");
   record("Rumors retires the off-system page-graphic-title header", htmlAt("rumors/index.html").length > 0 && !htmlAt("rumors/index.html").includes('class="page-graphic-title"'), "page-graphic-title should be replaced by the unified header");
 
-  // The five poster subpages each carry their tour-poster knockout <img>.
+  // Four of the five poster subpages carry their static tour-poster knockout <img>.
+  // Song Origins is the exception: its poster spot was upgraded in place to the
+  // living A-frame stack (checked at full strength in checkSongOrigins), so here
+  // it must carry the living plate webp instead of the static knockout png.
   const posterPages = [
     ["faq/index.html", "about-knockout"],
     ["shelf/index.html", "the-shelf-knockout"],
-    ["song-origins/index.html", "song-origins-knockout"],
     ["tour-in-review/index.html", "tour-in-review-knockout"],
     ["rumors/index.html", "rumors-knockout"]
   ];
@@ -1667,6 +1717,14 @@ function checkEyebrowAudit(files, htmlByFile) {
     record(`${page} carries the ${poster} poster image`,
       html.length > 0 && html.includes('class="ph-poster"') && html.includes(`/assets/posters/${poster}.png`),
       `expected ph-poster with /assets/posters/${poster}.png`);
+  }
+  {
+    const html = htmlAt("song-origins/index.html");
+    record("song-origins/index.html upgrades its poster spot to the living A-frame plate",
+      html.length > 0 && html.includes('class="ph-poster is-living"')
+      && html.includes("/assets/living/song-origins-plate.webp")
+      && !html.includes("song-origins-knockout"),
+      "expected ph-poster is-living with the living plate, static knockout retired");
   }
 
   // Every subpage header uses the ONE shared deck class (the fix that stops the

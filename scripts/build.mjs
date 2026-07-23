@@ -10,6 +10,11 @@ const sheetId = process.env.GOOGLE_SHEET_ID || "1EAJINzjyHFauVqHYLSYpmoJpNARg61g
 const bloggerFeedPath = process.env.BLOGGER_TAKEOUT_FEED || path.join(root, "data", "source", "blogger-feed.atom");
 const analyticsMeasurementId = "G-R74CMVLLK1";
 let archiveMediaByName = new Map();
+// Living-poster printed-dot field tables (base64, 8-byte records), read once at
+// build start and inlined into the ONE page each drives (homepage Nick section,
+// Song Origins header). The plate art ships as a file via copyAssets — only these
+// compact dot tables (~45–90 KB) are inlined, never the multi-MB plate.
+const LIVING = { nickDots: "", songOriginsDots: "" };
 
 const sheetRanges = {
   catalog: "'Overall Song Stats Sorted By Last Time Played'!A:H",
@@ -112,6 +117,7 @@ async function main() {
   await mkdir(path.join(dist, "data"), { recursive: true });
 
   await copyAssets();
+  await loadLivingDots();
   // lookup so archive/lyrics pages can cross-link to a matching Song Origin
   siteData.originsByTitle = new Map((songOrigins || []).map((origin) => [normalizeTitle(origin.title), origin]));
   // Mikey-era archival layers: Porch Songs + tour posters decorate the Tour In
@@ -1367,6 +1373,15 @@ async function copyAssets() {
     path.join(root, "node_modules", "@fontsource-variable", pkg, "files", file),
     path.join(dist, "assets", file)
   )));
+}
+
+async function loadLivingDots() {
+  const read = async (file) => {
+    try { return (await readFile(path.join(root, "assets", "living", file), "utf8")).trim(); }
+    catch { return ""; }
+  };
+  LIVING.nickDots = await read("nick-dots.b64.txt");
+  LIVING.songOriginsDots = await read("song-origins-dots.b64.txt");
 }
 
 async function copyDirectory(sourceDir, targetDir) {
@@ -3136,7 +3151,350 @@ const POSTER_PAGES = {
   shelf: "the-shelf"
 };
 
+// ── LIVING POSTER ────────────────────────────────────────────────────────────
+// A synthetic starfield canvas (z1) sits BEHIND a knocked-out print plate (z2,
+// true alpha — sky region flooded transparent), so the stars show only through
+// the sky and the printed art occludes them automatically. Gear/candle "lights"
+// (z3, screen-blended) breathe at whisper amplitude; a vignette grade (z4) and a
+// top sheen (z5) finish it. Reduced motion paints one perfect still frame. Two
+// modes share every bit of plumbing and differ only in the light table: "rig"
+// (Nick's amp/pedal lights, homepage) and "aframe" (candle flame + moon glint,
+// Song Origins header). The plate art is referenced as a file; only the compact
+// printed-dot table is inlined. `livingPosterRuntime` is a real function shipped
+// via .toString() (never executed in Node) so there is no template escaping.
+let livingPosterSeq = 0;
+function renderLivingPoster(cfg) {
+  const id = `lp${++livingPosterSeq}`;
+  const runtimeCfg = {
+    id, dots: cfg.dots, pw: cfg.pw, ph: cfg.ph, rmax: cfg.rmax, rmin: cfg.rmin,
+    srFloor: cfg.srFloor, srScale: cfg.srScale, mode: cfg.mode, lights: cfg.lights
+  };
+  const style = cfg.aspect ? ` style="--lp-aspect:${cfg.aspect}"` : "";
+  return `<div class="living-poster lp-${escapeAttr(cfg.className || cfg.mode)}" data-living="${id}"${style}>
+      <div class="lp-stage">
+        <canvas class="lp-layer lp-starfield"></canvas>
+        <img class="lp-layer lp-plate" alt="" src="${escapeAttr(cfg.plate)}" width="${cfg.pw}" height="${cfg.ph}" loading="lazy" decoding="async">
+        <canvas class="lp-layer lp-fx"></canvas>
+        <div class="lp-layer lp-grade"></div>
+        <div class="lp-layer lp-sheen"></div>
+      </div>
+    </div>
+    <script>(${livingPosterRuntime.toString()})(${JSON.stringify(runtimeCfg)});</script>`;
+}
+
+/* eslint-disable */
+// Browser runtime for a single living poster. Never called in Node — only
+// serialized via .toString() into the page. References DOM/window globals.
+function livingPosterRuntime(CFG) {
+  "use strict";
+  var host = document.querySelector('[data-living="' + CFG.id + '"]');
+  if (!host) return;
+  var stage = host.querySelector(".lp-stage");
+  var sf = host.querySelector(".lp-starfield");
+  var fx = host.querySelector(".lp-fx");
+  var plateImg = host.querySelector(".lp-plate");
+  var sctx = sf.getContext("2d"), fctx = fx.getContext("2d");
+  var L = CFG.lights, MODE = CFG.mode, PW = CFG.pw, PH = CFG.ph;
+
+  var reduce = false;
+  try { reduce = window.matchMedia("(prefers-reduced-motion:reduce)").matches; } catch (e) {}
+
+  // ---- decode printed-dot table: x u16, y u16, r*16 u8, cr,cg,cb u8 (8 bytes) ----
+  var N = 0, DX, DY, DR, DCOL, dp, twS, twP, drS, drP;
+  var curX, curY, homeX, homeY, velX, velY, SR;
+  (function () {
+    var bin = atob(CFG.dots), b = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i);
+    N = (b.length / 8) | 0;
+    DX = new Float32Array(N); DY = new Float32Array(N); DR = new Float32Array(N);
+    DCOL = new Array(N); dp = new Float32Array(N);
+    twS = new Float32Array(N); twP = new Float32Array(N);
+    drS = new Float32Array(N); drP = new Float32Array(N);
+    var RMAX = CFG.rmax, RMIN = CFG.rmin;
+    for (var k = 0; k < N; k++) {
+      var o = k * 8;
+      DX[k] = b[o] | (b[o + 1] << 8);
+      DY[k] = b[o + 2] | (b[o + 3] << 8);
+      DR[k] = b[o + 4] / 16;
+      DCOL[k] = "rgb(" + b[o + 5] + "," + b[o + 6] + "," + b[o + 7] + ")";
+      var d = (DR[k] - RMIN) / (RMAX - RMIN); if (d < 0) d = 0; if (d > 1) d = 1;
+      dp[k] = d;
+      var s = Math.sin(k * 12.9898) * 43758.5453; s = s - Math.floor(s);
+      var s2 = Math.sin(k * 78.233) * 23421.631; s2 = s2 - Math.floor(s2);
+      twS[k] = 0.5 + s * 1.4; twP[k] = s2 * 6.2831;
+      drS[k] = 0.06 + s2 * 0.10; drP[k] = s * 6.2831;
+    }
+    curX = new Float32Array(N); curY = new Float32Array(N);
+    homeX = new Float32Array(N); homeY = new Float32Array(N);
+    velX = new Float32Array(N); velY = new Float32Array(N);
+  })();
+
+  var W = 0, H = 0, DPR = 1, SCALE = 1;
+  function size() {
+    var r = stage.getBoundingClientRect(); W = r.width; H = r.height;
+    if (!W || !H) return false;
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    [sf, fx].forEach(function (c) { c.width = Math.round(W * DPR); c.height = Math.round(H * DPR); });
+    sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    fctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    SCALE = W / PW;
+    SR = new Float32Array(N);
+    for (var k = 0; k < N; k++) {
+      homeX[k] = DX[k] * SCALE; homeY[k] = DY[k] * SCALE;
+      curX[k] = homeX[k]; curY[k] = homeY[k];
+      velX[k] = 0; velY[k] = 0;
+      SR[k] = Math.max(CFG.srFloor, DR[k] * SCALE * CFG.srScale);
+    }
+    buildFlickerNoise();
+    return true;
+  }
+
+  // ---- irregular flicker (value-noise walk) ----
+  var FN = [], FNN = 256;
+  function buildFlickerNoise() {
+    FN = new Float32Array(FNN); var v = 0;
+    for (var i = 0; i < FNN; i++) { v += (Math.random() - 0.5) * 0.5; v *= 0.86; FN[i] = v; }
+  }
+  function fnoise(t) {
+    var x = (t * 7.0) % FNN; if (x < 0) x += FNN;
+    var i = x | 0, f = x - i, a = FN[i], bb = FN[(i + 1) % FNN];
+    var s = f * f * (3 - 2 * f);
+    return a + (bb - a) * s;
+  }
+
+  // ---- pointer / parallax ----
+  var mx = 0.5, my = 0.5, tmx = 0.5, tmy = 0.5, hasPointer = false, lastMove = 0;
+  var pSky = { x: 0, y: 0 }, pHouse = { x: 0, y: 0 }, pFx = { x: 0, y: 0 };
+  function onMove(e) {
+    var r = stage.getBoundingClientRect();
+    tmx = (e.clientX - r.left) / r.width; tmy = (e.clientY - r.top) / r.height;
+    hasPointer = true; lastMove = performance.now();
+  }
+  function onLeave() { hasPointer = false; }
+  if (!reduce) {
+    window.addEventListener("pointermove", onMove, { passive: true });
+    stage.addEventListener("pointerleave", onLeave, { passive: true });
+  }
+
+  // ---- starfield (full field, occluded by plate alpha) ----
+  function drawStars(t, still) {
+    sctx.clearRect(0, 0, W, H);
+    var curPX = mx * W, curPY = my * H, pullR = 0.20 * W, pullR2 = pullR * pullR;
+    var gdx = Math.sin(t * 0.13) * 0.22, gdy = Math.cos(t * 0.11) * 0.17;
+    for (var k = 0; k < N; k++) {
+      var ox, oy, r, alpha;
+      if (still) {
+        ox = curX[k]; oy = curY[k]; r = SR[k]; alpha = 1;
+      } else {
+        var ax = (homeX[k] - curX[k]) * 0.022, ay = (homeY[k] - curY[k]) * 0.022;
+        if (hasPointer) {
+          var ddx = curPX - curX[k], ddy = curPY - curY[k], d2 = ddx * ddx + ddy * ddy;
+          if (d2 < pullR2) { var f = (1 - Math.sqrt(d2) / pullR) * 0.007 * (0.4 + dp[k]); ax += ddx * f; ay += ddy * f; }
+        }
+        velX[k] = (velX[k] + ax) * 0.90; velY[k] = (velY[k] + ay) * 0.90;
+        curX[k] += velX[k]; curY[k] += velY[k];
+        var amp = 0.12 + dp[k] * 0.38;
+        var dxk = Math.sin(t * drS[k] * 0.5 + drP[k]) * amp + gdx * (0.3 + dp[k]);
+        var dyk = Math.cos(t * drS[k] * 0.45 + drP[k]) * amp * 0.7 + gdy * (0.3 + dp[k]);
+        var px = pSky.x * (0.4 + dp[k] * 0.9), py = pSky.y * (0.4 + dp[k] * 0.9);
+        ox = curX[k] + dxk + px; oy = curY[k] + dyk + py;
+        var tw = Math.sin(t * twS[k] * 0.5 + twP[k]);
+        alpha = 0.90 + tw * (0.015 + dp[k] * 0.025);
+        if (alpha > 1) alpha = 1; if (alpha < 0.55) alpha = 0.55;
+        r = SR[k] * (dp[k] > 0.55 ? (1 + tw * 0.015) : 1);
+      }
+      sctx.globalAlpha = alpha;
+      sctx.fillStyle = DCOL[k];
+      sctx.beginPath(); sctx.arc(ox, oy, r, 0, 6.2832); sctx.fill();
+    }
+    sctx.globalAlpha = 1;
+  }
+
+  function radial(cx, cy, r, stops) {
+    var g = fctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
+    fctx.fillStyle = g; fctx.beginPath(); fctx.arc(cx, cy, r, 0, 6.2832); fctx.fill();
+  }
+
+  // ---- rig gear lights (half opacity / range) ----
+  var GLINT_START = 1.25, GLINT_DUR = 1.55;
+  function drawFxRig(t, still) {
+    var ox = pFx.x, oy = pFx.y;
+    var TUBE = L.TUBE, ORANGE = L.ORANGE, CROWN1 = L.CROWN1, CROWN2 = L.CROWN2, TUNER = L.TUNER, PRS = L.PRS;
+    var tb = still ? 1.0 : (1 + Math.sin(t * 0.5) * 0.01), A = 0.022 * tb;
+    radial(TUBE.x * W + ox * 0.5, TUBE.y * H + oy * 0.5, 0.52 * W, [
+      [0, "rgba(255,176,96," + A.toFixed(3) + ")"],
+      [0.32, "rgba(228,132,58," + (A * 0.55).toFixed(3) + ")"],
+      [0.62, "rgba(150,74,30," + (A * 0.18).toFixed(3) + ")"],
+      [1, "rgba(80,36,14,0)"]
+    ]);
+    var ob = still ? 0.42 : (0.40 + 0.07 * (0.5 + 0.5 * Math.sin(t * 0.7 + 0.4)));
+    radial(ORANGE.x * W + ox, ORANGE.y * H + oy, 0.062 * W, [
+      [0, "rgba(255,214,150," + (0.11 * ob).toFixed(3) + ")"],
+      [0.4, "rgba(255,150,58," + (0.06 * ob).toFixed(3) + ")"],
+      [1, "rgba(210,90,30,0)"]
+    ]);
+    radial(ORANGE.x * W + ox, ORANGE.y * H + oy, 0.020 * W, [
+      [0, "rgba(255,238,200," + (0.17 * ob).toFixed(3) + ")"],
+      [1, "rgba(255,170,80,0)"]
+    ]);
+    function crown(c, seed) {
+      var fl = still ? 0.4 : (0.40 + 0.04 * (0.5 + 0.5 * Math.sin(t * 0.5 + seed)) + Math.max(0, fnoise(t * 1.4 + seed)) * 0.05);
+      radial(c.x * W + ox * 0.7, c.y * H + oy * 0.7, 0.048 * W, [
+        [0, "rgba(150,206,255," + (0.085 * fl).toFixed(3) + ")"],
+        [0.42, "rgba(88,150,235," + (0.04 * fl).toFixed(3) + ")"],
+        [1, "rgba(40,86,180,0)"]
+      ]);
+      radial(c.x * W + ox * 0.7, c.y * H + oy * 0.7, 0.015 * W, [
+        [0, "rgba(210,236,255," + (0.14 * fl).toFixed(3) + ")"],
+        [1, "rgba(120,180,240,0)"]
+      ]);
+    }
+    crown(CROWN1, 0.0); crown(CROWN2, 2.3);
+    var blink;
+    if (still) { blink = 0.35; } else { var ph = (t * 0.32) % 1; blink = 0.5 + 0.5 * Math.pow(0.5 + 0.5 * Math.sin(ph * 6.2831), 3); }
+    radial(TUNER.x * W + ox, TUNER.y * H + oy, 0.040 * W, [
+      [0, "rgba(150,235,150," + (0.065 * blink).toFixed(3) + ")"],
+      [0.4, "rgba(96,210,120," + (0.03 * blink).toFixed(3) + ")"],
+      [1, "rgba(40,150,80,0)"]
+    ]);
+    radial(TUNER.x * W + ox, TUNER.y * H + oy, 0.014 * W, [
+      [0, "rgba(215,255,210," + (0.12 * blink).toFixed(3) + ")"],
+      [1, "rgba(120,220,140,0)"]
+    ]);
+    if (!still) {
+      var gp = (t - GLINT_START) / GLINT_DUR;
+      if (gp > 0 && gp < 1) {
+        var env = Math.sin(gp * Math.PI);
+        var cx = (PRS.x - 0.075 + 0.15 * gp) * W + ox;
+        var cy = (PRS.y - 0.055 + 0.11 * gp) * H + oy;
+        fctx.save();
+        fctx.translate(cx, cy); fctx.rotate(-0.62); fctx.scale(1, 2.5);
+        radial(0, 0, 0.078 * W, [
+          [0, "rgba(255,244,214," + (0.14 * env).toFixed(3) + ")"],
+          [0.35, "rgba(255,214,150," + (0.065 * env).toFixed(3) + ")"],
+          [1, "rgba(255,180,110,0)"]
+        ]);
+        fctx.restore();
+      }
+    }
+  }
+
+  // ---- aframe candle flame + moon glint (whisper level, no smoke/motes) ----
+  function flicker(t) {
+    return 1 + Math.sin(t * 3.1) * 0.030 + Math.sin(t * 6.7 + 1.3) * 0.022
+      + Math.sin(t * 13.3 + 0.6) * 0.014 + fnoise(t) * 0.09 + fnoise(t * 0.37 + 3.1) * 0.05;
+  }
+  function drawFxAframe(t, still) {
+    var ox = pFx.x, oy = pFx.y;
+    var FLAME = L.FLAME, MOON = L.MOON, FACE = L.FACE, CUP = L.CUP;
+    var fl = still ? 1.0 : flicker(t);
+    var jx = still ? 0 : (fnoise(t * 1.7) * 0.006 * W);
+    var jy = still ? 0 : (fnoise(t * 1.3 + 9) * 0.005 * H);
+    var fxp = FLAME.x * W + ox + jx, fyp = FLAME.y * H + oy + jy;
+    var wA = 0.11 * fl;
+    var R1 = 0.250 * W * (0.96 + (fl - 1) * 0.6);
+    var g1 = fctx.createRadialGradient(fxp, fyp - 0.02 * H, 0, fxp, fyp, R1);
+    g1.addColorStop(0, "rgba(255,188,110," + wA.toFixed(3) + ")");
+    g1.addColorStop(0.26, "rgba(255,150,72," + (wA * 0.62).toFixed(3) + ")");
+    g1.addColorStop(0.58, "rgba(210,88,40," + (wA * 0.20).toFixed(3) + ")");
+    g1.addColorStop(1, "rgba(120,40,20,0)");
+    fctx.fillStyle = g1; fctx.beginPath(); fctx.arc(fxp, fyp, R1, 0, 6.2832); fctx.fill();
+    radial(FACE.x * W + ox, FACE.y * H + oy, 0.16 * W, [
+      [0, "rgba(255,196,130," + (0.055 * fl).toFixed(3) + ")"],
+      [1, "rgba(255,150,80,0)"]
+    ]);
+    radial(CUP.x * W + ox, CUP.y * H + oy, 0.14 * W, [
+      [0, "rgba(255,170,96," + (0.05 * fl).toFixed(3) + ")"],
+      [1, "rgba(220,90,40,0)"]
+    ]);
+    var R2 = 0.050 * W * (0.9 + (fl - 1) * 1.4 + (still ? 0 : fnoise(t * 2.3) * 0.12));
+    radial(fxp, fyp - 2, R2, [
+      [0, "rgba(255,246,220," + (0.30 * fl).toFixed(3) + ")"],
+      [0.4, "rgba(255,198,112," + (0.18 * fl).toFixed(3) + ")"],
+      [1, "rgba(255,150,60,0)"]
+    ]);
+    var mxp = MOON.x * W + ox * 0.6, myp = MOON.y * H + oy * 0.6;
+    var sh = still ? 0.5 : (0.5 + 0.5 * Math.sin(t * 0.6));
+    var Rh = 0.14 * W * (0.92 + sh * 0.12), hA = 0.05 + sh * 0.05;
+    radial(mxp, myp, Rh, [
+      [0, "rgba(150,196,255," + hA.toFixed(3) + ")"],
+      [0.4, "rgba(96,150,235," + (hA * 0.5).toFixed(3) + ")"],
+      [1, "rgba(50,90,180,0)"]
+    ]);
+    var Rm = 0.055 * W * (0.9 + sh * 0.2), mA = 0.06 + sh * 0.07;
+    radial(mxp, myp, Rm, [
+      [0, "rgba(206,230,255," + mA.toFixed(3) + ")"],
+      [0.5, "rgba(130,180,240," + (mA * 0.4).toFixed(3) + ")"],
+      [1, "rgba(80,120,200,0)"]
+    ]);
+  }
+
+  function drawFx(t, still) {
+    fctx.clearRect(0, 0, W, H);
+    fctx.globalCompositeOperation = "lighter";
+    if (MODE === "aframe") drawFxAframe(t, still); else drawFxRig(t, still);
+    fctx.globalAlpha = 1; fctx.globalCompositeOperation = "source-over";
+  }
+
+  function applyParallax() {
+    var dx = (mx - 0.5), dy = (my - 0.5), now = performance.now();
+    var idle = (!hasPointer || now - lastMove > 1400);
+    if (idle && !reduce) {
+      var ti = now * 0.00015;
+      dx = (Math.sin(ti) * 0.35 + Math.sin(ti * 0.53) * 0.15) * 0.5;
+      dy = (Math.cos(ti * 0.8) * 0.30) * 0.5;
+    }
+    var k = reduce ? 1 : 0.06;
+    pSky.x += (-dx * 3.2 - pSky.x) * k; pSky.y += (-dy * 3.2 - pSky.y) * k;
+    pHouse.x += (dx * 0.9 - pHouse.x) * k; pHouse.y += (dy * 0.9 - pHouse.y) * k;
+    pFx.x += (-dx * 1.0 - pFx.x) * k; pFx.y += (-dy * 1.0 - pFx.y) * k;
+    plateImg.style.transform = "translate3d(" + pHouse.x.toFixed(2) + "px," + pHouse.y.toFixed(2) + "px,0) scale(1.008)";
+  }
+
+  var startT = performance.now();
+  var raf = window.requestAnimationFrame || function (cb) { return setTimeout(function () { cb(performance.now()); }, 1000 / 60); };
+  var booted = false;
+  function frame(now) {
+    var t = (now - startT) / 1000;
+    mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
+    applyParallax();
+    drawStars(t, false); drawFx(t, false);
+    if (!reduce) raf(frame);
+  }
+  function boot() {
+    if (booted) return;
+    if (!size()) return;
+    booted = true;
+    if (reduce) {
+      mx = my = tmx = tmy = 0.5; applyParallax(); applyParallax();
+      drawStars(0, true); drawFx(0, true);
+    } else { raf(frame); }
+  }
+  if (plateImg.complete && plateImg.naturalWidth) boot(); else plateImg.addEventListener("load", boot);
+  window.addEventListener("resize", function () { if (!booted) { boot(); return; } size(); if (reduce) { drawStars(0, true); drawFx(0, true); } });
+  // rAF may be throttled to zero in a background/preview frame — timeout fallback
+  // guarantees the first paint (and the reduced-motion still) always lands.
+  setTimeout(boot, 400);
+  setTimeout(boot, 1200);
+}
+/* eslint-enable */
+
 function renderPosterFigure(slug) {
+  if (slug === "song-origins" && LIVING.songOriginsDots) {
+    return `<div class="ph-poster is-living" aria-hidden="true">
+        <span class="ph-halo" style="--poster:url('/assets/posters/song-origins.png')"></span>
+        ${renderLivingPoster({
+          mode: "aframe",
+          className: "aframe",
+          plate: "/assets/living/song-origins-plate.webp",
+          dots: LIVING.songOriginsDots,
+          pw: 1086, ph: 1448, aspect: "1086 / 1448",
+          rmax: 7.74, rmin: 0.9, srFloor: 0.45, srScale: 1.22,
+          lights: { FLAME: { x: 0.458, y: 0.606 }, MOON: { x: 0.529, y: 0.291 }, FACE: { x: 0.5, y: 0.56 }, CUP: { x: 0.47, y: 0.64 } }
+        })}
+      </div>`;
+  }
   return `<div class="ph-poster" aria-hidden="true">
         <span class="ph-halo" style="--poster:url('/assets/posters/${slug}.png')"></span>
         <picture>
@@ -9227,7 +9585,15 @@ function renderNickJohnsonFeature(data) {
         <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
         <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${coverWidth}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
       </div>
-      <img class="nick-gear" src="/assets/nick-gear.png" alt="Nick Johnson's rig: PRS guitar, Mesa/Boogie, Sound City and Orange cabs, pedalboard" loading="lazy" decoding="async" width="1000" height="837">
+      ${LIVING.nickDots ? renderLivingPoster({
+        mode: "rig",
+        className: "rig",
+        plate: "/assets/living/nick-plate.webp",
+        dots: LIVING.nickDots,
+        pw: 1254, ph: 1254, aspect: "1 / 1",
+        rmax: 9.08, rmin: 0.8, srFloor: 0.40, srScale: 1.06,
+        lights: { ORANGE: { x: 0.801, y: 0.630 }, CROWN1: { x: 0.773, y: 0.472 }, CROWN2: { x: 0.773, y: 0.514 }, TUNER: { x: 0.188, y: 0.775 }, PRS: { x: 0.638, y: 0.680 }, TUBE: { x: 0.500, y: 0.705 } }
+      }) : `<img class="nick-gear" src="/assets/nick-gear.png" alt="Nick Johnson's rig: PRS guitar, Mesa/Boogie, Sound City and Orange cabs, pedalboard" loading="lazy" decoding="async" width="1000" height="837">`}
       <div class="data-metrics nick-tiles" aria-label="Nick Johnson tour totals">
         ${renderNickStat(shows, "shows")}
         ${renderNickStat(plays, "song plays")}
@@ -15732,8 +16098,50 @@ body.stagelight .ph-atmos::after {
 }
 @media (prefers-reduced-motion: reduce) {
   body.stagelight .ph-poster img,
+  body.stagelight .ph-poster.is-living .living-poster,
   body.stagelight .ph-halo,
   body.stagelight .ph-atmos::before { animation: none; }
+}
+
+/* ============================================================
+   LIVING POSTER — a synthetic starfield canvas (z1) sits behind
+   a knocked-out print plate (z2, true alpha in the sky region);
+   whisper-level gear/candle lights (z3, screen), a vignette grade
+   (z4) and a top sheen (z5) finish it. Two placements: the
+   homepage Nick panel (framed square "rig") and the Song Origins
+   header (200px "aframe" stamp that floats + fades like the static
+   poster it replaces). The JS paints one perfect still under
+   reduced motion; these rules add no motion of their own except
+   the header float, which the reduced-motion block above kills.
+   ============================================================ */
+body.stagelight .living-poster { position: relative; }
+body.stagelight .lp-stage {
+  position: relative; width: 100%; aspect-ratio: var(--lp-aspect, 1 / 1);
+  border-radius: 4px; overflow: hidden; background: #000;
+  box-shadow: 0 40px 120px -34px rgba(0,0,0,.95), 0 8px 40px -12px rgba(20,40,70,.35), 0 0 0 1px rgba(255,255,255,.035);
+}
+body.stagelight .lp-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; transform: translateZ(0); }
+body.stagelight .lp-starfield { z-index: 1; }
+body.stagelight .lp-plate { z-index: 2; object-fit: cover; }
+body.stagelight .lp-fx { z-index: 3; mix-blend-mode: screen; }
+body.stagelight .lp-grade {
+  z-index: 4;
+  background:
+    radial-gradient(132% 100% at 50% 46%, rgba(0,0,0,0) 50%, rgba(0,0,0,.26) 80%, rgba(0,0,0,.52) 100%),
+    radial-gradient(85% 60% at 50% 116%, rgba(150,80,26,.12), rgba(0,0,0,0) 60%),
+    radial-gradient(70% 55% at 50% -10%, rgba(40,80,140,.10), rgba(0,0,0,0) 55%);
+}
+body.stagelight .lp-sheen { z-index: 5; background: linear-gradient(180deg, rgba(255,255,255,.026) 0%, rgba(255,255,255,0) 22%); mix-blend-mode: screen; }
+/* Homepage: drops into the Nick panel where the static rig art used to sit —
+   capped small so it complements the ranking table, never dominates (owner note). */
+body.stagelight .nick-panel .living-poster { margin: 22px auto 6px; max-width: 468px; }
+/* Song Origins header: 200px stamp, no frame, masked fade + float to match the
+   static poster stamp it replaces; the sky knockout lets the halo glow through. */
+body.stagelight .ph-poster.is-living .living-poster { z-index: 1; animation: phFloat 9s ease-in-out infinite alternate; }
+body.stagelight .ph-poster.is-living .lp-stage {
+  border-radius: 0; box-shadow: none; background: transparent;
+  -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
+  mask-image: linear-gradient(#000 78%, transparent 99%);
 }
 /* breadcrumbs */
 body.stagelight .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
