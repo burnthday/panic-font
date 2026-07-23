@@ -15206,14 +15206,16 @@ body.stagelight .sw-body { position: relative; display: flex; flex-direction: co
    existing type scale (34 / 16 / 12) so nothing invents a size. */
 /* One family, one weight, white (Webflow discipline). The only color is the
    number's slow red tie-dye — background-clip text over a drifting gradient. */
-body.stagelight .sw-n {
-  font-family: var(--sl-display); font-size: 52px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;
+body.stagelight .sw-n { font-family: var(--sl-display); font-size: 52px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; color: var(--sl-ink); }
+/* Red tie-dye ONLY inside 10 shows of the shelf (the settled urgency rule) —
+   the rest of the section stays white-dominant. */
+body.stagelight .sw-card.is-hot .sw-n {
   background: linear-gradient(105deg, #ef8b88 0%, #d4514f 26%, #ff9d6b 48%, #c65db8 72%, #ef8b88 100%);
   background-size: 260% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: sw-tiedye 9s ease-in-out infinite alternate;
 }
 @keyframes sw-tiedye { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
-@media (prefers-reduced-motion: reduce) { body.stagelight .sw-n { animation: none; } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .sw-card.is-hot .sw-n { animation: none; } }
 body.stagelight .sw-to { font-size: 15px; font-weight: 700; color: var(--sl-ink); margin-top: 6px; }
 body.stagelight .sw-line { font-size: 16px; font-weight: 700; line-height: 1.5; color: var(--sl-ink); margin: 16px 0 0; }
 body.stagelight .sw-song { font-weight: 700; letter-spacing: -0.005em; }
