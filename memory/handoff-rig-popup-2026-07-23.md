@@ -65,3 +65,6 @@ Verify each caption in `NICK_RIG_SPOTS` (scripts/build.mjs) against its source. 
 
 ## Session close ritual
 Dated one-liner in the master/checkpoint surface + CHANGELOG entry for the merge.
+
+## Post-handoff insight (Alex, 7/23) — the retag that takes it to a 10
+While verifying captions, also **retag the hotspots by whose gear it is — Mikey's · Jimmy's · Nick's own — instead of confirmed/assumed.** Same dots, same verification work, three colors; legend reads "Mikey's · Jimmy's · Nick's." The rig's real story is that it's mostly two other guys' gear: Mikey's actual Sound City 4x12 still moving air, a Soldano because that's the amp Mikey ran, Jimmy's entire wet rig humming behind Nick while Jimmy's out sick, and one guitar (Amber) that's genuinely Nick's — bought after Mexico because he wouldn't give it back. The whose-gear framing makes the graphic tell that at a glance; the confirmed/assumed label was just fact-checking nobody asked for. Sourcing still governs what each caption *claims* — this is only about what the dots *communicate*. (Rejected en route: deep-linking captions to video timestamps — the tech naming a cab isn't a wow moment, so it's a citation, not a payoff. Skip it.)
