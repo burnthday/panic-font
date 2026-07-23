@@ -2287,7 +2287,14 @@ function renderNotFoundPage(data) {
 
 async function writeShelfInfoPage(data, entries) {
   const oldShelfEntry = entries.find((entry) => entry.path === "/p/theshelf.html");
-  await writeStaticPage("/shelf/index.html", renderShelfInfoPage(data, oldShelfEntry));
+  // The dated Shelf updates live on their own archive page now; the main Shelf
+  // page keeps only the live, computed view plus one quiet link to the archive.
+  const historicalContent = removeFirstArchiveGraphic(oldShelfEntry?.content || "", "shelf.png");
+  const hasUpdates = Boolean(historicalContent && historicalContent.trim());
+  await writeStaticPage("/shelf/index.html", renderShelfInfoPage(data, { hasUpdates }));
+  if (hasUpdates) {
+    await writeStaticPage("/shelf/updates/index.html", renderShelfUpdatesPage(data, historicalContent));
+  }
 }
 
 async function writeRumorsPage(data, entries) {
@@ -3297,8 +3304,9 @@ function fitMetaText(value, maxLength) {
   return `${clipped.slice(0, end).replace(/[\s,;:.-]+$/, "")}...`;
 }
 
-function renderShelfInfoPage(data, oldShelfEntry) {
+function renderShelfInfoPage(data, options = {}) {
   const year = data.site.year;
+  const hasUpdates = Boolean(options.hasUpdates);
   const limit = data.rules.rotationSlpLimit;
   const slugMap = data.songSlugMap || new Map();
 
@@ -3327,7 +3335,6 @@ function renderShelfInfoPage(data, oldShelfEntry) {
   const woodCount = (data.boards.woodshedOriginals?.length || 0) + (data.boards.woodshedCovers?.length || 0);
 
   const description = `Burnthday's Widespread Panic Shelf and Purgatory notes for the ${year} tour.`;
-  const historicalContent = removeFirstArchiveGraphic(oldShelfEntry?.content || "", "shelf.png");
 
   // Stat strip — reuse the .song-stat tile pattern. Tabular mono numbers, and
   // any tile whose number we can't compute is omitted rather than faked.
@@ -3367,20 +3374,20 @@ function renderShelfInfoPage(data, oldShelfEntry) {
         <header class="archive-title">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">The Shelf</span></nav>
           <h1>The Shelf</h1>
-          <p class="shelf-deck">${escapeHtml(`${formatNumber(shelfCount)} songs sit off the ${formatNumber(limit)}-show rotation window — off the sheet, not forgotten. When a song goes ${formatNumber(limit)} shows without a play, it drops here until it earns its way back.`)}</p>
+          <p class="shelf-deck">${escapeHtml(`${formatNumber(shelfCount)} songs have gone ${formatNumber(limit)} shows without a play. They are off the sheet, not forgotten. Some may never return. Others are one night away.`)}</p>
         </header>
         ${statTiles.length ? `<div class="song-stat-grid">${statTiles.join("")}</div>` : ""}
         <section class="shelf-list-section">
           <div class="shelf-section-head">
-            <h2>Spring ${escapeHtml(String(year))} New Additions To The Shelf</h2>
-            <span>${escapeHtml(`${formatNumber(newAdds.length)} songs crossed the line this era · longest gap first`)}</span>
+            <h2>New to the Shelf</h2>
+            <span>${escapeHtml(`${formatNumber(newAdds.length)} songs crossed the line this spring. Longest gone first.`)}</span>
           </div>
           ${newAdds.length ? `<div class="shelf-list">${newAdds.map((row) => renderShelfRow(row, slugMap, limit)).join("")}</div>` : "<p class=\"shelf-empty\">Nothing new to the Shelf this era.</p>"}
         </section>
         ${deepest.length ? `<section class="shelf-list-section">
           <div class="shelf-section-head">
-            <h2>Longest Gone</h2>
-            <span>the deepest of the ${escapeHtml(formatNumber(shelfCount))} · shows since last played</span>
+            <h2>Longest gone</h2>
+            <span>${escapeHtml("The deepest songs on the Shelf, measured in shows since their last play.")}</span>
           </div>
           <div class="shelf-list is-compact">${deepest.map((row) => renderShelfRow(row, slugMap, limit, { compact: true })).join("")}</div>
           <p class="shelf-more">The Shelf runs ${escapeHtml(formatNumber(shelfCount))} songs deep. <a href="/songs/">Browse the full catalog on the Song Index →</a></p>
@@ -3394,7 +3401,49 @@ function renderShelfInfoPage(data, oldShelfEntry) {
             <span class="shn-go" aria-hidden="true">Open on the homepage →</span>
           </a>`).join("")}</div>
         </section>` : ""}
-        ${historicalContent ? `<section class="legacy-shelf-notes"><div class="shelf-section-head"><h2>Previous Shelf Updates</h2><span>from the Shelf, in Burnthday's own words</span></div><div class="archive-content prose-plate">${historicalContent}</div></section>` : ""}
+        ${hasUpdates ? `<p class="shelf-more shelf-updates-link"><a class="link-quiet" href="/shelf/updates/">Browse previous Shelf updates <span aria-hidden="true">→</span></a></p>` : ""}
+      </article>
+    </main>
+    ${renderSiteFooter(data, { stagelight: true })}
+  </body>
+</html>
+`;
+}
+
+// The archive of dated Shelf updates, moved off the main Shelf page. The prose is
+// preserved EXACTLY as written (already newest-first / reverse chronological),
+// wrapped in the standard page chrome (nav, breadcrumb, footer) like every other
+// subpage. Only rendered when there is historical content to show.
+function renderShelfUpdatesPage(data, historicalContent) {
+  const description = "Every dated update from Burnthday's Widespread Panic Shelf, newest first, in the site's own words.";
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Previous Shelf Updates | Burnthday</title>
+    <meta name="description" content="${escapeAttr(description)}">
+    <link rel="canonical" href="https://burnthday.com/shelf/updates/">
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/stagelight.css">
+  </head>
+  <body class="stagelight">
+    ${renderSiteHeader({ stagelight: true, data })}
+    <main class="archive-main shelf-main">
+      <article class="archive-page shelf-info-page">
+        <header class="archive-title">
+          <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><a href="/shelf/">The Shelf</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">Previous Updates</span></nav>
+          <h1>Previous Shelf updates</h1>
+          <p class="shelf-deck">${escapeHtml("Every dated note from the Shelf, newest first, kept exactly as it was written.")}</p>
+        </header>
+        <section class="legacy-shelf-notes"><div class="archive-content prose-plate">${historicalContent}</div></section>
+        <p class="shelf-more shelf-updates-link"><a class="link-quiet" href="/shelf/">Back to the Shelf <span aria-hidden="true">→</span></a></p>
       </article>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
@@ -7697,9 +7746,13 @@ function renderNickRankingScript() {
         songbook.classList.toggle("is-pinned", expanded && collapsible);
         songbook.textContent = expanded ? songbook.dataset.fewerLabel : songbook.dataset.moreLabel;
       }
-      // Expanded = bounded scroll window with a sticky header (reuse the tour-stats
-      // capped-wrap treatment); collapsed = six rows, no cap.
-      if (wrap) wrap.classList.toggle("is-capped", expanded);
+      // Expanded = bounded scroll window with a sticky header + full column set
+      // (reuse the tour-stats capped-wrap treatment). Collapsed = six-row preview
+      // in the three-column Song / Why now / Heat presentation.
+      if (wrap) {
+        wrap.classList.toggle("is-capped", expanded);
+        wrap.classList.toggle("is-preview", !expanded);
+      }
       syncHeaders();
     };
     const setSort = (col, forceDir) => {
@@ -9130,10 +9183,11 @@ function renderNickJohnsonFeature(data) {
       </div>
       <div class="mobile-sort">${renderCustomSelect({ hook: "data-nick-mobile-sort", label: "Sort by", active: "heat", options: [{ value: "heat", label: "Most likely" }, { value: "plays", label: "Most played" }, { value: "gap", label: "Longest gap" }, { value: "last", label: "Recently played" }, { value: "nickplays", label: "Nick plays" }, { value: "title", label: "Song name" }] })}</div>
     </div>
-    <div class="nick-ranking-wrap" data-nick-scroll>
+    <div class="nick-ranking-wrap is-preview" data-nick-scroll>
       <div class="nick-ranking-head" data-view="next">
         <span class="nrh-col nrh-rank" aria-hidden="true">#</span>
         <button type="button" class="nrh-col nrh-sort nrh-song" data-nick-col="title">Song <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
+        <span class="nrh-col nrh-why" aria-hidden="true">Why now</span>
         <button type="button" class="nrh-col nrh-sort nrh-type" data-nick-col="type">Type <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
         <button type="button" class="nrh-col nrh-sort nrh-plays nx" data-nick-col="plays">Plays <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
         <button type="button" class="nrh-col nrh-sort nrh-gap nx" data-nick-col="gap">Gap <span class="nrh-arr" aria-hidden="true">\u2195</span></button>
@@ -9294,9 +9348,20 @@ function renderNickRanking(songs, modelByKey, nickLastByKey) {
     const agoSub = slp > 0 && slp <= 40 ? `<small>(${formatNumber(slp)} show${slp === 1 ? "" : "s"} ago)</small>` : "";
     const nickLastIso = nickLastByKey.get(song.key) || "";
     const nickLastDisplay = nickLastIso ? isoToShortDate(nickLastIso) : "";
+    // Collapsed-preview "Why now" cell, built from the row's own facets. next/woodshed
+    // read as gap · usual cadence · recent-100 plays; the played view gets the Nick
+    // equivalent (last time Nick played it; the Nick-play count sits in the right cell).
+    const whyNextParts = [];
+    if (slp > 0) whyNextParts.push(`${formatNumber(slp)} show${slp === 1 ? "" : "s"} gone`);
+    if (m.medianGap != null) whyNextParts.push(`usually played every ${formatNumber(Math.round(m.medianGap))}`);
+    whyNextParts.push(`${formatNumber(l100)} play${l100 === 1 ? "" : "s"} in the last 100`);
+    const whyNext = whyNextParts.join(" · ");
+    const whyNick = nickLastDisplay ? `Last played with Nick ${nickLastDisplay}` : "In Nick&#39;s rotation";
     return `<li class="nick-row${played ? "" : " is-zero"}" data-song-title="${escapeAttr(song.title)}" data-type="${type}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-eligible="${m.eligible ? "1" : "0"}" data-heat="${escapeAttr(String(heat))}" data-l100="${escapeAttr(String(l100))}" data-total="${escapeAttr(String(total))}" data-slp="${escapeAttr(String(slp))}" data-usual="${escapeAttr(usual)}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-nicklast="${escapeAttr(nickLastIso)}" data-played="${played ? "yes" : "no"}"${visible ? "" : " hidden"}>
     <span class="nick-rank" aria-hidden="true">${index + 1}</span>
     <span class="nick-song"><strong>${escapeHtml(song.title)}</strong>${subline}</span>
+    <span class="nick-why nx">${escapeHtml(whyNext)}</span>
+    <span class="nick-why-nick pv">${whyNick}</span>
     <span class="nick-type"><span class="nick-chip is-${type}">${type === "cover" ? "COVER" : "ORIGINAL"}</span></span>
     <span class="nick-plays nx"><strong>${formatNumber(l100)}</strong>${total > l100 ? `<small>${formatNumber(total)} all-time</small>` : ""}</span>
     <span class="nick-gap nx">${formatNumber(slp)} / ${usual || "—"}<small>shows</small></span>
@@ -14506,6 +14571,60 @@ body.stagelight .nick-played-panel > summary { display: flex; align-items: basel
 body.stagelight .nick-played-panel > summary:hover { color: var(--sl-ink); }
 body.stagelight .nick-played-panel > summary strong { font-size: 12px; color: var(--sl-muted); }
 body.stagelight .nick-disclosure > summary { width: 100%; }
+
+/* ── Collapsed preview: Song / Why now / Heat (three columns) ─────────────────
+   The expanded songbook keeps the full column set unchanged. The preview is a
+   presentation layer over the same rows: the "Why now" cell ships server-side so
+   the six-row default reads correctly before the end-of-body JS runs. The .nx/.pv
+   view system still governs which "why" and which right-hand number show (Heat for
+   next/woodshed, Nick plays for the played view). Selectors carry body.stagelight
+   + an extra class so they outrank both the desktop and the <=560px grid rules. */
+body.stagelight .nick-why, body.stagelight .nick-why-nick { display: none; }
+body.stagelight .nick-ranking-head .nrh-why { display: none; }
+/* Preview grid: Song | Why now | (Heat / Nick plays). Explicit placement so the
+   hidden expanded cells never disturb the three tracks, regardless of DOM order. */
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking-head,
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking li { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.7fr) auto; gap: 16px; }
+body.stagelight .nick-ranking-wrap.is-preview .nick-song,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-song { grid-column: 1; }
+body.stagelight .nick-ranking-wrap.is-preview .nick-why,
+body.stagelight .nick-ranking-wrap.is-preview .nick-why-nick,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-why { grid-column: 2; }
+body.stagelight .nick-ranking-wrap.is-preview .nick-score,
+body.stagelight .nick-ranking-wrap.is-preview .nick-nickplays,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-heat,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-nickplays { grid-column: 3; }
+/* Show the "why" cell + header only in preview; per-view via .nx/.pv. */
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking[data-view="next"] .nick-why,
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking[data-view="woodshed"] .nick-why { display: block; }
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking[data-view="played"] .nick-why-nick { display: block; }
+body.stagelight .nick-ranking-wrap.is-preview .nrh-why { display: block; }
+/* Strip the expanded-only cells + the row furniture the preview drops:
+   rank, Type chip, Plays, Gap, Last, Last-with-Nick, the long sub-sentence,
+   and the HOT/tier word (the Heat number stays). */
+body.stagelight .nick-ranking-wrap.is-preview .nick-rank,
+body.stagelight .nick-ranking-wrap.is-preview .nick-type,
+body.stagelight .nick-ranking-wrap.is-preview .nick-plays,
+body.stagelight .nick-ranking-wrap.is-preview .nick-gap,
+body.stagelight .nick-ranking-wrap.is-preview .nick-last,
+body.stagelight .nick-ranking-wrap.is-preview .nick-nicklast,
+body.stagelight .nick-ranking-wrap.is-preview .nick-song small,
+body.stagelight .nick-ranking-wrap.is-preview .nick-score .tn-tier,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-type,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-plays,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-gap,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-last,
+body.stagelight .nick-ranking-wrap.is-preview .nrh-nicklast { display: none; }
+/* No faded rows, no title truncation, borders match the Tour Stats table. */
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking li.is-zero { opacity: 1; }
+body.stagelight .nick-ranking-wrap.is-preview .nick-ranking li { border-bottom: 1px solid var(--sl-line-faint); }
+body.stagelight .nick-ranking-wrap.is-preview .nick-song strong { white-space: normal; overflow: visible; text-overflow: clip; }
+/* "Why now" reads as a quiet supporting metric line (mono, muted, wraps freely). */
+body.stagelight .nick-ranking-wrap.is-preview .nick-why,
+body.stagelight .nick-ranking-wrap.is-preview .nick-why-nick { font-family: var(--sl-mono); font-size: 12.5px; line-height: 1.45; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
+/* Preview header labels sit on one line and do not act as sort controls. */
+body.stagelight .nick-ranking-wrap.is-preview .nrh-sort { pointer-events: none; cursor: default; }
+body.stagelight .nick-ranking-wrap.is-preview .nrh-arr { display: none; }
 
 /* ---- COMMUNITY LINKS ---- */
 body.stagelight .ticket-link {

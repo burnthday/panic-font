@@ -24,7 +24,7 @@ async function main() {
   checkTourSongCounts(homeHtml, siteData);
   checkTourStats(homeHtml, siteData);
   checkShelfWatch(homeHtml, siteData);
-  checkNickJohnsonFeature(homeHtml, siteData);
+  await checkNickJohnsonFeature(homeHtml, siteData);
   checkTourDates(homeHtml, siteData);
   await checkUpcomingBackdrop(homeHtml);
   await checkMobileTourDateCss();
@@ -299,8 +299,9 @@ function checkShelfWatch(html, siteData) {
   }
 }
 
-function checkNickJohnsonFeature(html, siteData) {
+async function checkNickJohnsonFeature(html, siteData) {
   const feature = sectionHtml(html, "nick-johnson");
+  const sl = await readText("dist/stagelight.css").catch(() => "");
   const fmt = (value) => new Intl.NumberFormat("en-US").format(value);
   const played = (siteData.catalog || [])
     .filter((song) => song.playedWithNick && song.nickCount > 0);
@@ -406,10 +407,28 @@ function checkNickJohnsonFeature(html, siteData) {
   record("Old Show dropdown is gone", !feature.includes("data-nick-show-dd"), "data-nick-show-dd removed");
 
   // Songbook expands into a BOUNDED scroll wrap (sticky header) with a sticky Show-fewer
-  // control — reuses the tour-stats capped-wrap + stats-expand treatment.
-  assertIncludes(feature, 'class="nick-ranking-wrap" data-nick-scroll', "Ranking sits inside the bounded-scroll wrap");
+  // control — reuses the tour-stats capped-wrap + stats-expand treatment. The wrap ships
+  // in its collapsed preview state (is-preview) so the six-row default paints pre-JS.
+  assertIncludes(feature, 'class="nick-ranking-wrap is-preview" data-nick-scroll', "Ranking sits inside the bounded-scroll wrap, collapsed-preview by default");
   assertIncludes(feature, 'class="stats-expand" aria-expanded="false" data-nick-songbook', "Songbook button uses the stats-expand treatment");
   assertIncludes(feature, "Explore Nick&#39;s full songbook", "Songbook button carries the songbook copy");
+
+  // Collapsed preview presentation: a three-column Song / Why now / Heat read. The
+  // "Why now" cell ships server-side (built from each row's own gap/cadence/recent-100
+  // facets) for next/woodshed, with a Nick-history equivalent (.pv) for the played view.
+  assertIncludes(feature, '<span class="nrh-col nrh-why" aria-hidden="true">Why now</span>', "Preview header carries the Why now column label");
+  record("Every ranking row ships both server-side Why-now cells (next/woodshed .nx + played .pv)",
+    (feature.match(/class="nick-why nx"/g) || []).length === rotation.length
+      && (feature.match(/class="nick-why-nick pv"/g) || []).length === rotation.length,
+    "one .nick-why and one .nick-why-nick per row");
+  record("Why-now copy is built from the row facets (gap gone · usual cadence · recent-100 plays)",
+    /class="nick-why nx">[^<]*play[^<]* in the last 100</.test(feature)
+      && /class="nick-why nx">[^<]*shows? gone/.test(feature),
+    "expected the computed Why-now sentence");
+  record("Preview stylesheet drives the three-column Song / Why now / Heat grid and hides the expanded-only cells",
+    /\.nick-ranking-wrap\.is-preview\b[\s\S]*?grid-template-columns/.test(sl)
+      && /\.nick-ranking-wrap\.is-preview[\s\S]*?\.nick-rank[\s\S]*?display:\s*none/.test(sl),
+    "is-preview grid + hidden rank/type/plays/gap/last rules present");
 
   // Default "most likely next" view: only ELIGIBLE songs are visible, exactly the top
   // six, every visible row eligible + slp > 4, and no visible row is a one-off (total<=1).
@@ -1238,9 +1257,29 @@ async function checkLegacyPages(siteData) {
   record("Shelf page uses imported shelf copy", /The Shelf/i.test(shelfText) && /Purgatory/i.test(shelfText));
   record("Privacy page accurately identifies GA4", /Google Analytics 4/.test(privacyText) && /does not sell personal information/.test(privacyText));
   record("Privacy page links to Google privacy and opt-out controls", /https:\/\/policies\.google\.com\/privacy/.test(privacy) && /https:\/\/tools\.google\.com\/dlpage\/gaoptout/.test(privacy));
-  assertIncludes(shelf, `<h2>Spring ${siteData.site.year} New Additions To The Shelf</h2>`, "Shelf page leads with the current seasonal additions");
+  assertIncludes(shelf, `<h2>New to the Shelf</h2>`, "Shelf page leads with the current seasonal additions");
   record("Shelf page omits duplicate live counters", !/on The Shelf<\/span>|in Purgatory<\/span>|show cutoff<\/span>/.test(shelf));
-  record("Shelf page preserves historical updates after the current additions", indexOf(shelf, `Spring ${siteData.site.year} New Additions To The Shelf`) < indexOf(shelf, "Previous Shelf Updates") && /The Shelf Updated: April 1st, 2019/.test(shelfText));
+
+  // Dated Shelf updates moved off the main page onto their own archive page. The main
+  // page must NOT carry any dated update; the archive page must carry them all, verbatim
+  // and reverse-chronological, with the standard page chrome and one quiet link back.
+  const shelfUpdates = await readText("dist/shelf/updates/index.html").catch(() => "");
+  const shelfUpdatesText = normalizeText(stripTags(shelfUpdates));
+  record("Main Shelf page no longer carries the dated Shelf updates",
+    !/Shelf Updated:/.test(shelfText) && !/Previous Shelf Updates/.test(shelf) && !/there's certainly a method to their madness/i.test(shelfText),
+    "a dated update or the legacy notes block is still on the main Shelf page");
+  record("Main Shelf page links out to the updates archive with the site's quiet-link pattern",
+    /class="link-quiet" href="\/shelf\/updates\/">Browse previous Shelf updates/.test(shelf),
+    "the quiet Browse-previous-updates link is missing");
+  record("The Shelf updates archive page exists and preserves the dated updates verbatim, newest first",
+    Boolean(shelfUpdates)
+      && /there's certainly a method to their madness/i.test(shelfUpdatesText)
+      && (shelfUpdates.match(/Shelf Updated:/g) || []).length >= 3
+      && indexOf(shelfUpdatesText, "The Shelf Updated: April 1st, 2019") < indexOf(shelfUpdatesText, "The Shelf Updated: January 24th, 2012"),
+    "updates archive missing, incomplete, or out of reverse-chronological order");
+  record("The Shelf updates archive inherits the standard page chrome (nav, breadcrumb, footer)",
+    shelfUpdates.includes('class="stagelight"') && shelfUpdates.includes('id="mega-menu"') && /class="crumbs"/.test(shelfUpdates) && /<a href="\/shelf\/">The Shelf<\/a>/.test(shelfUpdates),
+    "updates archive is missing shared chrome or the Shelf breadcrumb");
   // Redesigned /shelf/: a computed stat strip, a designed row list (no lazy
   // bullet dump for the computed shelf), Alex's seasonal notes kept verbatim,
   // and a single H1 with no redundant eyebrow.
@@ -1253,16 +1292,16 @@ async function checkLegacyPages(siteData) {
     shelf.includes('class="shelf-row"') && /class="shelf-row"\s+href="\/song\//.test(shelf),
     "no shelf-row with a /song/ link found");
   const additionsBlock = (() => {
-    const start = indexOf(shelf, "New Additions To The Shelf</h2>");
-    const end = indexOf(shelf, "Longest Gone");
+    const start = indexOf(shelf, "New to the Shelf</h2>");
+    const end = indexOf(shelf, "<h2>Longest gone</h2>");
     return start >= 0 && end > start ? shelf.slice(start, end) : "";
   })();
   record("Shelf page's computed additions are rows, not a bare bullet list",
     Boolean(additionsBlock) && additionsBlock.includes('class="shelf-row"') && !additionsBlock.includes("<li>"),
     "the New Additions block still renders <li> bullets");
-  record("Shelf page keeps Alex's seasonal notes verbatim",
-    /there's certainly a method to their madness/i.test(shelfText),
-    "distinctive verbatim shelf-notes phrase missing");
+  record("The Shelf updates archive keeps Alex's seasonal notes verbatim",
+    /there's certainly a method to their madness/i.test(shelfUpdatesText),
+    "distinctive verbatim shelf-notes phrase missing from the updates archive");
   record("Shelf page uses a single H1 with no redundant eyebrow",
     (shelf.match(/<h1>/g) || []).length === 1 && !/class="[^"]*eyebrow[^"]*"[^>]*>\s*The Shelf/i.test(shelf),
     "found a duplicate eyebrow echoing the H1");
