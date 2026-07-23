@@ -411,6 +411,35 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
   record("Bento sheet open toggles the bento-open body class",
     homeHtml.includes('classList.add("bento-open")') && homeHtml.includes('classList.remove("bento-open")'));
 
+  // (1b) Strike layering (Phase B): overlapping show-colours are separate,
+  // stacked physical strokes (one <span> each), blended normally (not multiply),
+  // ordered oldest->newest so the most recent show (black #131313) paints LAST.
+  record("Strike marker ink uses normal blend so stacked show-colours stay physical strokes",
+    /\.marker-ink\s*\{[^}]*mix-blend-mode:\s*normal/.test(sl));
+  const strikeClusters = [...homeHtml.matchAll(/(?:<span class="marker-mask[^>]*"[^>]*><span class="marker-ink"><\/span><\/span>)+/g)].map((m) => m[0]);
+  const multiColorStrikes = strikeClusters
+    .map((c) => [...c.matchAll(/--mc:(#[0-9a-fA-F]{3,6})/g)].map((x) => x[1].toLowerCase()))
+    .filter((cols) => cols.length >= 2);
+  record("Overlapping strikes stack oldest->newest as separate elements with black (most recent) last/on top",
+    multiColorStrikes.length > 0 && multiColorStrikes.every((cols) => cols[cols.length - 1] === "#131313"));
+
+  // (1c) Hand-ink arrow flourish between the sheet and the explanations: one SVG,
+  // two draw-on paths, IntersectionObserver at threshold 0.35, reduced-motion safe.
+  record("Hand-ink arrow renders once between sheet and explanations with both draw paths",
+    (homeHtml.match(/class="sheet-arrow"/g) || []).length === 1 && homeHtml.includes('class="sa-line"') && homeHtml.includes('class="sa-head"'));
+  record("Arrow draws on via IntersectionObserver (threshold 0.35) with reduced-motion fallback",
+    homeHtml.includes("threshold: 0.35") && homeHtml.includes('classList.add("armed")') && /prefers-reduced-motion/.test(homeHtml) && /\.sheet-arrow[^{]*\{[^}]*stroke-dashoffset:\s*0/.test(sl));
+
+  // (1d) Bento scrawl reads as ONE sheet split into three aligned layers, each
+  // masked to a vertical zone with a distinct blur/opacity tier; card group lifted.
+  record("Scrawl stays one aria-hidden component holding three aligned layers",
+    /<div class="sheet-scrawl" aria-hidden="true"><div class="ss-layer ss-behind">/.test(homeHtml)
+      && homeHtml.includes('class="ss-layer ss-above"') && homeHtml.includes('class="ss-layer ss-below"'));
+  record("The three scrawl zones carry distinct blur tiers (heavy behind, light above, clearest below)",
+    /\.ss-behind\s*\{[^}]*blur\(5\.5px\)/.test(sl) && /\.ss-above\s*\{[^}]*blur\(1\.75px\)/.test(sl) && /\.ss-below\s*\{[^}]*blur\(1px\)/.test(sl));
+  record("Card group is lifted 72px so setlist shows above the card tops",
+    /\.bento-region\s+\.bento-grid\s*\{[^}]*translateY\(-72px\)/.test(sl));
+
   // (2) Round-4 features present and wired (accordion, custom show dropdown,
   // stable sort state) — the three the owner reported reverted.
   record("Tour Stats stays a collapsible accordion", homeHtml.includes('class="stats-disclosure"'));

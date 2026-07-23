@@ -7043,6 +7043,7 @@ function renderHtml(data) {
       ${renderHomeNavScript()}
       ${renderHeroModalScript()}
       ${renderStrikeScriptBody()}
+      ${renderSheetArrowScript()}
       ${renderCustomSelectScript()}
     </script>
   </body>
@@ -7067,6 +7068,25 @@ function renderStrikeScriptBody() {
       }
     }, { rootMargin: "0px 0px -6% 0px" });
     masks.forEach((mask) => io.observe(mask));
+  })();`;
+}
+
+// Draw the hand-ink arrow flourish once when it scrolls into view (IO threshold
+// ~0.35). Gated so no-IO / reduced-motion visitors see the completed arrow (CSS
+// keeps the dashoffset at 0 without the .draw class under reduced-motion, and
+// the class is only added when IO fires — so no-IO just leaves it static).
+function renderSheetArrowScript() {
+  return `(() => {
+    const arrow = document.querySelector(".sheet-arrow");
+    if (!arrow) return;
+    if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    arrow.classList.add("armed");
+    const io = new IntersectionObserver((entries, obs) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) { entry.target.classList.add("draw"); obs.disconnect(); }
+      }
+    }, { threshold: 0.35 });
+    io.observe(arrow);
   })();`;
 }
 
@@ -8556,7 +8576,7 @@ function renderSheetBentos(data) {
   }).join("");
   return `${renderSheetKey(data)}
   <div class="bento-region">
-  <div class="sheet-scrawl" aria-hidden="true">${sheetCols}</div>
+  <div class="sheet-scrawl" aria-hidden="true"><div class="ss-layer ss-behind">${sheetCols}</div><div class="ss-layer ss-above">${sheetCols}</div><div class="ss-layer ss-below">${sheetCols}</div></div>
   <div class="bento-grid" aria-label="Reference sheets">
     ${renderBentoCard("shelf", "The Shelf", shelfRows.length, "Not played in 200 shows — off the sheet, not forgotten.", shelfFacts)}
     ${renderBentoCard("purgatory", "Purgatory", purgRows.length, "Played once, ever — waiting on a second life.", purgFacts)}
@@ -8906,7 +8926,17 @@ function renderNickRanking(songs, modelByKey, nickLastByKey) {
 function renderSheetKey(data) {
   // Marker color key lives in the board intro (bi-swipes); the four explainer
   // columns sit in the open below the sheet (accordion removed, Alex round 6).
+  // Hand-drawn white-ink arrow flourish between the sheet and the explanations,
+  // left-aligned. Two paths (line then head) draw on once when scrolled into
+  // view (see renderSheetArrowScript); reduced-motion shows it complete.
+  const arrow = `<div class="sheet-arrow" aria-hidden="true">
+      <svg viewBox="0 0 145 34" fill="none" xmlns="http://www.w3.org/2000/svg" class="sheet-arrow-svg">
+        <path class="sa-line" d="M4 19 C18 15 31 20 46 17 C61 14 72 21 88 17 C103 13 117 19 137 16" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>
+        <path class="sa-head" d="M126 7 C132 11 136 14 141 16 C136 20 132 24 127 29" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>
+      </svg>
+    </div>`;
   return `<section class="sheet-key" id="sheet-key">
+    ${arrow}
     <div class="key-grid">
       <p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't run in the last four shows. The tiny number beside a song counts its plays this tour.</p>
       <p><b>The Shelf holds songs 200 shows gone.</b> When one comes back it's a bustout, the pull every crowd hopes for. This sheet shows how deep the band can reach.</p>
@@ -8996,14 +9026,23 @@ function strikeHash(value) {
 // Translucent dry-erase swipe covering the whole title, with a chisel/diagonal
 // right end — like the real marker. CSS clip-path (see .marker-ink) keeps the
 // diagonal crisp at any width; the tint comes from the per-show legend color.
+// One physical stroke per show-color. Callers pass strokes oldest-first so the
+// most recent show (black) is LAST in DOM and paints on top — no blending. The
+// bottom (oldest) stroke is the tallest ~10px; each newer layer is ~1px thinner
+// and nudged up ~2px so the older colour peeks below it. Draw staggers
+// oldest->newest at ~100ms per layer (respects prefers-reduced-motion via the
+// .can-strike gate).
 function renderStrikeMark(asset, seed, stackIndex = 0) {
   const color = STRIKE_COLORS[asset];
   if (!color) return `<span class="marker-mask"><img class="marker-img" src="/assets/${escapeAttr(asset)}" alt=""></span>`;
   const h = strikeHash(String(seed || ""));
   const variant = (h % 4) + 1;
-  const delay = (h >> 4) % 7;
-  const nudge = [0, 4, -4, 7][stackIndex % 4];
-  return `<span class="marker-mask sv${variant}" style="--mc:${color};--sd:${delay * 0.04}s;--dy:${nudge}px"><span class="marker-ink"></span></span>`;
+  const delay = stackIndex * 0.1; // 100ms stagger, oldest -> newest
+  const strokeH = Math.max(7, 10 - stackIndex); // 10,9,8,7 px
+  const vo = stackIndex * 2; // px raised so older colour peeks below
+  const startJit = (h % 3) + 2; // 2-4px start irregularity
+  const endJit = ((h >> 3) % 3) + 2; // 2-4px width irregularity
+  return `<span class="marker-mask sv${variant}" style="--mc:${color};--sd:${delay}s;--sh:${strokeH}px;--vo:${vo}px;--sj:${startJit}px;--ej:${endJit}px"><span class="marker-ink"></span></span>`;
 }
 
 function renderSong(row, options = {}) {
@@ -9017,7 +9056,10 @@ function renderSong(row, options = {}) {
   const strikeList = options.shelfMode && !options.woodshedMode && (row.playedFromShelf || row.playedFromPurgatory)
     ? ["marker-black.png"]
     : (row.strikeAssets && row.strikeAssets.length ? row.strikeAssets : (stripeAsset ? [stripeAsset] : []));
-  const marker = strikeList.map((asset, index) => renderStrikeMark(asset, `${row.key || row.title}:${index}`, index)).join("");
+  // strikeList arrives newest-first (black -> red); reverse so the oldest show
+  // renders first and the most recent (black) paints last / on top.
+  const orderedStrikes = [...strikeList].reverse();
+  const marker = orderedStrikes.map((asset, index) => renderStrikeMark(asset, `${row.key || row.title}:${index}`, index)).join("");
   const count = countValue > 0 ? `<sup>${countValue}</sup>` : "";
   const date = dateText ? `<span class="date-sup${row.isAddOn ? " add-on-date" : ""}">${row.isAddOn ? `(${escapeHtml(dateText)})` : escapeHtml(dateText)}</span>` : "";
 
@@ -10523,8 +10565,8 @@ main {
 
 .marker-mask {
   position: absolute;
-  left: -0.16em;
-  right: -0.12em;
+  left: calc(-0.16em - var(--sj, 0px));
+  right: calc(-0.12em - var(--ej, 0px));
   top: -0.02em;
   bottom: -0.02em;
   overflow: visible;
@@ -14078,23 +14120,41 @@ body.stagelight .bento-card[aria-expanded="true"] .bc-open { color: var(--sl-ink
 /* One continuous sheet behind the three bentos: the scrawl runs under the
    glass (barely there), then its last line comes into focus below the cards
    (the Webflow move). Cards sit above it. */
-body.stagelight .bento-region { position: relative; padding-top: 110px; padding-bottom: 128px; }
-body.stagelight .bento-region .bento-grid { position: relative; z-index: 1; }
-/* ONE element: five handwritten setlists laid out like loose papers behind the
-   bentos — shows above, below, and faintly through the glass cards. A single
-   smooth mask ramps the whole sheet from nearly invisible at the top to lit at
-   the base (spotlight from below), so there are no hard opacity steps. */
+/* Extra top room so ~80px of setlist sits above the card tops; the card group
+   is raised 72px via translateY (the flourish: shows above AND below cards). */
+body.stagelight .bento-region { position: relative; padding-top: 108px; padding-bottom: 64px; }
+body.stagelight .bento-region .bento-grid { position: relative; z-index: 1; transform: translateY(-72px); }
+/* ONE logical sheet, three aligned layers so the same setlist can carry a
+   DIFFERENT blur/opacity per vertical zone (a single element can't vary blur
+   down its height). Each layer holds identical content in the identical flex
+   layout, so the columns register exactly and it reads as one continuous sheet;
+   soft-overlap gradient masks confine each layer to its band. */
 body.stagelight .sheet-scrawl {
   position: absolute; inset: -10px -20px 0; z-index: 0; overflow: hidden;
+  pointer-events: none; user-select: none;
+}
+body.stagelight .ss-layer {
+  position: absolute; inset: 0;
   display: flex; gap: 52px; padding: 0 24px; align-items: flex-end;
   font-family: "PanicHand", "MilkRun", cursive; text-transform: uppercase; letter-spacing: 0.03em;
-  pointer-events: none; user-select: none;
-  filter: blur(2px);
-  color: rgba(255,255,255,0.6);
-  /* Faintly visible at the very top (shows above the bentos), ramping to lit at
-     the base so the trailing greats read — just barely. */
-  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.18) 30%, rgba(0,0,0,0.5) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
-  mask-image: linear-gradient(180deg, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.18) 30%, rgba(0,0,0,0.5) 62%, rgba(0,0,0,0.85) 86%, #000 100%);
+}
+/* Behind the cards: heaviest blur, faintest — barely there through the glass. */
+body.stagelight .ss-behind {
+  filter: blur(5.5px); color: rgba(255,255,255,0.11);
+  -webkit-mask-image: linear-gradient(180deg, transparent 20%, #000 34%, #000 66%, transparent 82%);
+  mask-image: linear-gradient(180deg, transparent 20%, #000 34%, #000 66%, transparent 82%);
+}
+/* Above the cards: light blur, mid opacity — the shows peeking over the tops. */
+body.stagelight .ss-above {
+  filter: blur(1.75px); color: rgba(255,255,255,0.22);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 24%, transparent 40%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 24%, transparent 40%);
+}
+/* Below the cards: clearest — the trailing greats read here. */
+body.stagelight .ss-below {
+  filter: blur(1px); color: rgba(255,255,255,0.26);
+  -webkit-mask-image: linear-gradient(180deg, transparent 60%, #000 76%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 60%, #000 76%, #000 100%);
 }
 body.stagelight .ss-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
 body.stagelight .ss-song { display: block; font-size: 15px; line-height: 1.7; white-space: nowrap; }
@@ -14440,10 +14500,29 @@ body.stagelight main > .board-intro + section { margin-top: 68px; }
 
 /* ---- SHEET KEY (the four explainer columns, held close under the song sheet
    so "the band uses this color-coded song list" reads as its caption) ---- */
-body.stagelight main > section.sheet-key { margin-top: 28px; }
+body.stagelight main > section.sheet-key { margin-top: 16px; }
 body.stagelight .sheet-key { margin-bottom: 34px; }
+/* Hand-drawn arrow flourish sits in the gap between the sheet and the key grid,
+   left-aligned to the wrapper. Total visible gap sheet->explanations ~58px
+   (16 margin + ~30 arrow + 6 + 6), within the 56-64px target. */
+body.stagelight .sheet-arrow { margin: 0 0 6px; line-height: 0; }
+body.stagelight .sheet-arrow-svg { display: block; width: clamp(110px, 9vw, 140px); height: auto; overflow: visible; }
+/* Complete by default (no-JS / no-IO / reduced-motion all show a finished
+   arrow); JS arms the hidden state only when it can animate. */
+body.stagelight .sheet-arrow .sa-line { stroke-dasharray: 155; stroke-dashoffset: 0; }
+body.stagelight .sheet-arrow .sa-head { stroke-dasharray: 48; stroke-dashoffset: 0; }
+body.stagelight .sheet-arrow.armed .sa-line { stroke-dashoffset: 155; }
+body.stagelight .sheet-arrow.armed .sa-head { stroke-dashoffset: 48; }
+/* draw-on once on viewport entry (see renderSheetArrowScript): line then head. */
+body.stagelight .sheet-arrow.armed.draw .sa-line { animation: sa-draw-line 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+body.stagelight .sheet-arrow.armed.draw .sa-head { animation: sa-draw-head 150ms cubic-bezier(0.22, 1, 0.36, 1) 350ms forwards; }
+@keyframes sa-draw-line { to { stroke-dashoffset: 0; } }
+@keyframes sa-draw-head { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .sheet-arrow .sa-line, body.stagelight .sheet-arrow .sa-head { stroke-dashoffset: 0 !important; animation: none !important; }
+}
 /* Ramp-style explainer: four equal columns, lead words bold, plain language. */
-body.stagelight .key-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px; margin-top: 22px; }
+body.stagelight .key-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 36px; margin-top: 6px; }
 body.stagelight .key-grid p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--sl-muted); }
 body.stagelight .key-grid b { color: var(--sl-ink); font-weight: 650; }
 @media (max-width: 900px) {
@@ -14597,18 +14676,23 @@ body.stagelight .laminate::after {
 /* the ink block: translucent marker fill covering the whole word, with a
    chisel/diagonal right end via clip-path (crisp at any width) */
 .marker-ink {
-  display: block; width: 100%; height: 100%;
+  display: block; width: 100%; height: var(--sh, 10px);
   background: var(--mc);
-  opacity: 0.62;
-  mix-blend-mode: multiply;
+  opacity: 0.78;
+  /* normal blend so stacked show-colours stay physical strokes, not blended */
+  mix-blend-mode: normal;
   border-radius: 1px;
   clip-path: polygon(0.6% 12%, 99% 3%, 100% 82%, 93% 100%, 1% 92%);
   transform-origin: left center;
 }
-.marker-mask.sv1 { transform: rotate(-1deg) translateY(var(--dy, 0px)); }
-.marker-mask.sv2 { transform: rotate(0.7deg) translateY(var(--dy, 0px)); }
-.marker-mask.sv3 { transform: rotate(-0.5deg) translateY(var(--dy, 0px)); }
-.marker-mask.sv4 { transform: rotate(1deg) translateY(var(--dy, 0px)); }
+/* strokes centre in the word box; per-layer rotate + vertical raise (--vo) so
+   the older colour peeks below the newer one. Horizontal jitter (--sj/--ej)
+   gives each stroke a slightly different start/width. */
+.marker-mask { display: flex; align-items: center; }
+.marker-mask.sv1 { transform: rotate(-1deg) translateY(calc(-1 * var(--vo, 0px))); }
+.marker-mask.sv2 { transform: rotate(0.7deg) translateY(calc(-1 * var(--vo, 0px))); }
+.marker-mask.sv3 { transform: rotate(-0.5deg) translateY(calc(-1 * var(--vo, 0px))); }
+.marker-mask.sv4 { transform: rotate(1deg) translateY(calc(-1 * var(--vo, 0px))); }
 .marker-mask.sv2 .marker-ink { clip-path: polygon(0.6% 6%, 99% 12%, 100% 96%, 92% 88%, 1% 98%); }
 .marker-mask.sv4 .marker-ink { clip-path: polygon(0.6% 9%, 99% 4%, 100% 90%, 94% 98%, 1% 95%); }
 /* draw-in: the marker wipes across left-to-right as the board scrolls in */
