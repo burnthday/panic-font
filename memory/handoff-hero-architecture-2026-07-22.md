@@ -108,7 +108,8 @@ THEN INLINE (quick, in order):
 2. Tour stats headline .ds-lead: max-width 50% -> 65% (should wrap 3 lines), keep/ensure padding below (40px), desktop only.
 3. Shrink the gap between .bento-region and the Tour stats headline slightly.
 4. LOAD-SHIFT BUG (Alex report, desktop): setlist drops after page load — lockStage runs in requestAnimationFrame AFTER first paint, then grows slots to tallest-view min-heights. FIX: call lockStage() synchronously at script execution (before first paint), plus re-run once on document.fonts.ready. One-line timing change in renderHeroModalScript.
-5. From-the-stage header: .fs-head align-items flex-start -> center (drop .fs-yt margin-top 6px) so the YouTube button vertically centers with the headline.
+5. Hero background breathing (Alex approved direction): idle animation on the hero atmosphere — blurred bg wash scale 1.35->~1.385 over ~20s alternate; --hero-glow radial opacity breathing a few % over ~8s (offset phase); .hero-brush same slow breath. Transform/opacity only, reduced-motion still.
+6. From-the-stage header: .fs-head align-items flex-start -> center (drop .fs-yt margin-top 6px) so the YouTube button vertically centers with the headline.
 
 THEN POLISH AGENT (Opus, full spec agreed with Alex):
 - Athens strip: attach baseline to footer top edge (zero gap, slight crop), KILL the gradient fill -> solid quiet ink + subtle animated brand-color tie-dye clipped to LEFT side of text only (Webflow steal, shelf-number restraint), scroll-reveal once, reduced-motion seated.
