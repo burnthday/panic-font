@@ -8916,30 +8916,51 @@ const SHELF_WATCH_GALLERY = "https://widespreadpanic.com/galleries/2000-10-28-ne
 // dense data sections. Thumbnails only (no iframes); click opens the official
 // YouTube page in a new tab. Titles/durations verified against the official
 // channel (@widespreadpanic) 2026-07-22.
-const FROM_THE_STAGE_VIDEOS = [
-  { id: "mdKVMEjrqRQ", title: "Gradle (Live in Oakland, CA)", meta: "Oakland run \u00b7 2026 tour", duration: "6:13" },
-  { id: "vtw8-LTjJN0", title: "Smokestack Lightning (Live in Bend)", meta: "Bend, OR \u00b7 2026 tour", duration: "12:53" },
-  { id: "5x4gVol4iIM", title: "Nick Johnson's Rig Rundown", meta: "with guitar tech Joel Byron", duration: "2:03" }
-];
+// "From the stage": ONE featured official video (Alex: the 3-thumb grid read
+// like a plugin). Poster is our own Andy Tennille photo from the same Oakland
+// run the video came from; clicking swaps in the real YouTube player in place —
+// the page ships zero iframes until asked.
+const FROM_THE_STAGE_VIDEO = {
+  id: "mdKVMEjrqRQ",
+  title: "Gradle (Live in Oakland, CA)",
+  meta: "Oakland run \u00b7 2026 tour \u00b7 6:13",
+  poster: "/assets/setlists/2026/2026-07-17.jpg",
+  posterCredit: "Photo: Andy Tennille"
+};
 
 function renderFromTheStage() {
-  const card = (video, featured) => `<a class="fs-card${featured ? " fs-featured" : ""}" href="https://www.youtube.com/watch?v=${video.id}" target="_blank" rel="noopener noreferrer">
-      <span class="fs-thumb"><img src="https://i.ytimg.com/vi/${video.id}/hqdefault.jpg" alt="" loading="lazy" decoding="async"><span class="fs-play" aria-hidden="true"><svg width="18" height="20" viewBox="0 0 14 16" fill="none"><path d="M2 1.7c0-.8.87-1.3 1.56-.88l10 6.3a1.04 1.04 0 0 1 0 1.76l-10 6.3A1.04 1.04 0 0 1 2 14.3V1.7Z" fill="currentColor"/></svg></span><span class="fs-dur">${video.duration}</span></span>
-      <span class="fs-body"><strong>${escapeHtml(video.title)}</strong><small>${video.meta}</small></span>
-    </a>`;
+  const v = FROM_THE_STAGE_VIDEO;
   return `<section class="from-the-stage" id="from-the-stage">
   <div class="section-heading data-heading">
     <h2>From the stage</h2>
-    <span>Official videos from Widespread Panic.</span>
+    <span>Official video from Widespread Panic.</span>
   </div>
-  <div class="fs-grid">
-    ${card(FROM_THE_STAGE_VIDEOS[0], true)}
-    <div class="fs-side">
-      ${card(FROM_THE_STAGE_VIDEOS[1], false)}
-      ${card(FROM_THE_STAGE_VIDEOS[2], false)}
-    </div>
+  <div class="fs-player" data-fs-player data-video-id="${v.id}">
+    <button type="button" class="fs-poster" data-fs-play aria-label="Play ${escapeAttr(v.title)}">
+      <img src="${v.poster}" alt="" loading="lazy" decoding="async">
+      <span class="fs-scrim" aria-hidden="true"></span>
+      <span class="fs-play" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 14 16" fill="none"><path d="M2 1.7c0-.8.87-1.3 1.56-.88l10 6.3a1.04 1.04 0 0 1 0 1.76l-10 6.3A1.04 1.04 0 0 1 2 14.3V1.7Z" fill="currentColor"/></svg></span>
+      <span class="fs-caption"><strong>${escapeHtml(v.title)}</strong><small>${v.meta}</small></span>
+      <span class="fs-credit">${v.posterCredit}</span>
+    </button>
   </div>
   <a class="link-quiet fs-more" href="https://www.youtube.com/channel/UCKmXntvZFs9VBYknXMMzIbw">More from Widespread Panic on YouTube <span aria-hidden="true">\u2192</span></a>
+  <script>
+    (() => {
+      const wrap = document.querySelector("[data-fs-player]");
+      const btn = wrap && wrap.querySelector("[data-fs-play]");
+      if (!btn) return;
+      btn.addEventListener("click", () => {
+        const frame = document.createElement("iframe");
+        frame.src = "https://www.youtube-nocookie.com/embed/" + wrap.dataset.videoId + "?autoplay=1&rel=0";
+        frame.title = "${escapeAttr(v.title)}";
+        frame.allow = "autoplay; encrypted-media; picture-in-picture";
+        frame.allowFullscreen = true;
+        frame.className = "fs-frame";
+        wrap.replaceChild(frame, btn);
+      }, { once: true });
+    })();
+  </script>
 </section>`;
 }
 
@@ -15115,27 +15136,33 @@ body.stagelight .ns-flag.is-tonight { color: var(--sl-ink); border-color: rgba(2
 body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; border-radius: var(--sl-r-md); background: linear-gradient(200deg, rgba(255,255,255,0.10), transparent 38%); pointer-events: none; }
 
 /* ---- SHELF WATCH HEAT CARDS ---- */
-/* ---- FROM THE STAGE (official videos: featured 2/3 + two stacked) ---- */
+/* ---- FROM THE STAGE (one cinematic featured video, our photo as poster) ---- */
 body.stagelight .from-the-stage { padding: 0; }
-body.stagelight .fs-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items: stretch; }
-body.stagelight .fs-side { display: grid; gap: 16px; }
-body.stagelight .fs-card { display: flex; flex-direction: column; border: 1px solid var(--sl-line); border-radius: var(--sl-r); overflow: hidden; background: rgba(16,16,20,0.35); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); color: var(--sl-ink); transition: border-color 0.15s ease, transform 0.18s ease; }
-body.stagelight .fs-card:hover { border-color: var(--sl-line-strong); transform: translateY(-1px); }
-body.stagelight .fs-thumb { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; }
-body.stagelight .fs-thumb img { width: 100%; height: 100%; object-fit: cover; }
-body.stagelight .fs-play { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255,255,255,0.92); background: rgba(9,9,11,0.28); transition: background 0.15s ease; }
-body.stagelight .fs-card:hover .fs-play { background: rgba(9,9,11,0.12); }
-body.stagelight .fs-dur { position: absolute; right: 10px; bottom: 8px; font-family: var(--sl-mono); font-size: 11.5px; padding: 3px 8px; border-radius: 6px; background: rgba(9,9,11,0.78); color: var(--sl-ink); }
-body.stagelight .fs-body { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px 15px; }
-body.stagelight .fs-body strong { font-size: 15.5px; font-weight: 620; letter-spacing: -0.005em; }
-body.stagelight .fs-featured .fs-body strong { font-size: 18px; }
-body.stagelight .fs-body small { font-size: 13px; color: var(--sl-muted); }
-body.stagelight .fs-more { margin-top: 16px; }
-@media (max-width: 900px) {
-  body.stagelight .fs-grid { grid-template-columns: 1fr; }
-  body.stagelight .fs-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.stagelight .fs-player { position: relative; aspect-ratio: 21 / 9; border: 1px solid var(--sl-line); border-radius: var(--sl-r); overflow: hidden; background: #0d0d10; }
+body.stagelight .fs-poster { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; position: relative; text-align: left; }
+body.stagelight .fs-poster img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .fs-poster:hover img { transform: scale(1.015); }
+body.stagelight .fs-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.25) 0%, rgba(9,9,11,0.1) 40%, rgba(9,9,11,0.78) 88%); }
+body.stagelight .fs-play {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 76px; height: 76px; display: grid; place-items: center; padding-left: 6px;
+  border-radius: 50%; color: var(--sl-ink);
+  background: rgba(16,16,20,0.55); border: 1px solid rgba(255,255,255,0.28);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
-@media (max-width: 560px) { body.stagelight .fs-side { grid-template-columns: 1fr; } }
+body.stagelight .fs-poster:hover .fs-play { background: rgba(24,24,30,0.72); border-color: rgba(255,255,255,0.5); transform: translate(-50%, -50%) scale(1.05); }
+body.stagelight .fs-caption { position: absolute; left: 26px; bottom: 20px; display: flex; flex-direction: column; gap: 4px; }
+body.stagelight .fs-caption strong { font-family: var(--sl-display); font-size: 21px; font-weight: 640; letter-spacing: -0.01em; text-shadow: 0 2px 24px rgba(0,0,0,0.7); }
+body.stagelight .fs-caption small { font-size: 13.5px; color: rgba(255,255,255,0.7); }
+body.stagelight .fs-credit { position: absolute; right: 12px; bottom: 10px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.6); }
+body.stagelight .fs-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+body.stagelight .fs-more { margin-top: 16px; }
+@media (max-width: 760px) {
+  body.stagelight .fs-player { aspect-ratio: 16 / 9; }
+  body.stagelight .fs-caption strong { font-size: 17px; }
+  body.stagelight .fs-play { width: 60px; height: 60px; }
+}
 /* ---- SHELF WATCH: editorial photo-card rail (archival feature, not a data
    block). No section frame; the cards carry the design. Static on hover. ---- */
 body.stagelight .shelf-watch { background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0; }
