@@ -306,7 +306,16 @@ const ARCHIVE_EXCLUDED_PATHS = new Set([
   // 2000-05-15 to keep it off Blogger's front page. Not a real post: raw CSS
   // leaks into its meta description, and it made the archive claim a year 2000
   // when the site started in June 2007.
-  "/2000/05/marker.html"
+  "/2000/05/marker.html",
+  // Untitled Blogger drafts. The export has no <title> and no filename, so they
+  // fell through to "Entry N" fallback titles on the archive hub. Entry 28 is
+  // empty; 191 is a draft of the 2025 setlists (all shows live on the real 2025
+  // pages); 85 is a mid-tour draft of the published 2013 Spring Tour post
+  // (19 of its 32 shows). The N comes from feed position, which is stable:
+  // blogger-feed.atom is a fixed Takeout snapshot.
+  "/archive/2025/entry-28.html",
+  "/archive/2025/entry-191.html",
+  "/archive/2013/entry-85.html"
 ]);
 
 async function loadBloggerArchive() {
