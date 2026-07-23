@@ -3,6 +3,23 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-23 (transitions)
+
+### Fixed
+- **Hero transition stutter, root cause found and measured.** Since `1682da7`
+  (2:27am) every hero view was kept in layout invisibly so slot heights would be
+  intrinsic from first paint. That left 87 invisible view subtrees and 6,591
+  elements — about a quarter of the entire page — inside the hero's layout. A
+  forced layout pass measured **11.4ms median / 28ms worst**, against **1.3ms**
+  without them. The 60fps frame budget is 16.7ms, so layout alone was consuming
+  the frame. Now only the longest few views per slot stay in layout to hold the
+  height; the rest are `display:none`. After: 15 views, 796 elements, **5.0ms**.
+  Verified the original load-shift bug did not return by revealing every view in
+  all three slots — none exceeds its reserved height. (`hero layout fix`)
+- Living poster now pauses its animation loop when off-screen or the tab is
+  hidden. It had been redrawing ~1.5M canvas pixels every frame from load onward
+  with no stop condition. (`living poster gating`)
+
 ## 2026-07-23 (later)
 
 ### Reverted
