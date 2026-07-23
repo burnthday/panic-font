@@ -3453,12 +3453,24 @@ function livingPosterRuntime(CFG) {
   var startT = performance.now();
   var raf = window.requestAnimationFrame || function (cb) { return setTimeout(function () { cb(performance.now()); }, 1000 / 60); };
   var booted = false;
+  // The loop only runs while this poster is actually on screen in a visible tab.
+  // Without this it redraws ~1.5M canvas pixels every frame forever, competing
+  // with every other animation on the page (hero transitions, view transitions)
+  // even when scrolled far away. Off-screen phase jumps are invisible by
+  // definition — nobody is watching the frames that were skipped.
+  var tabVisible = true, onScreen = true, looping = false;
+  function running() { return booted && !reduce && tabVisible && onScreen; }
   function frame(now) {
     var t = (now - startT) / 1000;
     mx += (tmx - mx) * 0.08; my += (tmy - my) * 0.08;
     applyParallax();
     drawStars(t, false); drawFx(t, false);
-    if (!reduce) raf(frame);
+    if (running()) { raf(frame); } else { looping = false; }
+  }
+  function startLoop() {
+    if (looping || !running()) return;
+    looping = true;
+    raf(frame);
   }
   function boot() {
     if (booted) return;
@@ -3467,8 +3479,18 @@ function livingPosterRuntime(CFG) {
     if (reduce) {
       mx = my = tmx = tmy = 0.5; applyParallax(); applyParallax();
       drawStars(0, true); drawFx(0, true);
-    } else { raf(frame); }
+    } else { startLoop(); }
   }
+  try {
+    new IntersectionObserver(function (entries) {
+      onScreen = entries[entries.length - 1].isIntersecting;
+      if (onScreen) startLoop();
+    }, { rootMargin: "150px" }).observe(host);
+  } catch (e) {}
+  document.addEventListener("visibilitychange", function () {
+    tabVisible = document.visibilityState !== "hidden";
+    if (tabVisible) startLoop();
+  });
   if (plateImg.complete && plateImg.naturalWidth) boot(); else plateImg.addEventListener("load", boot);
   window.addEventListener("resize", function () { if (!booted) { boot(); return; } size(); if (reduce) { drawStars(0, true); drawFx(0, true); } });
   // rAF may be throttled to zero in a background/preview frame — timeout fallback
