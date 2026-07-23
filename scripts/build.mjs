@@ -9009,6 +9009,7 @@ function renderNickJohnsonFeature(data) {
         <div class="nick-bar-row"><span class="nb-label">Originals</span><span class="nick-progress-track"><i class="is-original" style="width:${originalWidth}%"></i></span><span class="nb-count">${formatNumber(playedOriginals)}/${formatNumber(originals.length)}</span></div>
         <div class="nick-bar-row"><span class="nb-label">Covers</span><span class="nick-progress-track"><i class="is-cover" style="width:${coverWidth}%"></i></span><span class="nb-count">${formatNumber(playedCovers)}/${formatNumber(covers.length)}</span></div>
       </div>
+      <img class="nick-gear" src="/assets/nick-gear.png" alt="Nick Johnson's rig: PRS guitar, Mesa/Boogie, Sound City and Orange cabs, pedalboard" loading="lazy" decoding="async" width="1000" height="837">
       <div class="data-metrics nick-tiles" aria-label="Nick Johnson tour totals">
         ${renderNickStat(shows, "shows")}
         ${renderNickStat(plays, "song plays")}
@@ -14263,7 +14264,9 @@ body.stagelight .key-block { border-color: var(--sl-line); }
 body.stagelight .nick-feature { background: none; border: 0; box-shadow: none; padding: 0; color: var(--sl-ink); }
 body.stagelight .nick-feature h2.nick-headline { margin: 0 0 26px; max-width: none; color: var(--sl-muted); }
 /* Grouped glass summary panel. */
-body.stagelight .nick-panel { background: var(--sl-glass); -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4); border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow); padding: 26px 28px 22px; }
+/* Darker than the standard glass so the gear art's blue halo reads (Alex). */
+body.stagelight .nick-panel { background: linear-gradient(180deg, rgba(13,13,16,0.82), rgba(10,10,13,0.72)); -webkit-backdrop-filter: blur(26px) saturate(1.4); backdrop-filter: blur(26px) saturate(1.4); border: 1px solid var(--sl-line); border-radius: var(--sl-r); box-shadow: var(--sl-glass-shadow); padding: 26px 28px 22px; }
+body.stagelight .nick-gear { display: block; width: 100%; height: auto; margin: 22px 0 6px; }
 body.stagelight .nick-lead { display: flex; align-items: baseline; gap: 8px; }
 body.stagelight .nick-lead strong { font-family: var(--sl-display); font-size: 46px; line-height: 1; font-weight: 640; color: var(--sl-ink); font-variant-numeric: tabular-nums; }
 body.stagelight .nick-lead span { font-family: var(--sl-display); font-size: 21px; color: var(--sl-muted); font-variant-numeric: tabular-nums; }
