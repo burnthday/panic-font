@@ -1862,7 +1862,7 @@ function renderAboutJsonLd(stats) {
 function renderAboutPage(entry, data, cache) {
   const stats = aboutStats(data, cache);
   const title = "About Alex Moura, Creator of Burnthday | Widespread Panic";
-  const description = "Alex Moura, creator of Burnthday, the Widespread Panic tour song list and data spreadsheet. Running since July 2007. TRI Studios, Hard Working Americans, JoJo Hermann, Jerry Joseph, Trondossa.";
+  const description = "Alex Moura, creator of Burnthday, the Widespread Panic tour song list and data spreadsheet. Running since June 2007. TRI Studios, Hard Working Americans, JoJo Hermann, Jerry Joseph, Trondossa.";
   const credits = [
     ["Hard Working Americans", "Head of Digital Strategy and Creative Direction, 2013–2018, out of Bob Weir's TRI Studios. No ad budget. Sold-out shows and a number one debut on the iTunes rock chart."],
     ["Dave Schools", "Runs Dave's Facebook page and worked the digital side of the KIMOCK record."],
@@ -2017,7 +2017,7 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Widespread Panic Lyrics &amp; Chords | Burnthday</title>
-    <meta name="description" content="Every Widespread Panic song — where to find its lyrics and chords. Our own transcriptions where they exist, and Everyday Companion for the rest, with live play counts.">
+    <meta name="description" content="Lyrics for every Widespread Panic song and chords wherever they exist... Everyday Companion covers the rest. With live play counts.">
     <link rel="canonical" href="https://burnthday.com/lyrics-chords/">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
@@ -2569,7 +2569,9 @@ function renderFaqPage(data) {
   const allFaqs = faqData.faqs || [];
   const faqs = allFaqs.filter((faq) => faq.verify !== true);
   const held = allFaqs.length - faqs.length;
-  const description = faqData.description || "The questions a new Widespread Panic fan actually asks, answered plainly with sources.";
+  // faqData.description is the data file's own working note (verify flags, schema
+  // notes) - never ship it as the page meta.
+  const description = "New to Widespread Panic? The name, the story, the people, where they stand right now... and what to put on first.";
 
   const sourcesLine = (faq) => {
     const srcs = faq.sources || [];
@@ -3786,7 +3788,7 @@ function renderShelfInfoPage(data, options = {}) {
   const purgCount = (data.boards.purgatoryOriginals?.length || 0) + (data.boards.purgatoryCovers?.length || 0);
   const woodCount = (data.boards.woodshedOriginals?.length || 0) + (data.boards.woodshedCovers?.length || 0);
 
-  const description = `Burnthday's Widespread Panic Shelf and Purgatory notes for the ${year} tour.`;
+  const description = "Widespread Panic songs gone 200 shows without a play... off the sheet but not forgotten. The Shelf and Purgatory, tracked.";
 
   // Stat strip — reuse the .song-stat tile pattern. Tabular mono numbers, and
   // any tile whose number we can't compute is omitted rather than faked.
@@ -3935,7 +3937,8 @@ function renderShelfRow(row, slugMap, limit, options = {}) {
 }
 
 function renderRumorsPage(data, oldRumorsEntry) {
-  const description = oldRumorsEntry?.metaDescription || "Burnthday Widespread Panic rumors.";
+  // Never inherit the legacy Blogger meta here: it was frozen at "2017 tour rumors".
+  const description = "Widespread Panic tour rumors making the rounds... 100% pure speculation until the band says otherwise. Call before you haul!";
 
   return `<!doctype html>
 <html lang="en">
@@ -4833,7 +4836,7 @@ function renderSongOriginsIndex(origins, options = {}) {
   const canonicalPath = options.canonicalPath || "/song-origins/";
   const data = options.data;
   const albums = options.albums || [];
-  const description = "Widespread Panic song origins, histories, notes, and Burnthday picks.";
+  const description = "The stories behind Widespread Panic's songs... how they got written, where they came from, and who's in them.";
   // Curated entries carry a kind: "story" gets the full card, "fact" a compact
   // card, "trivia" a one-liner pulled out into a "Deep cuts" strip at the end.
   // Legacy (Facebook-sourced) origins have no kind and keep their card treatment
@@ -6406,7 +6409,7 @@ function renderSongsIndex(data, slugMap) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Song Index | Every Widespread Panic Song | Burnthday</title>
-    <meta name="description" content="Search every song in the Widespread Panic catalog and see its full live history — total plays, first and last, rarity, and the album it came from.">
+    <meta name="description" content="Every song Widespread Panic has ever played and its full live history... total plays, first and last, rarity, and the album it came from.">
     <link rel="canonical" href="https://burnthday.com/songs/">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
@@ -7272,7 +7275,7 @@ function renderAlbumsIndex(albums, data) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Widespread Panic Albums | Burnthday</title>
-    <meta name="description" content="The modern Widespread Panic studio albums — tracklists, credits, and how each record lives on stage.">
+    <meta name="description" content="Every Widespread Panic studio album... tracklists, credits, and what's still in rotation off each one.">
     <link rel="canonical" href="https://burnthday.com/albums/">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
