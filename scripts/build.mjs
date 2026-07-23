@@ -9691,17 +9691,17 @@ const NICK_RIG_VIDEOS = [
 const NICK_RIG_SPOTS = [
   { id: "amber", x: 63, y: 72, tag: "Confirmed", name: "PRS DGT \u2014 \u201cAmber\u201d", note: "Flame maple, light amber stain. Started as a Mexico backline rental; Nick bought it after the run. Trem arm custom-bent, volume knobs swapped." },
   { id: "hometeam", x: 46, y: 53.5, tag: "Confirmed", name: "\u201chometeam\u201d head", note: "Custom Soldano SLO clone built by a friend of Nick's \u2014 the same breed of amp Mikey ran." },
-  { id: "soundcity", x: 20, y: 71, tag: "Confirmed", name: "Sound City 4x12", note: "Mikey's original cabinet from back in the day, loaded with Tone Tubby ceramics. Still moving air." },
+  { id: "soundcity", x: 20, y: 71, tag: "Confirmed", name: "Sound City 4x12", note: "Mikey's original cabinet from back in the day. Still moving air." },
   { id: "mesa", x: 44, y: 71, tag: "Confirmed", name: "Mesa/Boogie 4x12", note: "Sits under the hometeam head on stage." },
   { id: "steve", x: 19, y: 49, tag: "Confirmed", name: "\u201cSTEVE\u201d", note: "50-watt Marshall-style head \u2014 the rig's main amp before the SLO clone showed up at Red Rocks." },
-  { id: "crown", x: 78, y: 53, tag: "Confirmed", name: "Crown XLS power amps", note: "The muscle behind the wet rig \u2014 Jimmy's setup, one live and one spare." },
-  { id: "orange", x: 80, y: 72.5, tag: "Confirmed", name: "Orange 4x12", note: "Runs in stereo for the wet side \u2014 the reverb half of the sound." },
+  { id: "crown", x: 78, y: 53, tag: "From Jimmy's rig", assumed: true, name: "Crown XLS power amps", note: "The muscle behind the wet rig \u2014 one live, one spare." },
+  { id: "orange", x: 80, y: 72.5, tag: "From Jimmy's rig", assumed: true, name: "Orange 4x12", note: "Runs in stereo for the wet side \u2014 the reverb half of the sound." },
   { id: "brownbox", x: 39, y: 47, tag: "From Jimmy's rig", assumed: true, name: "Brown Box", note: "Voltage attenuator, Col. Bruce Hampton sticker on top." },
-  { id: "tuner", x: 18.5, y: 90, tag: "Confirmed", name: "Boss tuner", note: "Battered chromatic tuner, straight off Jimmy's floor." },
+  { id: "tuner", x: 18.5, y: 90, tag: "From Jimmy's rig", assumed: true, name: "Boss tuner", note: "Battered chromatic tuner, straight off Jimmy's floor." },
   { id: "polytune", x: 25.5, y: 90, tag: "Confirmed", name: "TC PolyTune", note: "Tuner." },
   { id: "dd3t", x: 33, y: 91, tag: "Confirmed", name: "Boss DD-3T", note: "Mikey ran the original DD-3. This one adds tap tempo." },
-  { id: "vol", x: 41.5, y: 89.5, tag: "Confirmed", name: "Ernie Ball volume", note: "First thing the guitar hits. Swells live here." },
-  { id: "green", x: 47, y: 91.5, tag: "Confirmed", name: "The green box", note: "Overdrive wrapped in green gaffer tape, \u201cSAT BASS\u201d scrawled on top." },
+  { id: "vol", x: 41.5, y: 89.5, tag: "From Jimmy's rig", assumed: true, name: "Ernie Ball volume", note: "First thing the guitar hits. Swells live here." },
+  { id: "green", x: 47, y: 91.5, tag: "Confirmed", name: "The green box", note: "Overdrive wrapped in green gaffer tape." },
 ];
 
 function renderNickRigModal() {
