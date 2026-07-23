@@ -805,10 +805,15 @@ async function checkLatestSetlist(html, siteData) {
   record("Hero Show photos tertiary link uses the featured show's source URL when present",
     !feat?.sourceUrl || heroOnly.includes(`class="link-quiet sc-photos-link" href="${escapeHtml(feat.sourceUrl)}"`),
     feat?.sourceUrl || "no sourceUrl");
-  // Left-edge dissolve: sharp photo masked + blurred ::before copy, desktop only.
-  record("Hero photo keeps a whisper-soft left edge; the tinted paint stroke supplies the left atmosphere",
-    /mask-image: linear-gradient\(90deg, transparent 0, #000 24px\)/.test(css)
-    && css.includes(".hero-brush") && heroOnly.includes('class="hero-brush"')
+  // Framed bento photo (owner rejected the flush-top / right-bleed / left-blur
+   // treatment): radius + border restored, left-edge mask + bleed margins gone.
+  record("Hero photo is a framed bento (radius + border), no left-edge mask or bleed",
+    /body\.stagelight \.hero-photo \{[^}]*border-radius: var\(--sl-r-md\)[^}]*border: 1px solid var\(--sl-line\)/.test(css)
+    && !/mask-image: linear-gradient\(90deg, transparent 0, #000 24px\)/.test(css)
+    && !/hero-media-slot \{[^}]*margin-right: calc\(-1 \* var\(--hero-pad\)\)/.test(css),
+    "framed photo, no mask/bleed");
+  record("Tinted paint stroke still supplies the left column atmosphere",
+    css.includes(".hero-brush") && heroOnly.includes('class="hero-brush"')
     && css.includes("--hero-glow-strong") && html.includes("--hero-glow-strong"));
   record("Date pager has working prev/next wiring, wraps, and shows no count",
     heroOnly.includes("data-page-prev") && heroOnly.includes("data-page-next") && !heroOnly.includes("hero-page-count")
@@ -856,8 +861,11 @@ async function checkLatestSetlist(html, siteData) {
 
   // ---- Sticky nav CSS: rides up with the header on scroll-down ----
   const styles = await readText("dist/styles.css");
-  record("Section nav is sticky under the site header", /\.home-nav \{[^}]*position: sticky[^}]*top: 66px[^}]*transition: top 0\.28s ease/.test(styles));
-  record("Section nav rides up when the header hides", /body\.stagelight\.nav-hidden \.home-nav \{ top:/.test(styles));
+  record("Section nav is fixed under the site header and hidden by default (no reserved space)",
+    /\.home-nav \{[^}]*position: fixed[^}]*top: 66px[^}]*opacity: 0[^}]*pointer-events: none/.test(styles)
+    && /body\.stagelight \{ --sl-breadcrumb-h: 0px; \}/.test(styles));
+  record("Section nav reveals (top:0, visible, clickable) only when the header hides",
+    /body\.stagelight\.nav-hidden \.home-nav \{ top: 0; opacity: 1; transform: none; pointer-events: auto; \}/.test(styles));
   record("Section nav highlights the active section", html.includes('data-nav-section') && html.includes('.home-nav') && html.includes('IntersectionObserver'));
   record("Latest-show hero keeps its blurred backdrop when open", /\.show-entry\.is-latest\[open\] \.sc-bg img \{[^}]*blur\(/.test(styles));
   const imageRule = styles.match(/\.setlist-image img\s*\{([^}]*)\}/)?.[1] || "";
@@ -2308,6 +2316,18 @@ async function checkHeroTransitionEngine(homeHtml) {
   record("Pager arrows are position-stable (lockwrap top-aligned, never re-centered)",
     /body\.stagelight \.hero-lockwrap \{[^}]*align-self: start/.test(css) && !/hero-lockwrap \{[^}]*align-self: center/.test(css),
     "lockwrap align-self start");
+  // Two column wrappers, not a 2x2 grid: row 2 sits a FIXED gap below row 1 so the
+  // music slot can never overlap Set 1 (short screens) or leave a giant gap (tall).
+  record("Hero uses two column wrappers with a fixed music-slot gap (no negative margin, no vh coupling)",
+    homeHtml.includes('class="hero-left"') && homeHtml.includes('class="hero-right"')
+    && /body\.stagelight \.hero-left, body\.stagelight \.hero-right \{[^}]*display: flex/.test(css)
+    && /body\.stagelight \.hero-music-slot \{ margin-top: 28px; \}/.test(css)
+    && !/hero-music-slot \{[^}]*margin-top: -61px/.test(css)
+    && !/hero-inner \{[^}]*grid-template-rows: auto/.test(css),
+    "hero-left/right wrappers + fixed 28px music gap, no -61px / grid-rows");
+  record("Hero column gutter widened to 88px",
+    /body\.stagelight \.hero-inner \{[^}]*column-gap: 88px/.test(css),
+    "88px column-gap");
   record("Reduced motion disables the hero view transitions",
     /@media \(prefers-reduced-motion: reduce\) \{\s*body\.stagelight \.hv \{ transition: none/.test(css),
     "reduced-motion guard present");

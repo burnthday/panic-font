@@ -7410,11 +7410,22 @@ function renderHeroModalScript() {
     // Refill a context row's content, then (unless reduced motion) play a short
     // direction-aware enter: prev navigation = rows arrive from above, next =
     // from below. Only the two context rows ever move; Sacramento is pinned.
+    const clearRefillClasses = (slotEl) => {
+      slotEl.classList.remove("is-refilling", "is-entering-up", "is-entering-down");
+    };
+    // Cancel any in-flight refill animation on a slot. Timer/rAF handles live on
+    // the element so rapid paging (last-wins) can't interleave two animations and
+    // strand a row mid-transition (invisible / unclickable).
+    const cancelRefill = (slotEl) => {
+      if (slotEl._refillTimer) { clearTimeout(slotEl._refillTimer); slotEl._refillTimer = null; }
+      if (slotEl._refillRaf) { cancelAnimationFrame(slotEl._refillRaf); slotEl._refillRaf = null; }
+      if (slotEl._refillSafety) { clearTimeout(slotEl._refillSafety); slotEl._refillSafety = null; }
+    };
     const fillSlot = (slotEl, iso, dir) => {
       if (!slotEl) return;
-      if (!iso || !meta[iso]) { slotEl.hidden = true; return; }
+      cancelRefill(slotEl);
+      if (!iso || !meta[iso]) { clearRefillClasses(slotEl); slotEl.hidden = true; return; }
       slotEl.hidden = false;
-      if (slotEl.dataset.viewBtn === iso) return;
       const paint = () => {
         slotEl.dataset.viewBtn = iso;
         const m = meta[iso];
@@ -7423,18 +7434,31 @@ function renderHeroModalScript() {
         slotEl.querySelector(".hc-place strong").textContent = m.c;
         slotEl.querySelector(".hc-place small").textContent = m.v + (m.n ? " · " + m.n : "");
       };
+      // Already showing the right content — just make sure no stale animation
+      // class is stranding it (invisible / unclickable), then bail. Idempotent.
+      if (slotEl.dataset.viewBtn === iso) { clearRefillClasses(slotEl); return; }
       if (reduceMotion || !dir) {
         paint();
-        slotEl.classList.remove("is-refilling", "is-entering-up", "is-entering-down");
+        clearRefillClasses(slotEl);
         return;
       }
       slotEl.classList.add("is-refilling");
-      setTimeout(() => {
+      slotEl._refillTimer = setTimeout(() => {
+        slotEl._refillTimer = null;
         paint();
         slotEl.classList.remove("is-refilling");
         const enter = dir === "prev" ? "is-entering-up" : "is-entering-down";
         slotEl.classList.add(enter);
-        requestAnimationFrame(() => requestAnimationFrame(() => slotEl.classList.remove(enter)));
+        slotEl._refillRaf = requestAnimationFrame(() => requestAnimationFrame(() => {
+          slotEl._refillRaf = null;
+          slotEl.classList.remove(enter);
+        }));
+        // Hard safety net: whatever happens with rAF/transition, no animation
+        // class survives past this, so a row can never stay invisible.
+        slotEl._refillSafety = setTimeout(() => {
+          slotEl._refillSafety = null;
+          clearRefillClasses(slotEl);
+        }, 420);
       }, 140);
     };
     let lastActiveIso = null;
@@ -7455,9 +7479,13 @@ function renderHeroModalScript() {
       lastActiveIso = activeIso;
       fillSlot(slotA, pool[0], dir);
       fillSlot(slotB, pool[1], dir);
-      [slotA, slotB, upcomingCardEl].forEach((card) => {
+      // Key is-current off the TARGET iso each card is being filled with, not the
+      // live card.dataset.viewBtn — fillSlot defers that update behind the refill
+      // animation, so reading the dataset here can catch a stale value and strand
+      // is-current on the wrong (context) row, which also blocks its click.
+      [[slotA, pool[0]], [slotB, pool[1]], [upcomingCardEl, upcomingIso]].forEach(([card, iso]) => {
         if (!card) return;
-        const on = card.dataset.viewBtn === activeIso;
+        const on = !!iso && iso === activeIso;
         card.classList.toggle("is-current", on);
         card.setAttribute("aria-pressed", String(on));
       });
@@ -9653,16 +9681,20 @@ function renderHomeHero(data) {
     ${bg}
     <div class="hero-brush" aria-hidden="true"><svg viewBox="0 0 900 340" preserveAspectRatio="none"><path d="M-60 128 C140 92 330 156 520 124 C670 100 800 142 940 116 L940 216 C780 248 610 200 450 232 C290 262 120 216 -60 248 Z"/><path class="hb2" d="M-60 180 C120 158 300 196 470 172 C610 152 730 184 860 164 L860 226 C710 248 560 214 410 238 C260 260 100 232 -60 252 Z"/></svg></div>
     <div class="hero-inner">
-      <div class="hero-lockwrap">${pager}<div class="hero-slot hero-lock-slot">${slot("lock")}</div></div>
-      <div class="hero-slot hero-media-slot">${slot("media")}</div>
-      <div class="hero-slot hero-music-slot">${slot("music")}</div>
-      <div class="hero-rail">
-        <div class="hero-slot hero-ticker-slot">${slot("ticker")}</div>
-        <div class="hero-cards">
-          ${cards}
-          <a class="link-quiet hero-all" href="/#setlists">All ${escapeHtml(String(data.site.year))} setlists <span aria-hidden="true">→</span></a>
+      <div class="hero-left">
+        <div class="hero-lockwrap">${pager}<div class="hero-slot hero-lock-slot">${slot("lock")}</div></div>
+        <div class="hero-slot hero-music-slot">${slot("music")}</div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-slot hero-media-slot">${slot("media")}</div>
+        <div class="hero-rail">
+          <div class="hero-slot hero-ticker-slot">${slot("ticker")}</div>
+          <div class="hero-cards">
+            ${cards}
+            <a class="link-quiet hero-all" href="/#setlists">All ${escapeHtml(String(data.site.year))} setlists <span aria-hidden="true">→</span></a>
+          </div>
+          ${cardMetaJson}
         </div>
-        ${cardMetaJson}
       </div>
     </div>
   </section>${echo}`;
@@ -13854,7 +13886,7 @@ body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; b
    position:relative). .home-nav and .bento-panel are excluded for exactly that
    reason; do not remove them. */
 body.stagelight main > *:not(.hero-echo):not(.bento-panel):not(.home-nav) { position: relative; z-index: 1; }
-body.stagelight main > .home-nav { position: sticky; z-index: 55; }
+body.stagelight main > .home-nav { position: fixed; z-index: 55; }
 /* Paint stroke: a wide brushed band of the show's own sampled stage-light color
    swept behind the left column. Tinted per view via --hero-glow-strong (set by
    the same canvas sample as the spotlight), heavily blurred so it reads as
@@ -13863,16 +13895,20 @@ body.stagelight .hero-brush { position: absolute; left: 0; top: 96px; width: min
 body.stagelight .hero-brush svg { width: 100%; height: 100%; }
 body.stagelight .hero-brush path { fill: var(--hero-glow-strong, rgba(255,186,128,0.2)); transition: fill 0.6s ease; }
 body.stagelight .hero-brush .hb2 { opacity: 0.55; }
-body.stagelight .hero-inner { --hero-pad: max(28px, calc((100vw - 1400px) / 2)); position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 37px) + 30px) var(--hero-pad) 38px; }
-/* Strict 50/50, 2x2: row 1 = identity (vertically centered) | photo. Row 2 =
-   setlist | ticker + cards. Nothing crosses the center gutter; the setlist falls
-   below the image line so the left column breathes. */
-body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; column-gap: 64px; row-gap: 14px; align-items: start; }
+/* Breadcrumb is fixed (out of flow) and hidden in the hero, so it reserves no
+   vertical space — the hero tucks under the 66px header only. */
+body.stagelight { --sl-breadcrumb-h: 0px; }
+body.stagelight .hero-inner { --hero-pad: max(28px, calc((100vw - 1400px) / 2)); position: relative; z-index: 1; padding: calc(66px + var(--sl-breadcrumb-h, 0px) + 30px) var(--hero-pad) 38px; }
+/* Two column wrappers (not a 2x2 grid). Each column flows internally, so row 2's
+   top is set by a FIXED gap below row 1 — never coupled to the photo's vh height.
+   This kills the old overlap-on-short / giant-gap-on-tall pair of bugs. */
+body.stagelight .hero-inner { display: grid; grid-template-columns: 1fr 1fr; column-gap: 88px; align-items: start; }
 body.stagelight .home-hero.no-image .hero-inner { grid-template-columns: 1fr; }
+body.stagelight .hero-left, body.stagelight .hero-right { min-width: 0; display: flex; flex-direction: column; }
 body.stagelight .hero-slot, body.stagelight .hero-rail { min-width: 0; }
 /* Top-aligned (was center): centering re-positioned the pager arrows every
    time a view's height differed — seizure fuel. Pinned start = arrows never move. */
-body.stagelight .hero-lockwrap { grid-column: 1; grid-row: 1; align-self: start; padding-top: 26px; min-width: 0; }
+body.stagelight .hero-lockwrap { align-self: start; padding-top: 26px; min-width: 0; }
 body.stagelight .hero-pager { display: flex; align-items: center; gap: 8px; margin-top: -10px; margin-bottom: 16px; }
 body.stagelight .hero-page {
   width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--sl-line-strong);
@@ -13881,9 +13917,12 @@ body.stagelight .hero-page {
 }
 body.stagelight .hero-page:hover:not(:disabled) { color: var(--sl-ink); border-color: var(--sl-muted); background: rgba(255,255,255,0.05); }
 body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
-body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
-body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; margin-top: -61px; }
-body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
+/* Fixed 28px gap below the lock content — identical on every screen height, no
+   negative margin, no vh coupling. This is the fix for both the overlap and the
+   giant-gap bugs. */
+body.stagelight .hero-music-slot { margin-top: 28px; }
+/* Fixed gap below the framed photo before the ticker + cards rail. */
+body.stagelight .hero-rail { margin-top: 18px; }
 /* Slide engine (v2, Alex: "the hero needs to slide"). Content slides
    horizontally in the direction of navigation; the ONLY height that animates is
    the hero section itself, in one smooth move — no per-slot tweens, so nothing
@@ -13953,17 +13992,12 @@ body.stagelight .hsb-ring {
 body.stagelight .hero-stats-btn:hover .hsb-ring { animation-play-state: paused; }
 @keyframes hsb-orbit { to { --hsb-a: 360deg; } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .hsb-ring { animation: none; } }
-body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(288px, 42vh, 442px); border-radius: 0; overflow: hidden; border: 0; box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
+/* Framed bento photo (owner rejected the flush-top/right-bleed/left-blur
+   treatment). Width-based height clamp — NOT vh — so the frame keeps a stable
+   presence and never drives the layout tall/short. */
+body.stagelight .hero-photo { position: relative; margin: 0; width: 100%; height: clamp(340px, 30vw, 430px); border-radius: var(--sl-r-md); overflow: hidden; border: 1px solid var(--sl-line); box-shadow: 0 40px 80px -28px rgba(0,0,0,0.85); }
 body.stagelight .hero-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
-/* Dissolve retired (Alex): clean photo edge with only a whisper-soft 24px fade
-   so the crop isn't razor-hard. The left-side atmosphere now comes from the
-   tinted paint stroke behind the identity column instead. */
-@media (min-width: 901px) {
-  body.stagelight .hero-photo img { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 24px); mask-image: linear-gradient(90deg, transparent 0, #000 24px); }
-}
-/* The photo bleeds: flush to the bar above, left edge on the page's center
-   mark (eating half the column gap), right edge off the viewport. */
-body.stagelight .hero-media-slot { margin-top: -30px; margin-left: -32px; margin-right: calc(-1 * var(--hero-pad)); }
+/* Media slot sits in normal flow under the hero-inner padding — no bleed. */
 body.stagelight .hero-credit { position: absolute; right: 8px; bottom: 6px; font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.04em; color: rgba(255,255,255,0.72); text-shadow: 0 1px 4px rgba(0,0,0,0.9); pointer-events: none; }
 /* Ticker: slow continuous crawl, pauses on hover; static scroll under 900px / reduced motion. */
 body.stagelight .hero-ticker { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent); }
@@ -14035,7 +14069,7 @@ body.stagelight .hero-all { justify-self: end; margin-top: 4px; }
    (.hero-media, sized by the photo cap); toggling .stats-open crossfades the
    photo away and slides the panel up into its place — cards stay put, hero
    height never changes. */
-body.stagelight .hero-media { position: relative; height: clamp(288px, 42vh, 442px); }
+body.stagelight .hero-media { position: relative; height: clamp(340px, 30vw, 430px); }
 body.stagelight .hero-media .hero-photo { position: absolute; inset: 0; height: 100%; transition: opacity 0.42s cubic-bezier(0.22,1,0.36,1), transform 0.42s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hero-stats-panel {
   position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -14085,12 +14119,16 @@ body.stagelight .hero-stats-panel .ltp-song { flex: 1; min-width: 0; overflow: h
      Slots MUST reset their desktop grid-column/row placements or the 1fr grid
      grows a phantom second column. */
   body.stagelight .hero-inner { grid-template-columns: 1fr; grid-template-rows: none; row-gap: 22px; }
+  /* Column wrappers dissolve so the single-column order rules govern the flat
+     list of slots (lockwrap, media, ticker, music, cards). */
+  body.stagelight .hero-left,
+  body.stagelight .hero-right,
+  body.stagelight .hero-rail { display: contents; }
   body.stagelight .hero-lockwrap,
   body.stagelight .hero-media-slot,
   body.stagelight .hero-music-slot,
   body.stagelight .hero-ticker-slot,
   body.stagelight .hero-cards { grid-column: 1; grid-row: auto; }
-  body.stagelight .hero-rail { display: contents; }
   body.stagelight .hero-lockwrap { order: 1; align-self: start; }
   body.stagelight .hero-media-slot { order: 2; margin: 0; }
   body.stagelight .hero-ticker-slot { order: 3; }
@@ -15105,15 +15143,22 @@ body.stagelight .key-grid b { color: var(--sl-ink); font-weight: 650; }
    border is the top edge), just a bottom hairline. Starts on the page's left
    rail, tight vertical padding, opaque-enough glass to hold over the white boards. */
 body.stagelight .home-nav {
-  position: sticky; top: 66px; z-index: 55;
-  transition: top 0.28s ease;
+  position: fixed; top: 66px; left: 0; right: 0; z-index: 55;
+  /* Hidden in the hero; glides into the vacated header strip once the site header
+     slides away on scroll-down (body.nav-hidden). Out of flow, so it reserves no
+     space (--sl-breadcrumb-h is 0). */
+  opacity: 0; transform: translateY(-10px); pointer-events: none;
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22,1,0.36,1), top 0.28s ease;
   display: flex; flex-wrap: wrap; align-items: center; gap: 2px 7px;
-  width: 100vw; margin: 0 calc(50% - 50vw);
+  margin: 0;
   padding: 4px max(28px, calc((100% - 1400px) / 2));
   border-bottom: 1px solid rgba(255,255,255,0.08);
   background: rgba(11,11,13,0.62); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
 }
-body.stagelight.nav-hidden .home-nav { top: 0; }
+body.stagelight.nav-hidden .home-nav { top: 0; opacity: 1; transform: none; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .home-nav { transition: none; }
+}
 body.stagelight .home-nav a {
   font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--sl-faint); text-decoration: none; padding: 3px 0;
