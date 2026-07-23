@@ -9386,7 +9386,6 @@ function computeNickRankModel(rotation, setlistShows) {
 // next": only eligible songs show, top six by Heat visible, the rest ship hidden.
 function renderNickRanking(songs, modelByKey, nickLastByKey) {
   const tierClass = (h) => (h >= 75 ? "nk-hot" : h >= 45 ? "nk-warm" : "nk-long");
-  const tierWord = (h) => (h >= 75 ? "Hot" : h >= 45 ? "Warm" : "Long shot");
   const rows = songs.map((song) => ({ song, m: modelByKey.get(song.key) || { eligible: false, heat: 0, medianGap: null, c100: 0, overdueRatio: 0 } }));
   // Default order: eligible by Heat desc first (so the visible top six are correct
   // with JS off), then everything else by Heat desc, ties by title.
@@ -9404,13 +9403,8 @@ function renderNickRanking(songs, modelByKey, nickLastByKey) {
     const usual = m.medianGap != null ? m.medianGap.toFixed(1) : "";
     const heat = m.heat;
     const visible = visibleKeys.has(song.key);
-    const overdueBy = m.medianGap != null ? Math.round(slp - m.medianGap) : 0;
     // Concise context sub-line only when a song is genuinely overdue and still in
     // real rotation (owner's threshold: overdue ratio >= 1.5 and >= 3 plays / 100).
-    const subline = (m.overdueRatio >= 1.5 && l100 >= 3 && usual)
-      ? `<small>Played every ${usual} shows · now ${formatNumber(Math.max(1, overdueBy))} shows overdue</small>`
-      : "";
-    const agoSub = slp > 0 && slp <= 40 ? `<small>(${formatNumber(slp)} show${slp === 1 ? "" : "s"} ago)</small>` : "";
     const nickLastIso = nickLastByKey.get(song.key) || "";
     const nickLastDisplay = nickLastIso ? isoToShortDate(nickLastIso) : "";
     // Collapsed-preview "Why now" cell, built from the row's own facets. next/woodshed
@@ -9424,14 +9418,14 @@ function renderNickRanking(songs, modelByKey, nickLastByKey) {
     const whyNick = nickLastDisplay ? `Last played with Nick ${nickLastDisplay}` : "In Nick&#39;s rotation";
     return `<li class="nick-row${played ? "" : " is-zero"}" data-song-title="${escapeAttr(song.title)}" data-type="${type}" data-nick-count="${escapeAttr(String(song.nickCount))}" data-eligible="${m.eligible ? "1" : "0"}" data-heat="${escapeAttr(String(heat))}" data-l100="${escapeAttr(String(l100))}" data-total="${escapeAttr(String(total))}" data-slp="${escapeAttr(String(slp))}" data-usual="${escapeAttr(usual)}" data-last="${escapeAttr(song.effectiveLastIso || "")}" data-nicklast="${escapeAttr(nickLastIso)}" data-played="${played ? "yes" : "no"}"${visible ? "" : " hidden"}>
     <span class="nick-rank" aria-hidden="true">${index + 1}</span>
-    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong>${subline}</span>
+    <span class="nick-song"><strong>${escapeHtml(song.title)}</strong></span>
     <span class="nick-why nx">${escapeHtml(whyNext)}</span>
     <span class="nick-why-nick pv">${whyNick}</span>
     <span class="nick-type"><span class="nick-chip is-${type}">${type === "cover" ? "COVER" : "ORIGINAL"}</span></span>
-    <span class="nick-plays nx"><strong>${formatNumber(l100)}</strong>${total > l100 ? `<small>${formatNumber(total)} all-time</small>` : ""}</span>
-    <span class="nick-gap nx">${formatNumber(slp)} / ${usual || "—"}<small>shows</small></span>
-    <span class="nick-last nx">${escapeHtml(song.lastDisplay || "—")}${agoSub}</span>
-    <span class="nick-score tn-heat nx ${tierClass(heat)}"><span class="tn-tier">${tierWord(heat)}</span><b>${heat}</b></span>
+    <span class="nick-plays nx"><strong>${formatNumber(l100)}</strong></span>
+    <span class="nick-gap nx">${formatNumber(slp)}</span>
+    <span class="nick-last nx">${escapeHtml(song.lastDisplay || "—")}</span>
+    <span class="nick-score tn-heat nx ${tierClass(heat)}"><b>${heat}</b></span>
     <span class="nick-nickplays pv"><strong>${formatNumber(song.nickCount)}</strong></span>
     <span class="nick-nicklast pv">${escapeHtml(nickLastDisplay || "—")}</span>
   </li>`;
@@ -14048,6 +14042,22 @@ body.stagelight .hero-echo::after { content: ""; position: absolute; inset: 0; b
    reason; do not remove them. */
 body.stagelight main > *:not(.hero-echo):not(.bento-panel):not(.home-nav) { position: relative; z-index: 1; }
 body.stagelight main > .home-nav { position: fixed; z-index: 55; }
+/* Blanket repair (strike five, Song Index dropdown): the blanket above forces
+   every main child to z-index:1, so an open filter popup (z:40, inside the
+   toolbar's stacking context) painted BEHIND the later song list. These
+   double-class selectors tie the blanket's specificity and win by source order —
+   never touch the blanket itself. Sticky bars also get the site-head glass so
+   rows don't read through them. */
+body.stagelight main > .index-toolbar.index-toolbar.index-toolbar { z-index: 30; }
+body.stagelight main > .song-search.song-search,
+body.stagelight main > .song-index-head.song-index-head,
+body.stagelight main > .lyric-head.lyric-head {
+  background: linear-gradient(180deg, rgba(13,13,15,0.9), rgba(11,11,13,0.82));
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+body.stagelight main > .song-search.song-search.song-search { position: sticky; z-index: 12; }
+body.stagelight main > .song-index-head.song-index-head.song-index-head,
+body.stagelight main > .lyric-head.lyric-head.lyric-head { position: sticky; z-index: 11; }
 /* Paint stroke: a wide brushed band of the show's own sampled stage-light color
    swept behind the left column. Tinted per view via --hero-glow-strong (set by
    the same canvas sample as the spotlight), heavily blurred so it reads as

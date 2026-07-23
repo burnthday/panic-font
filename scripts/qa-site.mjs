@@ -390,11 +390,12 @@ async function checkNickJohnsonFeature(html, siteData) {
     /class="nick-score tn-heat nx /.test(feature) && feature.includes('class="nick-nickplays pv"') && feature.includes('class="nick-nicklast pv"'),
     "nick-score .nx + nick-nickplays/.nick-nicklast .pv present");
 
-  // Heat reads like Tonight's Odds: tier word + digit-only score, NEVER a percent sign.
-  const scoreCells = [...feature.matchAll(/class="nick-score tn-heat nx (nk-\w+)"><span class="tn-tier">([^<]+)<\/span><b>(\d+)<\/b>/g)];
+  // Heat is a bare 0-100 digit (tier carried by the nk-* class color only — the
+  // HOT/WARM words were stripped 7/23, Alex: overloaded), NEVER a percent sign.
+  const scoreCells = [...feature.matchAll(/class="nick-score tn-heat nx (nk-\w+)"><b>(\d+)<\/b>/g)];
   record(
-    "Heat renders Tonight's-Odds style: tier word + digit-only score, no percent sign in a score cell",
-    scoreCells.length === rotation.length && scoreCells.every((match) => ["Hot", "Warm", "Long shot"].includes(match[2])) && !/<b>\d+%<\/b>/.test(feature),
+    "Heat renders as a bare digit score with a tier class, no tier word, no percent sign",
+    scoreCells.length === rotation.length && scoreCells.every((match) => /^nk-(hot|warm|long)$/.test(match[1]) && Number(match[2]) >= 0 && Number(match[2]) <= 100) && !/<b>\d+%<\/b>/.test(feature) && !feature.includes('class="nick-score tn-heat nx nk-hot"><span class="tn-tier">'),
     `${scoreCells.length} score cells`
   );
 
