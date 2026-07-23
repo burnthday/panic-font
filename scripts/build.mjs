@@ -9747,27 +9747,33 @@ const NICK_RIG_VIDEOS = [
   { title: "Rig Rundown", sub: "Joel Byron at Red Rocks", yt: "5x4gVol4iIM" },
 ];
 
+const RIG_OWNER_LABEL = { mikey: "Mikey's", jimmy: "Jimmy's", nick: "Nick's" };
+// Owner map sourced 7/23 (Zoel video, Joel Byron Red Rocks video, Premier Guitar's
+// Jimmy Herring Rig Rundown, + Alex's own calls). The dots tell "mostly two other
+// guys' gear" at a glance. polytune + green were nearly cut as AI photo-reads, but
+// Alex pulled a Red Rocks frame showing both on Nick's board — so they stay, with
+// captions that claim only what the frame shows.
 const NICK_RIG_SPOTS = [
-  { id: "amber", x: 63, y: 72, tag: "Confirmed", name: "PRS DGT \u2014 \u201cAmber\u201d", note: "Flame maple, light amber stain. Started as a Mexico backline rental; Nick bought it after the run. Trem arm custom-bent, volume knobs swapped." },
-  { id: "hometeam", x: 46, y: 53.5, tag: "Confirmed", name: "\u201chometeam\u201d head", note: "Custom Soldano SLO clone built by a friend of Nick's \u2014 the same breed of amp Mikey ran." },
-  { id: "soundcity", x: 20, y: 71, tag: "Confirmed", name: "Sound City 4x12", note: "Mikey's original cabinet from back in the day. Still moving air." },
-  { id: "mesa", x: 44, y: 71, tag: "Confirmed", name: "Mesa/Boogie 4x12", note: "Sits under the hometeam head on stage." },
-  { id: "steve", x: 19, y: 49, tag: "Confirmed", name: "\u201cSTEVE\u201d", note: "50-watt Marshall-style head \u2014 the rig's main amp before the SLO clone showed up at Red Rocks." },
-  { id: "crown", x: 78, y: 53, tag: "From Jimmy's rig", assumed: true, name: "Crown XLS power amps", note: "The muscle behind the wet rig \u2014 one live, one spare." },
-  { id: "orange", x: 80, y: 72.5, tag: "From Jimmy's rig", assumed: true, name: "Orange 4x12", note: "Runs in stereo for the wet side \u2014 the reverb half of the sound." },
-  { id: "brownbox", x: 39, y: 47, tag: "From Jimmy's rig", assumed: true, name: "Brown Box", note: "Voltage attenuator, Col. Bruce Hampton sticker on top." },
-  { id: "tuner", x: 18.5, y: 90, tag: "From Jimmy's rig", assumed: true, name: "Boss tuner", note: "Battered chromatic tuner, straight off Jimmy's floor." },
-  { id: "polytune", x: 25.5, y: 90, tag: "Confirmed", name: "TC PolyTune", note: "Tuner." },
-  { id: "dd3t", x: 33, y: 91, tag: "Confirmed", name: "Boss DD-3T", note: "Mikey ran the original DD-3. This one adds tap tempo." },
-  { id: "vol", x: 41.5, y: 89.5, tag: "From Jimmy's rig", assumed: true, name: "Ernie Ball volume", note: "First thing the guitar hits. Swells live here." },
-  { id: "green", x: 47, y: 91.5, tag: "Confirmed", name: "The green box", note: "Overdrive wrapped in green gaffer tape." },
+  { id: "amber", x: 63, y: 72, owner: "nick", name: "PRS DGT \u2014 \u201cAmber\u201d", note: "Flame maple, light amber stain. Started as a Mexico backline rental; Nick bought it after the run. Trem arm custom-bent, volume knobs swapped." },
+  { id: "hometeam", x: 46, y: 53.5, owner: "nick", name: "\u201chometeam\u201d head", note: "Custom Soldano SLO clone built by a friend of Nick's \u2014 the same breed of amp Mikey ran." },
+  { id: "soundcity", x: 20, y: 71, owner: "jimmy", name: "Sound City 4x12", note: "The dry cab from Jimmy's rig." },
+  { id: "mesa", x: 44, y: 71, owner: "mikey", name: "Mesa/Boogie 4x12", note: "Mikey's main cabinet from back in the day. Still moving air." },
+  { id: "steve", x: 19, y: 49, owner: "nick", name: "\u201cSTEVE\u201d", note: "50-watt Marshall-style head \u2014 the rig's main amp before the SLO clone showed up at Red Rocks." },
+  { id: "crown", x: 78, y: 53, owner: "jimmy", name: "Crown XLS power amps", note: "The muscle behind the wet rig \u2014 one live, one spare." },
+  { id: "orange", x: 80, y: 72.5, owner: "jimmy", name: "Orange 4x12", note: "Runs in stereo for the wet side \u2014 the reverb half of the sound." },
+  { id: "brownbox", x: 39, y: 47, owner: "jimmy", name: "Brown Box", note: "Voltage attenuator, Col. Bruce Hampton sticker on top." },
+  { id: "tuner", x: 18.5, y: 90, owner: "jimmy", name: "Boss TU-2", note: "Battered chromatic tuner, straight off Jimmy's floor." },
+  { id: "polytune", x: 25.5, y: 90, owner: "nick", name: "TC PolyTune", note: "The white tuner on the board at Red Rocks." },
+  { id: "dd3t", x: 33, y: 91, owner: "nick", name: "Boss DD-3T", note: "Mikey ran the original DD-3. This one adds tap tempo." },
+  { id: "vol", x: 41.5, y: 89.5, owner: "jimmy", name: "Ernie Ball volume", note: "First thing the guitar hits. Swells live here." },
+  { id: "green", x: 47, y: 91.5, owner: "nick", name: "The green box", note: "Wrapped head to toe in green tape, \u201cSAT BASS\u201d in marker. Nobody's saying what it is." },
 ];
 
 function renderNickRigModal() {
   const spots = NICK_RIG_SPOTS.map((s) =>
-    `<button type="button" class="rig-spot${s.assumed ? " is-assumed" : ""}" style="left:${s.x}%;top:${s.y}%" data-tip="${s.id}" aria-label="${escapeAttr(s.name)}"></button>`).join("\n        ");
+    `<button type="button" class="rig-spot rig-${s.owner}" style="left:${s.x}%;top:${s.y}%" data-tip="${s.id}" aria-label="${escapeAttr(s.name)}"></button>`).join("\n        ");
   const tips = NICK_RIG_SPOTS.map((s) =>
-    `<div class="rig-tip" id="rig-tip-${s.id}"><span class="rig-tag${s.assumed ? " is-assumed" : ""}">${escapeHtml(s.tag)}</span><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.note)}</p></div>`).join("\n        ");
+    `<div class="rig-tip" id="rig-tip-${s.id}"><span class="rig-tag rig-${s.owner}">${escapeHtml(RIG_OWNER_LABEL[s.owner])}</span><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.note)}</p></div>`).join("\n        ");
   const vids = NICK_RIG_VIDEOS.filter((v) => v.yt);
   const vidRow = vids.length ? `<div class="rig-vids">
         ${vids.map((v) => `<figure class="rig-vid">${renderLiteEmbed(v.yt, { title: `${v.title} \u2014 ${v.sub}` })}<figcaption><b>${escapeHtml(v.title)}</b><span>${escapeHtml(v.sub)}</span></figcaption></figure>`).join("\n        ")}
@@ -9775,7 +9781,12 @@ function renderNickRigModal() {
   return `<div class="rig-modal" id="nick-rig-modal" hidden>
     <div class="rig-backdrop" data-rig-close></div>
     <div class="rig-panel" role="dialog" aria-modal="true" aria-labelledby="nick-rig-title">
-      <div class="hero-modal-head rig-head"><h3 id="nick-rig-title">Nick's Rig</h3><span>HALF-JIMMY \u00b7 HALF-MIKEY</span><button type="button" class="hero-modal-x" data-rig-close aria-label="Close rig rundown">\u2715</button></div>
+      <div class="hero-modal-head rig-head">
+        <p class="rig-eyebrow">Nick's Rig</p>
+        <h3 id="nick-rig-title" class="rig-headline">An honest tone with a blistering lead.</h3>
+        <p class="rig-sub">Mikey's old cabinet and an SLO clone running through Jimmy's wet rig give Nick Johnson the sound our band can run with.</p>
+        <button type="button" class="hero-modal-x" data-rig-close aria-label="Close rig rundown">\u2715</button>
+      </div>
       <div class="rig-art">
         <img src="/assets/nick-gear.png" alt="Nick Johnson's rig, illustrated: PRS guitar, hometeam head, Sound City, Mesa/Boogie and Orange cabs, Crown power amps, pedals on the rug" loading="lazy" decoding="async" width="1000" height="837">
         <div class="rig-hint">Tap the gear</div>
@@ -9783,8 +9794,9 @@ function renderNickRigModal() {
         ${tips}
       </div>
       <div class="rig-legend">
-        <span class="rl-conf"><i></i>Seen on stage</span>
-        <span class="rl-assumed"><i></i>Carried over from Jimmy's rig</span>
+        <span class="rig-mikey"><i></i>Mikey's</span>
+        <span class="rig-jimmy"><i></i>Jimmy's</span>
+        <span class="rig-nick"><i></i>Nick's</span>
       </div>
       ${vidRow}
     </div>
@@ -15942,24 +15954,51 @@ body.stagelight .rig-backdrop { position: fixed; inset: 0; background: rgba(5,5,
 body.stagelight .rig-modal.is-open .rig-backdrop { opacity: 1; }
 body.stagelight .rig-panel { position: relative; z-index: 1; width: min(880px, 100%); background: linear-gradient(180deg, rgba(30,30,34,0.92), rgba(16,16,19,0.94)); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-lg); box-shadow: var(--sl-shadow-3); overflow: hidden; opacity: 0; transform: translateY(-8px) scale(0.985); transition: opacity 0.2s ease, transform 0.2s ease; }
 body.stagelight .rig-modal.is-open .rig-panel { opacity: 1; transform: none; }
-body.stagelight .rig-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--sl-line); margin-bottom: 0; }
+/* Rig popup header (Alex 7/23): headline in the house corner tie-dye wash (same
+   recipe as the Athens strip — coral -> blue -> gold clipped to the first letters,
+   rest solid white), the sentence under it in the sw-lead grey. Display face both. */
+body.stagelight .rig-head { display: block; position: relative; padding: 20px 56px 18px 22px; border-bottom: 1px solid var(--sl-line); margin-bottom: 0; }
+body.stagelight .rig-head .hero-modal-x { position: absolute; top: 16px; right: 16px; }
+body.stagelight .rig-eyebrow { margin: 0 0 6px; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .rig-headline {
+  margin: 0; font-family: var(--sl-display); font-weight: 680; font-size: clamp(21px, 2.6vw, 30px);
+  letter-spacing: -0.015em; line-height: 1.16;
+  background:
+    linear-gradient(100deg, #d4514f 0%, #e0574f 6%, rgba(96,165,210,1) 13%, #c9a35f 19%, rgba(242,242,240,0) 24%),
+    linear-gradient(rgba(242,242,240,0.94), rgba(242,242,240,0.94));
+  background-size: 300% 100%, 100% 100%;
+  background-position: 4% 50%, 0 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: athens-tiedye 11s ease-in-out infinite alternate;
+}
+body.stagelight .rig-sub { margin: 8px 0 0; max-width: 58ch; font-family: var(--sl-display); font-weight: 400; font-size: 15.5px; line-height: 1.5; letter-spacing: -0.005em; color: var(--sl-muted); }
+@media (max-width: 560px) {
+  body.stagelight .rig-headline { font-size: 19px; }
+  body.stagelight .rig-sub { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { body.stagelight .rig-headline { animation: none; } }
 body.stagelight .rig-art { position: relative; background: #000; }
 body.stagelight .rig-art > img { display: block; width: 100%; height: auto; }
 body.stagelight .rig-hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(242,242,240,0.55); background: rgba(0,0,0,0.55); border: 1px solid var(--sl-line); border-radius: 999px; padding: 5px 14px; pointer-events: none; white-space: nowrap; }
-body.stagelight .rig-spot { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; padding: 0; background: rgba(94,158,255,0.22); outline: 1.5px solid rgba(94,158,255,0.9); box-shadow: 0 0 0 4px rgba(94,158,255,0.12), 0 0 14px rgba(94,158,255,0.45); transition: transform 0.15s ease; }
+/* Owner colors as tokens (design-system gripe: these were hardcoded rgb). Each
+   owner class sets an --c R,G,B triple; spot, tag, and legend swatch all derive
+   from rgba(var(--c), a). mikey gold ties to the amber guitar + Athens gold,
+   jimmy blue = the wet/reverb side, nick warm white = the living player. */
+body.stagelight .rig-mikey { --c: 201,163,95; }
+body.stagelight .rig-jimmy { --c: 94,158,210; }
+body.stagelight .rig-nick { --c: 242,242,240; }
+body.stagelight .rig-spot { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; padding: 0; background: rgba(var(--c), 0.22); outline: 1.5px solid rgba(var(--c), 0.9); box-shadow: 0 0 0 4px rgba(var(--c), 0.12), 0 0 14px rgba(var(--c), 0.45); transition: transform 0.15s ease; }
 body.stagelight .rig-spot:hover { transform: scale(1.25); }
-body.stagelight .rig-spot.is-assumed { outline-style: dashed; outline-color: rgba(212,150,66,0.9); background: rgba(212,150,66,0.18); box-shadow: 0 0 0 4px rgba(212,150,66,0.12), 0 0 14px rgba(212,150,66,0.4); }
-body.stagelight .rig-spot.is-active { background: rgba(94,158,255,0.85); }
+body.stagelight .rig-spot.is-active { background: rgba(var(--c), 0.85); }
 body.stagelight .rig-tip { position: absolute; z-index: 5; width: min(320px, 76vw); background: rgba(20,20,24,0.97); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-md, 12px); padding: 14px 16px; box-shadow: var(--sl-shadow-3); transform: translate(-50%, 12px); display: none; }
 body.stagelight .rig-tip.show { display: block; }
-body.stagelight .rig-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(94,158,255); }
-body.stagelight .rig-tag.is-assumed { color: rgb(212,150,66); }
+body.stagelight .rig-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--c)); }
 body.stagelight .rig-tip h4 { margin: 4px 0; font-size: 15px; font-weight: 650; }
 body.stagelight .rig-tip p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sl-muted); }
 body.stagelight .rig-legend { display: flex; gap: 22px; align-items: center; padding: 12px 22px; border-top: 1px solid var(--sl-line); font-family: var(--sl-mono); font-size: 10.5px; color: var(--sl-faint); letter-spacing: 0.05em; text-transform: uppercase; }
 body.stagelight .rig-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; }
-body.stagelight .rig-legend .rl-conf i { outline: 1.5px solid rgba(94,158,255,0.9); background: rgba(94,158,255,0.22); }
-body.stagelight .rig-legend .rl-assumed i { outline: 1.5px dashed rgba(212,150,66,0.9); background: rgba(212,150,66,0.18); }
+body.stagelight .rig-legend span i { outline: 1.5px solid rgba(var(--c), 0.9); background: rgba(var(--c), 0.22); }
 body.stagelight .rig-vids { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 18px 22px 22px; border-top: 1px solid var(--sl-line); }
 body.stagelight .rig-vid { margin: 0; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md, 12px); overflow: hidden; background: #000; }
 body.stagelight .rig-vid figcaption { padding: 12px 14px; }

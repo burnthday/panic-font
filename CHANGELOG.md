@@ -3,6 +3,34 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-23 evening (PUBLISHED)
+
+### Changed
+- **Second production deploy of the day: the mobile pass.** 20 commits merged to
+  main (`bd666e5`), deploy run 30038180716 green in 3m34s; live verify 200 on
+  home, /songs/, /archive/; drawer markup confirmed live.
+- **Mobile Sort & Filter drawer** replaces the stacked control walls under 600px
+  on Tour Stats and the Nick section — one button, slide-in sheet, scrim, Esc/X
+  (`49ceb56`, `299cff0`). Desktop unchanged.
+- **Nick preview drops the 0-100 Heat number** — rows read Song + plain-language
+  "why now"; ordering unchanged (`eba4f4f`). Renaming the remaining Heat label to
+  a real likelihood (bustout-excluded) is specced in memory/mobile-qa-2026-07-23.md.
+- **Subpage decks + meta descriptions rewritten in Alex's voice** (`4d49298`,
+  `50a53b4`, `f3c8018`): Tour In Review ("The Write-Up Years", computed 2008-2016
+  span), Song Origins, Shelf (200-show rule rethink stated in the deck), Rumors
+  (stale "2017" meta killed), About (June 2007), FAQ (internal working-note meta
+  replaced), Songs/Albums/Lyrics/Archive.
+
+### Fixed
+- **Rig modal stacking** — video heading / YouTube pill / Athens strip painted over
+  the open popup; modal now portals to body so its z-index wins (`299cff0`).
+- **Mobile horizontal rock** — sheet-scrawl bleed inflated the page to 385px and
+  the fixed section-nav stretched to match; both back to 375 (`b02844f`).
+- **Header hamburger seated on the right rail** at phone widths (`b02844f`).
+- **Archive junk removed with 301 insurance** — backdated marker workbench + three
+  untitled Entry-N drafts excluded from the build; each crawler-known URL 301s to
+  where its content lives; legacy-URL parity 300/300 (`866b8d5`, `0279570`, `db93d47`).
+
 ## 2026-07-23 (PUBLISHED)
 
 ### Changed

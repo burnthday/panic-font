@@ -123,9 +123,9 @@ Assert: legend reads Mikey's/Jimmy's/Nick's (3 owners); no `rig-tag` says "Confi
 ### OPEN — Alex must still call these (do NOT decide unilaterally)
 1. **Top bar:** the `.rig-head` has extra padding + a border-bottom divider the other modals (`.hero-modal-head`, e.g. song-stats) don't — reads heavier. Proposal: match the standard modal header. AWAITING ALEX.
 2. **Header copy FINAL (Alex-locked 7/23, Katherine-gated).** Drop "HALF-JIMMY · HALF-MIKEY". The header is ONE bold statement (site's bold-headline style):
-   "An honest tone with a blistering lead. Mikey's old cabinet and an SLO clone running through Jimmy's wet rig. Same guy, same breath."
+   "An honest tone with a blistering lead. Mikey's old cabinet and an SLO clone running through Jimmy's wet rig give Nick Johnson the sound our band can run with."
    Notes for the executing session:
-   - It is ONE line/block, bold, not headline+separate-deck. No em-dashes. No attribution shown.
+   - It is ONE line/block, bold, not headline+separate-deck. No em-dashes. No attribution shown. Newspaper-standfirst register. "our band" is deliberate (fan voice, this is a fan site) and "can run with" is deliberate (forward momentum, NOT "the sound this band needs" which implied the band was diminished). Do not "fix" either.
    - "An honest tone with a blistering lead" deliberately echoes the Widespread Panic song "Driving Song" (a Houser co-write) but is adapted on purpose ("tone" + "blistering", not the lyric's "tune" + "lingering") so it is Nick's own line, NOT a lyric reproduction. Do NOT "correct" it toward the lyric.
    - HARD TONE RULE: this popup celebrates the gear and the playing. It must NEVER reference Houser's death or Herring's illness. Alex rejected every loss/eulogy framing flatly. Keep it gearhead-celebratory.
    - Replaces the old <span> micro-label with a bold statement block; fold into the top-bar header rework.
