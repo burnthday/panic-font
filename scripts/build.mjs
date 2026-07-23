@@ -9775,7 +9775,12 @@ function renderNickRigModal() {
   return `<div class="rig-modal" id="nick-rig-modal" hidden>
     <div class="rig-backdrop" data-rig-close></div>
     <div class="rig-panel" role="dialog" aria-modal="true" aria-labelledby="nick-rig-title">
-      <div class="hero-modal-head rig-head"><h3 id="nick-rig-title">Nick's Rig</h3><span>HALF-JIMMY \u00b7 HALF-MIKEY</span><button type="button" class="hero-modal-x" data-rig-close aria-label="Close rig rundown">\u2715</button></div>
+      <div class="hero-modal-head rig-head">
+        <p class="rig-eyebrow">Nick's Rig</p>
+        <h3 id="nick-rig-title" class="rig-headline">An honest tone with a blistering lead.</h3>
+        <p class="rig-sub">Mikey's old cabinet and an SLO clone running through Jimmy's wet rig give Nick Johnson the sound our band can run with.</p>
+        <button type="button" class="hero-modal-x" data-rig-close aria-label="Close rig rundown">\u2715</button>
+      </div>
       <div class="rig-art">
         <img src="/assets/nick-gear.png" alt="Nick Johnson's rig, illustrated: PRS guitar, hometeam head, Sound City, Mesa/Boogie and Orange cabs, Crown power amps, pedals on the rug" loading="lazy" decoding="async" width="1000" height="837">
         <div class="rig-hint">Tap the gear</div>
@@ -15942,7 +15947,30 @@ body.stagelight .rig-backdrop { position: fixed; inset: 0; background: rgba(5,5,
 body.stagelight .rig-modal.is-open .rig-backdrop { opacity: 1; }
 body.stagelight .rig-panel { position: relative; z-index: 1; width: min(880px, 100%); background: linear-gradient(180deg, rgba(30,30,34,0.92), rgba(16,16,19,0.94)); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-lg); box-shadow: var(--sl-shadow-3); overflow: hidden; opacity: 0; transform: translateY(-8px) scale(0.985); transition: opacity 0.2s ease, transform 0.2s ease; }
 body.stagelight .rig-modal.is-open .rig-panel { opacity: 1; transform: none; }
-body.stagelight .rig-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--sl-line); margin-bottom: 0; }
+/* Rig popup header (Alex 7/23): headline in the house corner tie-dye wash (same
+   recipe as the Athens strip — coral -> blue -> gold clipped to the first letters,
+   rest solid white), the sentence under it in the sw-lead grey. Display face both. */
+body.stagelight .rig-head { display: block; position: relative; padding: 20px 56px 18px 22px; border-bottom: 1px solid var(--sl-line); margin-bottom: 0; }
+body.stagelight .rig-head .hero-modal-x { position: absolute; top: 16px; right: 16px; }
+body.stagelight .rig-eyebrow { margin: 0 0 6px; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .rig-headline {
+  margin: 0; font-family: var(--sl-display); font-weight: 680; font-size: clamp(21px, 2.6vw, 30px);
+  letter-spacing: -0.015em; line-height: 1.16;
+  background:
+    linear-gradient(100deg, #d4514f 0%, #e0574f 6%, rgba(96,165,210,1) 13%, #c9a35f 19%, rgba(242,242,240,0) 24%),
+    linear-gradient(rgba(242,242,240,0.94), rgba(242,242,240,0.94));
+  background-size: 300% 100%, 100% 100%;
+  background-position: 4% 50%, 0 0;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: athens-tiedye 11s ease-in-out infinite alternate;
+}
+body.stagelight .rig-sub { margin: 8px 0 0; max-width: 58ch; font-family: var(--sl-display); font-weight: 400; font-size: 15.5px; line-height: 1.5; letter-spacing: -0.005em; color: var(--sl-muted); }
+@media (max-width: 560px) {
+  body.stagelight .rig-headline { font-size: 19px; }
+  body.stagelight .rig-sub { font-size: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { body.stagelight .rig-headline { animation: none; } }
 body.stagelight .rig-art { position: relative; background: #000; }
 body.stagelight .rig-art > img { display: block; width: 100%; height: auto; }
 body.stagelight .rig-hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(242,242,240,0.55); background: rgba(0,0,0,0.55); border: 1px solid var(--sl-line); border-radius: 999px; padding: 5px 14px; pointer-events: none; white-space: nowrap; }
