@@ -2746,12 +2746,16 @@ async function checkEveryInternalLinkResolves(files, htmls) {
   // so neither can regress: the blanket must not return, and the echo must stay
   // negative (at z-index >= 0 it would cover the content that follows it).
   const sl = await readText("dist/stagelight.css").catch(() => "");
-  record("The blanket main > * stacking rule stays dismantled",
-    !/main > \*:not\([^)]*\)\s*\{[^}]*z-index/.test(sl) && !/main > \*\s*\{[^}]*position:\s*relative/.test(sl),
-    "no blanket main > * position/z-index rule in the stylesheet");
-  record("Hero echo stays behind content at a negative z-index",
-    /\.hero-echo \{[^}]*z-index: -1/.test(sl),
-    ".hero-echo declares z-index:-1");
+  // The blanket is BACK (restored 2026-07-23 while a motion regression is isolated).
+  // If it is ever dismantled again, the exclusions are what keep self-positioning
+  // components alive — assert they are all present.
+  record("Blanket stacking rule keeps every self-positioning exclusion",
+    /main > \*:not\(\.hero-echo\):not\(\.bento-panel\):not\(\.home-nav\) \{ position: relative; z-index: 1; \}/.test(sl),
+    "blanket excludes .hero-echo, .bento-panel and .home-nav");
+  record("Song Index sticky bars stay asserted above the blanket",
+    /main > \.song-search\.song-search\.song-search \{ position: sticky; z-index: 12; \}/.test(sl)
+    && /main > \.index-toolbar\.index-toolbar\.index-toolbar \{ z-index: 30; \}/.test(sl),
+    "sticky search bar and filter toolbar out-specify the blanket");
   // Half-way links are worse than nothing (Alex, 7/23): no search-URL stand-ins
   // anywhere — every outbound music link must land on the exact song.
   record("No Songsterr search URL survives anywhere in the build",
