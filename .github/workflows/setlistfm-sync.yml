@@ -1,0 +1,81 @@
+name: setlist.fm sync
+
+# Pulls Widespread Panic's full setlist history from the setlist.fm API into
+# data/source/setlistfm-cache.json and commits it back, so every /song/ page's
+# "Every performance" log stays current. See data/source/SETLISTFM-SYNC.md.
+#
+# Setup (one time): add the API key as a repo secret named SETLISTFM_API_KEY
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#
+# Run it: Actions tab -> "setlist.fm sync" -> Run workflow (pick a branch).
+# Scheduled runs use the default branch.
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # 08:00 UTC daily = 4am ET, the morning after a show
+  workflow_dispatch:
+
+concurrency:
+  group: setlistfm-sync-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Guard against a missing key
+        run: |
+          if [ -z "${SETLISTFM_API_KEY}" ]; then
+            echo "::error title=Missing secret::Add SETLISTFM_API_KEY under Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+        env:
+          SETLISTFM_API_KEY: ${{ secrets.SETLISTFM_API_KEY }}
+
+      - name: Pull setlists from setlist.fm
+        run: npm run import:setlistfm -- --mbid 3797a6d0-7700-44bf-96fb-f44386bc9ab2
+        env:
+          SETLISTFM_API_KEY: ${{ secrets.SETLISTFM_API_KEY }}
+
+      - name: Run full QA against the refreshed cache
+        run: npm run qa
+
+      - name: Commit the refreshed cache
+        id: cache_commit
+        run: |
+          git config user.name "burnthday-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/source/setlistfm-cache.json
+          if git diff --cached --quiet; then
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+            echo "No setlist.fm changes to commit." >> "$GITHUB_STEP_SUMMARY"
+          else
+            git commit -m "Refresh setlist.fm cache"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+            echo "Committed a refreshed setlist.fm cache to \`${GITHUB_REF_NAME}\`." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # GITHUB_TOKEN pushes never fire deploy.yml's on:push (anti-recursion),
+      # so a fresh cache would otherwise sit unpublished until the next
+      # scheduled deploy. Dispatch the deploy explicitly on main.
+      - name: Trigger deploy so the fresh cache publishes
+        if: steps.cache_commit.outputs.pushed == 'true' && github.ref_name == 'main'
+        run: gh workflow run deploy.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
