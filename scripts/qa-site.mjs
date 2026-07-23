@@ -546,7 +546,7 @@ async function checkNickJohnsonFeature(html, siteData) {
   // The control row matches the house pill pattern exactly by reusing .data-toolbar
   // (the Tour Stats / Dork stats toolbar) rather than a Nick-only control shape.
   record("Nick control row reuses the house data-toolbar shell (same pill treatment as Tour Stats)",
-    feature.includes('class="data-toolbar nick-controls"')
+    /class="data-toolbar nick-controls(?: filter-drawer)?"/.test(feature)
       && /body\.stagelight \.nick-two-col \.nick-controls\s*\{\s*margin:\s*0 0 14px;\s*\}/.test(sl),
     "data-toolbar class present, Nick override reduced to margin only");
 

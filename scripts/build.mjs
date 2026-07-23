@@ -9704,7 +9704,9 @@ function renderNickJohnsonFeature(data) {
     </div>
   </div>
   <div class="nick-right">
-    <div class="data-toolbar nick-controls" role="group" aria-label="Filter the songs most likely to come next">
+    ${renderFilterDrawerTrigger("nick-filters")}
+    <div class="data-toolbar nick-controls filter-drawer" id="nick-filters" role="group" aria-label="Filter the songs most likely to come next">
+      ${filterDrawerHead("Sort & filter")}
       ${renderCustomSelect({ hook: "data-nick-view-dd", label: "View", active: "next", options: [{ value: "next", label: "Most likely next" }, { value: "woodshed", label: "Not yet played" }, { value: "played", label: "Played with Nick" }] })}
       <div class="type-filter" role="group" aria-label="Filter songs by type">
         <button type="button" class="is-active" data-nick-type="all">All</button>
@@ -9796,6 +9798,10 @@ function renderNickRigScript() {
   return `(() => {
     const modal = document.getElementById("nick-rig-modal");
     if (!modal) return;
+    // The modal ships inside <main>, which is z-index:1 — a stacking context that
+    // caps the modal's z-120 and lets later sections (the video block, Athens strip)
+    // paint OVER the open modal. Portal it to <body> so fixed + z-120 actually wins.
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
     let lastFocus = null;
     const open = () => {
       lastFocus = document.activeElement;
