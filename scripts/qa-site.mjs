@@ -122,11 +122,13 @@ function checkCorePageState(html, siteData) {
     indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="from-the-stage"') && indexOf(html, 'id="from-the-stage"') < indexOf(html, 'id="shelf-watch"')
     && sectionHtml(html, "from-the-stage").includes('data-video-id="mdKVMEjrqRQ"')
     && sectionHtml(html, "from-the-stage").includes("/assets/from-the-stage-poster.jpg")
-    && sectionHtml(html, "from-the-stage").includes("Photo: Josh Timmermans")
+    && sectionHtml(html, "from-the-stage").includes("Photo: Andy Tennille")
+    && sectionHtml(html, "from-the-stage").includes("<b>Official videos from the stage</b>")
+    && !sectionHtml(html, "from-the-stage").includes("2026 tour \u00b7")
     && !sectionHtml(html, "from-the-stage").includes("<iframe")
     && !sectionHtml(html, "from-the-stage").includes("i.ytimg.com")
     && sectionHtml(html, "from-the-stage").includes("youtube-nocookie.com/embed/")
-    && sectionHtml(html, "from-the-stage").includes("More from Widespread Panic on YouTube"));
+    && sectionHtml(html, "from-the-stage").includes("Widespread Panic on YouTube"));
   record("Shelf Watch appears below Tour Stats", indexOf(html, 'id="tour-stats"') < indexOf(html, 'id="shelf-watch"'));
   record("Nick Stats appears below Shelf Watch", indexOf(html, 'id="shelf-watch"') < indexOf(html, 'id="nick-johnson"'));
   record("Older setlists appear below Nick Stats", indexOf(html, 'id="nick-johnson"') < indexOf(html, 'id="setlists"'));

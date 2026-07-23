@@ -8928,26 +8928,23 @@ const FROM_THE_STAGE_VIDEO = {
   title: "Gradle (Live in Oakland, CA)",
   meta: "Oakland run \u00b7 2026 tour \u00b7 6:13",
   poster: "/assets/from-the-stage-poster.jpg",
-  posterCredit: "Photo: Josh Timmermans"
+  posterCredit: "Photo: Andy Tennille"
 };
 
 function renderFromTheStage() {
   const v = FROM_THE_STAGE_VIDEO;
   return `<section class="from-the-stage" id="from-the-stage">
-  <div class="section-heading data-heading">
-    <h2>From the stage</h2>
-    <span>Official video from Widespread Panic.</span>
-  </div>
+  <h2 class="sw-lead fs-lead"><b>Official videos from the stage</b> on Widespread Panic&#39;s tour of the west.</h2>
   <div class="fs-player" data-fs-player data-video-id="${v.id}">
     <button type="button" class="fs-poster" data-fs-play aria-label="Play ${escapeAttr(v.title)}">
       <img src="${v.poster}" alt="" loading="lazy" decoding="async">
       <span class="fs-scrim" aria-hidden="true"></span>
       <span class="fs-play" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 14 16" fill="none"><path d="M2 1.7c0-.8.87-1.3 1.56-.88l10 6.3a1.04 1.04 0 0 1 0 1.76l-10 6.3A1.04 1.04 0 0 1 2 14.3V1.7Z" fill="currentColor"/></svg></span>
-      <span class="fs-caption"><strong>${escapeHtml(v.title)}</strong><small>${v.meta}</small></span>
+      <span class="fs-caption"><strong>${escapeHtml(v.title)}</strong></span>
       <span class="fs-credit">${v.posterCredit}</span>
     </button>
   </div>
-  <a class="link-quiet fs-more" href="https://www.youtube.com/channel/UCKmXntvZFs9VBYknXMMzIbw">More from Widespread Panic on YouTube <span aria-hidden="true">\u2192</span></a>
+  <a class="link-quiet fs-more" href="https://www.youtube.com/channel/UCKmXntvZFs9VBYknXMMzIbw">Widespread Panic on YouTube <span aria-hidden="true">\u2192</span></a>
   <script>
     (() => {
       const wrap = document.querySelector("[data-fs-player]");
@@ -15148,9 +15145,10 @@ body.stagelight .sc-photo::after { content: ""; position: absolute; inset: 0; bo
 /* ---- SHELF WATCH HEAT CARDS ---- */
 /* ---- FROM THE STAGE (one cinematic featured video, our photo as poster) ---- */
 body.stagelight .from-the-stage { padding: 0; }
+body.stagelight .fs-lead { margin: 0 0 30px; max-width: 34ch; }
 body.stagelight .fs-player { position: relative; aspect-ratio: 21 / 9; border: 1px solid var(--sl-line); border-radius: var(--sl-r); overflow: hidden; background: #0d0d10; }
 body.stagelight .fs-poster { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: pointer; position: relative; text-align: left; }
-body.stagelight .fs-poster img { width: 100%; height: 100%; object-fit: cover; object-position: center 58%; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+body.stagelight .fs-poster img { width: 100%; height: 100%; object-fit: cover; object-position: center 45%; transition: transform 0.6s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .fs-poster:hover img { transform: scale(1.015); }
 body.stagelight .fs-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(9,9,11,0.25) 0%, rgba(9,9,11,0.1) 40%, rgba(9,9,11,0.78) 88%); }
 body.stagelight .fs-play {
