@@ -1853,6 +1853,9 @@ function renderAboutPage(entry, data, cache) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <style>
@@ -1968,6 +1971,9 @@ function renderLyricsChordsIndex(entries, data, hubEntry) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -2237,6 +2243,10 @@ function renderNotFoundPage(data) {
     <meta name="description" content="That Burnthday page could not be found.">
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
+    <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
   <body class="stagelight">
@@ -2287,6 +2297,9 @@ function renderPrivacyPage(data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
   <body class="stagelight">
@@ -2418,6 +2431,9 @@ function renderNewslettersPage(data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <style>${renderNewslettersCss()}</style>
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
@@ -2579,6 +2595,9 @@ function renderFaqPage(data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <style>${renderFaqCss()}</style>
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
@@ -2822,6 +2841,9 @@ function renderAlmanacPage(data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <style>${renderAlmanacCss()}</style>
@@ -3048,6 +3070,9 @@ function renderArchivePage(entry, data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -3081,7 +3106,10 @@ function renderPageGraphicTitle(title) {
 // inherits the Stagelight type system. Lyric line breaks (<br>) are preserved;
 // only absurd 4+ runs are collapsed.
 function sanitizeArchiveProse(content) {
-  return String(content || "")
+  // Normalize long-form Mexican location LABELS to the short display form
+  // ("..., Quintana Roo, MEX" -> "..., MX"). Comma-anchored, so editorial prose
+  // that merely mentions the region ("down in Quintana Roo") is left untouched.
+  return displayLocation(String(content || ""))
     .replace(/\s*(?:text-align|font-family|font-size|line-height|letter-spacing|color|background(?:-color)?)\s*:\s*[^;"']*;?/gi, "")
     .replace(/\s*style=(["'])\s*\1/gi, "")
     .replace(/<span>\s*/gi, "")
@@ -3312,6 +3340,9 @@ function renderShelfInfoPage(data, oldShelfEntry) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -3400,6 +3431,9 @@ function renderRumorsPage(data, oldRumorsEntry) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -3664,6 +3698,9 @@ function renderTourReviewHubPage(data, archiveEntries, generatedReviews = [], to
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <style>${renderTourArchiveCss()}</style>
@@ -3766,6 +3803,9 @@ function renderGeneratedTourReviewPage(review, data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -4192,6 +4232,9 @@ function renderTourInReviewPage(tour, data, prev, next, crosslink, notes = null)
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
@@ -4279,6 +4322,9 @@ function renderSongOriginsIndex(origins, options = {}) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <style>${renderOriginIndexCss()}</style>
@@ -4787,6 +4833,9 @@ function renderSongOriginPage(origin, origins, data, albums = []) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
@@ -4951,6 +5000,9 @@ function renderCuratedOriginPage(origin, origins, data, albums = []) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     ${compact ? `<style>${renderCompactOriginCss()}</style>` : ""}
@@ -5827,6 +5879,9 @@ function renderSongsIndex(data, slugMap) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -6455,6 +6510,9 @@ function renderSongPage(song, data, albums, slugMap) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
@@ -6575,7 +6633,7 @@ function renderSongPerformanceLog(song, data) {
   const searchUrl = `https://www.setlist.fm/search?query=${encodeURIComponent(`Widespread Panic ${song.title}`)}`;
   const relistenDates = data.relistenDates || new Set();
   const rows = recent.map((perf) => {
-    const loc = [perf.city, perf.state].filter(Boolean).join(", ");
+    const loc = displayLocation([perf.city, perf.state].filter(Boolean).join(", "));
     const tags = [
       perf.encore ? '<span class="perf-tag">Encore</span>' : "",
       perf.guest ? `<span class="perf-tag">with ${escapeHtml(perf.guest)}</span>` : "",
@@ -6682,6 +6740,9 @@ function renderAlbumsIndex(albums, data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -6747,6 +6808,9 @@ function renderAlbumPage(album, albums, data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
@@ -6836,6 +6900,9 @@ function renderArchiveIndex(entries, data) {
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${renderBreadcrumbJsonLd([
@@ -6930,6 +6997,9 @@ function renderArchiveListPage({ title, deck, canonicalPath, noindex = false, en
     <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
   </head>
@@ -7007,6 +7077,9 @@ function renderHtml(data) {
     <link rel="icon" href="/assets/marker-1.png" sizes="any">
     <link rel="preload" href="/assets/Panic-Hand.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="/assets/milkrun.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/bricolage-grotesque-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/assets/geist-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/stagelight.css">
     <script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",
@@ -7175,9 +7248,19 @@ function renderHeroModalScript() {
     });
     document.addEventListener("keydown", (event) => { if (event.key === "Escape") closeStats(); });
 
-    // View swap. Card stack animates with FLIP: remaining cards slide into the
-    // vacated spot, the returning card fades in.
+    // ---- Hero view transition engine ----
+    // A true crossfade with height continuity: the outgoing view is lifted to
+    // absolute so the incoming view takes over the flow and defines the slot's
+    // target height; the slot tweens old->new height while both views crossfade
+    // with a small directional drift. No blank frame, no page reflow. Target
+    // images are decoded before the fade starts, and adjacent views are warmed
+    // so pager clicks feel instant. Rapid clicks last-wins-queue.
+    const SWAP_MS = 300;
+    const swapEase = "cubic-bezier(0.22,1,0.36,1)";
+    const heroReduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const swapOrder = (hero.querySelector(".hero-pager") && hero.querySelector(".hero-pager").dataset.pagerOrder || "").split(",").filter(Boolean);
     let swapping = false;
+    let queuedIso = null;
     // rAF with a timeout fallback: frame-accurate when visible, never wedges when
     // the tab is throttled (backgrounded) and rAF stalls.
     const nextFrame = (fn) => {
@@ -7186,41 +7269,116 @@ function renderHeroModalScript() {
       requestAnimationFrame(() => requestAnimationFrame(go));
       setTimeout(go, 140);
     };
-    const afterFade = (el, fn) => {
+    // Fires fn on the slot's transitionend, with a timeout fallback (the embedded
+    // preview throttles frames, so transitionend can never be relied on alone).
+    const afterSwap = (el, fn) => {
       let done = false;
       const fin = () => { if (done) return; done = true; el.removeEventListener("transitionend", fin); fn(); };
       el.addEventListener("transitionend", fin);
-      setTimeout(fin, 320);
+      setTimeout(fin, SWAP_MS + 200);
     };
-    const showView = (iso) => {
-      if (swapping) return;
-      swapping = true;
+    const currentIsoActive = () => { const a = hero.querySelector(".hero-lock-slot .hv.is-active"); return a ? a.dataset.view : ""; };
+    // Photo + bg layer for a view. Flip lazy loads to eager so warming/decoding works.
+    const viewImages = (iso) => {
+      const list = [...hero.querySelectorAll('.hero-media-slot .hv[data-view="' + iso + '"] .hero-photo img')];
+      const bg = hero.querySelector('[data-view-bg="' + iso + '"]');
+      if (bg) list.push(bg);
+      list.forEach((img) => { if (img.getAttribute("loading") === "lazy") img.loading = "eager"; });
+      return list;
+    };
+    // Warm (but don't wait on) a view's images — used to prefetch prev/next.
+    const warmView = (iso) => { if (iso) viewImages(iso); };
+    // Wait for the target view's images to decode, capped so a slow network
+    // degrades to an immediate swap instead of blocking navigation.
+    const readyImages = (iso) => {
+      const imgs = viewImages(iso);
+      const decodes = imgs.map((img) => {
+        if (img.complete && img.naturalWidth) return Promise.resolve();
+        if (img.decode) return img.decode().then(() => {}, () => {});
+        return new Promise((res) => { img.addEventListener("load", res, { once: true }); img.addEventListener("error", res, { once: true }); });
+      });
+      return Promise.race([Promise.all(decodes), new Promise((res) => setTimeout(res, 350))]);
+    };
+    const activateBg = (iso) => {
+      hero.querySelectorAll("[data-view-bg]").forEach((layer) => {
+        const on = layer.dataset.viewBg === iso;
+        layer.classList.toggle("is-active", on);
+        if (on && layer.complete && layer.naturalWidth) tintFrom(layer);
+        else if (on) layer.addEventListener("load", () => tintFrom(layer), { once: true });
+      });
+    };
+    const finishSwap = (iso) => {
+      swapping = false;
+      // Adjacent prefetch: warm the neighbours so the next pager click is instant.
+      const at = swapOrder.indexOf(iso);
+      if (at >= 0 && swapOrder.length > 1) {
+        warmView(swapOrder[(at + 1) % swapOrder.length]);
+        warmView(swapOrder[(at - 1 + swapOrder.length) % swapOrder.length]);
+      }
+      if (queuedIso && queuedIso !== iso) { const q = queuedIso; queuedIso = null; showView(q); }
+      else queuedIso = null;
+    };
+    const doSwap = (iso) => {
+      const fromIso = currentIsoActive();
+      if (!iso || iso === fromIso) { finishSwap(iso || fromIso); return; }
       closeStats();
-      // Two frames guarantee the fade-out actually paints before the DOM swap.
-      nextFrame(() => {
-        slots.forEach((slot) => slot.classList.add("is-fading"));
-        afterFade(slots[0], () => {
-          slots.forEach((slot) => {
-            slot.querySelectorAll(".hv").forEach((view) => {
-              const on = view.dataset.view === iso;
-              view.classList.toggle("is-active", on);
-              view.hidden = !on;
-            });
+      // Direction from ISO order: a later date rises from below (next), an earlier
+      // date settles from above (prev) — matches the rail's own direction logic.
+      const dir = iso > fromIso ? "next" : "prev";
+      const enterCls = dir === "next" ? "is-enter-next" : "is-enter-prev";
+      const leaveCls = dir === "next" ? "is-leave-next" : "is-leave-prev";
+      const run = () => {
+        const plans = slots.map((slot) => {
+          const out = slot.querySelector(".hv.is-active");
+          const inc = slot.querySelector('.hv[data-view="' + iso + '"]');
+          return { slot: slot, out: out, inc: inc, toH: 0 };
+        });
+        if (heroReduceMotion) {
+          plans.forEach((p) => {
+            p.slot.querySelectorAll(".hv").forEach((v) => { const on = v.dataset.view === iso; v.classList.toggle("is-active", on); v.hidden = !on; });
           });
-          hero.querySelectorAll("[data-view-bg]").forEach((layer) => {
-            const on = layer.dataset.viewBg === iso;
-            layer.classList.toggle("is-active", on);
-            if (on && layer.complete && layer.naturalWidth) tintFrom(layer);
-            else if (on) layer.addEventListener("load", () => tintFrom(layer), { once: true });
-          });
-          void hero.offsetHeight;
+          activateBg(iso);
           hero.dispatchEvent(new CustomEvent("viewchange"));
-          nextFrame(() => {
-            slots.forEach((slot) => slot.classList.remove("is-fading"));
-            afterFade(slots[0], () => { swapping = false; });
+          finishSwap(iso);
+          return;
+        }
+        // Lift outgoing to absolute, reveal incoming (invisible) so the slot's
+        // natural height becomes the target; pin the from-height, then tween.
+        plans.forEach((p) => {
+          const fromH = p.slot.offsetHeight;
+          if (p.out) p.out.classList.add("is-leaving");
+          if (p.inc) { p.inc.hidden = false; p.inc.classList.add(enterCls); }
+          p.toH = p.slot.offsetHeight;
+          p.slot.classList.add("is-swapping");
+          p.slot.style.height = fromH + "px";
+        });
+        activateBg(iso);
+        void hero.offsetHeight;
+        nextFrame(() => {
+          plans.forEach((p) => {
+            p.slot.style.height = p.toH + "px";
+            if (p.inc) { p.inc.classList.remove(enterCls); p.inc.classList.add("is-active"); }
+            if (p.out) { p.out.classList.remove("is-active"); p.out.classList.add(leaveCls); }
+          });
+          hero.dispatchEvent(new CustomEvent("viewchange"));
+          afterSwap(slots[0], () => {
+            plans.forEach((p) => {
+              if (p.out) { p.out.classList.remove("is-leaving", "is-leave-next", "is-leave-prev"); p.out.hidden = true; }
+              if (p.inc) p.inc.classList.remove("is-enter-next", "is-enter-prev");
+              p.slot.classList.remove("is-swapping");
+              p.slot.style.height = "";
+            });
+            finishSwap(iso);
           });
         });
-      });
+      };
+      // Gate the swap on the target imagery (capped), then run.
+      readyImages(iso).then(run);
+    };
+    const showView = (iso) => {
+      if (swapping) { queuedIso = iso; return; }
+      swapping = true;
+      doSwap(iso);
     };
     // Fixed rail: slots never move. The two context slots refill (quick content
     // fade) with the nearest shows before the active view; latest + upcoming
@@ -7829,13 +7987,13 @@ function renderStagelightHeader(data) {
       <div class="mega-show">
         ${featured.image ? `<a class="mega-show-photo" href="/#latest-setlist" tabindex="-1" aria-hidden="true"><img src="${escapeAttr(featured.image)}" alt="" loading="lazy" decoding="async"></a>` : ""}
         <time class="mega-show-date" datetime="${escapeAttr(featured.isoDate || "")}">${escapeHtml([weekdayName(featured.isoDate), featured.date].filter(Boolean).join(" · "))}</time>
-        <p class="mega-show-city">${escapeHtml(featured.location)}</p>
+        <p class="mega-show-city">${escapeHtml(displayLocation(featured.location))}</p>
         <p class="mega-show-venue">${escapeHtml(featured.venue)}</p>
         ${featured.streamUrl ? `<a class="sc-chip sc-chip-glass" href="${escapeAttr(featured.streamUrl)}">Listen at nugs.net</a>` : ""}
       </div>
       ${nextShow ? `<div class="mega-next">
         <p class="mega-label">Next Show</p>
-        <p class="mega-next-line"><strong>${escapeHtml(nextShow.location)}</strong><span>${escapeHtml(nextShow.venue)} · ${escapeHtml(nextShow.date)}</span></p>
+        <p class="mega-next-line"><strong>${escapeHtml(displayLocation(nextShow.location))}</strong><span>${escapeHtml(nextShow.venue)} · ${escapeHtml(nextShow.date)}</span></p>
       </div>` : ""}
     </div>` : "";
   return `<header class="site-head" id="top">
@@ -8441,7 +8599,7 @@ function renderTourStats(data) {
         <button type="button" class="sf-option is-active" data-show-value="">All ${formatNumber(shows)} shows</button>
         ${(data.setlists || []).map((show) => {
           const legend = (data.site.markerLegend || []).find((mark) => mark.isoDate === show.isoDate);
-          return `<button type="button" class="sf-option" data-show-value="${escapeAttr(show.isoDate)}" data-marker="${legend ? escapeAttr(legend.color.toLowerCase()) : ""}">${escapeHtml(`${show.date} · ${show.location}`)}</button>`;
+          return `<button type="button" class="sf-option" data-show-value="${escapeAttr(show.isoDate)}" data-marker="${legend ? escapeAttr(legend.color.toLowerCase()) : ""}">${escapeHtml(`${show.date} · ${displayLocation(show.location)}`)}</button>`;
         }).join("")}
       </div>
     </details>
@@ -9092,7 +9250,7 @@ function renderBoardHeader(title, subtitle = "") {
 
 function renderPrimaryBoardHeader(data) {
   const latest = data.site.latestShow;
-  const title = formatBoardShowTitle(data.site.boardShow) || latest?.location || data.site.title;
+  const title = formatBoardShowTitle(data.site.boardShow) || displayLocation(latest?.location) || data.site.title;
 
   return `<div class="header-row primary-header">
     <div class="nums left">
@@ -9214,8 +9372,7 @@ function renderHeroView(data, show, opts = {}) {
   const iso = show.isoDate || "";
   const weekday = weekdayName(iso);
   const venueLine = show.venue;
-  // Long state names get a short display form in the feed ("Riviera Maya, MX").
-  const displayLocation = String(show.location || "").replace(", Quintana Roo", ", MX");
+  const shownLocation = displayLocation(show.location);
   const longDate = formatLongDate(iso || show.date);
   const ariaHeading = escapeAttr(formatSetlistHeading(show));
   const relistenUrl = (data.relistenDates || new Set()).has(iso) ? relistenUrlFor(iso) : "";
@@ -9272,13 +9429,13 @@ function renderHeroView(data, show, opts = {}) {
     : "";
   const statsPanel = ltpRows.length
     ? `<div class="hero-stats-panel" id="hero-stats-panel-${escapeAttr(iso)}" role="region" aria-label="Song stats for ${ariaHeading}" hidden>
-        <div class="hero-modal-head"><h3>Song stats</h3><span>${escapeHtml(show.date)} · ${escapeHtml(show.location)}</span><button type="button" class="hero-modal-x" data-stats-close aria-label="Close song stats">✕</button></div>
+        <div class="hero-modal-head"><h3>Song stats</h3><span>${escapeHtml(show.date)} · ${escapeHtml(shownLocation)}</span><button type="button" class="hero-modal-x" data-stats-close aria-label="Close song stats">✕</button></div>
         <ol class="ltp-list">${ltpRows.map(statCell).join("")}</ol>
       </div>`
     : "";
   const credit = show.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(show.photoCredit)}</figcaption>` : "";
   const photo = show.image
-    ? `<figure class="hero-photo" style="--hp:url(${escapeAttr(show.image)})"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" crossorigin="anonymous" decoding="async"${opts.eager ? ' fetchpriority="high"' : ' loading="lazy"'}>${credit}</figure>`
+    ? `<figure class="hero-photo" style="--hp:url(${escapeAttr(show.image)})"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${shownLocation}`)}" crossorigin="anonymous" decoding="async"${opts.eager ? ' fetchpriority="high"' : ' loading="lazy"'}>${credit}</figure>`
     : "";
   // Mobile: the button floats on the photo itself (tap swaps photo for stats).
   const statsOverlay = photo && ltpRows.length
@@ -9288,7 +9445,7 @@ function renderHeroView(data, show, opts = {}) {
     iso,
     ariaHeading,
     lock: `<time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
-        <h2 class="sc-city">${escapeHtml(show.location)}</h2>
+        <h2 class="sc-city">${escapeHtml(shownLocation)}</h2>
         <span class="sc-venue">${escapeHtml(venueLine)}</span>
         ${chips ? `<span class="sc-chips">${chips}</span>` : ""}${photosLink}`,
     music: `<div class="hero-sets sc-sets">${setRows}${annotations.guestNotes.length ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}</div></div>` : ""}</div>${footnote}${statsButton}`,
@@ -9317,7 +9474,8 @@ function renderUpcomingHeroView(data, upcoming, isTonight) {
   const iso = upcoming.isoDate || "";
   const weekday = weekdayName(iso);
   const longDate = formatLongDate(iso || upcoming.date);
-  const ariaHeading = escapeAttr(`${upcoming.date} ${upcoming.venue}, ${upcoming.location}`);
+  const shownLocation = displayLocation(upcoming.location);
+  const ariaHeading = escapeAttr(`${upcoming.date} ${upcoming.venue}, ${shownLocation}`);
   const chips = [
     `<a class="sc-chip sc-chip-primary" href="https://nugs.net/widespreadpanic" target="_blank" rel="noopener noreferrer"><svg width="11" height="12" viewBox="0 0 11 12" aria-hidden="true"><path d="M1.5 1.2c0-.66.72-1.07 1.29-.73l8 4.8a.85.85 0 0 1 0 1.46l-8 4.8A.85.85 0 0 1 1.5 10.8V1.2Z" fill="currentColor"/></svg>Watch on nugs.net</a>`,
     `<a class="sc-chip sc-chip-glass" href="https://twitch.tv/widespreadpanichq" target="_blank" rel="noopener noreferrer">Twitch audio</a>`,
@@ -9332,13 +9490,13 @@ function renderUpcomingHeroView(data, upcoming, isTonight) {
     : `<p class="hero-table-note"><span class="sc-label">On deck</span>The setlist posts here after the show, verified against the official page.</p>`;
   const credit = upcoming.photoCredit ? `<figcaption class="hero-credit">Photo: ${escapeHtml(upcoming.photoCredit)}</figcaption>` : "";
   const photo = upcoming.image
-    ? `<figure class="hero-photo" style="--hp:url(${escapeAttr(upcoming.image)})"><img src="${escapeAttr(upcoming.image)}" alt="${escapeAttr(`${upcoming.date} ${upcoming.location}`)}" crossorigin="anonymous" decoding="async">${credit}</figure>`
+    ? `<figure class="hero-photo" style="--hp:url(${escapeAttr(upcoming.image)})"><img src="${escapeAttr(upcoming.image)}" alt="${escapeAttr(`${upcoming.date} ${shownLocation}`)}" crossorigin="anonymous" decoding="async">${credit}</figure>`
     : "";
   return {
     iso,
     ariaHeading,
     lock: `<time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}${isTonight ? ' · <span class="hero-tonight">Tonight</span>' : ""}</time>
-        <h2 class="sc-city">${escapeHtml(upcoming.location)}</h2>
+        <h2 class="sc-city">${escapeHtml(shownLocation)}</h2>
         <span class="sc-venue">${escapeHtml(upcoming.venue)}</span>
         <span class="sc-chips">${chips}</span>`,
     music: tableProse,
@@ -9375,11 +9533,11 @@ function renderHomeHero(data) {
   const cardMeta = {};
   for (const { show: entry, kind } of views) {
     if (kind === "upcoming") continue;
-    cardMeta[entry.isoDate] = { d: entry.date, c: entry.location, v: entry.venue, n: nightFor(entry) };
+    cardMeta[entry.isoDate] = { d: entry.date, c: displayLocation(entry.location), v: entry.venue, n: nightFor(entry) };
   }
   const slotCard = (entry, extraClass = "", slotName = "") => `<button type="button" class="hero-card${extraClass}"${slotName ? ` data-card-slot="${slotName}"` : ""} data-view-btn="${escapeAttr(entry.isoDate)}" aria-pressed="false">
       <time class="sc-date" datetime="${escapeAttr(entry.isoDate)}">${escapeHtml(entry.date)}</time>
-      <span class="hc-place"><strong>${escapeHtml(entry.location)}</strong><small>${escapeHtml(entry.venue)}${nightFor(entry) ? ` · ${nightFor(entry)}` : ""}</small></span>
+      <span class="hc-place"><strong>${escapeHtml(displayLocation(entry.location))}</strong><small>${escapeHtml(entry.venue)}${nightFor(entry) ? ` · ${nightFor(entry)}` : ""}</small></span>
       <span class="hc-go" aria-hidden="true">→</span>
     </button>`;
   // Context = the two posted shows immediately preceding the active view
@@ -9392,7 +9550,7 @@ function renderHomeHero(data) {
   const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
   const upcomingCard = upcoming ? `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(upcoming.isoDate)}" aria-pressed="false">
         <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
-        <span class="hc-place"><strong>${escapeHtml(upcoming.location)}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
+        <span class="hc-place"><strong>${escapeHtml(displayLocation(upcoming.location))}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
         <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
       </button>` : "";
   // Three cards only: two context slots + the upcoming show pinned last.
@@ -9513,8 +9671,7 @@ function renderShowCard(data, show, options = {}) {
   const iso = show.isoDate || "";
   const weekday = weekdayName(iso);
   const venueLine = show.venue;
-  // Long state names get a short display form in the feed ("Riviera Maya, MX").
-  const displayLocation = String(show.location || "").replace(", Quintana Roo", ", MX");
+  const shownLocation = displayLocation(show.location);
   const longDate = formatLongDate(iso || show.date);
   const heading = options.latest ? "h3" : "h4";
   const ariaHeading = escapeAttr(formatSetlistHeading(show));
@@ -9542,7 +9699,7 @@ function renderShowCard(data, show, options = {}) {
   const loading = options.lazy ? ' loading="lazy"' : "";
   const priority = options.priority ? ' fetchpriority="high"' : "";
   const photo = show.image
-    ? `<span class="sc-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async"${loading}${priority}></span>`
+    ? `<span class="sc-photo"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${displayLocation(show.location)}`)}" decoding="async"${loading}${priority}></span>`
     : "";
   const bg = show.image ? `<span class="sc-bg" aria-hidden="true"><img src="${escapeAttr(show.image)}" alt="" loading="lazy" decoding="async"></span>` : "";
   return `<details class="show-entry${options.latest ? " is-latest" : ""}${options.lead ? " is-lead" : ""}${show.image ? "" : " no-image"}"${options.latest || options.open ? " open" : ""}${show.isoDate ? ` id="setlist-${escapeAttr(show.isoDate)}"` : ""} style="scroll-margin-top: 120px">
@@ -9550,13 +9707,13 @@ function renderShowCard(data, show, options = {}) {
       ${bg}
       <span class="sc-closed">
         <time class="sc-date" datetime="${escapeAttr(iso)}">${escapeHtml(show.date)}</time>
-        <span class="sc-place"><strong>${escapeHtml(displayLocation)}</strong><small>${escapeHtml(venueLine)}</small></span>
+        <span class="sc-place"><strong>${escapeHtml(shownLocation)}</strong><small>${escapeHtml(venueLine)}</small></span>
         ${miniPulls}
       </span>
       <span class="sc-lockup">
         <span class="sc-lock">
           <time class="sc-eyebrow" datetime="${escapeAttr(iso)}">${escapeHtml([weekday, longDate].filter(Boolean).join(" · "))}</time>
-          <${heading} class="sc-city">${escapeHtml(displayLocation)}</${heading}>
+          <${heading} class="sc-city">${escapeHtml(shownLocation)}</${heading}>
           <span class="sc-venue">${escapeHtml(venueLine)}</span>
           ${chips ? `<span class="sc-chips">${chips}</span>` : ""}
         </span>
@@ -9582,7 +9739,7 @@ function renderSetlists(data, options = {}) {
     <ol class="tour-dates">
       ${upcomingDates.map((date) => `<li class="is-upcoming">
         <time class="sc-date" datetime="${escapeAttr(date.isoDate || "")}">${escapeHtml(date.date)}</time>
-        <span class="sc-place"><strong>${escapeHtml(date.location)}</strong><small>${escapeHtml(date.venue)}</small></span>
+        <span class="sc-place"><strong>${escapeHtml(displayLocation(date.location))}</strong><small>${escapeHtml(date.venue)}</small></span>
         ${date.sourceUrl ? `<a class="up-tickets" href="${escapeAttr(date.sourceUrl)}">Get Tickets <span aria-hidden="true">→</span></a>` : '<em class="up-flag">Upcoming</em>'}
       </li>`).join("")}
     </ol>
@@ -9629,7 +9786,7 @@ function renderSetlistRow(show, options = {}) {
   return `<details class="setlist-row">
     <summary>
       <time datetime="${escapeAttr(show.isoDate)}">${escapeHtml(show.date)}</time>
-      <span class="show-place"><strong>${escapeHtml(show.venue)}</strong><small>${escapeHtml(show.location)}</small></span>
+      <span class="show-place"><strong>${escapeHtml(show.venue)}</strong><small>${escapeHtml(displayLocation(show.location))}</small></span>
       <span class="show-actions">${actionLinks}</span>
       <span class="row-toggle" aria-hidden="true"></span>
     </summary>
@@ -9644,7 +9801,7 @@ function renderSetlistImage(show, options = {}) {
   if (!show.image) return "";
   const loading = options.lazy ? ' loading="lazy"' : "";
   const priority = options.priority ? ' fetchpriority="high"' : "";
-  return `<figure class="setlist-image"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${show.location}`)}" decoding="async"${loading}${priority}></figure>`;
+  return `<figure class="setlist-image"><img src="${escapeAttr(show.image)}" alt="${escapeAttr(`${show.date} ${displayLocation(show.location)}`)}" decoding="async"${loading}${priority}></figure>`;
 }
 
 function renderSetlistText(show, options = {}) {
@@ -9665,7 +9822,7 @@ function renderSetlistText(show, options = {}) {
 function renderFeaturedShowHeading(show) {
   return `<header class="show-heading">
     <time datetime="${escapeAttr(show.isoDate)}">${escapeHtml(formatLongDate(show.isoDate || show.date))}</time>
-    <h3>${escapeHtml(show.location || [show.city, show.state].filter(Boolean).join(", "))}</h3>
+    <h3>${escapeHtml(displayLocation(show.location || [show.city, show.state].filter(Boolean).join(", ")))}</h3>
     <p>${escapeHtml(show.venue)}</p>
   </header>`;
 }
@@ -9678,8 +9835,15 @@ function formatSetLabel(label) {
   return value;
 }
 
+// Long-form Mexican state names get a short display form site-wide
+// ("Riviera Maya, Quintana Roo" -> "Riviera Maya, MX"). Source data is never
+// mutated; this is display-only and applied at every user-visible render site.
+function displayLocation(location) {
+  return String(location || "").replace(/,\s*Quintana Roo(?:,?\s*(?:MEX|MX|Mexico))?/gi, ", MX");
+}
+
 function formatSetlistHeading(show) {
-  const place = [show.venue, show.location].filter(Boolean).join(", ");
+  const place = [show.venue, displayLocation(show.location)].filter(Boolean).join(", ");
   return [show.date, place].filter(Boolean).join(" ");
 }
 
@@ -10133,6 +10297,43 @@ function renderCss() {
   font-display: swap;
 }
 
+/* Metric-matched fallbacks. Each maps a widely-installed local face (Arial for
+   the sans stacks, Menlo/Consolas for mono) and overrides its metrics so the
+   space it occupies matches the webfont almost exactly. With these in the stack
+   right after the webfont, the font-display: swap hand-off causes no reflow or
+   visible size pop (FOUT jump) — only a subtle glyph-shape change. size-adjust
+   is tuned to average advance width; the vertical overrides match line boxes for
+   any element relying on line-height: normal. */
+@font-face {
+  font-family: "Geist Fallback";
+  src: local("Arial");
+  font-display: swap;
+  size-adjust: 103%;
+  ascent-override: 92%;
+  descent-override: 23%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Bricolage Fallback";
+  src: local("Arial");
+  font-display: swap;
+  size-adjust: 108%;
+  ascent-override: 88%;
+  descent-override: 22%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Geist Mono Fallback";
+  src: local("Menlo"), local("Consolas"), local("Courier New");
+  font-display: swap;
+  size-adjust: 100%;
+  ascent-override: 95%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+
 :root {
   color-scheme: light;
   --paper: #ffffff;
@@ -10143,7 +10344,7 @@ function renderCss() {
   --green: #2d7c52;
   --blue: #286e9e;
   --cream: #f7f1e8;
-  --ui-font: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --ui-font: "Geist", "Geist Fallback", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --type-display: 48px;
   --type-archive-title: 48px;
   --type-section: 26px;
@@ -10326,7 +10527,7 @@ main {
   padding: 42px 34px 34px;
   margin: 0 auto 34px;
   background: #ffffff;
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
 }
 
 .header-row {
@@ -10382,7 +10583,7 @@ main {
 .board-title p {
   margin: 4px 0 0;
   color: var(--muted);
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.2;
   letter-spacing: 0;
@@ -10405,7 +10606,7 @@ main {
 }
 
 .stat strong {
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
   font-size: 34px;
   line-height: 1;
   font-weight: 400;
@@ -10449,7 +10650,7 @@ main {
 
 .sheet-key h2 {
   margin: 0 0 18px;
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
   font-size: 28px;
   line-height: 1;
   font-weight: 400;
@@ -10470,7 +10671,7 @@ main {
 .key-block h3,
 .key-points strong,
 .key-other-sheets dt {
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
   font-size: 18px;
   line-height: 1.05;
   font-weight: 400;
@@ -10721,7 +10922,7 @@ sup {
 
 .add-on-date {
   margin-left: 5px;
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
   font-size: 0.72em;
   line-height: 1;
   vertical-align: 0.03em;
@@ -11797,7 +11998,7 @@ sup {
 
 .archive-title h1 {
   margin: 0;
-  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-family: var(--sl-display, "Bricolage", "Bricolage Fallback", "Geist", "Geist Fallback", system-ui, sans-serif);
   font-size: var(--type-archive-title);
   line-height: 1.04;
   font-weight: 640;
@@ -11829,7 +12030,7 @@ sup {
 
 .page-graphic-title h1 {
   margin: 0;
-  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-family: var(--sl-display, "Bricolage", "Bricolage Fallback", "Geist", "Geist Fallback", system-ui, sans-serif);
   font-size: var(--type-archive-title);
   line-height: 1.04;
   font-weight: 640;
@@ -11984,7 +12185,7 @@ sup {
 .shelf-movement h2,
 .legacy-shelf-notes h2 {
   margin: 0 0 14px;
-  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-family: var(--sl-display, "Bricolage", "Bricolage Fallback", "Geist", "Geist Fallback", system-ui, sans-serif);
   font-size: 26px;
   line-height: 1.05;
   font-weight: 640;
@@ -11997,7 +12198,7 @@ sup {
 
 .movement-block h3 {
   margin: 0 0 8px;
-  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-family: var(--sl-display, "Bricolage", "Bricolage Fallback", "Geist", "Geist Fallback", system-ui, sans-serif);
   font-size: 19px;
   line-height: 1.1;
   font-weight: 620;
@@ -12041,7 +12242,7 @@ sup {
 }
 
 .review-top-songs strong {
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
   font-weight: 600;
 }
 
@@ -12051,7 +12252,7 @@ sup {
 }
 
 .movement-list strong {
-  font-family: "Geist", system-ui, sans-serif;
+  font-family: "Geist", "Geist Fallback", system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.2;
   font-weight: 600;
@@ -12120,7 +12321,7 @@ sup {
 .origin-title p {
   margin: 0 0 7px;
   color: var(--muted);
-  font-family: var(--sl-mono, "Geist Mono", ui-monospace, monospace);
+  font-family: var(--sl-mono, "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace);
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -12128,7 +12329,7 @@ sup {
 
 .origin-hero h1 {
   margin: 0;
-  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-family: var(--sl-display, "Bricolage", "Bricolage Fallback", "Geist", "Geist Fallback", system-ui, sans-serif);
   font-size: 46px;
   line-height: 1;
   font-weight: 660;
@@ -12174,7 +12375,7 @@ sup {
 }
 
 .origin-card strong {
-  font-family: var(--sl-display, "Bricolage", "Geist", system-ui, sans-serif);
+  font-family: var(--sl-display, "Bricolage", "Bricolage Fallback", "Geist", "Geist Fallback", system-ui, sans-serif);
   font-size: 19px;
   line-height: 1.1;
   font-weight: 600;
@@ -12229,7 +12430,7 @@ sup {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   padding: 12px 0;
-  font-family: var(--sl-mono, "Geist Mono", ui-monospace, monospace);
+  font-family: var(--sl-mono, "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace);
   font-size: 13px;
   line-height: 1.7;
 }
@@ -13161,8 +13362,8 @@ body.stagelight {
   --sl-line-faint: rgba(255, 255, 255, 0.05);   /* faint row dividers */
   --sl-line: rgba(255, 255, 255, 0.08);         /* default hairline */
   --sl-line-strong: rgba(255, 255, 255, 0.16);  /* hover / active / open borders */
-  --sl-display: "Bricolage", "Geist", system-ui, sans-serif;
-  --sl-mono: "Geist Mono", ui-monospace, monospace;
+  --sl-display: "Bricolage", "Bricolage Fallback", "Geist", "Geist Fallback", system-ui, sans-serif;
+  --sl-mono: "Geist Mono", "Geist Mono Fallback", ui-monospace, monospace;
   /* ---- CANONICAL GLASS: background + blur(26px) saturate(1.4) + 1px var(--sl-line)
      border + var(--sl-r-lg) radius + var(--sl-shadow-1). See .sl-glass utility. ---- */
   --sl-glass: linear-gradient(180deg, rgba(28,28,31,0.55), rgba(18,18,21,0.42));
@@ -13558,7 +13759,7 @@ body.stagelight .show-entry[open] .sc-lockup, body.stagelight .sc-body { positio
    two-column setlist + pulls) without dynamic text shrinking. */
 body.stagelight .home-hero { position: relative; width: 100vw; margin-left: calc(50% - 50vw); margin-top: calc(-1 * (66px + var(--sl-breadcrumb-h, 37px))); overflow: hidden; isolation: isolate; }
 body.stagelight .hero-bg { position: absolute; inset: 0; z-index: 0; }
-body.stagelight .hero-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); transition: opacity 0.6s ease; }
+body.stagelight .hero-bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; object-position: center 30%; transform: scale(1.35); filter: blur(22px) saturate(1.1); transition: opacity 0.5s ease; }
 body.stagelight .hero-bg img.is-active { opacity: 0.55; }
 /* Top stop deepened so only ~10-15% of the photo reads behind the sticky nav +
    breadcrumb bars (no recognizable second face/body) while the mid/lower hero
@@ -13599,10 +13800,31 @@ body.stagelight .hero-page:disabled { opacity: 0.3; cursor: default; }
 body.stagelight .hero-media-slot { grid-column: 2; grid-row: 1; }
 body.stagelight .hero-music-slot { grid-column: 1; grid-row: 2; margin-top: -34px; }
 body.stagelight .hero-rail { grid-column: 2; grid-row: 2; }
-/* View crossfade: the swap script fades each slot, switches the active view, fades back. */
-body.stagelight .hero-slot { transition: opacity 0.22s ease; }
-body.stagelight .hero-slot.is-fading { opacity: 0; }
+/* View crossfade + height-continuity engine. During a swap the outgoing view is
+   lifted to absolute (is-leaving) so the incoming one takes over the flow and
+   defines the slot's target height; the slot tweens old->new height while the
+   two views crossfade with a small directional drift. No blank frame, no page
+   reflow. See renderHeroModalScript / showView. */
+body.stagelight .hero-slot { position: relative; }
+body.stagelight .hero-slot.is-swapping { overflow: hidden; transition: height 0.3s cubic-bezier(0.22,1,0.36,1); }
+/* The photo slot keeps its box-shadow bleed visible while it swaps (its height
+   never actually changes, so nothing needs clipping). */
+body.stagelight .hero-media-slot.is-swapping { overflow: visible; }
+body.stagelight .hv { transition: opacity 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.3s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hv[hidden] { display: none; }
+/* Outgoing snapshot: out of flow so the incoming view sizes the slot. */
+body.stagelight .hv.is-leaving { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+/* Enter start states (applied one frame before they transition to rest). next =
+   the incoming view rises from below (+8px); prev = it settles from above. */
+body.stagelight .hv.is-enter-next { opacity: 0; transform: translateY(8px); }
+body.stagelight .hv.is-enter-prev { opacity: 0; transform: translateY(-8px); }
+/* Leave end states: fade out with a slight opposite 4px drift. */
+body.stagelight .hv.is-leave-next { opacity: 0; transform: translateY(-4px); }
+body.stagelight .hv.is-leave-prev { opacity: 0; transform: translateY(4px); }
+@media (prefers-reduced-motion: reduce) {
+  body.stagelight .hv { transition: none; }
+  body.stagelight .hero-slot.is-swapping { transition: none; }
+}
 body.stagelight .home-hero .sc-eyebrow { display: block; font-family: var(--sl-mono); font-size: 12.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-muted); }
 body.stagelight .home-hero .sc-city { margin: 12px 0 0; font-family: var(--sl-display); font-size: 52px; font-weight: 680; letter-spacing: -0.02em; line-height: 1.02; color: var(--sl-ink); text-shadow: 0 2px 40px rgba(0,0,0,0.55); }
 body.stagelight .home-hero .sc-venue { display: block; margin-top: 10px; font-size: 16px; color: var(--sl-muted); }
@@ -15737,12 +15959,12 @@ body.stagelight .bg-card {
   padding: 34px 36px; border-radius: var(--sl-r);
   background: var(--sl-glass); border: 1px solid var(--sl-line); box-shadow: var(--sl-glass-shadow);
 }
-body.stagelight .bg-lyrics { font-family: "Geist", system-ui, sans-serif; font-size: 17px; line-height: 1.7; color: var(--sl-ink); }
+body.stagelight .bg-lyrics { font-family: "Geist", "Geist Fallback", system-ui, sans-serif; font-size: 17px; line-height: 1.7; color: var(--sl-ink); }
 body.stagelight .bg-stanza { margin: 0 0 20px; }
 body.stagelight .bg-stanza:last-child { margin-bottom: 0; }
 body.stagelight .bg-notes { margin-top: 30px; padding-top: 26px; border-top: 1px solid var(--sl-line); }
 body.stagelight .bg-notes-label { font-family: var(--sl-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); margin: 0 0 14px; }
-body.stagelight .bg-para { font-family: "Geist", system-ui, sans-serif; font-size: 15px; line-height: 1.7; color: var(--sl-muted); margin: 0 0 14px; }
+body.stagelight .bg-para { font-family: "Geist", "Geist Fallback", system-ui, sans-serif; font-size: 15px; line-height: 1.7; color: var(--sl-muted); margin: 0 0 14px; }
 body.stagelight .bg-para:last-child { margin-bottom: 0; }
 body.stagelight .bg-notes strong, body.stagelight .bg-lyrics strong { color: var(--sl-ink); font-weight: 640; }
 body.stagelight .bg-source { margin: 16px 0 0; font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.03em; color: var(--sl-faint); }
@@ -16368,7 +16590,7 @@ function romanNumeral(value) {
 function formatBoardShowTitle(show) {
   if (!show?.location) return "";
   // Board header style: "Sacramento CA", no comma (Alex, round 5).
-  return `${show.location.replace(",", "")}${show.runLabel ? ` ${show.runLabel}` : ""}`;
+  return `${displayLocation(show.location).replace(",", "")}${show.runLabel ? ` ${show.runLabel}` : ""}`;
 }
 
 function newestUniqueDates(setlists, catalog, currentTour) {

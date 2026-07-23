@@ -31,6 +31,9 @@ async function main() {
   await checkMobilePassCss();
   await checkSetlistImageOrientation(siteData);
   await checkLatestSetlist(homeHtml, siteData);
+  await checkFontLoading(allHtmlFiles, allHtml);
+  await checkHeroTransitionEngine(homeHtml);
+  checkRivieraDisplaySweep(allHtmlFiles, allHtml);
   checkGuestAnnotations(homeHtml, review2025Html);
   checkNavigation(homeHtml, siteData);
   await checkSongPages(siteData);
@@ -731,7 +734,7 @@ async function checkLatestSetlist(html, siteData) {
   const strip = stripStart >= 0 ? afterHero.slice(stripStart, afterHero.indexOf("</details>", stripStart) + "</details>".length) : "";
 
   assertIncludes(heroCard, `datetime="${feat?.isoDate || ""}"`, "Hero date matches generated site data");
-  assertIncludes(heroCard, `<h2 class="sc-city">${escapeHtml(feat?.location || "")}</h2>`, "Hero city matches generated site data");
+  assertIncludes(heroCard, `<h2 class="sc-city">${escapeHtml(displayLocation(feat?.location || ""))}</h2>`, "Hero city matches generated site data (short display form)");
   assertIncludes(heroCard, '<span class="sc-venue">', "Hero shows the venue line");
   record("Hero keeps a full-bleed blurred backdrop with one layer per view",
     heroCard.includes('<div class="hero-bg"') && heroCard.includes('hero-bg-layer is-active')
@@ -836,7 +839,7 @@ async function checkLatestSetlist(html, siteData) {
   record("Odd feed count promotes the newest card to the full-width lead",
     (siteData.setlists.length % 2 === 0) || runArchive.includes('class="show-entry is-lead'), `${siteData.setlists.length} posted`);
   for (const show of nightShows) {
-    const runHeading = `${show.date || ""} ${show.venue || ""}, ${show.location || ""}`;
+    const runHeading = `${show.date || ""} ${show.venue || ""}, ${displayLocation(show.location || "")}`;
     record(`Run night ${show.isoDate} flows back into the setlist feed`, Boolean(cardHtml(runArchive, escapeHtml(runHeading))), runHeading);
   }
 
@@ -902,7 +905,7 @@ function checkGuestAnnotations(homeHtml, review2025Html) {
   assertIncludes(atlanticCity, 'I&#39;m So Glad<sup class="guest-sup">8</sup>', "Legacy 2025 marker sequence reaches guest number 8");
   assertIncludes(atlanticCity, '<sup class="guest-sup">8</sup> with John Keane on electric guitar, Jason Crosby on keys', "Legacy 2025 combined guest credits stay keyed");
 
-  const playa = cardHtml(homeHtml, "01/23/2026 Hard Rock Hotel Riviera Maya, Riviera Maya, Quintana Roo");
+  const playa = cardHtml(homeHtml, "01/23/2026 Hard Rock Hotel Riviera Maya, Riviera Maya, MX");
   assertIncludes(playa, 'And It Stoned Me<sup class="guest-sup">1</sup>', "01/23/26 numbers Sierra Hull sit-in songs");
   assertIncludes(playa, 'Second Skin<sup class="guest-sup">2</sup>', "01/23/26 numbers Adam MacDougall sit-in songs");
   assertIncludes(playa, '<sup class="guest-sup">1</sup> with Sierra Hull', "01/23/26 has keyed Sierra Hull note");
@@ -2230,6 +2233,116 @@ function linkTexts(html) {
     .filter(Boolean);
 }
 
+// ---- Font loading: preloads for every critical face + metric-matched fallbacks ----
+async function checkFontLoading(files, htmlByFile) {
+  const preloads = [
+    "geist-latin-wght-normal.woff2",
+    "bricolage-grotesque-latin-wght-normal.woff2",
+    "geist-mono-latin-wght-normal.woff2",
+    "milkrun.woff2"
+  ];
+  // Every page's <head> preloads all critical variable faces.
+  const missing = [];
+  for (let i = 0; i < files.length; i += 1) {
+    const head = htmlByFile[i].slice(0, htmlByFile[i].indexOf("</head>") + 1);
+    for (const font of preloads) {
+      if (!head.includes(`rel="preload" href="/assets/${font}" as="font"`)) {
+        missing.push(`${path.relative(root, files[i])} :: ${font}`);
+        break;
+      }
+    }
+  }
+  record("Every page preloads all critical variable font faces (geist, bricolage, geist-mono, milkrun)",
+    missing.length === 0, missing.slice(0, 8).join("\n"));
+
+  // Both stylesheets ship the metric-matched fallback faces + font-display: swap.
+  for (const sheet of ["styles.css", "stagelight.css"]) {
+    const css = await readText(`dist/${sheet}`).catch(() => "");
+    for (const family of ["Geist Fallback", "Bricolage Fallback", "Geist Mono Fallback"]) {
+      const face = new RegExp(`@font-face\\s*\\{[^}]*font-family:\\s*"${family.replace(/ /g, " ")}"[^}]*size-adjust:[^}]*\\}`);
+      record(`${sheet} defines the ${family} metric-matched @font-face (size-adjust + overrides)`,
+        face.test(css) && new RegExp(`"${family}"[^}]*ascent-override`).test(css));
+    }
+    // font-display: swap on the real faces.
+    record(`${sheet} keeps font-display: swap on the webfont faces`,
+      (css.match(/font-display:\s*swap/g) || []).length >= 5);
+    // The stacks actually reference the fallback families (so the swap uses them).
+    record(`${sheet} wires the fallback families into the font stacks`,
+      css.includes('"Geist", "Geist Fallback"') && css.includes('"Bricolage", "Bricolage Fallback"') && css.includes('"Geist Mono", "Geist Mono Fallback"'));
+  }
+}
+
+// ---- Hero transition engine: crossfade + height continuity + queue + prefetch ----
+async function checkHeroTransitionEngine(homeHtml) {
+  const css = await readText("dist/stagelight.css").catch(() => "");
+  // CSS scaffolding for the crossfade/height engine.
+  record("Hero slots are positioning contexts with a height-tween swap state",
+    /body\.stagelight \.hero-slot \{ position: relative; \}/.test(css)
+    && /body\.stagelight \.hero-slot\.is-swapping \{[^}]*transition: height 0\.3s cubic-bezier\(0\.22,1,0\.36,1\)/.test(css),
+    "hero-slot + is-swapping height transition present");
+  record("Hero views carry the crossfade transition and directional enter/leave states",
+    /body\.stagelight \.hv \{ transition: opacity 0\.3s cubic-bezier\(0\.22,1,0\.36,1\), transform 0\.3s/.test(css)
+    && css.includes(".hv.is-leaving { position: absolute")
+    && css.includes(".hv.is-enter-next") && css.includes(".hv.is-enter-prev")
+    && css.includes(".hv.is-leave-next") && css.includes(".hv.is-leave-prev"),
+    "crossfade + drift classes present");
+  record("Reduced motion disables the hero view transitions",
+    /@media \(prefers-reduced-motion: reduce\) \{\s*body\.stagelight \.hv \{ transition: none/.test(css),
+    "reduced-motion guard present");
+  record("Hero background layer crossfade settles just after the content (0.5s)",
+    /body\.stagelight \.hero-bg img \{[^}]*transition: opacity 0\.5s ease/.test(css));
+  // JS engine wiring (the inline hero modal script rides in the homepage HTML).
+  record("Hero swap does a no-blank-frame crossfade (absolute is-leaving snapshot + in-flow incoming)",
+    homeHtml.includes('classList.add("is-leaving")') && homeHtml.includes('classList.add(enterCls)')
+    && homeHtml.includes('.hv[data-view="'),
+    "is-leaving + enter-class swap present");
+  record("Hero swap tweens explicit slot height between measured from/to heights",
+    homeHtml.includes("p.slot.style.height = fromH")
+    && homeHtml.includes("p.toH = p.slot.offsetHeight")
+    && homeHtml.includes('classList.add("is-swapping")')
+    && homeHtml.includes('p.slot.style.height = "";'),
+    "height measure + tween + clear present");
+  record("Hero gates the swap on decoded target imagery, capped so slow networks never block",
+    homeHtml.includes("readyImages") && homeHtml.includes("img.decode()") && homeHtml.includes("setTimeout(res, 350)"),
+    "readyImages decode race present");
+  record("Hero warms adjacent (prev/next) view imagery after each swap",
+    homeHtml.includes("warmView") && homeHtml.includes("finishSwap") && /swapOrder\[\(at \+ 1\)/.test(homeHtml),
+    "adjacent prefetch present");
+  record("Hero uses last-wins queueing instead of dropping rapid clicks",
+    homeHtml.includes("queuedIso") && /if \(swapping\) \{ queuedIso = iso; return; \}/.test(homeHtml)
+    && !homeHtml.includes("if (swapping) return;"),
+    "last-wins queue present, click-drop removed");
+  record("Hero swap direction is derived from ISO order (next rises, prev settles)",
+    homeHtml.includes('dir = iso > fromIso ? "next" : "prev"'),
+    "direction logic present");
+}
+
+// ---- Riviera Maya display sweep: "Quintana Roo" label never reaches the user ----
+function checkRivieraDisplaySweep(files, htmlByFile) {
+  // No location-LABEL form ("..., Quintana Roo[, MEX]") anywhere in dist HTML.
+  const labelLeaks = [];
+  const bareLeaks = [];
+  for (let i = 0; i < files.length; i += 1) {
+    const rel = path.relative(root, files[i]);
+    const html = htmlByFile[i];
+    if (/,\s*Quintana Roo/i.test(html)) labelLeaks.push(rel);
+    if (/Quintana Roo/.test(html)) bareLeaks.push(rel);
+  }
+  record("No location-label 'Quintana Roo' form survives in any dist HTML (sweep to 'MX')",
+    labelLeaks.length === 0, labelLeaks.slice(0, 10).join("\n"));
+  // The homepage (hero + feed) is fully swept — zero 'Quintana Roo' of any kind,
+  // and it positively shows the short display form.
+  const home = htmlByFile[files.findIndex((f) => path.relative(root, f) === "dist/index.html")] || "";
+  record("Homepage carries zero 'Quintana Roo' and shows the 'Riviera Maya, MX' display form",
+    !/Quintana Roo/.test(home) && home.includes("Riviera Maya, MX"),
+    "homepage swept");
+  // Any residual bare mention is allowed ONLY as dated editorial prose inside the
+  // historical Tour-In-Review / archive namespaces (verbatim imported blog copy).
+  const disallowed = bareLeaks.filter((rel) => !/^dist\/(tour-in-review|20\d\d)\//.test(rel));
+  record("Any remaining 'Quintana Roo' lives only in historical editorial prose (archive/tour-in-review)",
+    disallowed.length === 0, disallowed.slice(0, 10).join("\n"));
+}
+
 function assertIncludes(value, expected, label) {
   record(label, String(value).includes(expected), `Missing: ${expected}`);
 }
@@ -2240,6 +2353,12 @@ function assertNotIncludes(value, unexpected, label) {
 
 function record(label, passed, detail = "") {
   checks.push({ label, passed: Boolean(passed), detail });
+}
+
+// Mirror of build.mjs displayLocation: the short display form for long Mexican
+// state labels. Kept in lockstep so guards assert the exact rendered strings.
+function displayLocation(location) {
+  return String(location || "").replace(/,\s*Quintana Roo(?:,?\s*(?:MEX|MX|Mexico))?/gi, ", MX");
 }
 
 function indexOf(value, needle) {
