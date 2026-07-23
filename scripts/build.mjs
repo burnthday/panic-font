@@ -8986,7 +8986,7 @@ function renderShelfWatch(data) {
       <span class="sw-body">
         <span class="sw-n">${formatNumber(remaining)}</span>
         <span class="sw-to">show${remaining === 1 ? "" : "s"} &rsquo;til the shelf</span>
-        <p class="sw-line"><b class="sw-song">${escapeHtml(song.title)}</b> hasn&rsquo;t been played since ${escapeHtml(longDate(song))} &mdash; ${formatNumber(song.effectiveSlp)} shows.</p>
+        <p class="sw-line"><b class="sw-song">${escapeHtml(song.title)}</b> hasn&rsquo;t been played since ${escapeHtml(longDate(song))} &middot; ${formatNumber(song.effectiveSlp)} shows ago.</p>
         <span class="nick-progress-track sw-bar" aria-hidden="true"><i style="width:${pct}%"></i></span>
         <span class="sw-count">${formatNumber(song.effectiveSlp)} / ${formatNumber(cutoff)}</span>
       </span>`;
@@ -15204,15 +15204,23 @@ body.stagelight .sw-img::after {
 body.stagelight .sw-body { position: relative; display: flex; flex-direction: column; padding: 24px 24px 22px; }
 /* Number matches the bento count; sub-line, sentence, and count all sit on the
    existing type scale (34 / 16 / 12) so nothing invents a size. */
-body.stagelight .sw-n { font-family: var(--sl-mono); font-size: 34px; font-weight: 640; line-height: 1; font-variant-numeric: tabular-nums; }
-body.stagelight .sw-to { font-size: 13.5px; color: var(--sl-muted); margin-top: 6px; }
-body.stagelight .sw-line { font-size: 16px; line-height: 1.5; color: var(--sl-muted); margin: 16px 0 0; }
-body.stagelight .sw-song { font-family: var(--sl-display); font-weight: 640; color: var(--sl-ink); letter-spacing: -0.005em; }
+/* One family, one weight, white (Webflow discipline). The only color is the
+   number's slow red tie-dye — background-clip text over a drifting gradient. */
+body.stagelight .sw-n {
+  font-family: var(--sl-display); font-size: 52px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums;
+  background: linear-gradient(105deg, #ef8b88 0%, #d4514f 26%, #ff9d6b 48%, #c65db8 72%, #ef8b88 100%);
+  background-size: 260% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: sw-tiedye 9s ease-in-out infinite alternate;
+}
+@keyframes sw-tiedye { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .sw-n { animation: none; } }
+body.stagelight .sw-to { font-size: 15px; font-weight: 700; color: var(--sl-ink); margin-top: 6px; }
+body.stagelight .sw-line { font-size: 16px; font-weight: 700; line-height: 1.5; color: var(--sl-ink); margin: 16px 0 0; }
+body.stagelight .sw-song { font-weight: 700; letter-spacing: -0.005em; }
 body.stagelight .sw-bar { display: flex; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.1); overflow: hidden; margin: 18px 0 0; }
 body.stagelight .sw-bar i { display: block; height: 100%; background: var(--sl-ink); }
 body.stagelight .sw-count { font-family: var(--sl-mono); font-size: 12px; color: var(--sl-faint); margin-top: 10px; font-variant-numeric: tabular-nums; }
 /* Warm red urgency only inside ~10 shows of the Shelf; others stay neutral. */
-body.stagelight .sw-card.is-hot .sw-n { color: #ef8b88; }
 body.stagelight .sw-card.is-hot .sw-bar i { background: #d4514f; }
 body.stagelight .sw-credit { margin: 16px 0 0; font-family: var(--sl-mono); font-size: 12.5px; color: rgba(255,255,255,0.55); }
 body.stagelight .sw-credit a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.22); }
