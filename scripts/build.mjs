@@ -7077,16 +7077,19 @@ function renderStrikeScriptBody() {
 // the class is only added when IO fires — so no-IO just leaves it static).
 function renderSheetArrowScript() {
   return `(() => {
-    const arrow = document.querySelector(".sheet-arrow");
-    if (!arrow) return;
+    const arrows = [...document.querySelectorAll(".sheet-arrow")];
+    const grid = document.querySelector(".key-grid");
+    if (!arrows.length || !grid) return;
     if (!("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    arrow.classList.add("armed");
+    arrows.forEach((arrow) => arrow.classList.add("armed"));
+    // One trigger for the whole row: the four arrows draw left-to-right on their
+    // own --ad delays, like one gesture marking down the page.
     const io = new IntersectionObserver((entries, obs) => {
       for (const entry of entries) {
-        if (entry.isIntersecting) { entry.target.classList.add("draw"); obs.disconnect(); }
+        if (entry.isIntersecting) { arrows.forEach((arrow) => arrow.classList.add("draw")); obs.disconnect(); }
       }
     }, { threshold: 0.35 });
-    io.observe(arrow);
+    io.observe(grid);
   })();`;
 }
 
@@ -8946,22 +8949,34 @@ function renderNickRanking(songs, modelByKey, nickLastByKey) {
 function renderSheetKey(data) {
   // Marker color key lives in the board intro (bi-swipes); the four explainer
   // columns sit in the open below the sheet (accordion removed, Alex round 6).
-  // Hand-drawn white-ink arrow flourish between the sheet and the explanations,
-  // left-aligned. Two paths (line then head) draw on once when scrolled into
-  // view (see renderSheetArrowScript); reduced-motion shows it complete.
-  const arrow = `<div class="sheet-arrow" aria-hidden="true">
+  // Four hand-drawn ink arrows, one leading into each explanatory column —
+  // traced from Garrie Vereen's real setlist marks (Alex's scans): a tight wave
+  // that decays and flattens as it accelerates into an open two-stroke V head,
+  // with a short heavier "pressure" pass near the head. Each arrow is a unique
+  // path at its own slight tilt (a hand never repeats); they draw in sequence
+  // left-to-right like one gesture down the page (see renderSheetArrowScript).
+  const ARROWS = [
+    { tilt: "-2deg", line: "M5 21 C11 16 15 25 21 20 C27 15 31 24 38 19 C48 12 62 20 78 17 C96 13 116 17 134 15", press: "M96 15.5 C106 14.5 116 16 126 15", head: "M123 6 C129 10 134 13 139 15 C133 19 128 23 122 28" },
+    { tilt: "1.2deg", line: "M4 19 C9 24 14 15 20 19 C26 23 30 15 37 18 C50 23 66 14 82 16 C100 18 118 14 135 16", press: "M98 16.5 C108 15.5 118 16.5 127 16", head: "M125 8 C130 11 135 14 140 16 C134 19 129 24 124 29" },
+    { tilt: "-1deg", line: "M6 22 C12 17 17 25 24 20 C31 15 36 23 44 19 C58 13 74 21 92 17 C108 14 122 18 136 15", press: "M100 16 C110 15 120 16 128 15.5", head: "M126 5 C131 9 135 13 140 15 C135 20 131 23 125 27" },
+    { tilt: "1.8deg", line: "M4 20 C10 25 15 16 22 20 C29 24 34 16 42 19 C56 24 70 15 86 17 C102 19 120 15 137 16", press: "M97 16.5 C107 15.5 117 16.5 126 16", head: "M127 7 C132 11 136 14 141 16 C136 20 131 24 126 30" }
+  ];
+  const arrowSvg = (a, index) => `<div class="sheet-arrow" aria-hidden="true" style="--ar:${a.tilt};--ad:${index * 140}ms">
       <svg viewBox="0 0 145 34" fill="none" xmlns="http://www.w3.org/2000/svg" class="sheet-arrow-svg">
-        <path class="sa-line" d="M4 19 C18 15 31 20 46 17 C61 14 72 21 88 17 C103 13 117 19 137 16" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>
-        <path class="sa-head" d="M126 7 C132 11 136 14 141 16 C136 20 132 24 127 29" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>
+        <path class="sa-line" d="${a.line}" stroke="rgba(255,255,255,0.72)" stroke-width="2.1" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>
+        <path class="sa-press" d="${a.press}" stroke="rgba(255,255,255,0.5)" stroke-width="3.4" stroke-linecap="round" fill="none" vector-effect="non-scaling-stroke"/>
+        <path class="sa-head" d="${a.head}" stroke="rgba(255,255,255,0.72)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none" vector-effect="non-scaling-stroke"/>
       </svg>
     </div>`;
+  const columns = [
+    `<p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't run in the last four shows. The tiny number beside a song counts its plays this tour.</p>`,
+    `<p><b>The Shelf holds songs 200 shows gone.</b> When one comes back it's a bustout, the pull every crowd hopes for. This sheet shows how deep the band can reach.</p>`,
+    `<p><b>Purgatory keeps the one-timers,</b> songs played exactly once, ever. Some are covers from a single wild night. A second play moves a song out, and it rarely comes.</p>`,
+    `<p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. It shrinks every night he digs deeper, and it's the cleanest read on how fast he's learning the book.</p>`
+  ];
   return `<section class="sheet-key" id="sheet-key">
-    ${arrow}
     <div class="key-grid">
-      <p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't run in the last four shows. The tiny number beside a song counts its plays this tour.</p>
-      <p><b>The Shelf holds songs 200 shows gone.</b> When one comes back it's a bustout, the pull every crowd hopes for. This sheet shows how deep the band can reach.</p>
-      <p><b>Purgatory keeps the one-timers,</b> songs played exactly once, ever. Some are covers from a single wild night. A second play moves a song out, and it rarely comes.</p>
-      <p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. It shrinks every night he digs deeper, and it's the cleanest read on how fast he's learning the book.</p>
+      ${columns.map((col, index) => `<div class="key-col">${arrowSvg(ARROWS[index], index)}${col}</div>`).join("\n      ")}
     </div>
 </section>`;
 }
@@ -9058,10 +9073,10 @@ function renderStrikeMark(asset, seed, stackIndex = 0) {
   const h = strikeHash(String(seed || ""));
   const variant = (h % 4) + 1;
   const delay = stackIndex * 0.1; // 100ms stagger, oldest -> newest
-  const strokeH = Math.max(7, 10 - stackIndex); // 10,9,8,7 px
-  const vo = stackIndex * 2; // px raised so older colour peeks below
-  const startJit = (h % 3) + 2; // 2-4px start irregularity
-  const endJit = ((h >> 3) % 3) + 2; // 2-4px width irregularity
+  const strokeH = Math.max(9, 12 - stackIndex); // 12,11,10,9 px (Alex: thicker)
+  const vo = stackIndex * 1.5; // px raised so older colour peeks below (kept slight)
+  const startJit = (h % 2) + 1; // 1-2px start irregularity (kept slight)
+  const endJit = ((h >> 3) % 2) + 1; // 1-2px width irregularity
   return `<span class="marker-mask sv${variant}" style="--mc:${color};--sd:${delay}s;--sh:${strokeH}px;--vo:${vo}px;--sj:${startJit}px;--ej:${endJit}px"><span class="marker-ink"></span></span>`;
 }
 
@@ -14227,7 +14242,11 @@ body.stagelight .ss-below {
   mask-image: linear-gradient(180deg, transparent 60%, #000 76%, #000 100%);
 }
 body.stagelight .ss-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
-body.stagelight .ss-song { display: block; font-size: 15px; line-height: 1.7; white-space: nowrap; }
+body.stagelight .ss-song { display: block; font-size: 15px; line-height: 2.05; white-space: nowrap; }
+/* Columns are bottom-anchored (flex-end): a positive bottom margin lifts the
+   whole sheet so titles fill the band ABOVE the cards and only the trailing
+   greats (1-2 lines) clear the card bottoms. */
+body.stagelight .sheet-scrawl .ss-col { margin-bottom: 70px; }
 /* Laid out like loose papers: shrunk, each sheet nudged and tilted its own way,
    the first pushed further off the left. Stagger sets how many trailing songs
    reach the light (~2, ~2, ~1.5, ~1, <1). */
@@ -14575,8 +14594,13 @@ body.stagelight .sheet-key { margin-bottom: 34px; }
 /* Hand-drawn arrow flourish sits in the gap between the sheet and the key grid,
    left-aligned to the wrapper. Total visible gap sheet->explanations ~58px
    (16 margin + ~30 arrow + 6 + 6), within the 56-64px target. */
-body.stagelight .sheet-arrow { margin: 0 0 6px; line-height: 0; }
-body.stagelight .sheet-arrow-svg { display: block; width: clamp(110px, 9vw, 140px); height: auto; overflow: visible; }
+body.stagelight .key-col { min-width: 0; }
+body.stagelight .sheet-arrow { margin: 0 0 10px; line-height: 0; transform: rotate(var(--ar, 0deg)); transform-origin: left center; }
+body.stagelight .sheet-arrow-svg { display: block; width: clamp(96px, 7vw, 124px); height: auto; overflow: visible; }
+body.stagelight .sheet-arrow .sa-press { stroke-dasharray: 34; stroke-dashoffset: 0; }
+body.stagelight .sheet-arrow.armed .sa-press { stroke-dashoffset: 34; }
+body.stagelight .sheet-arrow.armed.draw .sa-press { animation: sa-draw-press 140ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--ad, 0ms) + 230ms) forwards; }
+@keyframes sa-draw-press { to { stroke-dashoffset: 0; } }
 /* Complete by default (no-JS / no-IO / reduced-motion all show a finished
    arrow); JS arms the hidden state only when it can animate. */
 body.stagelight .sheet-arrow .sa-line { stroke-dasharray: 155; stroke-dashoffset: 0; }
@@ -14584,8 +14608,8 @@ body.stagelight .sheet-arrow .sa-head { stroke-dasharray: 48; stroke-dashoffset:
 body.stagelight .sheet-arrow.armed .sa-line { stroke-dashoffset: 155; }
 body.stagelight .sheet-arrow.armed .sa-head { stroke-dashoffset: 48; }
 /* draw-on once on viewport entry (see renderSheetArrowScript): line then head. */
-body.stagelight .sheet-arrow.armed.draw .sa-line { animation: sa-draw-line 350ms cubic-bezier(0.22, 1, 0.36, 1) forwards; }
-body.stagelight .sheet-arrow.armed.draw .sa-head { animation: sa-draw-head 150ms cubic-bezier(0.22, 1, 0.36, 1) 350ms forwards; }
+body.stagelight .sheet-arrow.armed.draw .sa-line { animation: sa-draw-line 350ms cubic-bezier(0.22, 1, 0.36, 1) var(--ad, 0ms) forwards; }
+body.stagelight .sheet-arrow.armed.draw .sa-head { animation: sa-draw-head 150ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--ad, 0ms) + 340ms) forwards; }
 @keyframes sa-draw-line { to { stroke-dashoffset: 0; } }
 @keyframes sa-draw-head { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
@@ -14759,10 +14783,10 @@ body.stagelight .laminate::after {
    the older colour peeks below the newer one. Horizontal jitter (--sj/--ej)
    gives each stroke a slightly different start/width. */
 .marker-mask { display: flex; align-items: center; }
-.marker-mask.sv1 { transform: rotate(-1deg) translateY(calc(-1 * var(--vo, 0px))); }
-.marker-mask.sv2 { transform: rotate(0.7deg) translateY(calc(-1 * var(--vo, 0px))); }
-.marker-mask.sv3 { transform: rotate(-0.5deg) translateY(calc(-1 * var(--vo, 0px))); }
-.marker-mask.sv4 { transform: rotate(1deg) translateY(calc(-1 * var(--vo, 0px))); }
+.marker-mask.sv1 { transform: rotate(-0.5deg) translateY(calc(-1 * var(--vo, 0px))); }
+.marker-mask.sv2 { transform: rotate(0.35deg) translateY(calc(-1 * var(--vo, 0px))); }
+.marker-mask.sv3 { transform: rotate(-0.25deg) translateY(calc(-1 * var(--vo, 0px))); }
+.marker-mask.sv4 { transform: rotate(0.5deg) translateY(calc(-1 * var(--vo, 0px))); }
 .marker-mask.sv2 .marker-ink { clip-path: polygon(0.6% 6%, 99% 12%, 100% 96%, 92% 88%, 1% 98%); }
 .marker-mask.sv4 .marker-ink { clip-path: polygon(0.6% 9%, 99% 4%, 100% 90%, 94% 98%, 1% 95%); }
 /* draw-in: the marker wipes across left-to-right as the board scrolls in */

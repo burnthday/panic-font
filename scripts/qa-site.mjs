@@ -425,8 +425,15 @@ async function checkTastePassRound(homeHtml, siteData, allHtmlFiles, allHtml) {
 
   // (1c) Hand-ink arrow flourish between the sheet and the explanations: one SVG,
   // two draw-on paths, IntersectionObserver at threshold 0.35, reduced-motion safe.
-  record("Hand-ink arrow renders once between sheet and explanations with both draw paths",
-    (homeHtml.match(/class="sheet-arrow"/g) || []).length === 1 && homeHtml.includes('class="sa-line"') && homeHtml.includes('class="sa-head"'));
+  // Four Garrie-style arrows (one per explanatory column), each with line +
+  // pressure + head paths at its own tilt, drawing in a left-to-right sequence.
+  record("Four hand-ink arrows lead the explanatory columns (line/press/head paths, unique tilts, staggered draw)",
+    (homeHtml.match(/class="sheet-arrow"/g) || []).length === 4
+    && (homeHtml.match(/class="sa-line"/g) || []).length === 4
+    && (homeHtml.match(/class="sa-press"/g) || []).length === 4
+    && (homeHtml.match(/class="sa-head"/g) || []).length === 4
+    && new Set([...homeHtml.matchAll(/--ar:([-\d.]+deg)/g)].map((m) => m[1])).size === 4
+    && homeHtml.includes("--ad:420ms"));
   record("Arrow draws on via IntersectionObserver (threshold 0.35) with reduced-motion fallback",
     homeHtml.includes("threshold: 0.35") && homeHtml.includes('classList.add("armed")') && /prefers-reduced-motion/.test(homeHtml) && /\.sheet-arrow[^{]*\{[^}]*stroke-dashoffset:\s*0/.test(sl));
 
