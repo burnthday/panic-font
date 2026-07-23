@@ -3,6 +3,25 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-23 (PUBLISHED)
+
+### Changed
+- **The stagelight branch is live on burnthday.com.** 288 commits merged to main
+  (`a30e9f3`), deploy run 30027816046 green, home and `/shelf/updates/` both 200.
+  Gate at merge: 677/677 site + 50/50 production.
+
+### Fixed
+- **Rig captions sourced before publish.** Premier Guitar's Widespread Panic Rig
+  Rundown documents the Crown XLS power amps ("with a spare"), the Orange 4x12
+  ("run in stereo"), the Ernie Ball volume pedal and the battered Boss tuner as
+  **Jimmy Herring's** rig, not as gear independently confirmed on Nick's stage.
+  Those four hotspots now carry the dashed "From Jimmy's rig" tag rather than
+  "Confirmed / seen on stage" - which is the story the modal header already tells,
+  HALF-JIMMY / HALF-MIKEY. Two unsupported clauses were cut: "loaded with Tone
+  Tubby ceramics" (PG ties those speakers to Herring's dry cab; the video calls
+  this cabinet Mikey's, and joining the two is an inference) and "SAT BASS scrawled
+  on top" (a stage-photo read, in neither video). (`58d453d`)
+
 ## 2026-07-23 (rig videos live)
 
 ### Added
