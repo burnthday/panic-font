@@ -117,3 +117,34 @@ THEN POLISH AGENT (Opus, full spec agreed with Alex):
 - Full-page rhythm audit: one spacing scale between sections, unified two-tone headlines, left-rail alignment, consistent card padding, measured before/after values. Portfolio-grade bar.
 
 STANDING: Alex mandates Opus agents for all sizable builds (token conservation). Production HELD (mobile sweep + photo-permission gates). Build sheet = ~/Desktop/qa-pass-checklist.html. Preview = stagelight-preview.burnthday-d3j.pages.dev. QA was 605/605+50/50 pre-agent.
+
+---
+
+# SESSION CLOSE 2026-07-23 — final state, full sweep, and the failure log
+
+## Goal reconciliation
+Session goal (evolved, Alex-driven): round-4 feedback → full design campaign (hero, rail, sheets, Nick, Shelf Watch, Dork/Tour stats, videos, footer, transitions, fonts) + Sacramento content promotion. **MET** for everything built and verified. **Overall ship: PARTIAL** — production still gated on Alex's mobile sweep + photo-permission call. QA at close: 613/613 site + 50/50 production, all pushed to the preview branch.
+
+## What Alex is still waiting on / open items (swept from the FULL conversation)
+1. Alex's Round-9 re-review on the build sheet (~/Desktop/qa-pass-checklist.html has autosaving notes + a copy-all button) — INCLUDES cold-load confirmation of the setlist fix (structural grid-stacking; 4th and final attempt).
+2. Mobile sweep — Alex's hard gate before any production ship. Never done.
+3. Photo display permission (Tennille/Timmermans, band CDN) — Alex's call before production.
+4. Poster/subpage-design session RUNNING independently (Alex started the chip). It owns: unified subpage headers, poster placement, living-poster pilot.
+5. DAILY CONTENT OPS: after each show run `npm run postshow` then `gh workflow run setlistfm-sync.yml --ref claude/project-status-4jp3e7` (scheduled sync runs on MAIN only — the branch needs manual dispatch), then build/qa/push. LA 7/23 played tonight — needs this tomorrow.
+6. Old open loops still live in OPEN-LOOPS.md: Song Index toolbar rethink, highlight-a-show, tab fallback, FAQ sources/images, shelf-taxonomy rethink (parked, rec on file), Garrie separator (parked), video "From the stage" — actually SHIPPED (single cinematic); loop closed below.
+
+## THE FAILURE LOG — every break we fought, and the fix (do not repeat)
+1. **Blanket `main > *:not(...)` stacking rule — FOUR strikes** (breadcrumb flattened twice, bento popups rendered inline, subpage sticky stacks collapsed). BREAK: adding any `:not()` raises its specificity and silently beats component rules. FIX: never touch the blanket; repair with matching-specificity explicit selectors. The rule is a landmine — consider dismantling it entirely in a quiet session.
+2. **`display:grid/flex` overrides the `hidden` attribute.** BREAK: 312 "hidden" Nick rows all painted (ranks 213+). FIX: explicit `[hidden]{display:none}` beside any display rule — EXCEPT the hero slots, where we now deliberately invert it (see 3).
+3. **JS height-locking vs progressive paint — took FOUR attempts.** BREAKS: rAF-after-paint grew slots late; fonts.ready re-lock regrew them; hidden-view re-measure regrew them. ROOT TRUTH: a 1.3MB page paints progressively, so end-of-body JS ALWAYS runs after the user sees the hero. FINAL FIX (structural): grid-stack all views per slot (`grid-area:1/1`, hidden views `display:block; visibility:hidden; pointer-events:none`) — heights intrinsic from first layout, zero JS. LESSON: layout-critical sizing must be CSS-intrinsic on big pages.
+4. **The embedded preview pane lies about motion.** Frozen CSS animations/transitions, latched rAF/IO, lazy-load stalls, black screenshots after scroll. FIX: verify PAINTED GEOMETRY and computed styles (offsetHeight, rects, forced classes), never attributes (the hidden-attr bug hid behind an attribute check); judge feel only in Alex's real browser.
+5. **Speculative fixes for unreproduced symptoms.** BREAK: scrollbar-gutter "fix" for the breadcrumb added a resting-layout regression (JoJo's photo moved); the REAL cause was trap #1, already documented in git history. FIX: reproduce or trace before shipping; search the repo's own history for prior fixes FIRST (a commit fixing the same symptom existed).
+6. **Stale data columns.** BREAK: analyzed shelf fossils from the CSV SLP snapshot → claimed Watchtower "in rotation" when its computed effectiveSlp=241 (on the Shelf). FIX: analyze from dist/data/site-data.json computed values, never source snapshots.
+7. **Brittle QA guards.** BREAK: hardcoded window dates broke the first real post-show sync; "at least one multi-strike cluster" broke on a legitimately clean 4-show window. FIX: guards assert relationships to CURRENT data, never literals; tolerate legitimate-zero cases explicitly.
+8. **Don't cry fabrication before checking the data.** "Gimme 100 · Blight 87" and the Nick mock songs looked invented — they were REAL computed values/titles. Also inverted: Oakland photos were Tennille, not Timmermans (Alex had them flipped; gallery fact-check settled it). FIX: verify against data/galleries before asserting either way.
+9. **Ambiguous surface references.** BREAK: "Jack Straw handwritten on the setlist" got routed to the bento scrawl; Alex meant the song sheet's hand-addon mechanic. FIX: the sheet now has a data-driven debut rule (isTourDebut = playedThisTour && seedTotal 0 → PanicHand add-on, sequential by tourFirstIso). When Alex says "the setlist," ask WHICH surface if any doubt.
+10. **Workflows only register from the default branch.** BREAK: setlistfm-sync.yml lived on the feature branch; the "daily sync" had never run once. FIX: file now on main; branch runs need manual --ref dispatch.
+11. **Animation choreography must track the actor, not the clock.** BREAK: separator pressure-ink flashed ahead of the pen (fixed timers). FIX: sync secondary effects to the primary motion's actual arrival; if it keeps fighting (3 strikes), DELETE the secondary element (we did).
+12. **Copy/system rules now standing:** no em-dashes (AI tell — use the site's middot); NEVER eyebrow+headline+subheadline stacks; red/coral is urgency-only (within-10 rule) — never spread the accent everywhere; two-tone sw-lead is THE section headline pattern; one arrow affordance sitewide (bc-open rounded-square quarter-turn).
+13. **Shell quirks:** cwd resets between bash calls (always cd), zsh nomatch kills compound globs, ~/Downloads is TCC-blocked (Desktop works), `show <file>` opens things in Alex's Chrome.
+14. **Token/context ops that worked:** Opus agents for every sizable build (8 dispatched, ~130-230k each), inline only for surgical diffs + verification; bank queue/decisions into this handoff BEFORE context rolls; the build-sheet feedback loop (autosave boxes + copy-all) is the review cadence Alex likes.
