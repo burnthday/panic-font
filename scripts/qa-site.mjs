@@ -2034,11 +2034,15 @@ async function checkPredictionLayer(siteData) {
     Number(siteData.lifetimePairCount) >= 10,
     `lifetimePairCount=${siteData.lifetimePairCount}`);
 
-  record("Recent-window pair mining ran over the last 100 shows (2023-07-29 → 2026-07-18)",
+  // Dynamic on purpose: the window must END at the newest posted show, whatever
+  // that is — a hardcoded date here broke the first post-show sync (2026-07-23).
+  const newestPosted = siteData.setlists?.[0]?.isoDate || "";
+  record("Recent-window pair mining ran over the last 100 shows ending at the newest posted show",
     siteData.recentWindow && siteData.recentWindow.shows === 100
-      && siteData.recentWindow.from === "2023-07-29" && siteData.recentWindow.to === "2026-07-18"
+      && siteData.recentWindow.to === newestPosted
+      && siteData.recentWindow.from < siteData.recentWindow.to
       && Number(siteData.recentPairCount) >= 10,
-    `window=${JSON.stringify(siteData.recentWindow)} recentPairCount=${siteData.recentPairCount}`);
+    `window=${JSON.stringify(siteData.recentWindow)} newestPosted=${newestPosted} recentPairCount=${siteData.recentPairCount}`);
 
   // Odds panel is only present when the dataset has a show today. When it is,
   // an almanac day/date match must surface the 🎵 lyric reason.
