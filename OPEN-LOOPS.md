@@ -3,18 +3,18 @@
 Unchecked items resurface at session start until cleared. Check the box or delete the line when done.
 
 - [ ] 2026-07-22 — Song Index toolbar rethink: always-sortable columns, rarity as a checkbox, kill the pill overload; decide which stats belong on which pages (home vs Song Index vs Lyrics & Chords) and why (raised in: Alex's 7/22 late QA notes, "you need to consider this")
-- [ ] 2026-07-22 — Tab fallback decision (Alex: "Remind me on the fillback"): songs without our 26 hosted tabs show a dash on Lyrics & Chords; option is a Songsterr tab-search fallback link per row like the Song Index MORE column (raised in: lyrics-hub rework flag, 7/22)
+- [ ] 2026-07-23 — Tab fallback DECIDED by Alex: no Songsterr search links (half-way links not cool); use Everyday Companion per-song chord links (they have nearly all) — IN PROGRESS 7/23
 - [x] 2026-07-22 — Band FAQ images: Alex wants more image density on /faq/; hero + one inline break shipped, review whether more repo assets should go in (raised in: 7/22 FAQ feedback)
-- [ ] 2026-07-22 — Sam Holt / Randall Bramblett specific sit-in date: woven in by role only, no sourced 2026 sit-in date found; add a concrete show if Alex supplies one (raised in: FAQ rework)
+- [x] 2026-07-22 — Sam Holt sit-in date: CLOSED by Alex 7/23 ("forget those") — role-only mention stands, stop asking
 - [x] 2026-07-22 — Alex reviews round-2 checklist (~/Desktop/qa-pass-checklist.html) — "we'll continue tomorrow"
-- [ ] 2026-07-22 — FAQ facts waiting on Alex: the "synth era" and the Sam Holt ~'99 "gear from a big band" interview were unverifiable from sources; add to the era history if Alex supplies a source or details (raised in: FAQ round 2)
+- [x] 2026-07-22 — Synth era + Holt gear story: CLOSED by Alex 7/23 ("forget those. remove them") — verified never written into the FAQ; dropped for good
 - [ ] 2026-07-22 — Alex final pass on round-3 checklist (~/Desktop/qa-pass-checklist.html): NEW items + the no-feedback-yet sweep
-- [ ] 2026-07-22 — Highlight-a-show rework (STILL-OPEN, advice on record) (Alex + advice given): add the upcoming show to the dropdown and exclude the last 4 shows from the list so sorting serves "panic pick 5" prediction; advised, awaiting Alex's call (raised in: Tour Stats QA)
+- [x] 2026-07-22 — Highlight-a-show rework: SKIPPED by Alex 7/23 ("meh — skip for now")
 - [x] 2026-07-22 — Nick stats section dedicated rework session: rebuilt 7/22 as predictive two-column feature (view/type/sortable headers, Heat model + walk-forward backtest in flight)
 - [x] 2026-07-22 — Sacramento 7/21 setlist: POSTED 7/23 via npm run postshow + branch sync dispatch; promotion verified end-to-end (hero, rail, board, LA tonight)
 - [x] 2026-07-22 — Mobile sweep of the new hero: DONE 7/23 (375px DOM pass, all surfaces fit, pager touch targets fixed to 44px); Alex's real-phone look still wanted before ship
 - [ ] 2026-07-22 — Handoff written: panic-font/memory/handoff-hero-architecture-2026-07-22.md (next session reads it first)
-- [ ] 2026-07-22 — Shelf Watch photo permission: archival Thomas G. Smith images load from the band's gallery CDN; Alex confirms display permission before any production ship (raised in: shelf-watch rail build)
+- [x] 2026-07-22 — Photo permission: APPROVED by Alex 7/23 ("photos are good to go") — Tennille/Timmermans/Smith, band gallery CDN, credited; production gate cleared
 - [x] 2026-07-22 — Video section SHIPPED as 'From the stage' single cinematic player (Gradle, Tennille poster)
 - [x] 2026-07-22 — Nick Heat model: backtest beat baselines (Top-5 95%), top-10 shipped; Alex never flagged a one-off — loop closed unless he reopens
 - [x] 2026-07-22 — Mobile: 4-column song sheet — verified 7/23 at 375px: fits, no overflow, no clamp pan
