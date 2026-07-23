@@ -9058,6 +9058,20 @@ function renderTonightOdds(odds) {
 // the homepage "Highlight a show" control, now the replacement for every native
 // <select>. Managed instances own their value (data-value) and emit a "cs:change"
 // event; keyboard + listbox semantics are wired by renderCustomSelectScript().
+// Mobile Sort & Filter drawer (Alex 7/23: "sort and filter button and then slide in
+// a sidebar"). One reusable pattern: a trigger button (mobile-only) opens the existing
+// toolbar as an off-canvas sheet. The controls keep their wiring — only their container
+// is repositioned under ~600px. `id` links trigger → drawer.
+function renderFilterDrawerTrigger(id) {
+  return `<button type="button" class="filter-drawer-trigger" data-drawer-open="${escapeAttr(id)}" aria-controls="${escapeAttr(id)}" aria-expanded="false">
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span>Sort &amp; filter</span><span class="fdt-count" data-drawer-count hidden></span>
+  </button>`;
+}
+function filterDrawerHead(label) {
+  return `<div class="fd-head"><span>${escapeHtml(label)}</span><button type="button" class="fd-close" data-drawer-close aria-label="Close sort and filter"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>`;
+}
+
 function renderCustomSelect({ hook, label, options, active = "" }) {
   const activeOpt = options.find((option) => option.value === active) || options[0];
   return `<details class="show-filter custom-select" data-cs data-cs-managed ${hook} data-value="${escapeAttr(activeOpt.value)}">
@@ -9116,6 +9130,46 @@ function renderCustomSelectScript() {
     document.addEventListener("click", (event) => {
       document.querySelectorAll("[data-cs][open]").forEach((dd) => { if (!dd.contains(event.target)) dd.removeAttribute("open"); });
     });
+
+    // Mobile Sort & Filter drawer controller. No-op on pages without a trigger.
+    const triggers = [...document.querySelectorAll("[data-drawer-open]")];
+    if (triggers.length) {
+      let scrim = document.querySelector("[data-drawer-scrim]");
+      if (!scrim) {
+        scrim = document.createElement("div");
+        scrim.className = "drawer-scrim";
+        scrim.setAttribute("data-drawer-scrim", "");
+        document.body.appendChild(scrim);
+      }
+      let openDrawer = null, lastTrigger = null;
+      const close = () => {
+        if (!openDrawer) return;
+        openDrawer.classList.remove("is-open");
+        scrim.classList.remove("is-open");
+        document.body.classList.remove("drawer-open");
+        if (lastTrigger) lastTrigger.setAttribute("aria-expanded", "false");
+        const t = lastTrigger; openDrawer = null; lastTrigger = null;
+        if (t) t.focus();
+      };
+      const open = (drawer, trigger) => {
+        openDrawer = drawer; lastTrigger = trigger;
+        drawer.classList.add("is-open");
+        scrim.classList.add("is-open");
+        document.body.classList.add("drawer-open");
+        trigger.setAttribute("aria-expanded", "true");
+        const closeBtn = drawer.querySelector("[data-drawer-close]");
+        if (closeBtn) closeBtn.focus();
+      };
+      triggers.forEach((trigger) => {
+        const drawer = document.getElementById(trigger.getAttribute("data-drawer-open"));
+        if (!drawer) return;
+        trigger.addEventListener("click", () => { openDrawer === drawer ? close() : open(drawer, trigger); });
+        const closeBtn = drawer.querySelector("[data-drawer-close]");
+        if (closeBtn) closeBtn.addEventListener("click", close);
+      });
+      scrim.addEventListener("click", close);
+      document.addEventListener("keydown", (event) => { if (event.key === "Escape" && openDrawer) close(); });
+    }
   })();`;
 }
 
@@ -9165,7 +9219,9 @@ function renderTourStats(data) {
     <div class="stat-col"><strong>${formatNumber(average)}</strong><span>songs per show</span></div>
   </div>
   ${renderTonightOdds(data.tonightOdds)}
-  <div class="data-toolbar" aria-label="Tour stats filters">
+  ${renderFilterDrawerTrigger("ts-filters")}
+  <div class="data-toolbar filter-drawer" id="ts-filters" aria-label="Tour stats filters">
+    ${filterDrawerHead("Sort & filter")}
     <details class="show-filter" data-show-filter-dd data-cs>
       <summary aria-label="Highlight a show"><span>Highlight a show</span><span class="sf-dot" data-show-filter-dot hidden></span><b class="sf-value" data-show-filter-value>All ${formatNumber(shows)} shows</b><svg class="sc-chev" width="12" height="8" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5 6 6.5 11 1.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
       <div class="sf-pop">
@@ -15631,6 +15687,69 @@ body.stagelight .show-filter { gap: 12px; }
 body.stagelight .custom-select > summary > span { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
 @media (max-width: 760px) {
   body.stagelight .data-toolbar .mobile-sort { display: block; }
+}
+
+/* ---- MOBILE SORT & FILTER DRAWER ----
+   Desktop: the trigger + drawer-head are hidden and the toolbar renders inline as
+   before. Under 600px the toolbar (.filter-drawer) becomes an off-canvas sheet the
+   trigger opens; the existing controls keep their wiring, only the container moves. */
+body.stagelight .filter-drawer-trigger { display: none; }
+body.stagelight .fd-head { display: none; }
+@media (max-width: 600px) {
+  body.stagelight .filter-drawer-trigger {
+    display: inline-flex; align-items: center; gap: 9px; height: 42px; padding: 0 18px;
+    border-radius: var(--sl-r-pill); border: 1px solid var(--sl-line-strong);
+    background: rgba(255,255,255,0.05); color: var(--sl-ink); font-size: 13.5px; font-weight: 580;
+    margin-bottom: 16px; cursor: pointer;
+  }
+  body.stagelight .filter-drawer-trigger .fdt-count {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px;
+    padding: 0 6px; border-radius: 10px; background: var(--sl-ink); color: var(--sl-bg, #0b0b0d);
+    font-family: var(--sl-mono); font-size: 11px; font-weight: 700;
+  }
+  body.stagelight .drawer-scrim {
+    position: fixed; inset: 0; z-index: 90; background: rgba(6,6,8,0.62);
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none; transition: opacity 0.26s ease;
+  }
+  body.stagelight .drawer-scrim.is-open { opacity: 1; pointer-events: auto; }
+  body.stagelight .filter-drawer {
+    position: fixed; top: 0; right: 0; z-index: 95;
+    width: min(86vw, 360px); height: 100dvh; margin: 0;
+    flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 16px;
+    padding: 18px 20px calc(20px + env(safe-area-inset-bottom)); overflow-y: auto;
+    background: var(--sl-panel, #131316); border-left: 1px solid var(--sl-line-strong);
+    box-shadow: -24px 0 60px -20px rgba(0,0,0,0.7);
+    transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+  }
+  body.stagelight .filter-drawer.is-open { transform: translateX(0); }
+  body.stagelight .fd-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 14px; margin-bottom: 2px; border-bottom: 1px solid var(--sl-line);
+  }
+  body.stagelight .fd-head > span { font-family: var(--sl-mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+  body.stagelight .fd-close { display: inline-flex; padding: 6px; border-radius: 8px; color: var(--sl-muted); cursor: pointer; }
+  body.stagelight .fd-close:hover { color: var(--sl-ink); background: rgba(255,255,255,0.06); }
+  /* Controls stack full-width in the drawer; their popovers render inline (no absolute
+     overflow inside the scrolling sheet). */
+  body.stagelight .filter-drawer > .show-filter,
+  body.stagelight .filter-drawer > .type-filter,
+  body.stagelight .filter-drawer > .np-toggle,
+  body.stagelight .filter-drawer > .rarity-filter,
+  body.stagelight .filter-drawer > .find-song,
+  body.stagelight .filter-drawer > .mobile-sort { width: 100%; }
+  body.stagelight .filter-drawer .type-filter { display: flex; }
+  body.stagelight .filter-drawer .mobile-sort { display: block; }
+  body.stagelight.drawer-open { overflow: hidden; }
+  /* The drawer is nested in main (z-index:1), so the sticky site-header (z-60)
+     paints over it and hides the close button. Moving the toolbar out would break
+     the filter wiring (the stats script queries controls within the section), so
+     instead fade the header while a drawer is open — the drawer owns dismissal
+     (close button + scrim + Esc). Header returns on close. */
+  body.stagelight.drawer-open .site-head { opacity: 0; pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    body.stagelight .filter-drawer, body.stagelight .drawer-scrim { transition: none; }
+  }
 }
 
 /* ---- RARITY FILTER ---- */
