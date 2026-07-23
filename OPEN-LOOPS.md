@@ -10,7 +10,11 @@ Unchecked items resurface at session start until cleared. Check the box or delet
 - [ ] 2026-07-22 — FAQ facts waiting on Alex: the "synth era" and the Sam Holt ~'99 "gear from a big band" interview were unverifiable from sources; add to the era history if Alex supplies a source or details (raised in: FAQ round 2)
 - [ ] 2026-07-22 — Alex final pass on round-3 checklist (~/Desktop/qa-pass-checklist.html): NEW items + the no-feedback-yet sweep
 - [ ] 2026-07-22 — Highlight-a-show rework (STILL-OPEN, advice on record) (Alex + advice given): add the upcoming show to the dropdown and exclude the last 4 shows from the list so sorting serves "panic pick 5" prediction; advised, awaiting Alex's call (raised in: Tour Stats QA)
-- [ ] 2026-07-22 — Nick stats section dedicated rework session: labels, filters, sort, look must match the full stats list (Alex: "needs a dedicated session")
+- [x] 2026-07-22 — Nick stats section dedicated rework session: rebuilt 7/22 as predictive two-column feature (view/type/sortable headers, Heat model + walk-forward backtest in flight)
 - [ ] 2026-07-22 — Sacramento 7/21 setlist: blocked on setlist.fm data (songs:[] in cache); hero art pre-wired via setlist-overrides; promote + verify 1-night path when songs land (raised in: hero rebuild)
 - [ ] 2026-07-22 — Mobile sweep of the new hero (375px: pager, rail, ticker, stats panel, breadcrumb) before any ship
 - [ ] 2026-07-22 — Handoff written: panic-font/memory/handoff-hero-architecture-2026-07-22.md (next session reads it first)
+- [ ] 2026-07-22 — Shelf Watch photo permission: archival Thomas G. Smith images load from the band's gallery CDN; Alex confirms display permission before any production ship (raised in: shelf-watch rail build)
+- [ ] 2026-07-22 — Video slider above Song Origins: planned, awaiting Alex's go + approved official-video list (raised in: round-6 batch)
+- [ ] 2026-07-22 — Nick Heat model: Alex fan-eye review of the top-10 once backtest lands; add explicit exclusion list if any one-offs survive (raised in: Nick correction pass)
+- [ ] 2026-07-22 — Mobile: 4-column song sheet wider than phone viewport (clamped, no visible pan) — fold into the dedicated mobile sweep (raised in: hero mobile fix)
