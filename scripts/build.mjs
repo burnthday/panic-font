@@ -16129,8 +16129,11 @@ body.stagelight .poster-header {
 }
 body.stagelight .ph-lede { min-width: 0; }
 body.stagelight .ph-poster { position: relative; justify-self: center; width: 200px; }
+/* Static poster stamp only — the :not(.lp-plate) guard keeps this off the living
+   poster's plate <img>, which is an absolutely-positioned canvas layer (its float +
+   fade come from .living-poster and the .lp-stage mask, not from here). */
 body.stagelight .ph-poster picture,
-body.stagelight .ph-poster img {
+body.stagelight .ph-poster img:not(.lp-plate) {
   display: block; width: 100%; height: auto; position: relative; z-index: 1;
   -webkit-mask-image: linear-gradient(#000 78%, transparent 99%);
   mask-image: linear-gradient(#000 78%, transparent 99%);
