@@ -7403,56 +7403,6 @@ function renderHeroModalScript() {
       swapping = true;
       doSwap(iso);
     };
-    // LOCKED STAGE: the hero (and everything below it) never changes size.
-    // Measure every view's natural height per slot once, pin each slot's
-    // min-height to its tallest view; re-measure on real resizes.
-    const lockStage = () => {
-      slots.forEach((slot) => {
-        slot.style.minHeight = "";
-        let max = slot.offsetHeight;
-        const width = slot.clientWidth;
-        slot.querySelectorAll(".hv[hidden]").forEach((view) => {
-          view.style.cssText = "visibility:hidden;position:absolute;left:0;top:0;width:" + width + "px";
-          view.hidden = false;
-          max = Math.max(max, view.offsetHeight);
-          view.hidden = true;
-          view.style.cssText = "";
-        });
-        slot.style.minHeight = max + "px";
-      });
-    };
-    // Pre-paint: the script executes before first render, so locking heights
-    // NOW means the page arrives pre-sized — no post-load drop of the setlist
-    // (Alex's report: rAF ran lockStage after first paint, growing slots late).
-    lockStage();
-    // Freeze the pre-paint heights. The lock-slot height is driven by the
-    // TALLEST view (including hidden ones), and a hidden view's measured height
-    // is width-sensitive — so a naive fonts.ready re-lock could re-measure a
-    // hidden view taller and push the frozen height UP, dropping the setlist a
-    // line or two after load (Alex's report, cold load, desktop + 375px). The
-    // fonts here are metric-matched (Bricolage↔Bricolage Fallback measure
-    // identically), so the ACTIVE content never grows on font swap. So the
-    // re-lock only ever GROWS a slot when its own active content genuinely
-    // overflows the frozen height — it never lets a taller hidden view move
-    // the setlist. Net: nothing above the setlist moves after first paint.
-    let stageFrozen = slots.map((s) => parseFloat(s.style.minHeight) || 0);
-    const relockStable = () => {
-      slots.forEach((slot, i) => {
-        const active = slot.querySelector(".hv:not([hidden])");
-        slot.style.minHeight = "";
-        const need = Math.max(active ? active.offsetHeight : 0, slot.offsetHeight);
-        slot.style.minHeight = Math.max(stageFrozen[i], need) + "px";
-        stageFrozen[i] = parseFloat(slot.style.minHeight);
-      });
-    };
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(relockStable);
-    let stageResizeT = null;
-    // A real resize (viewport change) DOES want a full re-measure of every view;
-    // re-baseline the freeze afterward so the next font/paint event stays stable.
-    window.addEventListener("resize", () => {
-      clearTimeout(stageResizeT);
-      stageResizeT = setTimeout(() => { lockStage(); stageFrozen = slots.map((s) => parseFloat(s.style.minHeight) || 0); }, 220);
-    });
     // Fixed rail: slots never move. The two context slots refill (quick content
     // fade) with the nearest shows before the active view; latest + upcoming
     // are pinned. The card matching the active view carries the current-ring.
@@ -14014,6 +13964,15 @@ body.stagelight .hero-slot.is-swapping { overflow: hidden; }
 body.stagelight .hero-media-slot.is-swapping { overflow: visible; }
 body.stagelight .hv { transition: opacity 0.28s cubic-bezier(0.22,1,0.36,1), transform 0.28s cubic-bezier(0.22,1,0.36,1); }
 body.stagelight .hv[hidden] { display: none; }
+/* LOAD-SHIFT KILLER (structural): the homepage paints progressively (1.3MB),
+   so any JS height-locking runs after the user already sees the hero. These
+   three variable-height slots grid-stack ALL views in one cell — hidden views
+   stay laid out (invisible, inert), so the slot is born at its tallest height.
+   Zero JS, zero shift, ever. The media slot keeps display:none children (its
+   height is a fixed clamp; laying out 29 photos would force-load them). */
+body.stagelight .hero-lock-slot, body.stagelight .hero-music-slot, body.stagelight .hero-ticker-slot { display: grid; }
+body.stagelight .hero-lock-slot > .hv, body.stagelight .hero-music-slot > .hv, body.stagelight .hero-ticker-slot > .hv { grid-area: 1 / 1; }
+body.stagelight .hero-lock-slot > .hv[hidden], body.stagelight .hero-music-slot > .hv[hidden], body.stagelight .hero-ticker-slot > .hv[hidden] { display: block; visibility: hidden; pointer-events: none; }
 /* Outgoing snapshot: out of flow so the incoming view takes over the flow. */
 body.stagelight .hv.is-leaving { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 /* Slide start/end states. next = incoming slides in from the right; prev = from

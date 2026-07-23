@@ -2377,18 +2377,11 @@ async function checkHeroTransitionEngine(homeHtml) {
     homeHtml.includes('classList.add("is-leaving")') && homeHtml.includes('classList.add(enterCls)')
     && homeHtml.includes('.hv[data-view="'),
     "is-leaving + enter-class swap present");
-  record("Hero stage is locked pre-paint; the fonts.ready re-lock freezes heights (no post-paint setlist drop)",
-    homeHtml.includes("const lockStage = () =>")
-    && homeHtml.includes('slot.style.minHeight = max + "px"')
-    && homeHtml.includes("lockStage();")
-    // fonts.ready runs the CLAMPED relock, never a raw lockStage that could regrow
-    // from a taller hidden view and drop the setlist (Alex's load-shift report).
-    && homeHtml.includes("document.fonts.ready.then(relockStable)")
-    && homeHtml.includes("const relockStable = () =>")
-    && homeHtml.includes("Math.max(stageFrozen[i], need)")
-    && !homeHtml.includes("document.fonts.ready.then(() => lockStage())")
-    && !homeHtml.includes("fromHeroH") && !homeHtml.includes("p.slot.style.height"),
-    "pre-paint lockStage + frozen relockStable present, no raw fonts.ready regrow");
+  record("Hero slots grid-stack all views so heights are intrinsic from first paint (no JS locking, no load shift)",
+    /hero-lock-slot, body\.stagelight \.hero-music-slot, body\.stagelight \.hero-ticker-slot \{ display: grid; \}/.test(css)
+    && css.includes("grid-area: 1 / 1")
+    && /hero-ticker-slot > \.hv\[hidden\] \{ display: block; visibility: hidden; pointer-events: none; \}/.test(css)
+    && !homeHtml.includes("lockStage"));
   record("Hero gates the swap on decoded target imagery, capped so slow networks never block",
     homeHtml.includes("readyImages") && homeHtml.includes("img.decode()") && homeHtml.includes("setTimeout(res, 350)"),
     "readyImages decode race present");
