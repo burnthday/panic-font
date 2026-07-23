@@ -1,10 +1,10 @@
 {
   "source": "Everyday Companion played pages",
   "sourceUrl": "https://everydaycompanion.com/playstats/playstats.asp",
-  "importedAt": "2026-07-19T12:56:29.779Z",
+  "importedAt": "2026-07-23T06:45:04.198Z",
   "tourYear": 2026,
   "allowEcLag": true,
-  "ecLatestShowIso": "2026-07-11",
+  "ecLatestShowIso": "2026-07-18",
   "generationRule": "For each current-tour song, prefer the first EC played-page row in the tour year. If EC has not posted that row, add the exact number of locally verified official shows after EC's latest posted show and before the song's first local tour play to EC's SLP baseline.",
   "rows": [
     {
@@ -44,10 +44,10 @@
       "ltpDate": "12/31/25",
       "ltp": 4,
       "totalBefore": 659,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 664
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 665
     },
     {
       "title": "Airplane",
@@ -58,10 +58,10 @@
       "ltpDate": "10/26/25",
       "ltp": 10,
       "totalBefore": 359,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "01/21/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 362
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 363
     },
     {
       "title": "All Time Low",
@@ -72,10 +72,10 @@
       "ltpDate": "12/31/25",
       "ltp": 4,
       "totalBefore": 369,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 374
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 375
     },
     {
       "title": "And It Stoned Me",
@@ -86,10 +86,10 @@
       "ltpDate": "07/26/25",
       "ltp": 24,
       "totalBefore": 170,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "05/08/26",
-      "totalAtImport": 172
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 173
     },
     {
       "title": "Arleen",
@@ -114,10 +114,10 @@
       "ltpDate": "12/29/25",
       "ltp": 8,
       "totalBefore": 270,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "02/15/26",
-      "lastCurrentDate": "05/10/26",
-      "totalAtImport": 272
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 273
     },
     {
       "title": "B of D",
@@ -170,10 +170,10 @@
       "ltpDate": "11/22/25",
       "ltp": 12,
       "totalBefore": 341,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "03/21/26",
-      "lastCurrentDate": "06/26/26",
-      "totalAtImport": 343
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 344
     },
     {
       "title": "Big Wooly Mammoth",
@@ -184,10 +184,10 @@
       "ltpDate": "12/31/25",
       "ltp": 7,
       "totalBefore": 282,
-      "currentTourPlaysFromHistory": 4,
+      "currentTourPlaysFromHistory": 5,
       "firstCurrentDate": "03/20/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 286
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 287
     },
     {
       "title": "Blackout Blues",
@@ -254,10 +254,10 @@
       "ltpDate": "12/30/25",
       "ltp": 5,
       "totalBefore": 255,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 258
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 259
     },
     {
       "title": "Bust it Big",
@@ -268,10 +268,10 @@
       "ltpDate": "12/30/25",
       "ltp": 5,
       "totalBefore": 256,
-      "currentTourPlaysFromHistory": 6,
+      "currentTourPlaysFromHistory": 7,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "07/07/26",
-      "totalAtImport": 262
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 263
     },
     {
       "title": "C. Brown",
@@ -282,10 +282,10 @@
       "ltpDate": "10/04/25",
       "ltp": 15,
       "totalBefore": 814,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "06/27/26",
-      "totalAtImport": 817
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 818
     },
     {
       "title": "Can't Get High",
@@ -296,10 +296,10 @@
       "ltpDate": "06/27/25",
       "ltp": 34,
       "totalBefore": 372,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "03/22/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 374
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 375
     },
     {
       "title": "Chainsaw City",
@@ -408,10 +408,10 @@
       "ltpDate": "12/29/25",
       "ltp": 8,
       "totalBefore": 60,
-      "currentTourPlaysFromHistory": 4,
+      "currentTourPlaysFromHistory": 5,
       "firstCurrentDate": "02/15/26",
-      "lastCurrentDate": "06/27/26",
-      "totalAtImport": 64
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 65
     },
     {
       "title": "Diner",
@@ -506,10 +506,10 @@
       "ltpDate": "12/30/25",
       "ltp": 2,
       "totalBefore": 1535,
-      "currentTourPlaysFromHistory": 12,
+      "currentTourPlaysFromHistory": 14,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 1547
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 1549
     },
     {
       "title": "Drums",
@@ -520,10 +520,10 @@
       "ltpDate": "11/22/25",
       "ltp": 5,
       "totalBefore": 1633,
-      "currentTourPlaysFromHistory": 7,
+      "currentTourPlaysFromHistory": 8,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "07/08/26",
-      "totalAtImport": 1640
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 1641
     },
     {
       "title": "Dyin' Man",
@@ -534,10 +534,10 @@
       "ltpDate": "08/23/25",
       "ltp": 30,
       "totalBefore": 265,
-      "currentTourPlaysFromHistory": 1,
+      "currentTourPlaysFromHistory": 2,
       "firstCurrentDate": "05/10/26",
-      "lastCurrentDate": "05/10/26",
-      "totalAtImport": 266
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 267
     },
     {
       "title": "End Of The Show",
@@ -576,10 +576,10 @@
       "ltpDate": "12/29/25",
       "ltp": 6,
       "totalBefore": 945,
-      "currentTourPlaysFromHistory": 7,
+      "currentTourPlaysFromHistory": 8,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 952
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 953
     },
     {
       "title": "Flat Foot Flewzy",
@@ -660,10 +660,10 @@
       "ltpDate": "11/22/25",
       "ltp": 7,
       "totalBefore": 89,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "05/10/26",
-      "totalAtImport": 91
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 92
     },
     {
       "title": "Goodpeople",
@@ -674,10 +674,10 @@
       "ltpDate": "12/29/25",
       "ltp": 8,
       "totalBefore": 287,
-      "currentTourPlaysFromHistory": 9,
+      "currentTourPlaysFromHistory": 11,
       "firstCurrentDate": "02/15/26",
-      "lastCurrentDate": "07/10/26",
-      "totalAtImport": 296
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 298
     },
     {
       "title": "Gradle",
@@ -688,10 +688,10 @@
       "ltpDate": "10/31/25",
       "ltp": 27,
       "totalBefore": 162,
-      "currentTourPlaysFromHistory": 1,
+      "currentTourPlaysFromHistory": 2,
       "firstCurrentDate": "06/28/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 163
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 164
     },
     {
       "title": "Greta",
@@ -702,10 +702,10 @@
       "ltpDate": "12/30/25",
       "ltp": 3,
       "totalBefore": 443,
-      "currentTourPlaysFromHistory": 6,
+      "currentTourPlaysFromHistory": 7,
       "firstCurrentDate": "01/21/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 449
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 450
     },
     {
       "title": "Halloween Face",
@@ -744,10 +744,10 @@
       "ltpDate": "11/01/25",
       "ltp": 7,
       "totalBefore": 650,
-      "currentTourPlaysFromHistory": 4,
+      "currentTourPlaysFromHistory": 5,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "07/07/26",
-      "totalAtImport": 654
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 655
     },
     {
       "title": "Heaven",
@@ -800,10 +800,10 @@
       "ltpDate": "11/22/25",
       "ltp": 5,
       "totalBefore": 828,
-      "currentTourPlaysFromHistory": 6,
+      "currentTourPlaysFromHistory": 7,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "07/08/26",
-      "totalAtImport": 834
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 835
     },
     {
       "title": "Honky Red",
@@ -814,10 +814,10 @@
       "ltpDate": "11/21/25",
       "ltp": 13,
       "totalBefore": 89,
-      "currentTourPlaysFromHistory": 4,
+      "currentTourPlaysFromHistory": 5,
       "firstCurrentDate": "03/21/26",
-      "lastCurrentDate": "07/08/26",
-      "totalAtImport": 93
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 94
     },
     {
       "title": "Hope In A Hopeless World",
@@ -842,10 +842,10 @@
       "ltpDate": "08/09/25",
       "ltp": 21,
       "totalBefore": 216,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "04/18/26",
-      "totalAtImport": 218
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 219
     },
     {
       "title": "I'm Not Alone",
@@ -856,10 +856,10 @@
       "ltpDate": "11/23/25",
       "ltp": 6,
       "totalBefore": 528,
-      "currentTourPlaysFromHistory": 4,
+      "currentTourPlaysFromHistory": 5,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 532
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 533
     },
     {
       "title": "I'm So Glad",
@@ -898,10 +898,10 @@
       "ltpDate": "10/31/25",
       "ltp": 18,
       "totalBefore": 458,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "04/18/26",
-      "lastCurrentDate": "07/08/26",
-      "totalAtImport": 460
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 461
     },
     {
       "title": "Jack",
@@ -936,18 +936,14 @@
       "code": "JAMAIS",
       "sourceUrl": "https://everydaycompanion.com/played/JAMAIS.asp",
       "asOfShow": "2026-07-17",
-      "asOfShowCode": "",
+      "asOfShowCode": "20260717a",
       "ltpDate": "10/26/25",
       "ltp": 35,
       "totalBefore": 43,
-      "currentTourPlaysFromHistory": 0,
-      "currentTourPlaysFromLocalSetlists": 1,
+      "currentTourPlaysFromHistory": 1,
       "firstCurrentDate": "07/17/26",
       "lastCurrentDate": "07/17/26",
-      "totalAtImport": 43,
-      "ecLatestShowIso": "2026-07-11",
-      "localBridgeShows": 1,
-      "sourceStatus": "ec-lag-verified-local-bridge"
+      "totalAtImport": 44
     },
     {
       "title": "Junior",
@@ -958,10 +954,10 @@
       "ltpDate": "10/03/25",
       "ltp": 17,
       "totalBefore": 456,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "02/14/26",
-      "lastCurrentDate": "07/07/26",
-      "totalAtImport": 459
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 460
     },
     {
       "title": "Just Kissed My Baby",
@@ -1000,10 +996,10 @@
       "ltpDate": "12/31/25",
       "ltp": 5,
       "totalBefore": 25,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "02/14/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 30
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 31
     },
     {
       "title": "Knockin' Around The Zoo",
@@ -1014,10 +1010,10 @@
       "ltpDate": "08/21/25",
       "ltp": 29,
       "totalBefore": 162,
-      "currentTourPlaysFromHistory": 1,
+      "currentTourPlaysFromHistory": 2,
       "firstCurrentDate": "04/30/26",
-      "lastCurrentDate": "04/30/26",
-      "totalAtImport": 163
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 164
     },
     {
       "title": "Lawyers Guns And Money",
@@ -1028,10 +1024,10 @@
       "ltpDate": "11/01/25",
       "ltp": 7,
       "totalBefore": 76,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "06/27/26",
-      "totalAtImport": 79
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 80
     },
     {
       "title": "Let It Rock",
@@ -1098,10 +1094,10 @@
       "ltpDate": "12/29/25",
       "ltp": 4,
       "totalBefore": 27,
-      "currentTourPlaysFromHistory": 7,
+      "currentTourPlaysFromHistory": 8,
       "firstCurrentDate": "01/21/26",
-      "lastCurrentDate": "07/08/26",
-      "totalAtImport": 34
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 35
     },
     {
       "title": "Little Kin",
@@ -1112,10 +1108,10 @@
       "ltpDate": "12/29/25",
       "ltp": 5,
       "totalBefore": 446,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "06/27/26",
-      "totalAtImport": 449
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 450
     },
     {
       "title": "Little Lilly",
@@ -1126,28 +1122,24 @@
       "ltpDate": "11/21/25",
       "ltp": 6,
       "totalBefore": 246,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 251
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 252
     },
     {
       "title": "Little Wing",
       "code": "LTWING",
       "sourceUrl": "https://everydaycompanion.com/played/LTWING.asp",
       "asOfShow": "2026-07-17",
-      "asOfShowCode": "",
+      "asOfShowCode": "20260717a",
       "ltpDate": "10/25/25",
       "ltp": 36,
       "totalBefore": 73,
-      "currentTourPlaysFromHistory": 0,
-      "currentTourPlaysFromLocalSetlists": 1,
+      "currentTourPlaysFromHistory": 1,
       "firstCurrentDate": "07/17/26",
       "lastCurrentDate": "07/17/26",
-      "totalAtImport": 73,
-      "ecLatestShowIso": "2026-07-11",
-      "localBridgeShows": 1,
-      "sourceStatus": "ec-lag-verified-local-bridge"
+      "totalAtImport": 74
     },
     {
       "title": "Love Tractor",
@@ -1158,10 +1150,10 @@
       "ltpDate": "12/31/25",
       "ltp": 3,
       "totalBefore": 1001,
-      "currentTourPlaysFromHistory": 6,
+      "currentTourPlaysFromHistory": 7,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/10/26",
-      "totalAtImport": 1007
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 1008
     },
     {
       "title": "Low Rider",
@@ -1270,10 +1262,10 @@
       "ltpDate": "12/30/25",
       "ltp": 8,
       "totalBefore": 308,
-      "currentTourPlaysFromHistory": 1,
+      "currentTourPlaysFromHistory": 2,
       "firstCurrentDate": "03/20/26",
-      "lastCurrentDate": "03/20/26",
-      "totalAtImport": 309
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 310
     },
     {
       "title": "Mountain Jam",
@@ -1298,10 +1290,10 @@
       "ltpDate": "12/29/25",
       "ltp": 6,
       "totalBefore": 391,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "04/17/26",
-      "totalAtImport": 393
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 394
     },
     {
       "title": "Nobody's Fault",
@@ -1354,10 +1346,10 @@
       "ltpDate": "11/21/25",
       "ltp": 6,
       "totalBefore": 288,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 291
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 292
     },
     {
       "title": "Old Joe",
@@ -1396,10 +1388,28 @@
       "ltpDate": "12/29/25",
       "ltp": 3,
       "totalBefore": 314,
-      "currentTourPlaysFromHistory": 4,
+      "currentTourPlaysFromHistory": 5,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "06/26/26",
-      "totalAtImport": 318
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 319
+    },
+    {
+      "title": "Ophelia",
+      "code": "OPHELI",
+      "sourceUrl": "https://everydaycompanion.com/played/OPHELI.asp",
+      "asOfShow": "2026-07-21",
+      "asOfShowCode": "",
+      "ltpDate": "08/26/23",
+      "ltp": 97,
+      "totalBefore": 147,
+      "currentTourPlaysFromHistory": 0,
+      "currentTourPlaysFromLocalSetlists": 1,
+      "firstCurrentDate": "07/21/26",
+      "lastCurrentDate": "07/21/26",
+      "totalAtImport": 147,
+      "ecLatestShowIso": "2026-07-18",
+      "localBridgeShows": 0,
+      "sourceStatus": "ec-lag-verified-local-bridge"
     },
     {
       "title": "Papa Johnny Road",
@@ -1424,10 +1434,10 @@
       "ltpDate": "11/22/25",
       "ltp": 9,
       "totalBefore": 739,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "02/14/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 742
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 743
     },
     {
       "title": "Party at Your Mama's House",
@@ -1466,10 +1476,10 @@
       "ltpDate": "12/30/25",
       "ltp": 4,
       "totalBefore": 1118,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/07/26",
-      "totalAtImport": 1123
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 1124
     },
     {
       "title": "Pilgrims",
@@ -1494,10 +1504,10 @@
       "ltpDate": "12/30/25",
       "ltp": 4,
       "totalBefore": 587,
-      "currentTourPlaysFromHistory": 6,
+      "currentTourPlaysFromHistory": 7,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/07/26",
-      "totalAtImport": 593
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 594
     },
     {
       "title": "Porch Song",
@@ -1550,10 +1560,10 @@
       "ltpDate": "10/31/25",
       "ltp": 12,
       "totalBefore": 775,
-      "currentTourPlaysFromHistory": 4,
+      "currentTourPlaysFromHistory": 5,
       "firstCurrentDate": "02/14/26",
-      "lastCurrentDate": "07/07/26",
-      "totalAtImport": 779
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 780
     },
     {
       "title": "Pusherman",
@@ -1592,10 +1602,10 @@
       "ltpDate": "12/29/25",
       "ltp": 3,
       "totalBefore": 432,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "01/20/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 437
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 438
     },
     {
       "title": "Red Hot Mama",
@@ -1620,10 +1630,10 @@
       "ltpDate": "12/31/25",
       "ltp": 5,
       "totalBefore": 249,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "02/14/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 254
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 255
     },
     {
       "title": "Ride Me High",
@@ -1634,10 +1644,10 @@
       "ltpDate": "12/31/25",
       "ltp": 3,
       "totalBefore": 315,
-      "currentTourPlaysFromHistory": 8,
+      "currentTourPlaysFromHistory": 9,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/11/26",
-      "totalAtImport": 323
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 324
     },
     {
       "title": "Rock",
@@ -1704,10 +1714,10 @@
       "ltpDate": "11/21/25",
       "ltp": 20,
       "totalBefore": 343,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "05/10/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 345
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 346
     },
     {
       "title": "Sewing Machine",
@@ -1746,10 +1756,10 @@
       "ltpDate": "10/03/25",
       "ltp": 23,
       "totalBefore": 111,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "04/18/26",
-      "lastCurrentDate": "06/13/26",
-      "totalAtImport": 113
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 114
     },
     {
       "title": "Sleeping Man",
@@ -1774,10 +1784,10 @@
       "ltpDate": "03/23/24",
       "ltp": 63,
       "totalBefore": 246,
-      "currentTourPlaysFromHistory": 1,
+      "currentTourPlaysFromHistory": 2,
       "firstCurrentDate": "04/18/26",
-      "lastCurrentDate": "04/18/26",
-      "totalAtImport": 247
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 248
     },
     {
       "title": "Smokestack Lightning",
@@ -1816,10 +1826,10 @@
       "ltpDate": "11/21/25",
       "ltp": 8,
       "totalBefore": 1220,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 1225
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 1226
     },
     {
       "title": "Spoonful",
@@ -1914,10 +1924,10 @@
       "ltpDate": "11/22/25",
       "ltp": 7,
       "totalBefore": 303,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 305
+      "lastCurrentDate": "07/18/26",
+      "totalAtImport": 306
     },
     {
       "title": "The Take Out",
@@ -1942,10 +1952,10 @@
       "ltpDate": "10/04/25",
       "ltp": 26,
       "totalBefore": 100,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "05/10/26",
-      "lastCurrentDate": "06/27/26",
-      "totalAtImport": 102
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 103
     },
     {
       "title": "This Part of Town",
@@ -1956,10 +1966,10 @@
       "ltpDate": "11/23/25",
       "ltp": 8,
       "totalBefore": 178,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "02/14/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 180
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 181
     },
     {
       "title": "Thought Sausage",
@@ -1998,10 +2008,10 @@
       "ltpDate": "12/31/25",
       "ltp": 3,
       "totalBefore": 362,
-      "currentTourPlaysFromHistory": 6,
+      "currentTourPlaysFromHistory": 7,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "07/07/26",
-      "totalAtImport": 368
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 369
     },
     {
       "title": "Time is Free",
@@ -2022,18 +2032,14 @@
       "code": "TIMZON",
       "sourceUrl": "https://everydaycompanion.com/played/TIMZON.asp",
       "asOfShow": "2026-07-16",
-      "asOfShowCode": "",
+      "asOfShowCode": "20260716a",
       "ltpDate": "12/30/23",
       "ltp": 84,
       "totalBefore": 126,
-      "currentTourPlaysFromHistory": 0,
-      "currentTourPlaysFromLocalSetlists": 1,
+      "currentTourPlaysFromHistory": 1,
       "firstCurrentDate": "07/16/26",
       "lastCurrentDate": "07/16/26",
-      "totalAtImport": 126,
-      "ecLatestShowIso": "2026-07-11",
-      "localBridgeShows": 0,
-      "sourceStatus": "ec-lag-verified-local-bridge"
+      "totalAtImport": 127
     },
     {
       "title": "Trashy",
@@ -2072,10 +2078,10 @@
       "ltpDate": "10/04/25",
       "ltp": 26,
       "totalBefore": 93,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "05/10/26",
-      "lastCurrentDate": "06/27/26",
-      "totalAtImport": 95
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 96
     },
     {
       "title": "Up All Night",
@@ -2114,10 +2120,10 @@
       "ltpDate": "07/28/23",
       "ltp": 87,
       "totalBefore": 44,
-      "currentTourPlaysFromHistory": 1,
+      "currentTourPlaysFromHistory": 2,
       "firstCurrentDate": "05/10/26",
-      "lastCurrentDate": "05/10/26",
-      "totalAtImport": 45
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 46
     },
     {
       "title": "Visiting Day",
@@ -2156,10 +2162,10 @@
       "ltpDate": "11/21/25",
       "ltp": 9,
       "totalBefore": 877,
-      "currentTourPlaysFromHistory": 3,
+      "currentTourPlaysFromHistory": 4,
       "firstCurrentDate": "01/23/26",
-      "lastCurrentDate": "07/05/26",
-      "totalAtImport": 880
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 881
     },
     {
       "title": "We Walk Each Other Home",
@@ -2212,28 +2218,24 @@
       "ltpDate": "11/01/25",
       "ltp": 9,
       "totalBefore": 269,
-      "currentTourPlaysFromHistory": 5,
+      "currentTourPlaysFromHistory": 6,
       "firstCurrentDate": "01/22/26",
-      "lastCurrentDate": "06/28/26",
-      "totalAtImport": 274
+      "lastCurrentDate": "07/16/26",
+      "totalAtImport": 275
     },
     {
       "title": "You Should Be Glad",
       "code": "YSBG",
       "sourceUrl": "https://everydaycompanion.com/played/YSBG.asp",
       "asOfShow": "2026-07-18",
-      "asOfShowCode": "",
+      "asOfShowCode": "20260718a",
       "ltpDate": "11/23/25",
       "ltp": 31,
       "totalBefore": 174,
-      "currentTourPlaysFromHistory": 0,
-      "currentTourPlaysFromLocalSetlists": 1,
+      "currentTourPlaysFromHistory": 1,
       "firstCurrentDate": "07/18/26",
       "lastCurrentDate": "07/18/26",
-      "totalAtImport": 174,
-      "ecLatestShowIso": "2026-07-11",
-      "localBridgeShows": 2,
-      "sourceStatus": "ec-lag-verified-local-bridge"
+      "totalAtImport": 175
     },
     {
       "title": "You Wreck Me",
@@ -2244,10 +2246,10 @@
       "ltpDate": "03/22/25",
       "ltp": 40,
       "totalBefore": 21,
-      "currentTourPlaysFromHistory": 2,
+      "currentTourPlaysFromHistory": 3,
       "firstCurrentDate": "02/14/26",
-      "lastCurrentDate": "05/08/26",
-      "totalAtImport": 23
+      "lastCurrentDate": "07/17/26",
+      "totalAtImport": 24
     }
   ],
   "missing": []

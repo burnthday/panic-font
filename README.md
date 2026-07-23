@@ -133,6 +133,38 @@ For a local post-show build only, `npm run postshow` passes `--allow-ec-lag`. Wh
 
 The full Blogger Takeout feed is checked in at `data/source/blogger-feed.atom`. The build turns those entries into static pages at their original Blogger paths, plus archive indexes at `/archive/` and `/tour-in-review/`. Media files recovered from Takeout live in `assets/archive-media/` and are linked locally when the old Blogger image filename can be matched safely.
 
+## Newsletter Archive
+
+`data/source/newsletters.json` is a digitized catalog of the two Widespread Panic fan newsletters, distinct from the Blogger Archive above. It is both a standalone fan resource and a sourced backbone for song origins.
+
+- **Moon Times** — the official WSP newsletter (WSP office / Brown Cat), preserved on the Internet Archive from `widespreadpanic.com`'s own text ("nonflash") site. The importer enumerates the real inventory from the Wayback CDX index rather than assuming a fixed grid, so it captures every archived issue across vol. 1–7 (including the odd "issue 3.5" and the frameset-based web-only vol. 7 era). Issues the Internet Archive never captured (vol. 2 #2, vol. 4 #4) and masthead-only shells whose content redirects to another issue (vol. 7 #3) are recorded under `knownGaps`, never fabricated.
+- **The Panicle** — the earlier '90s fan herald (Athens, GA). No complete archive exists; the one transcribed issue found online (vol. 1 #5, July 1992) is pulled from the "Nothing But Widespread Panic" fan blog. It is dense song history (debuts, alternate titles, proto-songs), so it drives most of the cross-reference. Untranscribed issues are listed in `knownGaps.panicle` for physical scans.
+
+Each issue record carries the publication, volume/number, printed or `circa`-estimated date (flagged with `dateEstimated`), source URL, Wayback timestamp, attribution, full extracted text, and a `songMentions` list. Each mention is cross-referenced against `data/source/song-origins.json` and `data/source/catalog.csv` (`crossReferencesOrigin`, `originSlug`, `catalogFirstPlayed`), classified (`debut` / `origin` / `alt-title` / `recording` / `mention`), and confidence-rated. This is preservation with attribution — Moon Times links back to the official source and the Internet Archive; the Panicle credits the transcribing blog.
+
+Rebuild it from the live sources with:
+
+```bash
+npm run import:newsletters
+```
+
+## Curated Song Origins
+
+`data/source/song-origins-curated.json` holds 51 net-new song origins compiled from the fan newsletters, band interviews (the Panicle blog, JamBase, American Songwriter, Glide, the Spreadnet interview archive, a Colorado Music Hall of Fame speech), and the definitive [everydaycompanion.com](https://www.everydaycompanion.com/) song database. Burnthday is the **compiler**, not a narrator: entries lead with the source's own words, attributed, and never a ghostwritten voice-over. Every claim is sourced.
+
+It is a **net-new supplement** to the Facebook-sourced `song-origins.json`, cross-checked so it duplicates none of the existing 40. The data is **structured for SEO** so the build can emit schema.org JSON-LD (`MusicComposition` + `Quotation` + `FAQPage`) rather than a prose blob. Each entry carries:
+
+- **Facts as fields:** `type`, `isCover`, `composer`, `originalArtist`, `performedBy`, `aliases[]`, `albums[{name, year}]`, `firstPlayed` (ISO) + `firstPlayedDisplay`, `timesPlayed`, and a plain-language `summary` (meta description).
+- **`quotes[]`** as objects — `{text, speaker, speakerRole, source, sourceDate, url}` — so attribution is structured and linkable.
+- **`sources[]`** (`label`/`publisher`/`url`) and a **`sameAs[]`** authority list (EC, JamBase, American Songwriter, Wikipedia, etc.) per song.
+- **`clusters[]`** (writer / album / theme, for the pillar-cluster mesh), **`related[]`** (sibling origins with a reason), **`albumArt`** (cover asset when a WSP release), and **`faq[]`** (pre-computed Q&A for `FAQPage`).
+
+Full data + design handoff for the site build lives in [`data/source/SONG-ORIGINS-SPEC.md`](data/source/SONG-ORIGINS-SPEC.md); a page prototype is at [`design/prototypes/song-origin-page.html`](design/prototypes/song-origin-page.html).
+
+22 of the 41 lead with a verbatim attributed quote; the other 25 (mostly EC-sourced covers with no band quote located yet) carry structured facts + sources only. Songs researched but left out (no sourced story beyond a debut date, e.g. Weight Of The World, Blackout Blues, Airplane) are deliberately omitted under evidence discipline. No em dashes, by request.
+
+**Wiring (pending, post-final-push):** these render once the build merges them. The merge point is `loadSongOrigins()` in `scripts/build.mjs` (append the curated entries), plus a `renderSongOriginPage()` pass that renders from the structured fields (quotes as attributed blockquotes with source links) **and** emits the schema.org JSON-LD. Kept separate here to avoid colliding with in-flight build changes on the working branch.
+
 ## Live Google Sheets Automation
 
 For automatic rebuilds from Google Sheets, add a Google service account that has viewer access to this spreadsheet:

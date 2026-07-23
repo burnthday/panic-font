@@ -1,0 +1,43 @@
+name: Refresh current setlists
+
+# The "post-show button": pulls the latest official setlists into
+# data/source/setlists-2026.json on THIS branch, runs full QA, commits.
+# The homepage then re-features the newest show automatically.
+# Dispatchable from the Actions tab or the API. (Scheduled runs only work
+# on the default branch, so pre-cutover this is manual/API-triggered.)
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: refresh-setlists-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pull official setlists + segue enrichment
+        run: npm run refresh:setlists
+      - name: Full QA against refreshed data
+        run: npm run qa
+      - name: Commit refreshed setlists
+        run: |
+          git config user.name "burnthday-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/source/setlists-*.json data/source/setlist-overrides-*.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No new setlists posted yet." >> "$GITHUB_STEP_SUMMARY"
+          else
+            git commit -m "Refresh official setlists"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+            echo "Setlists refreshed on \`${GITHUB_REF_NAME}\`." >> "$GITHUB_STEP_SUMMARY"
+          fi

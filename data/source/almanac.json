@@ -1,0 +1,118 @@
+{
+  "note": "The Almanac seeds Burnthday's lore about when Widespread Panic tends to play certain songs. Each 'play' note is Burnthday's own words, rendered verbatim with a '— Burnthday' attribution; lyric quotes are short fair-use snippets. Tiers are NOT stored here — they are computed at build time from the 3,132-show setlist.fm cache (ratio + exact binomial p-value). The 'claim' field records the epistemic category of each entry (lyric = a lyric predicts the day; owner = Burnthday vouches for it; behavioral = a strong data pattern he confirms; dredged = a curiosity found by scanning), which the build combines with significance to assign a tier.",
+  "entries": [
+    {
+      "id": "gimme-tuesday",
+      "kind": "weekly",
+      "song": "Gimme",
+      "day": "Tuesday",
+      "claim": "lyric",
+      "lyric": "Gimme a kiss there, Tuesday / I'll give you a kiss there, too.",
+      "play": "The ultimate weapon for rare mid-week Tuesday tour stops."
+    },
+    {
+      "id": "knockin-round-the-zoo-thursday",
+      "kind": "weekly",
+      "song": "Knockin' Round the Zoo",
+      "day": "Thursday",
+      "claim": "lyric",
+      "lyric": "Just a-knockin' 'round the zoo / On a Thursday afternoon.",
+      "play": "Frequently dropped as a Thursday show opener or early first-set rocker to kick off multi-night weekend runs."
+    },
+    {
+      "id": "henry-parsons-died-saturday",
+      "kind": "weekly",
+      "song": "Henry Parsons Died",
+      "day": "Saturday",
+      "claim": "lyric",
+      "lyric": "It was six o'clock on Saturday / Henry Parsons died.",
+      "play": "Heavily favored for Saturday sets, often opening the show or kicking off Set 2 right as the sun goes down around 6:00 PM."
+    },
+    {
+      "id": "flat-foot-flewzy-saturday",
+      "kind": "weekly",
+      "song": "Flat Foot Flewzy",
+      "day": "Saturday",
+      "claim": "lyric",
+      "lyric": "Singing Flewzy woozy boogie on a Saturday night.",
+      "play": "A classic, high-octane Saturday night second-set closer or encore designed to leave the crowd dancing."
+    },
+    {
+      "id": "last-dance-sunday",
+      "kind": "weekly",
+      "song": "Last Dance",
+      "day": "Sunday",
+      "claim": "lyric",
+      "lyric": "Monday morning... wake up, wake up / It's time to go to work again.",
+      "play": "JB leans heavily into these lines during the outro, making it the perfect cheeky nod when played as a Sunday night closer or encore before everyone heads back to reality."
+    },
+    {
+      "id": "end-of-the-show-sunday",
+      "kind": "weekly",
+      "song": "End of the Show",
+      "day": "Sunday",
+      "claim": "owner"
+    },
+    {
+      "id": "christmas-katie-fourth-of-july",
+      "kind": "holiday",
+      "song": "Christmas Katie",
+      "date": "07-04",
+      "occasion": "Fourth of July",
+      "claim": "lyric",
+      "lyric": "Jingle bells, electric lights / Oh, they rattle 'gainst the shopping cart / Even on the fourth of July.",
+      "play": "A guaranteed highly-anticipated bust-out during the band's annual Fourth of July summer runs."
+    },
+    {
+      "id": "you-should-be-glad-fourth-of-july",
+      "kind": "holiday",
+      "song": "You Should Be Glad",
+      "date": "07-04",
+      "occasion": "Fourth of July",
+      "claim": "lyric",
+      "lyric": "Walking in the haze, Sunday's Independence Day / Another good excuse for a celebration.",
+      "play": "Kept locked and loaded for whenever the Fourth of July holiday lands squarely on a Sunday."
+    },
+    {
+      "id": "up-all-night-new-years-eve",
+      "kind": "holiday",
+      "song": "Up All Night",
+      "date": "12-31",
+      "occasion": "New Year's Eve",
+      "claim": "lyric",
+      "lyric": "And the best thing about New Years is the Christmas lights.",
+      "play": "A beautiful staple that gets a massive crowd roar when dropped during the multi-night New Year's Eve runs."
+    },
+    {
+      "id": "aint-life-grand-new-years-eve",
+      "kind": "holiday",
+      "song": "Ain't Life Grand",
+      "date": "12-31",
+      "occasion": "New Year's Eve",
+      "claim": "behavioral"
+    },
+    {
+      "id": "loose-monday",
+      "kind": "curiosity",
+      "title": "Loose Monday",
+      "day": "Monday",
+      "claim": "dredged",
+      "songs": [
+        "The Other One",
+        "Little Wing",
+        "Werewolves of London",
+        "Let It Rock",
+        "Low Rider"
+      ],
+      "note": "On the band's rare Monday shows, the covers come out to play. These five all turn up on Mondays far more than their overall rate — a loose, off-night streak the numbers happen to like."
+    },
+    {
+      "id": "may-your-glass-be-filled-sunday",
+      "kind": "curiosity",
+      "song": "May Your Glass Be Filled",
+      "day": "Sunday",
+      "claim": "dredged",
+      "note": "It leans Sunday, but only suggestively — a gentle tilt the scan noticed, nothing you'd bet a beer on."
+    }
+  ]
+}

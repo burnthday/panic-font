@@ -1,0 +1,48 @@
+name: Preview Burnthday (Stagelight)
+
+# Builds the redesign branch from the checked-in dataset and publishes a
+# Cloudflare Pages PREVIEW deployment (branch alias), never production.
+on:
+  push:
+    branches:
+      - claude/project-status-4jp3e7
+  workflow_dispatch:
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build from the checked-in dataset
+        run: npm run build
+
+      - name: Run full QA
+        run: npm run qa
+
+      - name: Deploy preview to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: bb75082c91976ca06b7f958041f91239
+          wranglerVersion: 4.111.0
+          command: pages deploy dist --project-name burnthday --branch stagelight-preview --commit-dirty=true
+
+      - name: Surface the preview URL
+        run: |
+          echo "## Stagelight preview deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.deploy.outputs.deployment-url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Branch alias: https://stagelight-preview.burnthday-d3j.pages.dev" >> "$GITHUB_STEP_SUMMARY"

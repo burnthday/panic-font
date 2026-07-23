@@ -1,0 +1,42 @@
+{
+  "_README": [
+    "Official-video support for /song/<slug>/ pages (build.mjs Feature 2).",
+    "Copy this file to song-videos.json to activate the WATCH section. The real",
+    "song-videos.json is intentionally NOT committed — only this .example.json is.",
+    "",
+    "Shape: an object keyed by the NORMALIZED song title (normalizeTitle in",
+    "build.mjs: lowercase, ampersands -> 'and', all non-alphanumerics stripped).",
+    "Each value is an array of video entries. Only entries with official:true are",
+    "ever rendered. Selection per song: if the song was first played before",
+    "2002-08-11 (the Michael Houser era) AND a { era: 'houser' } entry exists, that",
+    "one is chosen; otherwise the first entry in the array is used.",
+    "",
+    "Fields:",
+    "  youtubeId  - the 11-char YouTube video id (from watch?v=<id> or youtu.be/<id>)",
+    "  title      - human label used for the play button's accessible name",
+    "  era        - 'houser' (<= 2002-08-11) or 'modern'",
+    "  official   - must be true to render; anything else is ignored"
+  ],
+  "spacewrangler": [
+    {
+      "youtubeId": "dQw4w9WgXcQ",
+      "title": "Space Wrangler — Athens, GA 1988",
+      "era": "houser",
+      "official": true
+    },
+    {
+      "youtubeId": "aaaaaaaaaaa",
+      "title": "Space Wrangler — 2019",
+      "era": "modern",
+      "official": true
+    }
+  ],
+  "chillywater": [
+    {
+      "youtubeId": "bbbbbbbbbbb",
+      "title": "Chilly Water — official live video",
+      "era": "modern",
+      "official": true
+    }
+  ]
+}
