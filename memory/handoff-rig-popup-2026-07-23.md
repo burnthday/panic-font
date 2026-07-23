@@ -122,7 +122,7 @@ Assert: legend reads Mikey's/Jimmy's/Nick's (3 owners); no `rig-tag` says "Confi
 
 ### OPEN — Alex must still call these (do NOT decide unilaterally)
 1. **Top bar:** the `.rig-head` has extra padding + a border-bottom divider the other modals (`.hero-modal-head`, e.g. song-stats) don't — reads heavier. Proposal: match the standard modal header. AWAITING ALEX.
-2. **Tagline "HALF-JIMMY · HALF-MIKEY"** is now literally off (Jimmy 6 / Nick 4 / Mikey 1). Keep as vibe, or change? AWAITING ALEX.
+2. **Tagline** RESOLVED (Alex 7/23): drop "HALF-JIMMY · HALF-MIKEY". Replace with a one-line STATEMENT under "Nick's Rig" (sentence case, not a mono caps label). Working line: "Worlds collide. A hybrid rig of Jimmy Herring's and Mikey Houser's sounds, played by Nick." (shorter alt on file: "Worlds collide: Herring's and Houser's rigs, fused.") This means the header markup changes from <span> micro-label to a deck line; fold into the top-bar work.
 
 ### Ship path
 All edits on `claude/project-status-4jp3e7` → preview only. Live requires a merge to main with Alex's explicit deploy word. Build `node scripts/build.mjs`, gate `npm run qa` must stay green, then `show` Alex the preview before any deploy talk.
