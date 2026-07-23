@@ -1860,34 +1860,39 @@ function checkEyebrowAudit(files, htmlByFile) {
   record("Song Origins index retires the off-system origin-hero header", htmlAt("song-origins/index.html").length > 0 && !htmlAt("song-origins/index.html").includes('class="origin-hero"'), "origin-hero header should be replaced by the unified header");
   record("Rumors retires the off-system page-graphic-title header", htmlAt("rumors/index.html").length > 0 && !htmlAt("rumors/index.html").includes('class="page-graphic-title"'), "page-graphic-title should be replaced by the unified header");
 
-  // Four of the five poster subpages carry their static tour-poster <img> — the
-  // knocked-out (true-alpha) art so it floats on the page with no black box behind
-  // it, faded at every edge. Song Origins is the exception: its poster spot is the
-  // living A-frame stack (checked at full strength in checkSongOrigins).
-  // The guard checks the <img> tag itself (not any reference — the weak version
-  // passed on a halo url and let a half-reverted build ship) and asserts nothing
-  // paints a black backing (no halo span, no black-pool ::before marker).
+  // ALL FIVE poster subpages now carry the living-poster stack: a synthetic
+  // starfield canvas BEHIND a region-cut print plate (subject fully opaque incl.
+  // its own darks — the rumors crystal ball is a large blue SUBJECT region kept
+  // whole — with only the void, its haze and the printed dots knocked transparent),
+  // plus a whisper-level light-actor canvas above. The static knockout <img> is
+  // retired on every one. Guards at full strength: the is-living stack is present,
+  // the plate is a FILE reference (never a multi-MB inline data URI), the compact
+  // dot field + runtime are inlined, and the old knockout img is gone. "Ball kept"
+  // is covered structurally by the plate being the region-cut file (verified visually).
   const posterPages = [
-    ["faq/index.html", "about"],
-    ["shelf/index.html", "the-shelf"],
-    ["tour-in-review/index.html", "tour-in-review"],
-    ["rumors/index.html", "rumors"]
+    ["faq/index.html", "about", "about-plate.webp", "lights"],
+    ["shelf/index.html", "the-shelf", "the-shelf-plate.webp", "lights"],
+    ["tour-in-review/index.html", "tour-in-review", "tour-in-review-plate.webp", "lights"],
+    ["rumors/index.html", "rumors", "rumors-plate.webp", "lights"],
+    ["song-origins/index.html", "song-origins", "song-origins-plate.webp", "aframe"]
   ];
-  for (const [page, poster] of posterPages) {
+  for (const [page, poster, plate, mode] of posterPages) {
     const html = htmlAt(page);
-    record(`${page} carries the ${poster} knocked-out poster (floats, no black box)`,
-      html.length > 0 && html.includes('class="ph-poster"')
-        && html.includes(`<img src="/assets/posters/${poster}-knockout.png"`)
-        && !html.includes('ph-halo'),
-      `expected ph-poster <img src="/assets/posters/${poster}-knockout.png"> and no black backing`);
-  }
-  {
-    const html = htmlAt("song-origins/index.html");
-    record("song-origins/index.html upgrades its poster spot to the living A-frame plate",
+    record(`${page} ships the living ${poster} poster (region-cut plate over a starfield, no black box)`,
       html.length > 0 && html.includes('class="ph-poster is-living"')
-      && html.includes("/assets/living/song-origins-plate.webp")
-      && !html.includes("song-origins-knockout"),
-      "expected ph-poster is-living with the living plate, static knockout retired");
+        && new RegExp(`class="living-poster lp-${mode}" data-living="lp\\d+"`).test(html)
+        && html.includes('class="lp-layer lp-starfield"')
+        && html.includes(`class="lp-layer lp-plate" alt="" src="/assets/living/${plate}"`)
+        && html.includes('class="lp-layer lp-fx"')
+        && !html.includes(`${poster}-knockout`),
+      `expected ph-poster is-living lp-${mode} stack with /assets/living/${plate}, static knockout retired`);
+    record(`${page} keeps its living plate a file reference, not an inline data URI`,
+      html.length > 0 && !/lp-plate[^>]*src="data:/.test(html),
+      "no inline plate data URI");
+    record(`${page} living runtime has rAF + timeout fallback and a reduced-motion still`,
+      html.includes('data-living="lp') && html.includes("requestAnimationFrame")
+        && html.includes("setTimeout(boot") && /prefers-reduced-motion/.test(html),
+      "runtime motion guards present on the page");
   }
 
   // Every subpage header uses the ONE shared deck class (the fix that stops the

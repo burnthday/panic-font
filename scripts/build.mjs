@@ -12,9 +12,13 @@ const analyticsMeasurementId = "G-R74CMVLLK1";
 let archiveMediaByName = new Map();
 // Living-poster printed-dot field tables (base64, 8-byte records), read once at
 // build start and inlined into the ONE page each drives (homepage Nick section,
-// Song Origins header). The plate art ships as a file via copyAssets — only these
-// compact dot tables (~45–90 KB) are inlined, never the multi-MB plate.
-const LIVING = { nickDots: "", songOriginsDots: "" };
+// and each poster header). The plate art ships as a file via copyAssets — only
+// these compact dot tables (~13–90 KB) are inlined, never the multi-MB plate, and
+// each is emitted on the single page that renders that poster.
+const LIVING = {
+  nickDots: "", songOriginsDots: "",
+  rumorsDots: "", aboutDots: "", shelfDots: "", tourDots: ""
+};
 
 const sheetRanges = {
   catalog: "'Overall Song Stats Sorted By Last Time Played'!A:H",
@@ -1403,6 +1407,10 @@ async function loadLivingDots() {
   };
   LIVING.nickDots = await read("nick-dots.b64.txt");
   LIVING.songOriginsDots = await read("song-origins-dots.b64.txt");
+  LIVING.rumorsDots = await read("rumors-dots.b64.txt");
+  LIVING.aboutDots = await read("about-dots.b64.txt");
+  LIVING.shelfDots = await read("the-shelf-dots.b64.txt");
+  LIVING.tourDots = await read("tour-in-review-dots.b64.txt");
 }
 
 async function copyDirectory(sourceDir, targetDir) {
@@ -3174,6 +3182,66 @@ const POSTER_PAGES = {
   shelf: "the-shelf"
 };
 
+// Every poster header (and the homepage Nick panel) is a living poster: a region-cut
+// print plate over a synthetic starfield, with each poster's own real light sources
+// named as a small light table. Keyed by ART slug. `dotsKey` names the inlined dot
+// field on LIVING; `plate` is the webp shipped via copyAssets; `pw/ph` are the plate
+// pixel dims (dot coords are in this space). Light coords were measured off the art
+// as fractions (x of width, y of height); radii are fractions of width so the field
+// rides the scroll push-in. Intensities sit at the shipped rig/aframe whisper level.
+const POSTER_LIVING = {
+  "song-origins": {
+    mode: "aframe", dotsKey: "songOriginsDots", plate: "song-origins-plate.webp",
+    pw: 1086, ph: 1448, rmax: 7.74, rmin: 0.9, srFloor: 0.45, srScale: 1.22,
+    lights: { FLAME: { x: 0.458, y: 0.606 }, MOON: { x: 0.529, y: 0.291 }, FACE: { x: 0.5, y: 0.56 }, CUP: { x: 0.47, y: 0.64 } }
+  },
+  // The blue crystal ball is a large SUBJECT region kept fully opaque — here it also
+  // glows and breathes cool blue; two faint green mushroom-cap embers flank the base.
+  rumors: {
+    mode: "lights", dotsKey: "rumorsDots", plate: "rumors-plate.webp",
+    pw: 1086, ph: 1448, rmax: 10.73, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      { k: "breathe", x: 0.498, y: 0.604, r: 0.30, rc: 0.16, c: [70, 175, 235], a: 0.15, core: 0.13, sp: 0.55 },
+      { k: "ambient", x: 0.135, y: 0.858, r: 0.06, c: [150, 205, 120], a: 0.045, sp: 0.7 },
+      { k: "ambient", x: 0.80, y: 0.87, r: 0.06, c: [150, 205, 120], a: 0.045, sp: 0.9 }
+    ]
+  },
+  // The white tiger's red eye catches a warm specular ONCE ~1.3s after arrival, then
+  // rests to a faint red ember; a whisper of teal ambient rises off the platform.
+  about: {
+    mode: "lights", dotsKey: "aboutDots", plate: "about-plate.webp",
+    pw: 1122, ph: 1402, rmax: 10.67, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      { k: "blink", x: 0.390, y: 0.404, r: 0.072, rc: 0.024, c: [255, 238, 210], a: 0.44, core: 0.48, t0: 1.3, dur: 0.95 },
+      { k: "core", x: 0.390, y: 0.404, r: 0.022, c: [255, 70, 55], a: 0.10, sp: 1.6 },
+      { k: "breathe", x: 0.5, y: 0.86, r: 0.34, c: [55, 150, 140], a: 0.045, sp: 0.5 }
+    ]
+  },
+  // The carousel tiger's teal eye glints ONCE on arrival, then rests; a faint warm
+  // highlight breathes on the barber-striped carousel pole.
+  "the-shelf": {
+    mode: "lights", dotsKey: "shelfDots", plate: "the-shelf-plate.webp",
+    pw: 1125, ph: 1398, rmax: 10.87, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      { k: "blink", x: 0.356, y: 0.285, r: 0.065, rc: 0.022, c: [200, 240, 255], a: 0.40, core: 0.44, t0: 1.3, dur: 0.95 },
+      { k: "core", x: 0.356, y: 0.285, r: 0.02, c: [80, 205, 215], a: 0.10, sp: 1.5 },
+      { k: "ambient", x: 0.49, y: 0.42, r: 0.06, c: [255, 215, 150], a: 0.045, sp: 0.6 }
+    ]
+  },
+  // Back-view stage shot — its only real light is the scatter of warm embers/sparks
+  // floating behind the boots; a soft warm wash breathes there with them.
+  "tour-in-review": {
+    mode: "lights", dotsKey: "tourDots", plate: "tour-in-review-plate.webp",
+    pw: 1086, ph: 1449, rmax: 10.76, rmin: 0.8, srFloor: 0.42, srScale: 1.08,
+    lights: [
+      {
+        k: "ember", x: 0.5, y: 0.66, r: 0.30, c: [255, 165, 85], a: 0.07, sp: 0.5,
+        pts: [[0.36, 0.63, 0.007], [0.44, 0.605, 0.006], [0.52, 0.665, 0.007], [0.60, 0.62, 0.006], [0.31, 0.70, 0.006], [0.66, 0.69, 0.007], [0.48, 0.725, 0.006]]
+      }
+    ]
+  }
+};
+
 // ── LIVING POSTER ────────────────────────────────────────────────────────────
 // A synthetic starfield canvas (z1) sits BEHIND a knocked-out print plate (z2,
 // true alpha — sky region flooded transparent), so the stars show only through
@@ -3452,10 +3520,74 @@ function livingPosterRuntime(CFG) {
     ]);
   }
 
+  // ---- generic light-actor list (whisper level, additive) ----
+  // Each poster names its own real light sources as a small table of typed glows:
+  //   breathe/ambient — a soft radial that slowly pulses (crystal ball, platform wash)
+  //   blink           — a specular that fires ONCE t0s after arrival, then rests
+  //   core            — a steady faint coloured core (the eye's living ember)
+  //   ember           — a warm wash + a scatter of independently flickering embers
+  // Coordinates are fractions of the plate; radii are fractions of width, so the
+  // field tracks the plate through the scroll push-in and parallax exactly.
+  function glowRing(cx, cy, r, col, a) {
+    radial(cx, cy, r, [
+      [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + a.toFixed(3) + ")"],
+      [0.45, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (a * 0.4).toFixed(3) + ")"],
+      [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+    ]);
+  }
+  function drawFxLights(t, still) {
+    var ox = pFx.x, oy = pFx.y;
+    for (var i = 0; i < L.length; i++) {
+      var g = L[i], cx = g.x * W + ox, cy = g.y * H + oy, col = g.c, rW = g.r * W;
+      if (g.k === "breathe" || g.k === "ambient") {
+        var b = still ? 0.9 : (0.80 + 0.20 * (0.5 + 0.5 * Math.sin(t * (g.sp || 0.5) + i)));
+        glowRing(cx, cy, rW, col, g.a * b);
+        if (g.core) radial(cx, cy, (g.rc || g.r * 0.4) * W, [
+          [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.core * b).toFixed(3) + ")"],
+          [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+        ]);
+      } else if (g.k === "blink") {
+        var env;
+        if (still) { env = 0.34; }
+        else { var p = (t - (g.t0 || 1.3)) / (g.dur || 0.95); env = (p > 0 && p < 1) ? Math.sin(p * Math.PI) : 0; }
+        if (env > 0.001) {
+          glowRing(cx, cy, rW, col, g.a * env);
+          if (g.core) radial(cx, cy, (g.rc || g.r * 0.35) * W, [
+            [0, "rgba(255,255,250," + (g.core * env).toFixed(3) + ")"],
+            [1, "rgba(255,255,250,0)"]
+          ]);
+        }
+      } else if (g.k === "core") {
+        var cb = still ? 1 : (0.82 + 0.18 * Math.sin(t * (g.sp || 1.5) + i));
+        radial(cx, cy, rW, [
+          [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.a * cb).toFixed(3) + ")"],
+          [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+        ]);
+      } else if (g.k === "ember") {
+        var eb = still ? 0.7 : (0.55 + 0.30 * (0.5 + 0.5 * Math.sin(t * (g.sp || 0.5))));
+        radial(cx, cy, rW, [
+          [0, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.a * eb).toFixed(3) + ")"],
+          [0.5, "rgba(" + col[0] + "," + col[1] + "," + col[2] + "," + (g.a * eb * 0.32).toFixed(3) + ")"],
+          [1, "rgba(" + col[0] + "," + col[1] + "," + col[2] + ",0)"]
+        ]);
+        if (g.pts) for (var j = 0; j < g.pts.length; j++) {
+          var pp = g.pts[j], px = pp[0] * W + ox, py = pp[1] * H + oy;
+          var fl = still ? 0.6 : Math.max(0.05, 0.5 + fnoise(t * 1.6 + j * 3.1));
+          radial(px, py, (pp[2] || 0.008) * W, [
+            [0, "rgba(255,212,142," + (0.5 * fl).toFixed(3) + ")"],
+            [1, "rgba(255,182,92,0)"]
+          ]);
+        }
+      }
+    }
+  }
+
   function drawFx(t, still) {
     fctx.clearRect(0, 0, W, H);
     fctx.globalCompositeOperation = "lighter";
-    if (MODE === "aframe") drawFxAframe(t, still); else drawFxRig(t, still);
+    if (MODE === "aframe") drawFxAframe(t, still);
+    else if (MODE === "lights") drawFxLights(t, still);
+    else drawFxRig(t, still);
     fctx.globalAlpha = 1; fctx.globalCompositeOperation = "source-over";
   }
 
@@ -3543,17 +3675,19 @@ function livingPosterRuntime(CFG) {
 /* eslint-enable */
 
 function renderPosterFigure(slug) {
-  if (slug === "song-origins" && LIVING.songOriginsDots) {
+  const cfg = POSTER_LIVING[slug];
+  const dots = cfg && LIVING[cfg.dotsKey];
+  if (cfg && dots) {
     return `<div class="ph-poster is-living" aria-hidden="true">
-        <span class="ph-halo" style="--poster:url('/assets/posters/song-origins.png')"></span>
+        <span class="ph-halo" style="--poster:url('/assets/posters/${slug}.png')"></span>
         ${renderLivingPoster({
-          mode: "aframe",
-          className: "aframe",
-          plate: "/assets/living/song-origins-plate.webp",
-          dots: LIVING.songOriginsDots,
-          pw: 1086, ph: 1448, aspect: "1086 / 1448",
-          rmax: 7.74, rmin: 0.9, srFloor: 0.45, srScale: 1.22,
-          lights: { FLAME: { x: 0.458, y: 0.606 }, MOON: { x: 0.529, y: 0.291 }, FACE: { x: 0.5, y: 0.56 }, CUP: { x: 0.47, y: 0.64 } }
+          mode: cfg.mode,
+          className: cfg.mode,
+          plate: `/assets/living/${cfg.plate}`,
+          dots,
+          pw: cfg.pw, ph: cfg.ph, aspect: `${cfg.pw} / ${cfg.ph}`,
+          rmax: cfg.rmax, rmin: cfg.rmin, srFloor: cfg.srFloor, srScale: cfg.srScale,
+          lights: cfg.lights
         })}
       </div>`;
   }
@@ -3563,6 +3697,12 @@ function renderPosterFigure(slug) {
           <img src="/assets/posters/${slug}-knockout.png" alt="" width="200" loading="lazy" decoding="async">
         </picture>
       </div>`;
+}
+
+// True when a poster slug has a living plate + its dot field inlined this build.
+function isLivingPoster(slug) {
+  const cfg = POSTER_LIVING[slug];
+  return !!(cfg && LIVING[cfg.dotsKey]);
 }
 
 function renderPosterAtmos(slug) {
@@ -3576,7 +3716,7 @@ function renderPageHeader({ crumbs, title, deck, poster = null, headerClass = ""
   const h1 = `<h1>${escapeTitle ? escapeHtml(title) : title}</h1>`;
   const deckHtml = deck ? `<p class="${deckClass}">${deck}</p>` : "";
   if (poster) {
-    const living = poster === "song-origins" && LIVING.songOriginsDots;
+    const living = isLivingPoster(poster);
     return `<div class="ph-wrap has-poster">
       ${living ? renderPosterAtmos(poster) : ""}
       <header class="archive-title poster-header${headerClass ? " " + headerClass : ""}">
