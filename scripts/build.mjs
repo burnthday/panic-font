@@ -10271,6 +10271,25 @@ function renderHeroView(data, show, opts = {}) {
     ? `<div class="hero-ticker" aria-label="Show highlights"><div class="tk-track">${tickerSeq}${tickerSeq}</div></div>`
     : "";
 
+  // Static show-notes list — the same pulls, deep gaps, debuts and editorial
+  // notes the marquee crawls, mirrored below the setlist so they're readable
+  // (Alex 2026-07-24: "in both places"). Built from the same data, not re-derived.
+  const noteRows = [];
+  for (const group of pullGroups) {
+    for (const song of group.songs) noteRows.push(`<li class="sn-item">${renderRaritySymbol(group.tier)}<em>${escapeHtml(group.label)}</em><b>${escapeHtml(song)}</b></li>`);
+  }
+  for (const r of ltpRows) {
+    if (r.gap !== null && r.gap >= 30) noteRows.push(`<li class="sn-item"><em>Last</em><b>${escapeHtml(r.title)}</b><span class="sn-meta">${formatNumber(r.gap)} shows ago</span></li>`);
+    if (r.gap === null) noteRows.push(`<li class="sn-item sn-debut"><em>Live debut</em><b>${escapeHtml(r.title)}</b></li>`);
+  }
+  for (const note of [...annotations.guestNotes, ...annotations.bracketNotes]) {
+    const text = noteText(note);
+    if (text && !isLineupNote(text)) noteRows.push(`<li class="sn-item sn-note"><b>${escapeHtml(text)}</b></li>`);
+  }
+  const showNotes = noteRows.length
+    ? `<div class="show-notes"><span class="sn-eyebrow">Show notes</span><ul class="sn-list">${noteRows.join("")}</ul></div>`
+    : "";
+
   const lineupNotes = [...annotations.guestNotes, ...annotations.bracketNotes]
     .map(noteText)
     .filter((text) => text && isLineupNote(text));
@@ -10309,7 +10328,7 @@ function renderHeroView(data, show, opts = {}) {
         <h2 class="sc-city">${escapeHtml(shownLocation)}</h2>
         <span class="sc-venue">${escapeHtml(venueLine)}</span>
         ${chips ? `<span class="sc-chips">${chips}</span>` : ""}${photosLink}`,
-    music: `<div class="hero-sets sc-sets">${setRows}${annotations.guestNotes.length ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}</div></div>` : ""}</div>${footnote}${statsButton}`,
+    music: `<div class="hero-sets sc-sets">${setRows}${annotations.guestNotes.length ? `<div class="sc-row sc-notes"><span class="sc-label" aria-hidden="true"></span><div class="setlist-annotations">${renderSetlistGuestNotes(annotations)}</div></div>` : ""}</div>${showNotes}${footnote}${statsButton}`,
     media: `<div class="hero-media">${photo}${statsOverlay}${statsPanel}</div>`,
     ticker
   };
@@ -14841,6 +14860,20 @@ body.stagelight .tk-item svg.rarity-ultra polygon { fill: #b9c0cc; }
 body.stagelight .tk-item svg.rarity-hyper polygon, body.stagelight .tk-item svg.rarity-bustout polygon, body.stagelight .tk-item svg.rarity-mega polygon { fill: #d9a84e; }
 body.stagelight .tk-note b { font-weight: 500; color: var(--sl-muted); }
 body.stagelight .tk-sep { color: var(--sl-faint); opacity: 0.5; }
+/* Static show-notes list below the setlist — same item vocabulary as the ticker,
+   stacked and readable instead of scrolling. */
+body.stagelight .show-notes { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--sl-line-faint); }
+body.stagelight .sn-eyebrow { display: block; margin-bottom: 10px; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+body.stagelight .sn-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+body.stagelight .sn-item { display: flex; align-items: baseline; gap: 8px; font-size: 14px; line-height: 1.4; }
+body.stagelight .sn-item em { font-style: normal; font-family: var(--sl-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sl-faint); flex: none; }
+body.stagelight .sn-item b { font-weight: 600; color: var(--sl-ink); }
+body.stagelight .sn-item .sn-meta { font-family: var(--sl-mono); font-size: 11px; color: var(--sl-faint); }
+body.stagelight .sn-item svg { width: 15px; height: auto; flex: none; align-self: center; }
+body.stagelight .sn-item svg polygon, body.stagelight .sn-item svg circle { fill: var(--sl-muted); }
+body.stagelight .sn-item svg.rarity-ultra polygon { fill: #b9c0cc; }
+body.stagelight .sn-item svg.rarity-hyper polygon, body.stagelight .sn-item svg.rarity-bustout polygon, body.stagelight .sn-item svg.rarity-mega polygon { fill: #d9a84e; }
+body.stagelight .sn-note b { font-weight: 500; color: var(--sl-muted); }
 @media (prefers-reduced-motion: reduce) { body.stagelight .tk-track { animation: none; } body.stagelight .hero-ticker { overflow-x: auto; } }
 /* Right-rail cards */
 body.stagelight .hero-cards { margin-top: 12px; display: grid; gap: 10px; }

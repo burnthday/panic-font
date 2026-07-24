@@ -979,6 +979,12 @@ async function checkLatestSetlist(html, siteData) {
   // ---- Right-rail: ticker + run-night cards + upcoming card + all-setlists ----
   record("Hero right rail carries the highlights ticker with a doubled crawl track",
     heroOnly.includes('class="hero-ticker"') && heroOnly.includes('class="tk-track"'), "hero-ticker present");
+  // Show notes (pulls/gaps/debuts/editorial) appear BELOW the setlist too, not only
+  // in the marquee (Alex 2026-07-24). When the featured show has ticker items, the
+  // static list must be present; both surfaces are built from the same data.
+  record("Show notes are mirrored below the setlist when the marquee has any",
+    !heroOnly.includes('class="tk-track"') || (heroOnly.includes('class="show-notes"') && heroOnly.includes('class="sn-list"')),
+    "static show-notes list present alongside the ticker");
   const runNights = (siteData.setlists || []).slice(1).filter((entry) => entry.venue === feat?.venue && entry.location === feat?.location);
   for (const night of runNights) {
     assertIncludes(heroOnly, `data-view="${night.isoDate}"`, `Hero carries a full view for run night ${night.isoDate}`);
