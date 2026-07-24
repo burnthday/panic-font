@@ -2111,7 +2111,7 @@ function renderAboutPage(entry, data, cache) {
               <p>I only mention it because I rely on your site to make setlists! LOL!</p>
             </blockquote>
 
-            <p>I had spent years copying the band's working-list idea for fans, only to discover that somebody in the band was occasionally looking back at mine. There is a nice symmetry in that.</p>
+            <p>I had spent years copying the band's working-list idea for fans, only to discover that somebody in the band was occasionally looking back at mine. Somewhere in there, the fan's copy and the band's original had become the same list.</p>
           </div>
         </section>
 
