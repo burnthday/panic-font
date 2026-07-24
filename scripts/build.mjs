@@ -2071,7 +2071,7 @@ function renderAboutPage(entry, data, cache) {
           <div class="archive-content prose-plate">
             <p>On July 27, 2007, I put my own version online as the Widespread Panic Spread Sheet. After a show, I crossed its songs off the master list in Photoshop. The previous four shows stayed on the page in different colors, much as they did on the band's working sheet, so you could look at the thing and immediately see what had been played and what was still sitting there.</p>
 
-            <p>There was nothing automatic about it. I updated it after every show from my house in Charlotte, from hotel rooms on tour and from wherever I happened to land after a night out. For years, Burnthday was quite literally one enormous Photoshop file being maintained by hand.</p>
+            <p>There was nothing automatic about it. I updated it after every show from wherever I happened to be living at the time, from hotel rooms on tour and from wherever I happened to land after a night out. For years, Burnthday was quite literally one enormous Photoshop file being maintained by hand.</p>
 
             <p>The timing was good. The way fans followed the band was changing. Physical tapes gave way to downloads and online archives. Setlists began appearing while shows were still underway. Tapers such as Coloartist and the Home Team found ways to send audio out of venues in real time. The distance between the person in the room and the person following from home became much smaller.</p>
 
