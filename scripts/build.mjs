@@ -1984,9 +1984,8 @@ function renderAboutPage(entry, data, cache) {
       .about-figure{margin:32px 0}
       .about-figure img{width:100%;height:auto;border-radius:var(--sl-r-md);border:1px solid var(--sl-line);display:block}
       .about-figure figcaption{margin-top:10px;font-size:var(--type-small);color:var(--sl-faint);text-align:center}
-      .about-video{margin:32px auto;max-width:560px}
-      .about-video .yt-lite{margin:0 auto}
-      .about-video figcaption{margin-top:10px;font-size:var(--type-small);color:var(--sl-faint);text-align:center}
+      .about-video{margin:32px 0}
+      .about-video figcaption{margin-top:12px;font-size:var(--type-dense);line-height:1.6;color:var(--sl-muted)}
       .about-fineprint{margin-top:48px;padding-top:24px;border-top:1px solid var(--sl-line)}
       .about-fineprint .fineprint-head{font-size:var(--type-small);letter-spacing:.08em;text-transform:uppercase;color:var(--sl-faint);margin:0 0 8px}
       .about-fineprint p{font-size:var(--type-small);line-height:1.6;color:var(--sl-faint);max-width:70ch}
@@ -2093,8 +2092,15 @@ function renderAboutPage(entry, data, cache) {
             <p>Burnthday produced a few odd side projects along the way. The most visible was Jimmy Herring Has a Posse, a riff on the old Andre the Giant street-art campaign that somehow became shirts, stickers and its own little piece of Panic folklore. Stickers found their way onto Jimmy's volume pedals. His guitar tech, Eric Pretto, got a full box of them at Red Rocks and wore one onstage. Derek Trucks wore one onstage during the 2009 Allman Brothers and Widespread Panic co-bill. People still turn up wearing them.</p>
 
             <figure class="about-video">
-              ${renderLiteEmbed("aPRDPjYKXoI", { thumb: "/assets/archive-media/derek-trucks-posse-2009.webp", title: "Derek Trucks in a Jimmy Herring Has a Posse shirt, Allman Brothers 40th Anniversary Tour with Widespread Panic, 2009" })}
-              <figcaption>Derek Trucks in the shirt on the last night of the Allman Brothers' 40th-anniversary tour, Widespread Panic sharing the stage. 2009.</figcaption>
+              <div class="fs-player" data-fs-player data-video-id="aPRDPjYKXoI">
+                <button type="button" class="fs-poster" data-fs-play aria-label="Play &quot;Southbound&quot; Allman Bros w/ Widespread Panic">
+                  <img src="/assets/archive-media/derek-trucks-posse-2009.webp" alt="Derek Trucks onstage in a Jimmy Herring Has a Posse shirt" loading="lazy" decoding="async">
+                  <span class="fs-scrim" aria-hidden="true"></span>
+                  <span class="fs-play" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 14 16" fill="none"><path d="M2 1.7c0-.8.87-1.3 1.56-.88l10 6.3a1.04 1.04 0 0 1 0 1.76l-10 6.3A1.04 1.04 0 0 1 2 14.3V1.7Z" fill="currentColor"/></svg></span>
+                  <span class="fs-caption"><strong>&ldquo;Southbound&rdquo; Allman Bros w/ Widespread Panic</strong></span>
+                </button>
+              </div>
+              <figcaption>That is Derek Trucks in a Jimmy Herring Has a Posse shirt, on the last night of the tour, while both bands ran &ldquo;Southbound&rdquo; together. A bit I dreamed up for fun had ended up on one of the best guitar players alive, on the final show of the run. I am still not over it.</figcaption>
             </figure>
 
             <p>The useful part was what happened to the money.</p>
@@ -2187,7 +2193,7 @@ ${faqItems}
       ["Home", "https://burnthday.com/"],
       ["About", "https://burnthday.com/about/"]
     ])}</script>
-    ${LITE_EMBED_SCRIPT}
+    ${FS_PLAYER_SCRIPT}
     ${renderAboutJsonLd(stats)}
   </body>
 </html>
@@ -9768,6 +9774,27 @@ const FROM_THE_STAGE_VIDEO = {
   posterCredit: "Photo: Andy Tennille"
 };
 
+// Wires EVERY poster player on the page, not just one — the rig popup and the
+// About-page Posse video reuse the same markup, so one handler covers all of
+// them. Shared so every surface ships byte-identical wiring.
+const FS_PLAYER_SCRIPT = `<script>
+    (() => {
+      document.querySelectorAll("[data-fs-player]").forEach((wrap) => {
+        const btn = wrap.querySelector("[data-fs-play]");
+        if (!btn) return;
+        btn.addEventListener("click", () => {
+          const frame = document.createElement("iframe");
+          frame.src = "https://www.youtube-nocookie.com/embed/" + wrap.dataset.videoId + "?autoplay=1&rel=0";
+          frame.title = btn.getAttribute("aria-label") || "video";
+          frame.allow = "autoplay; encrypted-media; picture-in-picture";
+          frame.allowFullscreen = true;
+          frame.className = "fs-frame";
+          wrap.replaceChild(frame, btn);
+        }, { once: true });
+      });
+    })();
+  </script>`;
+
 function renderFromTheStage() {
   const v = FROM_THE_STAGE_VIDEO;
   return `<section class="from-the-stage" id="from-the-stage">
@@ -9784,25 +9811,7 @@ function renderFromTheStage() {
       <span class="fs-credit">${v.posterCredit}</span>
     </button>
   </div>
-  <script>
-    // Wires EVERY poster player on the page, not just this one — the rig popup
-    // reuses the same markup, so one handler covers all of them.
-    (() => {
-      document.querySelectorAll("[data-fs-player]").forEach((wrap) => {
-        const btn = wrap.querySelector("[data-fs-play]");
-        if (!btn) return;
-        btn.addEventListener("click", () => {
-          const frame = document.createElement("iframe");
-          frame.src = "https://www.youtube-nocookie.com/embed/" + wrap.dataset.videoId + "?autoplay=1&rel=0";
-          frame.title = btn.getAttribute("aria-label") || "video";
-          frame.allow = "autoplay; encrypted-media; picture-in-picture";
-          frame.allowFullscreen = true;
-          frame.className = "fs-frame";
-          wrap.replaceChild(frame, btn);
-        }, { once: true });
-      });
-    })();
-  </script>
+  ${FS_PLAYER_SCRIPT}
 </section>`;
 }
 
