@@ -2088,7 +2088,7 @@ function renderAboutPage(entry, data, cache) {
 
             <p>The useful part was what happened to the money.</p>
 
-            <p>The apparel was run as a nonprofit project, with the proceeds going to Make It Right New Orleans on behalf of The House That Widespread Panic Fans Built. Burnthday recorded a $6,685.33 donation in 2011, part of a fan campaign that ultimately raised tens of thousands of dollars toward a house in the Lower 9th Ward after Hurricane Katrina. Widespread Panic had sponsored a Make It Right house first, and the fan community decided to build one too.</p>
+            <p>The apparel was run as a nonprofit. Widespread Panic had sponsored a Make It Right house in New Orleans first, and the fans decided to build one too: The House That Widespread Panic Fans Built, a campaign that raised tens of thousands of dollars toward a home in the Lower 9th Ward after Hurricane Katrina. Burnthday put its proceeds in.</p>
 
             <p>That may say more about this group of people than any setlist statistic ever could.</p>
           </div>
