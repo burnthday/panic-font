@@ -1926,8 +1926,8 @@ function renderAboutJsonLd(stats) {
     sameAs: [
       "https://www.facebook.com/alexmoura",
       "https://www.facebook.com/burnthday",
-      "https://twitter.com/burnthday",
-      "https://www.instagram.com/burnthday/"
+      "https://x.com/burnthday",
+      "https://www.instagram.com/alexandersmoura/"
     ]
   };
   const dataset = {
@@ -2171,7 +2171,7 @@ ${faqItems}
 
             <p>Most of all, thank you to the Widespread Panic community. Everyone who preserved a show, corrected a date, shared a recording or kept the information moving before any of this was easy. This site is one fan trying to keep up with all of you.</p>
 
-            <p>If a photo appears here without the right credit, or you would rather it not appear at all, let me know and I will fix it. No questions asked. Reach me at <a href="mailto:burnthdaywsp@gmail.com">burnthdaywsp@gmail.com</a>, or say hi on Facebook, X or Instagram.</p>
+            <p>If a photo appears here without the right credit, or you would rather it not appear at all, let me know and I will fix it. No questions asked. Reach me at <a href="mailto:burnthdaywsp@gmail.com">burnthdaywsp@gmail.com</a>, or say hi on <a href="https://www.facebook.com/burnthday" target="_blank" rel="noopener noreferrer">Facebook</a>, <a href="https://x.com/burnthday" target="_blank" rel="noopener noreferrer">X</a> or <a href="https://www.instagram.com/alexandersmoura/" target="_blank" rel="noopener noreferrer">Instagram</a>.</p>
 
             <p>Burnthday has never been a business. It is still a fan project, still independent and still here because I apparently never learned to stop staring at the song list.</p>
 
@@ -2611,7 +2611,7 @@ function renderPrivacyPage(data) {
           <h2>External Links</h2>
           <p>The site links to Widespread Panic, Nugs.net, Facebook, Instagram, X, YouTube, and other independent sources. Those sites have their own privacy practices, and Burnthday does not control them.</p>
           <h2>Questions</h2>
-          <p>Questions about this page can be sent through <a href="https://www.facebook.com/burnthday">Burnthday on Facebook</a> or <a href="https://www.instagram.com/burnthday/">Burnthday on Instagram</a>.</p>
+          <p>Questions about this page can be sent through <a href="https://www.facebook.com/burnthday">Burnthday on Facebook</a> or <a href="https://www.instagram.com/alexandersmoura/">Alex Moura on Instagram</a>.</p>
         </div>
       </article>
     </main>
@@ -8770,7 +8770,7 @@ function renderSiteHeader(options = {}) {
     </a>
     <nav class="header-social" aria-label="Burnthday social links">
       <a class="social-dot facebook" href="https://www.facebook.com/burnthday" aria-label="burnthday on Facebook">f</a>
-      <a class="social-dot twitter" href="https://twitter.com/burnthday" aria-label="burnthday on Twitter">t</a>
+      <a class="social-dot twitter" href="https://x.com/burnthday" aria-label="burnthday on Twitter">t</a>
     </nav>
   </div>
   ${renderNavLinks(primaryNavItems, "jump-links", "Primary navigation")}
@@ -8832,8 +8832,8 @@ function renderStagelightHeader(data) {
       <p class="mega-blurb">The working Widespread Panic song list, setlists, and tour data.</p>
       <nav class="mega-social" aria-label="Burnthday social links">
         <a href="https://www.facebook.com/burnthday" aria-label="Burnthday on Facebook"><span class="social-mark facebook" aria-hidden="true">f</span></a>
-        <a href="https://twitter.com/burnthday" aria-label="Burnthday on X"><span class="social-mark x" aria-hidden="true">X</span></a>
-        <a href="https://www.instagram.com/burnthday/" aria-label="Burnthday on Instagram"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span></a>
+        <a href="https://x.com/burnthday" aria-label="Burnthday on X"><span class="social-mark x" aria-hidden="true">X</span></a>
+        <a href="https://www.instagram.com/alexandersmoura/" aria-label="Alex Moura on Instagram"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span></a>
       </nav>
       <a class="mega-cta" href="https://widespreadpanic.com/tour">Get Tickets</a>
     </div>
@@ -9144,8 +9144,8 @@ function renderNavigationScriptBody() {
 function renderFooterSocialRow() {
   return `<nav class="social-links" aria-label="Follow Burnthday">
       <a href="https://www.facebook.com/burnthday" aria-label="Burnthday on Facebook"><span class="social-mark facebook" aria-hidden="true">f</span><span>Facebook</span></a>
-      <a href="https://twitter.com/burnthday" aria-label="Burnthday on X"><span class="social-mark x" aria-hidden="true">X</span><span>X</span></a>
-      <a href="https://www.instagram.com/burnthday/" aria-label="Burnthday on Instagram"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span><span>Instagram</span></a>
+      <a href="https://x.com/burnthday" aria-label="Burnthday on X"><span class="social-mark x" aria-hidden="true">X</span><span>X</span></a>
+      <a href="https://www.instagram.com/alexandersmoura/" aria-label="Alex Moura on Instagram"><span class="social-mark instagram" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.2" cy="6.8" r="1.3" fill="currentColor"/></svg></span><span>Instagram</span></a>
     </nav>`;
 }
 
@@ -10506,20 +10506,25 @@ function renderHeroView(data, show, opts = {}) {
     ? `<div class="hero-ticker" aria-label="Show highlights"><div class="tk-track">${tickerSeq}${tickerSeq}</div></div>`
     : "";
 
-  // Static show-notes list — the same pulls, deep gaps, debuts and editorial
-  // notes the marquee crawls, mirrored below the setlist so they're readable
-  // (Alex 2026-07-24: "in both places"). Built from the same data, not re-derived.
+  // Static show-notes list below the setlist (Alex 2026-07-24). This is NOT a mirror
+  // of the marquee: the rarity/bustout flags live in the scrolling carousel only.
+  // Below the setlist we keep the two things worth reading still: the deep "last
+  // played" facts (EC-style, with the date), and the editorial raps/teases.
+  const SN_GAP_FLOOR = 50;
   const noteRows = [];
-  for (const group of pullGroups) {
-    for (const song of group.songs) noteRows.push(`<li class="sn-item">${renderRaritySymbol(group.tier)}<em>${escapeHtml(group.label)}</em><b>${escapeHtml(song)}</b></li>`);
-  }
   for (const r of ltpRows) {
-    if (r.gap !== null && r.gap >= 30) noteRows.push(`<li class="sn-item"><em>Last</em><b>${escapeHtml(r.title)}</b><span class="sn-meta">${formatNumber(r.gap)} shows ago</span></li>`);
-    if (r.gap === null) noteRows.push(`<li class="sn-item sn-debut"><em>Live debut</em><b>${escapeHtml(r.title)}</b></li>`);
+    if (r.gap === null) { noteRows.push(`<li class="sn-item sn-debut"><em>Live debut</em><b>${escapeHtml(r.title)}</b></li>`); continue; }
+    if (r.gap < SN_GAP_FLOOR) continue;
+    const when = r.date ? `${isoToShortDate(r.date)} - ` : "";
+    noteRows.push(`<li class="sn-item sn-last"><em>Last</em><b>${escapeHtml(r.title)}</b><span class="sn-meta">${when}${formatNumber(r.gap)} shows</span></li>`);
   }
+  // Auto-generated bustout notes read "Last 'X' - date, N shows" — the sn-last rows
+  // above already say that (in Alex's format), so drop them here to avoid printing
+  // the same song twice. Only genuine raps/teases remain as editorial notes.
+  const isGeneratedLastNote = (t) => /^Last '.*' - \d{2}\/\d{2}\/\d{2},\s*\d+ shows?$/.test(t);
   for (const note of [...annotations.guestNotes, ...annotations.bracketNotes]) {
     const text = noteText(note);
-    if (text && !isLineupNote(text)) noteRows.push(`<li class="sn-item sn-note"><b>${escapeHtml(text)}</b></li>`);
+    if (text && !isLineupNote(text) && !isGeneratedLastNote(text)) noteRows.push(`<li class="sn-item sn-note"><b>${escapeHtml(text)}</b></li>`);
   }
   const showNotes = noteRows.length
     ? `<div class="show-notes"><span class="sn-eyebrow">Show notes</span><ul class="sn-list">${noteRows.join("")}</ul></div>`
@@ -10770,10 +10775,10 @@ function computeLastPlayedRows(data, show) {
   return titles.map((title) => {
     const key = normalizeTitle(title);
     const row = (data.catalog || []).find((entry) => entry.key === key);
-    const gap = lastTimePlayedGap(data, key, show.isoDate);
+    const { gap, date } = lastTimePlayedInfo(data, key, show.isoDate);
     const slug = data.songSlugMap?.get(key);
     const tier = row ? calculateRarity(row).tier : null;
-    return { title, slug, gap, tier };
+    return { title, slug, gap, date, tier };
   }).sort((a, b) => {
     if (a.gap === null) return -1; if (b.gap === null) return 1;
     return b.gap - a.gap;
@@ -18408,16 +18413,22 @@ function newestUniqueDates(setlists, catalog, currentTour) {
 // between this appearance and the previous one. 0 = also played the show before;
 // null = no prior performance in the setlist.fm history (a debut here).
 function lastTimePlayedGap(data, key, showIso) {
+  return lastTimePlayedInfo(data, key, showIso).gap;
+}
+
+// Gap AND the date of that previous performance. The date was already found to
+// count the gap; the show-notes list surfaces it EC-style ("Last 'X' - date, N shows").
+function lastTimePlayedInfo(data, key, showIso) {
   const perfs = data.performancesByTitle?.get(key);
   const dates = data.allShowDates;
-  if (!perfs || !dates || !showIso) return null;
+  if (!perfs || !dates || !showIso) return { gap: null, date: null };
   const prev = perfs.find((perf) => perf.date < showIso);
-  if (!prev) return null;
+  if (!prev) return { gap: null, date: null };
   let lo = 0, hi = dates.length;
   while (lo < hi) { const mid = (lo + hi) >> 1; if (dates[mid] <= prev.date) lo = mid + 1; else hi = mid; }
   let count = 0;
   for (let i = lo; i < dates.length && dates[i] < showIso; i += 1) count += 1;
-  return count;
+  return { gap: count, date: prev.date };
 }
 
 function showsSinceLastPlayed(setlists, lastIso) {
