@@ -269,6 +269,7 @@ async function loadSetlists() {
     try {
       const raw = await readFile(filename, "utf8");
       const payload = JSON.parse(raw);
+      await mergeSetlistFmFallback(payload);
       return attachLocalSetlistImages(payload, inferSetlistYear(payload));
     } catch {
       // Try the next setlist snapshot.
@@ -276,6 +277,79 @@ async function loadSetlists() {
   }
 
   return { title: "WIDESPREAD PANIC TOUR", sourceUrl: "", setlists: [], tourDates: [] };
+}
+
+// Live-setlist fallback (Alex 2026-07-24 cascade, tier 1): widespreadpanic.com is
+// the source of truth but posts days late, so a scheduled show has no setlist for
+// the gap right after it. For any scheduled tour date the official file hasn't
+// posted, fill it from the setlist.fm cache (fan-entered live, song by song),
+// matched by venue + nearest date so setlist.fm's occasional off-by-one/phantom
+// LA-style stubs fold onto the real night. A setlist.fm entry with ZERO songs is a
+// stub and is skipped — nothing is invented. When official later posts the show it
+// wins automatically (its isoDate is already present, so no fallback is added).
+async function mergeSetlistFmFallback(payload) {
+  const cachePath = process.env.SETLISTFM_CACHE || path.join(root, "data", "source", "setlistfm-cache.json");
+  let cache;
+  try { cache = JSON.parse(await readFile(cachePath, "utf8")); } catch { return; }
+  const fmShows = (cache.shows || []).filter((s) => Array.isArray(s.songs) && s.songs.length > 0);
+  if (!fmShows.length) return;
+
+  const posted = new Set((payload.setlists || []).map((s) => s.isoDate));
+  const normVenue = (v) => clean(String(v || "")).toLowerCase().replace(/theatre/g, "theater").replace(/^the\s+/, "").replace(/\s+/g, " ").trim();
+  const dayDiff = (a, b) => Math.abs((Date.parse(a + "T00:00:00Z") - Date.parse(b + "T00:00:00Z")) / 86400000);
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const added = [];
+  for (const show of payload.tourDates || []) {
+    if (!show.isoDate || posted.has(show.isoDate)) continue;
+    if (show.isoDate > todayIso) continue; // never fill a scheduled-but-unplayed future show
+    const candidates = fmShows
+      .filter((s) => normVenue(s.venue) === normVenue(show.venue) && dayDiff(s.date, show.isoDate) <= 1)
+      .sort((a, b) => dayDiff(a.date, show.isoDate) - dayDiff(b.date, show.isoDate));
+    const match = candidates[0];
+    if (!match) continue;
+    added.push(setlistFromFm(match, show));
+    posted.add(show.isoDate);
+  }
+  if (added.length) {
+    payload.setlists = [...(payload.setlists || []), ...added].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
+    payload.hasSetlistFmFallback = true;
+  }
+}
+
+// Transform one setlist.fm cache entry into the official setlist shape. Segues are
+// unknown from setlist.fm, so the sets read as a plain ordered list (comma-joined);
+// the official post and EC enrichment add the > arrows and raps on the next pull.
+function setlistFromFm(fm, tourDate) {
+  const iso = tourDate.isoDate;
+  const setOrder = [];
+  const byLabel = new Map();
+  for (const song of fm.songs) {
+    if (song.tape) continue;
+    let label;
+    if (song.encore) { const m = /(\d+)/.exec(String(song.set || "")); label = m && Number(m[1]) > 1 ? `E${m[1]}` : "E"; }
+    else { const m = /(\d+)/.exec(String(song.set || "")); label = m ? m[1] : "1"; }
+    if (!byLabel.has(label)) { byLabel.set(label, []); setOrder.push(label); }
+    byLabel.get(label).push(song.name.trim());
+  }
+  const sets = setOrder.map((label) => ({
+    label,
+    songs: byLabel.get(label).join(", "),
+    songTitles: byLabel.get(label)
+  }));
+  return {
+    date: tourDate.date || `${iso.slice(5, 7)}/${iso.slice(8, 10)}/${iso.slice(0, 4)}`,
+    isoDate: iso,
+    venue: tourDate.venue || fm.venue || "",
+    city: tourDate.city || fm.city || "",
+    state: tourDate.state || fm.state || "",
+    location: tourDate.location || [fm.city, fm.state].filter(Boolean).join(", "),
+    sourceUrl: fm.url || "",
+    streamUrl: "",
+    sets,
+    notes: [],
+    source: "setlist.fm"
+  };
 }
 
 async function attachLocalSetlistImages(payload, tourYear = 0) {
@@ -1783,6 +1857,22 @@ const ABOUT_FAQ = [
   {
     q: "How often is the site updated?",
     a: "After every show. Setlists land, the cross-off sheet gets reworked, and the tour stats recompute. Between tours the data layers refresh on a schedule."
+  },
+  {
+    q: "Who runs Burnthday?",
+    a: "Alex Moura, a Widespread Panic fan since 1997. He was born in Chapel Hill, NC, spent ten years in Wilmington, NC, and moved to the Bay Area in 2012. He has run the site solo since 2007, updating it after every show."
+  },
+  {
+    q: "Has the band ever acknowledged the site?",
+    a: "Yes. Bassist Dave Schools introduced Alex to Bob Weir at TRI Studios as Widespread Panic's statistician, and once emailed a correction with the note: “I only mention it because I rely on your site to make setlists! LOL!” Everyday Companion, the longtime keeper of Panic history, links here too."
+  },
+  {
+    q: "What music industry work came out of the site?",
+    a: "A tweet about the site got Alex invited to Bob Weir's TRI Studios, which turned into running digital strategy and creative direction for Hard Working Americans from 2013 to 2018, plus marketing work on many of the albums Dave Schools produced at the studio. From there: JoJo Hermann, Steve Kimock, Jerry Joseph, Todd Snider, Daniel Hutchens, Band of Heathens, and the band's own Trondossa Music Festival in Charleston. Some of that work has been featured in Rolling Stone, People, Variety, and Grammy.com."
+  },
+  {
+    q: "What does Alex do professionally?",
+    a: "Marketing. In 2014 he and his wife Katherine founded Digital Star Marketing, and he has since served twice as CMO at Series A startups. Today he builds websites for small businesses at Gnarlywhal. That career runs on the same skills as this site: statistics, an economics degree, and an unhealthy attention to detail. Burnthday stays a not-for-profit fan project either way."
   }
 ];
 
@@ -1868,30 +1958,6 @@ function renderAboutPage(entry, data, cache) {
   const stats = aboutStats(data, cache);
   const title = "About Alex Moura, Creator of Burnthday | Widespread Panic";
   const description = "Alex Moura, creator of Burnthday, the Widespread Panic tour song list and data spreadsheet. Running since June 2007. TRI Studios, Hard Working Americans, JoJo Hermann, Jerry Joseph, Trondossa.";
-  const credits = [
-    ["Hard Working Americans", "Head of Digital Strategy and Creative Direction, 2013–2018, out of Bob Weir's TRI Studios. No ad budget. Sold-out shows and a number one debut on the iTunes rock chart."],
-    ["Dave Schools", "Runs Dave's Facebook page and worked the digital side of the KIMOCK record."],
-    ["JoJo Hermann", "Producer and creative director of the Shut Up and Play livestream. It charted on Billboard and helped launch JoJo's solo run."],
-    ["Jerry Joseph", "Strategic digital marketing across multiple records."],
-    ["Todd Snider", "Digital strategy, releases, and the Return of the Storyteller music video, premiered by People."],
-    ["Daniel Hutchens", "Worked the premiere solo record."],
-    ["Trondossa Music Festival", "Digital marketing for the band's own festival in Charleston, SC, produced with Live Nation."],
-    ["Band of Heathens", "Concepted and produced a music video People premiered. The band's public credit: “A special shoutout goes to Alex Moura for conceptualizing and putting it together so beautifully.”"],
-    ["Live Compilations", "Curated Widespread Panic compilations for the fan streaming vault, back when that was the place to listen."],
-    ["Jimmy Herring Has a Posse", "Yes, those shirts. Alex made them."]
-  ];
-  const creditCards = credits.map(([who, what]) => `<div class="about-credit">
-        <h3>${escapeHtml(who)}</h3>
-        <p>${escapeHtml(what)}</p>
-      </div>`).join("\n      ");
-  const statCards = [
-    [formatNumber(stats.years), "years running"],
-    [formatNumber(stats.catalog), "songs tracked"],
-    [formatNumber(stats.shows), "shows logged"],
-    [formatNumber(stats.performances), "song performances"],
-    [formatNumber(stats.albums), "studio albums"],
-    [formatNumber(stats.origins), "song origin stories"]
-  ].filter(([value]) => value && value !== "0").map(([value, label]) => `<div class="about-stat"><strong>${value}</strong><span>${label}</span></div>`).join("");
   const faqItems = ABOUT_FAQ.map((item) => `<details class="about-faq-item">
         <summary>${escapeHtml(item.q)}</summary>
         <p>${escapeHtml(item.a)}${item.link ? ` <a href="${escapeAttr(item.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.linkLabel || "Watch")}</a>` : ""}</p>
@@ -1915,15 +1981,12 @@ function renderAboutPage(entry, data, cache) {
     <link rel="stylesheet" href="/stagelight.css">
     <style>
       .about-lede{font-size:1.06rem;line-height:1.75;max-width:64ch}
-      .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:2.2rem 0}
-      .about-stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:1rem .9rem;text-align:center}
-      @media (max-width:560px){.about-stats{grid-template-columns:repeat(2,1fr)}}
-      .about-stat strong{display:block;font-size:1.45rem;letter-spacing:.02em}
-      .about-stat span{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;opacity:.65}
-      .about-credits{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.9rem;margin:1.4rem 0 2.4rem}
-      .about-credit{border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:1rem 1.1rem;background:rgba(255,255,255,.02)}
-      .about-credit h3{margin:0 0 .4rem;font-size:.95rem;letter-spacing:.02em}
-      .about-credit p{margin:0;font-size:.86rem;line-height:1.55;opacity:.8}
+      .about-figure{margin:32px auto;max-width:420px}
+      .about-figure img{width:100%;height:auto;border-radius:var(--sl-r-md);border:1px solid var(--sl-line)}
+      .about-figure figcaption{margin-top:10px;font-size:var(--type-small);color:var(--sl-faint);text-align:center}
+      .about-fineprint{margin-top:48px;padding-top:24px;border-top:1px solid var(--sl-line)}
+      .about-fineprint .fineprint-head{font-size:var(--type-small);letter-spacing:.08em;text-transform:uppercase;color:var(--sl-faint);margin:0 0 8px}
+      .about-fineprint p{font-size:var(--type-small);line-height:1.6;color:var(--sl-faint);max-width:70ch}
       .about-faq-item{border-bottom:1px solid rgba(255,255,255,.09);padding:.35rem 0}
       .about-faq-item summary{cursor:pointer;padding:.8rem 0;font-weight:600;letter-spacing:.01em}
       .about-faq-item p{margin:0;padding:.1rem 0 1rem;line-height:1.7;opacity:.85;max-width:68ch}
@@ -1933,30 +1996,177 @@ function renderAboutPage(entry, data, cache) {
   <body class="stagelight">
     ${renderSiteHeader({ stagelight: true, data })}
     <main class="archive-main">
-      <article class="archive-page">
-        <header class="archive-title">
+      <div class="ph-wrap has-poster">
+      <header class="archive-title poster-header">
+        <div class="ph-lede">
           <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span class="crumb-sep" aria-hidden="true">›</span><span aria-current="page">About</span></nav>
           <h1>About Burnthday</h1>
-          <p class="page-deck">Hi! Alex Moura here... thanks for stopping in. I've been running this song list since June of 2007.</p>
-        </header>
-        <div class="archive-content prose-plate">
-          <p class="about-lede">Hi! Alex Moura here. Thanks for stopping in. I launched Burnthday's (“burn-the-day”) Widespread Panic Spread Sheet on July 27, 2007, as a place for us die-hard fans to stay informed. After each show, songs from the last four setlists are crossed off the master list in Photoshop, from either the comfort of my home in Charlotte, or a hotel room on the road.</p>
-          <p>A little about me: born in Chapel Hill, NC, lived at the beach in Wilmington, NC for ten years, and moved to the Bay Area in 2012. That is where this site changed my life. A tweet got me invited up to Bob Weir's TRI Studios, and when I introduced myself, Dave Schools already knew me from this site. He introduced me to Weir as Widespread Panic's statistician. That turned into running digital strategy and creative direction for Hard Working Americans from 2013 to 2018, and marketing work on many of the albums Dave produced at the studio.</p>
-          <p>The email that means the most came from Dave during the Hard Working Americans years. He caught me labeling the Jacksonville show as Miami, and added: “I only mention it because I rely on your site to make setlists! LOL!” That is the whole point of this site in one sentence: the working song list, kept honestly enough that the band itself can lean on it.</p>
-          <p>In 2014 my wife Katherine and I founded <a href="https://www.digitalstarmarketing.com/" rel="me">Digital Star Marketing</a>. The music work never stopped: JoJo Hermann, Steve Kimock, Jerry Joseph, Todd Snider, Daniel Hutchens, Band of Heathens, and the band's own Trondossa Music Festival in Charleston. Some of that work has been featured in Rolling Stone, People, Variety, and Grammy.com. Everyday Companion, the longtime keeper of Panic history, links here too.</p>
-          <h2 class="about-h2">By the numbers</h2>
-          <div class="about-stats">${statCards}</div>
-          <h2 class="about-h2">Selected work</h2>
-          <div class="about-credits">
-      ${creditCards}
-          </div>
-          <h2 class="about-h2">New to the rotation? Start here</h2>
-          ${faqItems}
-          <h2 class="about-h2">Friends of Burnthday</h2>
-          <p>Nineteen years of this does not happen alone. Thank you to the Widespread Panic band and crew, the taper section — especially the Home Team and the <a href="https://hometeam.fm" target="_blank" rel="noopener noreferrer">hometeam.fm</a> folks, The Sandbox Channel on YouTube, and Topdogger — Ashley and Charles Fox, Z-Man, D.P. Swint, Bennett Schwartz, Ted Rockwell at <a href="https://everydaycompanion.com" target="_blank" rel="noopener noreferrer">Everyday Companion</a>, Horace Moore, J.T. Lucchesi, and Beau Gunn of my favorite radio station, 98.3 The Penguin FM.</p>
-          <p>And to the photographers whose shots light up these pages: thank you. Special thanks to Josh Timmermans and Andy Tennille, whose photos and videos of the band have been lighting things up lately, and to all our photographer friends in the Panic family. If your photo is here and you would like a credit added, or the photo taken down, <a href="https://www.facebook.com/burnthday">message Burnthday</a> and it happens, no questions asked.</p>
-          <p>Say hi on <a href="https://www.facebook.com/burnthday">Facebook</a>, <a href="https://twitter.com/burnthday">X</a>, or <a href="https://www.instagram.com/burnthday/">Instagram</a>. I hope to see you on the road.</p>
+          <p class="page-deck">The working song list and archive, kept for the people who follow every show.</p>
         </div>
+        <div class="ph-poster" aria-hidden="true">
+        <span class="ph-halo" style="--poster:url('/assets/posters/about.png')"></span>
+        <picture>
+          <source type="image/webp" srcset="/assets/posters/about-knockout-480.webp">
+          <img src="/assets/posters/about-knockout.png" alt="" width="200" loading="lazy" decoding="async">
+        </picture>
+      </div>
+      </header>
+      </div>
+      <article class="archive-page">
+        <div class="archive-content prose-plate">
+          <p class="about-lede">Burnthday is a living archive of Widespread Panic's songbook and a working look at what the band might play next. It keeps the setlists, the gaps, the songs in rotation, the songs that have disappeared, the songs that have come back and the history that accumulates around all of them.</p>
+
+          <p>The point is not to predict a Widespread Panic show. That would ruin it. The point is to make the possibilities visible.</p>
+
+          <p>For more than forty years, that possibility has been part of the bargain. Widespread Panic grew out of Athens, Georgia, where John Bell, Michael Houser and Dave Schools began playing together in the mid-1980s. The repertoire grew along with the band. Originals accumulated beside blues songs, soul songs, country songs and other people's strange old tunes until a setlist could reach backward through decades without feeling like a history lesson.</p>
+
+          <p>You went because you did not know what they were going to play.</p>
+
+          <p>That is still the whole thing.</p>
+        </div>
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>How I got here</h2>
+          </div>
+          <div class="archive-content prose-plate">
+            <p>My sister went to the University of Georgia in 1997, which meant Widespread Panic began making its way back to North Carolina with her. I saw my first show at Walnut Creek in Raleigh in 1999. Not long after, she gave me Another Joyous Occasion for Christmas, the live record the band had made with the Dirty Dozen Brass Band during 1999. I was done for.</p>
+
+            <p>Then I broke my leg playing lacrosse.</p>
+
+            <p>There are worse things that can happen to a teenager with a stack of Panic shows. I had a CD burner, traded recordings and suddenly a great deal of time. Shows arrived through the mail. I copied them, listened to them and started hearing the differences. The same song could be loose one night and furious the next. A segue could disappear for years. A cover could turn up without warning and make perfect sense.</p>
+          </div>
+        </section>
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>The Everyday Companion</h2>
+          </div>
+          <div class="archive-content prose-plate">
+            <p>The deeper I got into the band, the more useful the Everyday Companion became. Before a complete history could be searched from a phone, it was the map. Shows, songs, guests, dates, gaps, debuts, last-played dates and the accumulated work of fans who had bothered to write all of it down. The site has now been maintained by a small group of volunteers for roughly thirty years.</p>
+
+            <p>I was studying economics and statistics, which turned out to be a particularly dangerous combination for a Panic fan.</p>
+
+            <p>I started running numbers for no good reason other than wanting to know. How often did they play a song? How long did it usually stay away? What had disappeared from the last four shows? What was still sitting there untouched? The statistics could never tell you what the band would do, but they could tell you something interesting about what remained possible.</p>
+
+            <p>Then I saw Garrie Vereen's song list.</p>
+
+            <figure class="about-figure">
+              <img src="/assets/archive-media/garrie.jpg" alt="Garrie Vereen marking the color-coded master song list by hand with a red marker" loading="lazy" decoding="async">
+              <figcaption>Garrie Vereen working the master list, one marker color per night. Photographer unknown&mdash;if this is your shot, message Burnthday for a credit.</figcaption>
+            </figure>
+
+            <p>The band had resisted setlists entirely for its first decade. They wanted the shows to happen naturally. But as Dave Schools told an interviewer years later, the natural approach had a flaw: the same batch of songs kept getting started by the same hands, sets got repetitive, and the cool songs got forgotten. Around 1994 they gave in, and the thinking was bigger than their own boredom: &ldquo;not only will we keep this fresh for us but also fresh for these people.&rdquo;</p>
+
+            <p>Garrie kept that system for years. Black meant played last night, no chance. Red meant two nights ago. Green meant three. Everything else on the sheet was fair game. Instead of staring at hundreds of dates, the band could look at a piece of paper and see the shape of its own rotation. Garrie once explained the strange intuition behind making a setlist simply enough: there is a Tuesday song and there is a Thursday song.</p>
+
+            <p>That was the idea I had been looking for.</p>
+          </div>
+        </section>
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>The Spread Sheet</h2>
+          </div>
+          <div class="archive-content prose-plate">
+            <p>On July 27, 2007, I put my own version online as the Widespread Panic Spread Sheet. After a show, I crossed its songs off the master list in Photoshop. The previous four shows stayed on the page in different colors, much as they did on the band's working sheet, so you could look at the thing and immediately see what had been played and what was still sitting there.</p>
+
+            <p>There was nothing automatic about it. I updated it after every show from my house in Charlotte, from hotel rooms on tour and from wherever I happened to land after a night out. For years, Burnthday was quite literally one enormous Photoshop file being maintained by hand.</p>
+
+            <p>The timing was good. The way fans followed the band was changing. Physical tapes gave way to downloads and online archives. Setlists began appearing while shows were still underway. Tapers such as Coloartist and the Home Team found ways to send audio out of venues in real time. The distance between the person in the room and the person following from home became much smaller.</p>
+
+            <p>Burnthday moved with it.</p>
+          </div>
+        </section>
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>Jimmy Herring Has a Posse</h2>
+          </div>
+          <div class="archive-content prose-plate">
+            <p>Burnthday produced a few odd side projects along the way. The most visible was Jimmy Herring Has a Posse, a riff on the old Andre the Giant street-art campaign that somehow became shirts, stickers and its own little piece of Panic folklore. Stickers found their way onto Jimmy's amp. Derek Trucks wore one of the shirts onstage. People still turn up wearing them.</p>
+
+            <p>The useful part was what happened to the money.</p>
+
+            <p>The apparel was run as a nonprofit project, with the proceeds going to Make It Right New Orleans on behalf of The House That Widespread Panic Fans Built. Burnthday recorded a $6,685.33 donation in 2011, part of a fan campaign that ultimately raised tens of thousands of dollars toward a house in the Lower 9th Ward after Hurricane Katrina. Widespread Panic had sponsored a Make It Right house first, and the fan community decided to build one too.</p>
+
+            <p>That may say more about this group of people than any setlist statistic ever could.</p>
+          </div>
+        </section>
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>When the band found it</h2>
+          </div>
+          <div class="archive-content prose-plate">
+            <p>In 2012 I moved to the Bay Area. A tweet eventually got me invited to Bob Weir's TRI Studios. When I introduced myself, Dave Schools already knew who I was because of Burnthday. He introduced me to Bob Weir as Widespread Panic's statistician.</p>
+
+            <p>I did not correct him.</p>
+
+            <p>That meeting changed quite a lot. I went on to run digital strategy and creative direction for Hard Working Americans from 2013 through 2018 and worked alongside Dave on a number of records and projects that came through TRI. Later came work with JoJo Hermann, Jerry Joseph, Steve Kimock, Todd Snider, Daniel Hutchens, Band of Heathens, Trondossa and others.</p>
+
+            <p>The note from Dave that means the most, however, had nothing to do with any of that. During the Hard Working Americans years, he noticed that I had labeled a Jacksonville show as Miami and sent me a correction.</p>
+
+            <blockquote>
+              <p>I only mention it because I rely on your site to make setlists! LOL!</p>
+            </blockquote>
+
+            <p>I had spent years copying the band's working-list idea for fans, only to discover that somebody in the band was occasionally looking back at mine. There is a nice symmetry in that.</p>
+          </div>
+        </section>
+
+        
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>Nineteen years later</h2>
+          </div>
+          <div class="archive-content prose-plate">
+            <p>Burnthday no longer requires me to sit in a hotel room at two in the morning crossing song titles out in Photoshop. The underlying archive now holds thousands of shows and tens of thousands of song performances, and much of what once took hours can update from structured data.</p>
+
+            <p>That has made it possible to go deeper instead of merely going faster. The Shelf follows songs that have fallen out of the 200-show rotation. Purgatory keeps track of songs that appeared once and vanished. The Woodshed follows material the current lineup has not yet brought to the stage. Song histories, lyrics, tabs and old stories try to preserve some of what gets lost when music is reduced to a database.</p>
+
+            <p>The technology has changed almost beyond recognition since 2007. The reason for doing it has not.</p>
+
+            <p>After a show ends, I still want to see what is left.<br>
+            I still want to know how long it has been.<br>
+            And before the lights go down again, I still want to wonder what they might play.</p>
+          </div>
+        </section>
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>New to the rotation? Start here</h2>
+          </div>
+          <div class="archive-content">
+${faqItems}
+          </div>
+        </section>
+
+        <section class="shelf-list-section">
+          <div class="shelf-section-head">
+            <h2>Friends of Burnthday</h2>
+          </div>
+          <div class="archive-content prose-plate">
+            <p>Nineteen years of this would not exist without people who were willing to document things.</p>
+
+            <p>That begins with the band and crew, Garrie Vereen and the people behind the Everyday Companion. It includes the taper section, the Home Team and hometeam.fm, The Sandbox Channel, Topdogger, Ashley and Charles Fox, Z-Man, D.P. Swint, Bennett Schwartz, Ted Rockwell, Horace Moore, J.T. Lucchesi, Beau Gunn at 98.3 The Penguin and the many other people who preserved shows, corrected dates, shared recordings and kept information moving long before any of this was easy.</p>
+
+            <p>The same is true of the photographers whose work gives Burnthday much of its life, especially Josh Timmermans and Andy Tennille, along with many photographer friends throughout the Panic community. If a photograph appears here without the right credit, let me know and I will fix it. If you would rather it not appear here at all, I will take it down.</p>
+
+            <p>Burnthday has never been a business. It is still a fan project, still independent and still here because I apparently never learned to stop staring at the song list.</p>
+
+            <p>My mother did tell me to go outside...<br>
+            She just never said I had to stop listening.</p>
+          </div>
+        </section>
+
+        <section class="about-fineprint">
+          <div class="archive-content prose-plate">
+            <h2 class="fineprint-head">The Fine Print</h2>
+            <p>Burnthday is an independent, not-for-profit fan project and is not affiliated with, authorized by or endorsed by Widespread Panic, its management or its affiliates. Lyrics, compositions, photographs and other copyrighted works remain the property of their respective creators.</p>
+          </div>
+        </section>
       </article>
     </main>
     ${renderSiteFooter(data, { stagelight: true })}
