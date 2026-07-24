@@ -10069,10 +10069,10 @@ function renderSheetKey(data) {
       </svg>
     </div>`;
   const columns = [
-    `<p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't been touched in the last four shows. The small number beside a song counts its plays this tour.</p>`,
+    `<p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't been touched in the last four shows. The number beside a song counts its plays this tour.</p>`,
     `<p><b>The Shelf holds songs that have gone 200 shows</b> without a play. When one comes back it's a bustout, what every crowd hopes for. It shows how deep the band can reach.</p>`,
     `<p><b>Purgatory keeps the one-timers,</b> played once and never brought back. Most are covers from one wild night. They sit apart from the Shelf because they never went in rotation.</p>`,
-    `<p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. The list gets shorter every night he digs deeper, the cleanest read on how fast he's learning the book.</p>`
+    `<p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. It gets shorter every night he digs deeper, the cleanest read on how fast he's learned the book.</p>`
   ];
   return `<section class="sheet-key" id="sheet-key">
     <div class="key-grid">
