@@ -9559,19 +9559,22 @@ function renderFromTheStage() {
     </button>
   </div>
   <script>
+    // Wires EVERY poster player on the page, not just this one — the rig popup
+    // reuses the same markup, so one handler covers all of them.
     (() => {
-      const wrap = document.querySelector("[data-fs-player]");
-      const btn = wrap && wrap.querySelector("[data-fs-play]");
-      if (!btn) return;
-      btn.addEventListener("click", () => {
-        const frame = document.createElement("iframe");
-        frame.src = "https://www.youtube-nocookie.com/embed/" + wrap.dataset.videoId + "?autoplay=1&rel=0";
-        frame.title = "${escapeAttr(v.title)}";
-        frame.allow = "autoplay; encrypted-media; picture-in-picture";
-        frame.allowFullscreen = true;
-        frame.className = "fs-frame";
-        wrap.replaceChild(frame, btn);
-      }, { once: true });
+      document.querySelectorAll("[data-fs-player]").forEach((wrap) => {
+        const btn = wrap.querySelector("[data-fs-play]");
+        if (!btn) return;
+        btn.addEventListener("click", () => {
+          const frame = document.createElement("iframe");
+          frame.src = "https://www.youtube-nocookie.com/embed/" + wrap.dataset.videoId + "?autoplay=1&rel=0";
+          frame.title = btn.getAttribute("aria-label") || "video";
+          frame.allow = "autoplay; encrypted-media; picture-in-picture";
+          frame.allowFullscreen = true;
+          frame.className = "fs-frame";
+          wrap.replaceChild(frame, btn);
+        }, { once: true });
+      });
     })();
   </script>
 </section>`;
@@ -9745,8 +9748,12 @@ function renderNickJohnsonFeature(data) {
 // once a YouTube id is filled in (the tech walkthroughs live on band socials;
 // ids pending), so nothing half-built ever ships.
 const NICK_RIG_VIDEOS = [
-  { title: "Guitar Review", sub: "Zoel on \u201cAmber\u201d", yt: "h9Weuskqsvw" },
-  { title: "Rig Rundown", sub: "Joel Byron at Red Rocks", yt: "5x4gVol4iIM" },
+  { title: "Nick Johnson\u2019s \u201cAmber\u201d guitar", yt: "h9Weuskqsvw",
+    poster: "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260717-Oakland-California-Andy-Tennille-2449.jpg",
+    posterCredit: "Photo: Andy Tennille" },
+  { title: "Nick Johnson\u2019s rig rundown", yt: "5x4gVol4iIM",
+    poster: "https://wranglerspace.s3-accelerate.amazonaws.com/2026/07/Widespread-Panic-20260707-Missoula-Montana-Andy-Tennille-7.jpg",
+    posterCredit: "Photo: Andy Tennille" },
 ];
 
 const RIG_OWNER_LABEL = { mikey: "Mikey's", jimmy: "Jimmy's", nick: "Nick's" };
@@ -9777,30 +9784,41 @@ function renderNickRigModal() {
   const tips = NICK_RIG_SPOTS.map((s) =>
     `<div class="rig-tip" id="rig-tip-${s.id}"><span class="rig-tag rig-${s.owner}">${escapeHtml(RIG_OWNER_LABEL[s.owner])}</span><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.note)}</p></div>`).join("\n        ");
   const vids = NICK_RIG_VIDEOS.filter((v) => v.yt);
+  // Same player as the homepage "From the stage" section: poster button, scrim,
+  // round play control, caption over the image; click swaps in the iframe.
   const vidRow = vids.length ? `<div class="rig-vids">
-        ${vids.map((v) => `<figure class="rig-vid">${renderLiteEmbed(v.yt, { title: `${v.title} \u2014 ${v.sub}` })}<figcaption><b>${escapeHtml(v.title)}</b><span>${escapeHtml(v.sub)}</span></figcaption></figure>`).join("\n        ")}
+        ${vids.map((v) => `<div class="fs-player rig-player" data-fs-player data-video-id="${escapeAttr(v.yt)}">
+          <button type="button" class="fs-poster" data-fs-play aria-label="Play ${escapeAttr(v.title)}">
+            <img src="${escapeAttr(v.poster)}" alt="" loading="lazy" decoding="async">
+            <span class="fs-scrim" aria-hidden="true"></span>
+            <span class="fs-play" aria-hidden="true"><svg width="22" height="24" viewBox="0 0 14 16" fill="none"><path d="M2 1.7c0-.8.87-1.3 1.56-.88l10 6.3a1.04 1.04 0 0 1 0 1.76l-10 6.3A1.04 1.04 0 0 1 2 14.3V1.7Z" fill="currentColor"/></svg></span>
+            <span class="fs-caption"><strong>${escapeHtml(v.title)}</strong></span>
+            <span class="fs-credit">${escapeHtml(v.posterCredit)}</span>
+          </button>
+        </div>`).join("\n        ")}
       </div>` : "";
   return `<div class="rig-modal" id="nick-rig-modal" hidden>
     <div class="rig-backdrop" data-rig-close></div>
     <div class="rig-panel" role="dialog" aria-modal="true" aria-labelledby="nick-rig-title">
-      <div class="hero-modal-head rig-head">
-        <p class="rig-eyebrow">Nick's Rig</p>
-        <h3 id="nick-rig-title" class="rig-headline">An honest tone with a blistering lead.</h3>
-        <p class="rig-sub">Mikey's old cabinet and an SLO clone running through Jimmy's wet rig give Nick Johnson the sound our band can run with.</p>
-        <button type="button" class="hero-modal-x" data-rig-close aria-label="Close rig rundown">\u2715</button>
-      </div>
+      <button type="button" class="hero-modal-x rig-x" data-rig-close aria-label="Close rig rundown">\u2715</button>
+      <div class="rig-body">
       <div class="rig-art">
         <img src="/assets/nick-gear.png" alt="Nick Johnson's rig, illustrated: PRS guitar, hometeam head, Sound City, Mesa/Boogie and Orange cabs, Crown power amps, pedals on the rug" loading="lazy" decoding="async" width="1000" height="837">
-        <div class="rig-hint">Tap the gear</div>
+        <div class="hero-modal-head rig-head">
+          <p class="rig-eyebrow">Nick's Rig</p>
+          <h3 id="nick-rig-title" class="rig-statement"><span class="rig-tie">An honest tone with a blistering lead.</span> Mikey's cabinet <br class="rig-br">and an SLO clone running through Jimmy's wet rig give <br class="rig-br">Nick Johnson the sound our band can run with.</h3>
+          <div class="rig-hint">Tap the gear</div>
+        </div>
         ${spots}
         ${tips}
+      </div>
+      ${vidRow}
       </div>
       <div class="rig-legend">
         <span class="rig-mikey"><i></i>Mikey's</span>
         <span class="rig-jimmy"><i></i>Jimmy's</span>
         <span class="rig-nick"><i></i>Nick's</span>
       </div>
-      ${vidRow}
     </div>
   </div>`;
 }
@@ -15954,35 +15972,56 @@ body.stagelight .rig-modal { position: fixed; inset: 0; z-index: 120; display: f
 body.stagelight .rig-modal[hidden] { display: none; }
 body.stagelight .rig-backdrop { position: fixed; inset: 0; background: rgba(5,5,6,0.66); -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); opacity: 0; transition: opacity 0.2s ease; }
 body.stagelight .rig-modal.is-open .rig-backdrop { opacity: 1; }
-body.stagelight .rig-panel { position: relative; z-index: 1; width: min(880px, 100%); background: linear-gradient(180deg, rgba(30,30,34,0.92), rgba(16,16,19,0.94)); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-lg); box-shadow: var(--sl-shadow-3); overflow: hidden; opacity: 0; transform: translateY(-8px) scale(0.985); transition: opacity 0.2s ease, transform 0.2s ease; }
+body.stagelight .rig-panel { position: relative; z-index: 1; width: min(1240px, 100%); background: #000; border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-lg); box-shadow: var(--sl-shadow-3); overflow: hidden; opacity: 0; transform: translateY(-8px) scale(0.985); transition: opacity 0.2s ease, transform 0.2s ease; }
 body.stagelight .rig-modal.is-open .rig-panel { opacity: 1; transform: none; }
-/* Rig popup header (Alex 7/23): headline in the house corner tie-dye wash (same
-   recipe as the Athens strip — coral -> blue -> gold clipped to the first letters,
-   rest solid white), the sentence under it in the sw-lead grey. Display face both. */
-body.stagelight .rig-head { display: block; position: relative; padding: 20px 56px 18px 22px; border-bottom: 1px solid var(--sl-line); margin-bottom: 0; }
-body.stagelight .rig-head .hero-modal-x { position: absolute; top: 16px; right: 16px; }
-body.stagelight .rig-eyebrow { margin: 0 0 6px; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
-body.stagelight .rig-headline {
-  margin: 0; font-family: var(--sl-display); font-weight: 680; font-size: clamp(21px, 2.6vw, 30px);
-  letter-spacing: -0.015em; line-height: 1.16;
+/* Rig popup header (Alex 7/23): ONE statement, one font, one weight, one size —
+   not headline + deck. Only the opening sentence carries the house corner tie-dye
+   (same recipe as the Athens strip); the rest is the same type in solid white.
+   Header background is pure black so it matches the rig art below it with no seam. */
+/* Statement overlays the ART (Alex 7/23) so the rig sits at the top of the modal.
+   It lives inside .rig-art, so the scrim never darkens the video column. */
+body.stagelight .rig-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: stretch; background: #000; }
+body.stagelight .rig-head { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: block; padding: 18px 22px 46px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.85) 42%, rgba(0,0,0,0.42) 76%, rgba(0,0,0,0) 100%); }
+body.stagelight .rig-x { position: absolute; top: 14px; right: 14px; z-index: 6; }
+@media (max-width: 900px) { body.stagelight .rig-x { width: 44px; height: 44px; display: grid; place-items: center; } }
+body.stagelight .rig-eyebrow { margin: 0 0 8px; font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sl-faint); }
+/* 540px is the measured width that breaks exactly where Alex set the lines:
+   "...Mikey's cabinet / and an SLO clone ... give / Nick Johnson ...".
+   The break holds from 520-540px; 540 sits at the top of that band so it is the
+   furthest from tipping to a different wrap. Narrow screens reflow (below). */
+body.stagelight .rig-statement {
+  margin: 0; max-width: min(540px, 100%);
+  font-family: var(--sl-display); font-weight: 620; font-size: clamp(17px, 2.1vw, 22px);
+  line-height: 1.38; letter-spacing: -0.012em; color: var(--sl-ink);
+}
+body.stagelight .rig-head .rig-tie {
+  /* Reset the .hero-modal-head span rule (mono/11.5px/faint) meant for the old
+     HALF-JIMMY micro-label — this span is part of the statement sentence. */
+  font: inherit; font-size: inherit; font-weight: inherit; letter-spacing: inherit;
   background:
-    linear-gradient(100deg, #d4514f 0%, #e0574f 6%, rgba(96,165,210,1) 13%, #c9a35f 19%, rgba(242,242,240,0) 24%),
-    linear-gradient(rgba(242,242,240,0.94), rgba(242,242,240,0.94));
+    linear-gradient(100deg, #d4514f 0%, #e0574f 8%, rgba(96,165,210,1) 17%, #c9a35f 25%, rgba(242,242,240,0) 32%),
+    linear-gradient(rgba(242,242,240,0.96), rgba(242,242,240,0.96));
   background-size: 300% 100%, 100% 100%;
   background-position: 4% 50%, 0 0;
   background-repeat: no-repeat;
   -webkit-background-clip: text; background-clip: text; color: transparent;
   animation: athens-tiedye 11s ease-in-out infinite alternate;
 }
-body.stagelight .rig-sub { margin: 8px 0 0; max-width: 58ch; font-family: var(--sl-display); font-weight: 400; font-size: 15.5px; line-height: 1.5; letter-spacing: -0.005em; color: var(--sl-muted); }
-@media (max-width: 560px) {
-  body.stagelight .rig-headline { font-size: 19px; }
-  body.stagelight .rig-sub { font-size: 14px; }
+@media (max-width: 900px) {
+  body.stagelight .rig-body { grid-template-columns: 1fr; }
+  body.stagelight .rig-vids { padding: 18px; grid-template-columns: 1fr 1fr; }
+  body.stagelight .rig-statement { max-width: 100%; }
+  body.stagelight .rig-br { display: none; }
 }
-@media (prefers-reduced-motion: reduce) { body.stagelight .rig-headline { animation: none; } }
+@media (max-width: 620px) { body.stagelight .rig-vids { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { body.stagelight .rig-statement { font-size: 16px; } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .rig-tie { animation: none; } }
 body.stagelight .rig-art { position: relative; background: #000; }
 body.stagelight .rig-art > img { display: block; width: 100%; height: auto; }
-body.stagelight .rig-hint { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-family: var(--sl-mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(242,242,240,0.55); background: rgba(0,0,0,0.55); border: 1px solid var(--sl-line); border-radius: 999px; padding: 5px 14px; pointer-events: none; white-space: nowrap; }
+body.stagelight .rig-hint { display: inline-flex; margin-top: 14px; font-family: var(--sl-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(242,242,240,0.92); background: rgba(0,0,0,0.5); border: 1px solid rgba(242,242,240,0.34); border-radius: 999px; padding: 7px 15px; pointer-events: none; white-space: nowrap; animation: rig-hint-breathe 2.6s ease-in-out infinite; }
+@keyframes rig-hint-breathe { 0%, 100% { opacity: 0.62; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { body.stagelight .rig-hint { animation: none; opacity: 1; } }
 /* Owner colors as tokens (design-system gripe: these were hardcoded rgb). Each
    owner class sets an --c R,G,B triple; spot, tag, and legend swatch all derive
    from rgba(var(--c), a). mikey gold ties to the amber guitar + Athens gold,
@@ -15998,11 +16037,14 @@ body.stagelight .rig-tip.show { display: block; }
 body.stagelight .rig-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--c)); }
 body.stagelight .rig-tip h4 { margin: 4px 0; font-size: 15px; font-weight: 650; }
 body.stagelight .rig-tip p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--sl-muted); }
-body.stagelight .rig-legend { display: flex; gap: 22px; align-items: center; padding: 12px 22px; border-top: 1px solid var(--sl-line); font-family: var(--sl-mono); font-size: 10.5px; color: var(--sl-faint); letter-spacing: 0.05em; text-transform: uppercase; }
+body.stagelight .rig-legend { display: flex; gap: 22px; align-items: center; padding: 12px 22px; border-top: 0; font-family: var(--sl-mono); font-size: 10.5px; color: var(--sl-faint); letter-spacing: 0.05em; text-transform: uppercase; }
 body.stagelight .rig-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; }
 body.stagelight .rig-legend span i { outline: 1.5px solid rgba(var(--c), 0.9); background: rgba(var(--c), 0.22); }
-body.stagelight .rig-vids { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 18px 22px 22px; border-top: 1px solid var(--sl-line); }
-body.stagelight .rig-vid { margin: 0; border: 1px solid var(--sl-line); border-radius: var(--sl-r-md, 12px); overflow: hidden; background: #000; }
+body.stagelight .rig-vids { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 18px 18px 18px 0; align-content: center; }
+body.stagelight .rig-player { border-radius: var(--sl-r-md, 12px); }
+body.stagelight .rig-player .fs-caption { left: 16px; bottom: 14px; }
+body.stagelight .rig-player .fs-caption strong { font-size: 16px; }
+body.stagelight .rig-player .fs-credit { right: 12px; bottom: 10px; }
 body.stagelight .rig-vid figcaption { padding: 12px 14px; }
 body.stagelight .rig-vid figcaption b { display: block; font-size: 14px; font-weight: 650; }
 body.stagelight .rig-vid figcaption span { font-family: var(--sl-mono); font-size: 10.5px; color: var(--sl-faint); }
