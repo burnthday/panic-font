@@ -985,21 +985,22 @@ async function checkLatestSetlist(html, siteData) {
     assertIncludes(html, `id="setlist-${night.isoDate}"`, `Feed card carries the #setlist-${night.isoDate} anchor`);
   }
   record("Cards are flat glass (photo backdrops reverted per owner)", !/data-view-btn="[^"]+"[^>]*style="background-image/.test(heroOnly), "no card background-image");
-  record("Rail is three fixed slots (two context + upcoming pinned last), no pinned-latest card",
-    heroOnly.includes('data-card-slot="a"') && heroOnly.includes('data-card-slot="b"') && !heroOnly.includes('data-card-slot="latest"') && heroOnly.includes("hero-card-upcoming") && heroOnly.includes('id="hero-card-meta"'),
-    "slots a/b + upcoming + card meta present, latest slot gone");
-  // Rail context = the two posted shows immediately preceding the active (default:
-  // featured) view chronologically, run-mates INCLUDED (owner decision 2026-07-22).
-  // Default markup is active-on-featured, so slots a/b = posted[1] + posted[2].
-  const expectedContext = (siteData.setlists || []).slice(1, 3).map((entry) => entry.isoDate);
-  const slotIsos = [...heroOnly.matchAll(/data-card-slot="[ab]"[^>]*data-view-btn="([^"]+)"/g)].map((m) => m[1]);
-  record("Rail context rows are the two shows immediately preceding the featured view",
+  // Rail is TWO fixed slots (Alex 2026-07-23): one context row + upcoming pinned.
+  // Slot count is fixed on purpose — a direction-aware neighbour would have no
+  // "after" at the newest show and no "before" at the oldest, jumping the hero
+  // height at both ends and rendering the same show differently depending on how
+  // the visitor arrived. Guard the fixed contract so that cannot creep back.
+  record("Rail is two fixed slots (one context + upcoming pinned last), no b/latest slot",
+    heroOnly.includes('data-card-slot="a"') && !heroOnly.includes('data-card-slot="b"') && !heroOnly.includes('data-card-slot="latest"') && heroOnly.includes("hero-card-upcoming") && heroOnly.includes('id="hero-card-meta"'),
+    "slot a + upcoming + card meta present, slots b/latest gone");
+  const expectedContext = (siteData.setlists || []).slice(1, 2).map((entry) => entry.isoDate);
+  const slotIsos = [...heroOnly.matchAll(/data-card-slot="a"[^>]*data-view-btn="([^"]+)"/g)].map((m) => m[1]);
+  record("Rail context row is the show immediately preceding the featured view",
     slotIsos.length === expectedContext.length && slotIsos.every((iso, i) => iso === expectedContext[i]),
     JSON.stringify({ slotIsos, expectedContext }));
-  // History context rows are flat (.hero-row), the pinned upcoming stays a full dashed bento card.
-  const contextRowsFlat = [...heroOnly.matchAll(/data-card-slot="[ab]"/g)].length === 2
-    && (heroOnly.match(/class="hero-card hero-row"/g) || []).length === 2;
-  record("Rail context rows carry the flat hero-row class (not a permanent card)", contextRowsFlat,
+  const contextRowsFlat = [...heroOnly.matchAll(/data-card-slot="a"/g)].length === 1
+    && (heroOnly.match(/class="hero-card hero-row"/g) || []).length === 1;
+  record("Rail context row carries the flat hero-row class (not a permanent card)", contextRowsFlat,
     (heroOnly.match(/class="hero-card hero-row"/g) || []).length + " flat rows");
   record("Pinned upcoming card keeps its full dashed bento treatment (not a flat row)",
     /class="hero-card hero-card-upcoming"/.test(heroOnly) && !/hero-card-upcoming[^>]*hero-row/.test(heroOnly)
@@ -1244,21 +1245,36 @@ async function checkSongPages(siteData) {
   // rAF, could not verify it fired). Scroll-driven animation degrades to the finished
   // state instead. Assert BOTH the motion and, crucially, that nothing hides the
   // footer outside the @supports/no-reduced-motion guard.
-  record("Athens reveal is scroll-driven CSS with no JS and no way to leave the footer hidden",
+  // The footer unroll stays scroll-driven CSS: a JS reveal has to HIDE the footer
+  // first and trust an event to bring it back, so a missed event hides content on
+  // every page. This is the load-bearing half of the old guard and it still holds.
+  // (The Athens sweep it also asserted was dead code — the base rule's `animation`
+  // shorthand sat later at equal specificity and overrode it. Replaced by a marquee.)
+  record("Footer unroll is scroll-driven CSS with no JS and no way to leave the footer hidden",
     /@supports \(animation-timeline: view\(\)\)/.test(songIndexCss)
     && /animation-timeline: view\(\)/.test(songIndexCss)
-    && /@keyframes sl-athens-sweep/.test(songIndexCss)
     && /@keyframes sl-foot-unroll/.test(songIndexCss)
     && /@keyframes sl-foot-settle/.test(songIndexCss)
     && !songIndexCss.includes("athens-strip.will-reveal")
     // every hiding declaration must live inside the @supports + no-preference block
     && !/^body\.stagelight \.site-foot-inner \{[^}]*clip-path: inset\(0 0 100%/m.test(songIndexCss)
     && /body\.stagelight \.site-foot \{[^}]*margin-top: 0/.test(songIndexCss),
-    "scroll-driven sweep + unroll keyframes present, no JS reveal classes, nothing hides the footer unconditionally");
-  record("Athens line is oversized and cropped by its own band, never the page",
-    /\.athens-strip span \{[\s\S]{0,200}font-size: clamp\(38px, 7\.3vw, 190px\)/.test(songIndexCss)
-    && /body\.stagelight \.athens-strip \{[^}]*overflow: hidden/.test(songIndexCss),
-    "oversized clamp with the band clipping the overhang (no horizontal page scroll)");
+    "unroll keyframes present, no JS reveal classes, nothing hides the footer unconditionally");
+  // Marquee: two copies in the track (a single copy would gap on loop), -50%
+  // translate, pausable, and static for reduced motion.
+  record("Athens line is an oversized continuous marquee, cropped by its own band",
+    /\.athens-strip span \{[\s\S]{0,240}font-size: clamp\(60px, 13vw, 320px\)/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip \{[^}]*overflow: hidden/.test(songIndexCss)
+    && /body\.stagelight \.athens-track \{[^}]*animation: athens-crawl/.test(songIndexCss)
+    && /@keyframes athens-crawl \{ from \{ transform: translateX\(0\); \} to \{ transform: translateX\(-50%\); \} \}/.test(songIndexCss)
+    && /body\.stagelight \.athens-strip:hover \.athens-track \{ animation-play-state: paused; \}/.test(songIndexCss)
+    && /prefers-reduced-motion: reduce[\s\S]{0,160}\.athens-track \{ animation: none; \}/.test(songIndexCss),
+    "oversized clamp, band clips the overhang, seamless -50% crawl, pause on hover, reduced-motion still");
+  const athensHome = await readText("dist/index.html").catch(() => "");
+  record("Athens marquee ships two copies so the loop never gaps",
+    (athensHome.match(/ALL THE WAY FROM ATHENS GA/g) || []).length >= 2
+    && /<div class="athens-track"><span>ALL THE WAY FROM ATHENS GA<\/span><span>ALL THE WAY FROM ATHENS GA<\/span><\/div>/.test(athensHome),
+    "track holds two identical spans");
   record("Song Index header + rows share one grid template",
     /body\.stagelight \.songs-main \{[^}]*--sr-cols:/.test(songIndexCss)
     && /body\.stagelight \.song-index-head \{[^}]*grid-template-columns: var\(--sr-cols\)/.test(songIndexCss)
