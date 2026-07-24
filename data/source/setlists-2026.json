@@ -3,7 +3,7 @@
   "sourceUrl": "https://widespreadpanic.com/shows/",
   "sourceSitemapUrl": "https://widespreadpanic.com/wp-sitemap-posts-audiotheme_gig-1.xml",
   "sourcePublishedAt": "",
-  "importedAt": "2026-07-23T06:42:40.160Z",
+  "importedAt": "2026-07-24T13:40:47.703Z",
   "setlists": [
     {
       "date": "01/20/2026",
@@ -1704,6 +1704,63 @@
       "photoCredit": "Andy Tennille",
       "transitionSourceUrl": "https://archive.org/details/wsp2026-07-21",
       "transitionSourceTitle": "Widespread Panic Live at Channel 24 on 2026-07-21"
+    },
+    {
+      "date": "07/23/2026",
+      "isoDate": "2026-07-23",
+      "venue": "The Orpheum Theatre",
+      "city": "Los Angeles",
+      "state": "CA",
+      "location": "Los Angeles, CA",
+      "sourceUrl": "https://widespreadpanic.com/shows/2026-07-23-los-angeles-ca-the-orpheum-theatre/",
+      "streamUrl": "https://www.nugs.net/live-download-of-widespread-panic-orpheum-theatre-los-angeles-ca-07-23-2026-mp3-flac-or-online-music-streaming/47024.html?cgid=ARTIST-58",
+      "sets": [
+        {
+          "label": "1",
+          "songs": "For What It's Worth > Tall Boy > Rock, Rebirtha > King Baby > Worry, Tickle the Truth > Henry Parsons Died",
+          "songTitles": [
+            "For What It's Worth",
+            "Tall Boy",
+            "Rock",
+            "Rebirtha",
+            "King Baby",
+            "Worry",
+            "Tickle the Truth",
+            "Henry Parsons Died"
+          ]
+        },
+        {
+          "label": "2",
+          "songs": "Papa Legba > Second Skin > Blue Indian, Tackle Box Hero > Surprise Valley > Blight, Surprise Valley > Saint Ex > Four Cornered Room > Chilly Water",
+          "songTitles": [
+            "Papa Legba",
+            "Second Skin",
+            "Blue Indian",
+            "Tackle Box Hero",
+            "Surprise Valley",
+            "Blight",
+            "Surprise Valley",
+            "Saint Ex",
+            "Four Cornered Room",
+            "Chilly Water"
+          ]
+        },
+        {
+          "label": "E",
+          "songs": "Keep Me In Your Heart > Climb To Safety",
+          "songTitles": [
+            "Keep Me In Your Heart",
+            "Climb To Safety"
+          ]
+        }
+      ],
+      "notes": [],
+      "image": "/assets/setlists/2026/2026-07-23.jpg",
+      "imageWidth": 0,
+      "imageHeight": 0,
+      "photoCredit": "Andy Tennille",
+      "transitionSourceUrl": "https://archive.org/details/wsp2026-07-23",
+      "transitionSourceTitle": "Widespread Panic Live at The Orpheum Theatre on 2026-07-23"
     }
   ],
   "tourDates": [
@@ -2089,7 +2146,7 @@
   "transitionSource": {
     "label": "Internet Archive Live Music Archive",
     "sourceUrl": "https://archive.org/details/WidespreadPanic",
-    "importedAt": "2026-07-23T06:45:00.091Z",
+    "importedAt": "2026-07-24T13:43:09.211Z",
     "rule": "Official Widespread Panic setlist titles are retained; same-date Archive track metadata supplies only segue markers."
   }
 }

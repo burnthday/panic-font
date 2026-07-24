@@ -966,7 +966,10 @@ async function checkLatestSetlist(html, siteData) {
   // ---- The setlist lives in the hero (labels + segues; active view only) ----
   const musicSlotStart = heroOnly.indexOf('hero-music-slot');
   const musicActiveStart = heroOnly.indexOf('<div class="hv is-active"', musicSlotStart);
-  const musicNextView = heroOnly.indexOf('<div class="hv"', musicActiveStart + 1);
+  // Stop at ANY next view, including the hidden hv-hold transition copy of the
+  // previous show — exact-matching 'class="hv"' ran past it and double-counted
+  // its set rows the morning a new show posted (2026-07-24 cascade).
+  const musicNextView = heroOnly.indexOf('<div class="hv', musicActiveStart + 1);
   const activeMusic = heroOnly.slice(musicActiveStart, musicNextView > 0 ? musicNextView : undefined);
   const renderedLabels = [...activeMusic.matchAll(/<div class="sc-row"><span class="sc-label">([^<]+)<\/span><p class="sc-prose">/g)].map((match) => decodeHtml(match[1]));
   const sourceSets = (feat?.sets || []).filter((set) => (set.songTitles || []).length || (set.songs || "").trim());
@@ -2433,10 +2436,17 @@ async function checkPredictionLayer(siteData) {
 
   // Dynamic on purpose: the window must END at the newest posted show, whatever
   // that is — a hardcoded date here broke the first post-show sync (2026-07-23).
+  // Lag tolerance (2026-07-24 cascade): mining reads the setlist.fm cache, but the
+  // official-site refresh posts a new show hours before setlist.fm has it, so the
+  // morning after a show the window legitimately ends 1 show behind newestPosted.
+  // Requiring exact equality bricked every deploy AND the 4am sync that would have
+  // healed it. Allow the window to end at any of the last 3 posted show dates; the
+  // next successful sync closes the gap.
   const newestPosted = siteData.setlists?.[0]?.isoDate || "";
-  record("Recent-window pair mining ran over the last 100 shows ending at the newest posted show",
+  const recentPostedDates = (siteData.setlists || []).slice(0, 3).map((s) => s.isoDate);
+  record("Recent-window pair mining ran over the last 100 shows ending at (or 1-2 shows behind) the newest posted show",
     siteData.recentWindow && siteData.recentWindow.shows === 100
-      && siteData.recentWindow.to === newestPosted
+      && recentPostedDates.includes(siteData.recentWindow.to)
       && siteData.recentWindow.from < siteData.recentWindow.to
       && Number(siteData.recentPairCount) >= 10,
     `window=${JSON.stringify(siteData.recentWindow)} newestPosted=${newestPosted} recentPairCount=${siteData.recentPairCount}`);
