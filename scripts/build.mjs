@@ -2103,7 +2103,7 @@ function renderAboutPage(entry, data, cache) {
 
             <p>I did not correct him.</p>
 
-            <p>That meeting changed quite a lot. I went on to run digital strategy and creative direction for Hard Working Americans from 2013 through 2018 and worked alongside Dave on a number of records and projects that came through TRI. Later came work with JoJo Hermann, Jerry Joseph, Steve Kimock, Todd Snider, Daniel Hutchens, Band of Heathens, Trondossa and others.</p>
+            <p>That meeting changed quite a lot. I went on to run digital strategy and creative direction for Hard Working Americans from 2013 through 2018. Dave Schools and Duane Trucks were both in that band. I also worked with Dave the producer on a number of records and projects that came through TRI. Later came work with JoJo Hermann, Jerry Joseph, Steve Kimock, Todd Snider, Daniel Hutchens, Band of Heathens, Trondossa and others.</p>
 
             <p>The note from Dave that means the most, however, had nothing to do with any of that. During the Hard Working Americans years, he noticed that I had labeled a Jacksonville show as Miami and sent me a correction.</p>
 
