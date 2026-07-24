@@ -1074,7 +1074,12 @@ function buildBoards(songs) {
   );
 
   const shelfRows = songs.filter((row) => row.total > 1 && (row.effectiveSlp >= config.rotationSlpLimit || row.playedFromShelf)).sort(byTitle);
-  const purgatoryRows = songs.filter((row) => row.total === 1 || row.playedFromPurgatory).sort(byTitle);
+  // Purgatory is the one-timer wing of the shelf, not a separate rule (Alex 7/23):
+  // a song earns it the same way a Shelf song does — 200 shows gone — the difference
+  // is it only ever got the one night. Without the gap gate a song played once LAST
+  // NIGHT dropped straight into Purgatory instead of sitting in rotation like any
+  // other new song. A song that came back from Purgatory this tour still shows.
+  const purgatoryRows = songs.filter((row) => (row.total === 1 && row.effectiveSlp >= config.rotationSlpLimit) || row.playedFromPurgatory).sort(byTitle);
   const woodshedRows = active.filter((row) => row.total > 1 && !row.playedWithNick).sort(byTitle);
   const shelfWatch = songs
     .filter((row) => row.total > 1
@@ -1910,7 +1915,6 @@ function renderAboutPage(entry, data, cache) {
     <link rel="stylesheet" href="/stagelight.css">
     <style>
       .about-lede{font-size:1.06rem;line-height:1.75;max-width:64ch}
-      .about-portrait{float:right;width:min(200px,38vw);margin:0 0 1rem 1.5rem;border-radius:10px}
       .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:2.2rem 0}
       .about-stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:1rem .9rem;text-align:center}
       @media (max-width:560px){.about-stats{grid-template-columns:repeat(2,1fr)}}
@@ -1924,7 +1928,6 @@ function renderAboutPage(entry, data, cache) {
       .about-faq-item summary{cursor:pointer;padding:.8rem 0;font-weight:600;letter-spacing:.01em}
       .about-faq-item p{margin:0;padding:.1rem 0 1rem;line-height:1.7;opacity:.85;max-width:68ch}
       .about-h2{margin-top:2.6rem;letter-spacing:.02em}
-      @media (max-width:560px){.about-portrait{float:none;display:block;margin:0 auto 1.2rem}}
     </style>
   </head>
   <body class="stagelight">
@@ -1937,7 +1940,6 @@ function renderAboutPage(entry, data, cache) {
           <p class="page-deck">Hi! Alex Moura here... thanks for stopping in. I've been running this song list since June of 2007.</p>
         </header>
         <div class="archive-content prose-plate">
-          <img class="about-portrait" src="/assets/archive-media/Alex-1_zps04c65eda.png" alt="Alex Moura">
           <p class="about-lede">Hi! Alex Moura here. Thanks for stopping in. I launched Burnthday's (“burn-the-day”) Widespread Panic Spread Sheet on July 27, 2007, as a place for us die-hard fans to stay informed. After each show, songs from the last four setlists are crossed off the master list in Photoshop, from either the comfort of my home in Charlotte, or a hotel room on the road.</p>
           <p>A little about me: born in Chapel Hill, NC, lived at the beach in Wilmington, NC for ten years, and moved to the Bay Area in 2012. That is where this site changed my life. A tweet got me invited up to Bob Weir's TRI Studios, and when I introduced myself, Dave Schools already knew me from this site. He introduced me to Weir as Widespread Panic's statistician. That turned into running digital strategy and creative direction for Hard Working Americans from 2013 to 2018, and marketing work on many of the albums Dave produced at the studio.</p>
           <p>The email that means the most came from Dave during the Hard Working Americans years. He caught me labeling the Jacksonville show as Miami, and added: “I only mention it because I rely on your site to make setlists! LOL!” That is the whole point of this site in one sentence: the working song list, kept honestly enough that the band itself can lean on it.</p>
@@ -10049,10 +10051,10 @@ function renderSheetKey(data) {
       </svg>
     </div>`;
   const columns = [
-    `<p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't run in the last four shows. The tiny number beside a song counts its plays this tour.</p>`,
-    `<p><b>The Shelf holds songs 200 shows gone.</b> When one comes back it's a bustout, the pull every crowd hopes for. This sheet shows how deep the band can reach.</p>`,
-    `<p><b>Purgatory keeps the one-timers,</b> songs played exactly once, ever. Some are covers from a single wild night. A second play moves a song out, and it rarely comes.</p>`,
-    `<p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. It shrinks every night he digs deeper, and it's the cleanest read on how fast he's learning the book.</p>`
+    `<p><b>The band uses this color-coded song list</b> to pick covers and originals that haven't been touched in the last four shows. The small number beside a song counts its plays this tour.</p>`,
+    `<p><b>The Shelf holds songs that have gone 200 shows</b> without a play. When one comes back it's a bustout, what every crowd hopes for. It shows how deep the band can reach.</p>`,
+    `<p><b>Purgatory keeps the one-timers,</b> played once and never brought back. Most are covers from one wild night. They sit apart from the Shelf because they never went in rotation.</p>`,
+    `<p><b>The Woodshed lists rotation songs</b> Nick Johnson hasn't played yet. The list gets shorter every night he digs deeper, the cleanest read on how fast he's learning the book.</p>`
   ];
   return `<section class="sheet-key" id="sheet-key">
     <div class="key-grid">
