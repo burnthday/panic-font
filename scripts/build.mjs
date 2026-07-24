@@ -1860,7 +1860,7 @@ const ABOUT_FAQ = [
   },
   {
     q: "Who runs Burnthday?",
-    a: "Alex Moura, a Widespread Panic fan since 1997. He was born in Chapel Hill, NC, spent ten years in Wilmington, NC, and moved to the Bay Area in 2012. He has run the site solo since 2007, updating it after every show."
+    a: "Alex Moura, a Widespread Panic fan since 1997. Born in Chapel Hill, NC, he has lived in Wilmington, Raleigh, San Francisco and Charlotte, and is back in Wilmington now. He has run the site solo since 2007, updating it after every show."
   },
   {
     q: "Has the band ever acknowledged the site?",
@@ -1981,9 +1981,12 @@ function renderAboutPage(entry, data, cache) {
     <link rel="stylesheet" href="/stagelight.css">
     <style>
       .about-lede{font-size:1.06rem;line-height:1.75;max-width:64ch}
-      .about-figure{margin:32px auto;max-width:420px}
-      .about-figure img{width:100%;height:auto;border-radius:var(--sl-r-md);border:1px solid var(--sl-line)}
+      .about-figure{margin:32px 0}
+      .about-figure img{width:100%;height:auto;border-radius:var(--sl-r-md);border:1px solid var(--sl-line);display:block}
       .about-figure figcaption{margin-top:10px;font-size:var(--type-small);color:var(--sl-faint);text-align:center}
+      .about-video{margin:32px auto;max-width:560px}
+      .about-video .yt-lite{margin:0 auto}
+      .about-video figcaption{margin-top:10px;font-size:var(--type-small);color:var(--sl-faint);text-align:center}
       .about-fineprint{margin-top:48px;padding-top:24px;border-top:1px solid var(--sl-line)}
       .about-fineprint .fineprint-head{font-size:var(--type-small);letter-spacing:.08em;text-transform:uppercase;color:var(--sl-faint);margin:0 0 8px}
       .about-fineprint p{font-size:var(--type-small);line-height:1.6;color:var(--sl-faint);max-width:70ch}
@@ -2052,7 +2055,10 @@ function renderAboutPage(entry, data, cache) {
             <p>Then I saw Garrie Vereen's song list.</p>
 
             <figure class="about-figure">
-              <img src="/assets/archive-media/garrie.jpg" alt="Garrie Vereen marking the color-coded master song list by hand with a red marker" loading="lazy" decoding="async">
+              <picture>
+                <source type="image/webp" srcset="/assets/archive-media/garrie.webp">
+                <img src="/assets/archive-media/garrie.jpg" alt="Garrie Vereen marking the color-coded master song list by hand with a red marker" loading="lazy" decoding="async">
+              </picture>
               <figcaption>Garrie Vereen working the master list, one marker color per night. Photographer unknown&mdash;if this is your shot, message Burnthday for a credit.</figcaption>
             </figure>
 
@@ -2086,6 +2092,11 @@ function renderAboutPage(entry, data, cache) {
           <div class="archive-content prose-plate">
             <p>Burnthday produced a few odd side projects along the way. The most visible was Jimmy Herring Has a Posse, a riff on the old Andre the Giant street-art campaign that somehow became shirts, stickers and its own little piece of Panic folklore. Stickers found their way onto Jimmy's volume pedals. His guitar tech, Eric Pretto, got a full box of them at Red Rocks and wore one onstage. Derek Trucks wore one onstage during the 2009 Allman Brothers and Widespread Panic co-bill. People still turn up wearing them.</p>
 
+            <figure class="about-video">
+              ${renderLiteEmbed("aPRDPjYKXoI", { thumb: "/assets/archive-media/derek-trucks-posse-2009.webp", title: "Derek Trucks in a Jimmy Herring Has a Posse shirt, Allman Brothers 40th Anniversary Tour with Widespread Panic, 2009" })}
+              <figcaption>Derek Trucks in the shirt on the last night of the Allman Brothers' 40th-anniversary tour, Widespread Panic sharing the stage. 2009.</figcaption>
+            </figure>
+
             <p>The useful part was what happened to the money.</p>
 
             <p>The apparel was run as a nonprofit. Widespread Panic had sponsored a Make It Right house in New Orleans first, and the fans decided to build one too: The House That Widespread Panic Fans Built, a campaign that raised tens of thousands of dollars toward a home in the Lower 9th Ward after Hurricane Katrina. Burnthday put its proceeds in.</p>
@@ -2103,7 +2114,7 @@ function renderAboutPage(entry, data, cache) {
 
             <p>I did not correct him.</p>
 
-            <p>That meeting changed quite a lot. I went on to run digital strategy and creative direction for Hard Working Americans from 2013 through 2018. Dave Schools and Duane Trucks were both in that band. I also worked with Dave the producer on a number of records and projects that came through TRI. Later came work with JoJo Hermann, Jerry Joseph, Steve Kimock, Todd Snider, Daniel Hutchens, Band of Heathens, Trondossa and others.</p>
+            <p>That meeting changed quite a lot. I went on to run digital strategy and creative direction for Hard Working Americans from 2013 through 2018. Dave Schools and Duane Trucks were both in that band. Dave saw what I could do and started bringing me onto the records he was producing: the KIMOCK record, Jerry Joseph, Daniel Hutchens. I also worked with Todd Snider full time, running his entire digital presence through to the end, every album and every tour. There was work along the way with JoJo Hermann, the Band of Heathens, the band's own Trondossa festival and others.</p>
 
             <p>The note from Dave that means the most, however, had nothing to do with any of that. During the Hard Working Americans years, he noticed that I had labeled a Jacksonville show as Miami and sent me a correction.</p>
 
@@ -2148,11 +2159,13 @@ ${faqItems}
             <h2>Friends of Burnthday</h2>
           </div>
           <div class="archive-content prose-plate">
-            <p>Nineteen years of this would not exist without people who were willing to document things.</p>
+            <p>Nineteen years of this would not exist without people willing to document things.</p>
 
-            <p>That begins with the band and crew, Garrie Vereen and the people behind the Everyday Companion. It includes the taper section, the Home Team and hometeam.fm, The Sandbox Channel, Topdogger, Ashley and Charles Fox, Z-Man, D.P. Swint, Bennett Schwartz, Ted Rockwell, Horace Moore, J.T. Lucchesi, Beau Gunn at 98.3 The Penguin and the many other people who preserved shows, corrected dates, shared recordings and kept information moving long before any of this was easy.</p>
+            <p>Thank you to the band and crew, to Garrie Vereen, and to the people behind the Everyday Companion. To the taper section, the Home Team and hometeam.fm, The Sandbox Channel and Topdogger. To Ashley and Charles Fox, Z-Man, D.P. Swint, Bennett Schwartz, Ted Rockwell, Horace Moore, J.T. Lucchesi and Beau Gunn at 98.3 The Penguin. And to the photographers whose work gives these pages their life, especially Josh Timmermans and Andy Tennille.</p>
 
-            <p>The same is true of the photographers whose work gives Burnthday much of its life, especially Josh Timmermans and Andy Tennille, along with many photographer friends throughout the Panic community. If a photograph appears here without the right credit, let me know and I will fix it. If you would rather it not appear here at all, I will take it down.</p>
+            <p>Most of all, thank you to the Widespread Panic community. Everyone who preserved a show, corrected a date, shared a recording or kept the information moving before any of this was easy. This site is one fan trying to keep up with all of you.</p>
+
+            <p>If a photo appears here without the right credit, or you would rather it not appear at all, let me know and I will fix it. No questions asked. Reach me at <a href="mailto:burnthdaywsp@gmail.com">burnthdaywsp@gmail.com</a>, or say hi on Facebook, X or Instagram.</p>
 
             <p>Burnthday has never been a business. It is still a fan project, still independent and still here because I apparently never learned to stop staring at the song list.</p>
 
@@ -2174,6 +2187,7 @@ ${faqItems}
       ["Home", "https://burnthday.com/"],
       ["About", "https://burnthday.com/about/"]
     ])}</script>
+    ${LITE_EMBED_SCRIPT}
     ${renderAboutJsonLd(stats)}
   </body>
 </html>
@@ -5913,7 +5927,9 @@ function extractYouTubeId(rawUrl) {
 
 function renderLiteEmbed(id, options = {}) {
   const title = options.title || "video";
-  const thumb = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  // options.thumb overrides YouTube's auto-thumbnail with a self-hosted cover
+  // (e.g. a specific frame we want as the poster). Falls back to the YT still.
+  const thumb = options.thumb || `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
   const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1`;
   const fallback = options.fallbackUrl || `https://www.youtube.com/watch?v=${id}`;
   const label = `Play video: ${title}`;
