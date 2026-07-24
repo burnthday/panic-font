@@ -3,6 +3,22 @@
 What changed on the site, newest first. Append-only: corrections go in a new entry,
 never by editing an old one. One line per meaningful change with its commit.
 
+## 2026-07-24 (PUBLISHED)
+
+### Changed
+- **About page rebuilt as liner notes, live** (`5ae7a77` + `9230ef2`, deploy 30098289448 green).
+  Mission-first intro, chronological story (name origin in FAQ only, Garrie method
+  with Schools' 1994 setlist history and the Garrie photo, Spread Sheet, Posse,
+  TRI), FAQ restored verbatim plus four career E-E-A-T entries that also feed the
+  FAQPage JSON-LD. Stats grid and Selected Work cards removed.
+
+### Fixed
+- **LA 7/23 posted + morning-after deploy cascade unbricked** (`9230ef2`).
+  Orpheum setlist, localized Tennille image, EC prior stats with Papa Legba and
+  Four Cornered Room. QA guards: hero active-view slice stops at the hv-hold
+  transition view; pair-window check tolerates the 1-2-show setlist.fm cache lag
+  that failed the 4am sync and every deploy behind it.
+
 ## 2026-07-23 night (PUBLISHED)
 
 ### Fixed
