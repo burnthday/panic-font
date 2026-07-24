@@ -982,12 +982,19 @@ async function checkLatestSetlist(html, siteData) {
   // ---- Right-rail: ticker + run-night cards + upcoming card + all-setlists ----
   record("Hero right rail carries the highlights ticker with a doubled crawl track",
     heroOnly.includes('class="hero-ticker"') && heroOnly.includes('class="tk-track"'), "hero-ticker present");
-  // Show notes (pulls/gaps/debuts/editorial) appear BELOW the setlist too, not only
-  // in the marquee (Alex 2026-07-24). When the featured show has ticker items, the
-  // static list must be present; both surfaces are built from the same data.
-  record("Show notes are mirrored below the setlist when the marquee has any",
-    !heroOnly.includes('class="tk-track"') || (heroOnly.includes('class="show-notes"') && heroOnly.includes('class="sn-list"')),
-    "static show-notes list present alongside the ticker");
+  // Below the setlist the show-notes list carries the readable facts only — the
+  // deep "last played" rows (EC-style, with the date) and the editorial raps/teases.
+  // The rarity/bustout flags stay in the marquee (Alex 2026-07-24). So the block is
+  // NOT a marquee mirror: guard that when it renders, it carries no rarity symbols
+  // and its Last rows read EC-style ("N shows", with a date), not "N shows ago".
+  if (heroOnly.includes('class="show-notes"')) {
+    record("Show-notes block below the setlist excludes rarity flags (marquee only)",
+      !/class="sn-item"[^>]*>\s*<svg/.test(heroOnly) && !/sn-item[^"]*"><svg/.test(heroOnly),
+      "no rarity symbols in the static show-notes list");
+    record("Show-notes Last rows are EC-style (no 'shows ago'; a date when known)",
+      !/sn-meta">[^<]*shows ago/.test(heroOnly),
+      "sn-meta uses 'N shows' with an optional MM/DD/YY date, not 'N shows ago'");
+  }
   const runNights = (siteData.setlists || []).slice(1).filter((entry) => entry.venue === feat?.venue && entry.location === feat?.location);
   for (const night of runNights) {
     assertIncludes(heroOnly, `data-view="${night.isoDate}"`, `Hero carries a full view for run night ${night.isoDate}`);
@@ -999,6 +1006,17 @@ async function checkLatestSetlist(html, siteData) {
   // "after" at the newest show and no "before" at the oldest, jumping the hero
   // height at both ends and rendering the same show differently depending on how
   // the visitor arrived. Guard the fixed contract so that cannot creep back.
+  // Live-setlist fallback safety (Alex 2026-07-24 cascade): any setlist filled from
+  // setlist.fm because the official post lagged must be a REAL setlist — non-empty
+  // sets and a date not in the future. A zero-song stub or a future scheduled show
+  // must never be published. Fires only when a fallback is present.
+  {
+    const fallback = (siteData.setlists || []).filter((s) => s.source === "setlist.fm");
+    const today = new Date().toISOString().slice(0, 10);
+    record("setlist.fm fallback entries are real setlists (songs present, not a future date)",
+      fallback.every((s) => Array.isArray(s.sets) && s.sets.some((set) => (set.songTitles || []).length > 0) && s.isoDate <= today),
+      `fallback=${fallback.length} bad=${fallback.filter((s) => !(s.sets?.some((set) => (set.songTitles || []).length > 0)) || s.isoDate > today).map((s) => s.isoDate).join(",") || "none"}`);
+  }
   record("Rail is two fixed slots (one context + upcoming pinned last), no b/latest slot",
     heroOnly.includes('data-card-slot="a"') && !heroOnly.includes('data-card-slot="b"') && !heroOnly.includes('data-card-slot="latest"') && heroOnly.includes("hero-card-upcoming") && heroOnly.includes('id="hero-card-meta"'),
     "slot a + upcoming + card meta present, slots b/latest gone");

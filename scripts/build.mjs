@@ -299,17 +299,27 @@ async function mergeSetlistFmFallback(payload) {
   const dayDiff = (a, b) => Math.abs((Date.parse(a + "T00:00:00Z") - Date.parse(b + "T00:00:00Z")) / 86400000);
 
   const todayIso = new Date().toISOString().slice(0, 10);
+  const tourDates = (payload.tourDates || []).filter((s) => s.isoDate && s.isoDate <= todayIso);
+  const claimed = new Set();
   const added = [];
-  for (const show of payload.tourDates || []) {
-    if (!show.isoDate || posted.has(show.isoDate)) continue;
-    if (show.isoDate > todayIso) continue; // never fill a scheduled-but-unplayed future show
-    const candidates = fmShows
-      .filter((s) => normVenue(s.venue) === normVenue(show.venue) && dayDiff(s.date, show.isoDate) <= 1)
-      .sort((a, b) => dayDiff(a.date, show.isoDate) - dayDiff(b.date, show.isoDate));
-    const match = candidates[0];
-    if (!match) continue;
-    added.push(setlistFromFm(match, show));
-    posted.add(show.isoDate);
+  // fm-CENTRIC assignment: each song-bearing setlist.fm entry goes to the tour date
+  // with its EXACT date first (so a three-night run's 7/24 can never steal 7/23's
+  // setlist), and only drifts to the nearest unclaimed tour date within a day when
+  // no exact-date show exists (folds setlist.fm's occasional off-by-one stub onto
+  // the real night). Skip if the exact date is already officially posted.
+  for (const fm of fmShows) {
+    const ven = normVenue(fm.venue);
+    const exact = tourDates.find((td) => td.isoDate === fm.date && normVenue(td.venue) === ven);
+    if (exact) {
+      if (!posted.has(exact.isoDate) && !claimed.has(exact.isoDate)) {
+        claimed.add(exact.isoDate); posted.add(exact.isoDate); added.push(setlistFromFm(fm, exact));
+      }
+      continue; // its own night exists (posted or just filled) — never reassign
+    }
+    const near = tourDates
+      .filter((td) => !posted.has(td.isoDate) && !claimed.has(td.isoDate) && normVenue(td.venue) === ven && dayDiff(td.isoDate, fm.date) <= 1)
+      .sort((a, b) => dayDiff(a.isoDate, fm.date) - dayDiff(b.isoDate, fm.date))[0];
+    if (near) { claimed.add(near.isoDate); added.push(setlistFromFm(fm, near)); }
   }
   if (added.length) {
     payload.setlists = [...(payload.setlists || []), ...added].sort((a, b) => b.isoDate.localeCompare(a.isoDate));
