@@ -10028,6 +10028,12 @@ function renderNickRigModal() {
     `<button type="button" class="rig-spot rig-${s.owner}" style="left:${s.x}%;top:${s.y}%" data-tip="${s.id}" aria-label="${escapeAttr(s.name)}"></button>`).join("\n        ");
   const tips = NICK_RIG_SPOTS.map((s) =>
     `<div class="rig-tip" id="rig-tip-${s.id}"><span class="rig-tag rig-${s.owner}">${escapeHtml(RIG_OWNER_LABEL[s.owner])}</span><h4>${escapeHtml(s.name)}</h4><p>${escapeHtml(s.note)}</p></div>`).join("\n        ");
+  // Mobile-only readable gear list. Tapping 13 pinpoint dots on a phone-width image
+  // doesn't work (they cluster and overlap), so the dots are decoration under 900px
+  // and this list is the real interaction: full-width rows, owner-colored, no tap
+  // ambiguity. Desktop keeps the dots + hover/tap tips (CSS hides this list there).
+  const rigList = `<ul class="rig-list">${NICK_RIG_SPOTS.map((s) =>
+    `<li class="rl-item rig-${s.owner}"><span class="rl-dot" aria-hidden="true"></span><div class="rl-body"><p class="rl-head"><b class="rl-name">${escapeHtml(s.name)}</b><span class="rl-tag">${escapeHtml(RIG_OWNER_LABEL[s.owner])}</span></p><p class="rl-note">${escapeHtml(s.note)}</p></div></li>`).join("")}</ul>`;
   const vids = NICK_RIG_VIDEOS.filter((v) => v.yt);
   // Same player as the homepage "From the stage" section: poster button, scrim,
   // round play control, caption over the image; click swaps in the iframe.
@@ -10048,14 +10054,17 @@ function renderNickRigModal() {
       <button type="button" class="hero-modal-x rig-x" data-rig-close aria-label="Close rig rundown">\u2715</button>
       <div class="rig-body">
       <div class="rig-art">
-        <img src="/assets/nick-gear.png" alt="Nick Johnson's rig, illustrated: PRS guitar, hometeam head, Sound City, Mesa/Boogie and Orange cabs, Crown power amps, pedals on the rug" loading="lazy" decoding="async" width="1000" height="837">
         <div class="hero-modal-head rig-head">
           <p class="rig-eyebrow">Nick's Rig</p>
           <h3 id="nick-rig-title" class="rig-statement"><span class="rig-tie">An honest tone with a blistering lead.</span> Mikey's cabinet <br class="rig-br">and an SLO clone running through Jimmy's wet rig give <br class="rig-br">Nick Johnson the sound our band can run with.</h3>
           <div class="rig-hint">Tap the gear</div>
         </div>
-        ${spots}
-        ${tips}
+        <div class="rig-canvas">
+          <img src="/assets/nick-gear.png" alt="Nick Johnson's rig, illustrated: PRS guitar, hometeam head, Sound City, Mesa/Boogie and Orange cabs, Crown power amps, pedals on the rug" loading="lazy" decoding="async" width="1000" height="837">
+          ${spots}
+          ${tips}
+        </div>
+        ${rigList}
       </div>
       ${vidRow}
       </div>
@@ -16261,6 +16270,7 @@ body.stagelight .rig-modal.is-open .rig-panel { opacity: 1; transform: none; }
 /* Statement overlays the ART (Alex 7/23) so the rig sits at the top of the modal.
    It lives inside .rig-art, so the scrim never darkens the video column. */
 body.stagelight .rig-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: stretch; background: #000; }
+body.stagelight .rig-list { display: none; } /* desktop: dots do the job; mobile @media re-shows */
 body.stagelight .rig-head { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: block; padding: 18px 22px 46px;
   background: linear-gradient(180deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.85) 42%, rgba(0,0,0,0.42) 76%, rgba(0,0,0,0) 100%); }
 body.stagelight .rig-x { position: absolute; top: 14px; right: 14px; z-index: 6; }
@@ -16293,12 +16303,29 @@ body.stagelight .rig-head .rig-tie {
   body.stagelight .rig-vids { padding: 18px; grid-template-columns: 1fr 1fr; }
   body.stagelight .rig-statement { max-width: 100%; }
   body.stagelight .rig-br { display: none; }
+  /* Statement is a normal block on top (not an overlay), so it never buries the
+     tap targets; the gear + dots sit below it, full width. */
+  body.stagelight .rig-art { display: flex; flex-direction: column; }
+  body.stagelight .rig-head { position: static; padding: 18px 52px 12px 20px; background: none; }
+  body.stagelight .rig-hint { display: none; }
+  /* Dots become non-interactive markers on the image; the list is the control. */
+  body.stagelight .rig-spot { pointer-events: none; opacity: 0.55; }
+  body.stagelight .rig-tip { display: none !important; }
+  body.stagelight .rig-list { display: flex; flex-direction: column; gap: 2px; padding: 8px 4px 4px; margin: 0; list-style: none; }
+  body.stagelight .rl-item { display: grid; grid-template-columns: 14px 1fr; gap: 12px; padding: 13px 6px; border-top: 1px solid var(--sl-line-faint); }
+  body.stagelight .rl-item:first-child { border-top: 0; }
+  body.stagelight .rl-dot { width: 11px; height: 11px; margin-top: 5px; border-radius: 50%; outline: 1.5px solid rgba(var(--c), 0.9); background: rgba(var(--c), 0.28); }
+  body.stagelight .rl-head { display: flex; align-items: baseline; gap: 10px; margin: 0; }
+  body.stagelight .rl-name { font-size: 15px; font-weight: 640; color: var(--sl-ink); }
+  body.stagelight .rl-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--c)); flex: none; }
+  body.stagelight .rl-note { margin: 3px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--sl-muted); }
 }
 @media (max-width: 620px) { body.stagelight .rig-vids { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { body.stagelight .rig-statement { font-size: 16px; } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .rig-tie { animation: none; } }
 body.stagelight .rig-art { position: relative; background: #000; }
-body.stagelight .rig-art > img { display: block; width: 100%; height: auto; }
+body.stagelight .rig-canvas { position: relative; }
+body.stagelight .rig-canvas > img { display: block; width: 100%; height: auto; }
 body.stagelight .rig-hint { display: inline-flex; margin-top: 14px; font-family: var(--sl-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(242,242,240,0.92); background: rgba(0,0,0,0.5); border: 1px solid rgba(242,242,240,0.34); border-radius: 999px; padding: 7px 15px; pointer-events: none; white-space: nowrap; animation: rig-hint-breathe 2.6s ease-in-out infinite; }
 @keyframes rig-hint-breathe { 0%, 100% { opacity: 0.62; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
 @media (prefers-reduced-motion: reduce) { body.stagelight .rig-hint { animation: none; opacity: 1; } }
@@ -16312,6 +16339,7 @@ body.stagelight .rig-nick { --c: 242,242,240; }
 body.stagelight .rig-spot { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; padding: 0; background: rgba(var(--c), 0.22); outline: 1.5px solid rgba(var(--c), 0.9); box-shadow: 0 0 0 4px rgba(var(--c), 0.12), 0 0 14px rgba(var(--c), 0.45); transition: transform 0.15s ease; }
 body.stagelight .rig-spot:hover { transform: scale(1.25); }
 body.stagelight .rig-spot.is-active { background: rgba(var(--c), 0.85); }
+@media (max-width: 900px) { body.stagelight .rig-spot { width: 34px; height: 34px; margin: -17px 0 0 -17px; } }
 body.stagelight .rig-tip { position: absolute; z-index: 5; width: min(320px, 76vw); background: rgba(20,20,24,0.97); border: 1px solid var(--sl-line-strong); border-radius: var(--sl-r-md, 12px); padding: 14px 16px; box-shadow: var(--sl-shadow-3); transform: translate(-50%, 12px); display: none; }
 body.stagelight .rig-tip.show { display: block; }
 body.stagelight .rig-tag { font-family: var(--sl-mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: rgb(var(--c)); }
@@ -16320,7 +16348,7 @@ body.stagelight .rig-tip p { margin: 0; font-size: 13px; line-height: 1.5; color
 body.stagelight .rig-legend { display: flex; gap: 22px; align-items: center; padding: 12px 22px; border-top: 0; font-family: var(--sl-mono); font-size: 10.5px; color: var(--sl-faint); letter-spacing: 0.05em; text-transform: uppercase; }
 body.stagelight .rig-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; vertical-align: -1px; }
 body.stagelight .rig-legend span i { outline: 1.5px solid rgba(var(--c), 0.9); background: rgba(var(--c), 0.22); }
-body.stagelight .rig-vids { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 18px 18px 18px 0; align-content: center; }
+body.stagelight .rig-vids { display: grid; grid-template-columns: 1fr; gap: 14px; padding: 60px 18px 60px 0; align-content: center; }
 body.stagelight .rig-player { border-radius: var(--sl-r-md, 12px); }
 body.stagelight .rig-player .fs-caption { left: 16px; bottom: 14px; }
 body.stagelight .rig-player .fs-caption strong { font-size: 16px; }
