@@ -8939,7 +8939,7 @@ function renderFooterBottom(year) {
 function renderSiteFooter(data, options = {}) {
   const year = data?.site?.year || new Date().getFullYear();
   if (options.stagelight) {
-    return `<div class="athens-strip" aria-hidden="true"><span>ALL THE WAY FROM ATHENS GA</span></div>
+    return `<div class="athens-strip" aria-hidden="true"><div class="athens-track"><span>ALL THE WAY FROM ATHENS GA</span><span>ALL THE WAY FROM ATHENS GA</span></div></div>
 
 <footer class="site-foot">
   <div class="site-foot-inner">
@@ -10423,23 +10423,22 @@ function renderHomeHero(data) {
       <span class="hc-place"><strong>${escapeHtml(displayLocation(entry.location))}</strong><small>${escapeHtml(entry.venue)}${nightFor(entry) ? ` · ${nightFor(entry)}` : ""}</small></span>
       <span class="hc-go" aria-hidden="true">→</span>
     </button>`;
-  // Context = the two posted shows immediately preceding the active view
-  // chronologically, INCLUDING same-city run-mates (owner decision 2026-07-22,
-  // supersedes the older skip-recent/skip-run-mate rule). The default markup's
-  // active view is the featured (most recent) show, so slots a/b start on
-  // posted[1] and posted[2]; the client script (updateCards) reslots them
-  // relative to whichever show becomes active. Flat rows (.hero-row), not cards.
-  const contextShows = posted.slice(1, 3);
+  // Context = the ONE posted show immediately preceding the active view (Alex
+  // 2026-07-23: trim the rail to the previous show + upcoming). Deliberately a
+  // fixed slot rather than a direction-aware neighbour: a neighbour that depends
+  // on which arrow you pressed has no "after" at the newest show and no "before"
+  // at the oldest, so the rail height would jump at both ends, and the same show
+  // would render differently depending on how you arrived. Fixed = predictable.
+  const contextShows = posted.slice(1, 2);
   const upDow = upcoming ? weekdayName(upcoming.isoDate || "").slice(0, 3).toUpperCase() : "";
   const upcomingCard = upcoming ? `<button type="button" class="hero-card hero-card-upcoming" data-view-btn="${escapeAttr(upcoming.isoDate)}" aria-pressed="false">
         <time class="sc-date" datetime="${escapeAttr(upcoming.isoDate || "")}">${escapeHtml(upcoming.date)}</time>
         <span class="hc-place"><strong>${escapeHtml(displayLocation(upcoming.location))}</strong><small>${escapeHtml(upcoming.venue)}</small></span>
         <span class="ns-flag${preview ? " is-tonight" : ""}">${preview ? '<span class="live-dot" aria-hidden="true"></span>Tonight' : `Next show · ${escapeHtml(upDow)}`}</span>
       </button>` : "";
-  // Three cards only: two context slots + the upcoming show pinned last.
+  // Two cards only: one context slot + the upcoming show pinned last.
   const cards = [
     contextShows[0] ? slotCard(contextShows[0], " hero-row", "a") : "",
-    contextShows[1] ? slotCard(contextShows[1], " hero-row", "b") : "",
     upcomingCard
   ].join("");
   const cardMetaJson = `<script type="application/json" id="hero-card-meta">${JSON.stringify(cardMeta).replace(/</g, "\\u003c")}</script>`;
@@ -15445,11 +15444,6 @@ body.stagelight .athens-strip {
    line were the lip it hangs from. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    body.stagelight .athens-strip span {
-      animation: sl-athens-sweep linear both;
-      animation-timeline: view();
-      animation-range: entry 4% entry 62%;
-    }
     body.stagelight .site-foot-inner {
       animation: sl-foot-unroll linear both;
       animation-timeline: view();
@@ -15466,10 +15460,6 @@ body.stagelight .athens-strip {
     body.stagelight .site-foot-inner > *:nth-child(n+5) { animation-range: entry 19% entry 76%; }
   }
 }
-@keyframes sl-athens-sweep {
-  from { clip-path: inset(0 100% -18% 0); transform: translateY(9%) scaleY(1.05); }
-  to { clip-path: inset(0 0 -18% 0); transform: translateY(0) scaleY(1); }
-}
 @keyframes sl-foot-unroll {
   from { clip-path: inset(0 0 100% 0); }
   to { clip-path: inset(0 0 0 0); }
@@ -15484,10 +15474,16 @@ body.stagelight .athens-strip {
    red -> teal/blue -> warm gold, transparent past ~16%) over a solid white layer, so the
    whole line reads white and only the corner shimmers. NO pink/magenta. Only the tie-dye
    layer's position animates; the white layer is pinned. */
+/* Continuous right-to-left crawl (Alex 2026-07-23: bigger, and it should scroll).
+   The track holds two identical copies and translates -50%, so the loop is seamless.
+   Pauses on hover; reduced-motion visitors get a static line. */
+body.stagelight .athens-track { display: flex; width: max-content; animation: athens-crawl 30s linear infinite; }
+body.stagelight .athens-strip:hover .athens-track { animation-play-state: paused; }
+@keyframes athens-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 body.stagelight .athens-strip span {
-  display: block; text-align: center; white-space: nowrap;
+  display: block; white-space: nowrap; padding-right: 0.28em;
   font-family: var(--sl-display); font-style: italic; font-weight: 700;
-  font-size: clamp(38px, 7.3vw, 190px); letter-spacing: -0.018em;
+  font-size: clamp(60px, 13vw, 320px); letter-spacing: -0.018em;
   margin-bottom: -0.085em;
   background:
     linear-gradient(100deg, #d4514f 0%, #e0574f 5%, rgba(96,165,210,1) 10%, #c9a35f 14%, rgba(242,242,240,0) 17%),
@@ -15503,6 +15499,7 @@ body.stagelight .athens-strip span {
   to   { background-position: 16% 50%, 0 0; }
 }
 @media (prefers-reduced-motion: reduce) {
+  body.stagelight .athens-track { animation: none; }
   body.stagelight .athens-strip span { animation: none; clip-path: none; transform: none; }
   body.stagelight .site-foot-inner, body.stagelight .site-foot-inner > * { animation: none; clip-path: none; transform: none; opacity: 1; }
   body.stagelight .athens-strip span { animation: none; }
