@@ -16897,11 +16897,6 @@ body.stagelight .poster-header {
 }
 body.stagelight .ph-lede { min-width: 0; }
 body.stagelight .ph-poster { position: relative; justify-self: center; width: 200px; }
-/* pool of black behind the static poster so its plate melts into any backdrop */
-body.stagelight .ph-poster:not(.is-living)::before {
-  content: ""; position: absolute; inset: -18%; z-index: 0;
-  background: radial-gradient(100% 100% at 50% 50%, #000 40%, rgba(0,0,0,0) 78%);
-}
 /* Static poster stamp only — the :not(.lp-plate) guard keeps this off the living
    poster's plate <img>, which is an absolutely-positioned canvas layer (its float +
    fade come from .living-poster and the .lp-stage mask, not from here). */
