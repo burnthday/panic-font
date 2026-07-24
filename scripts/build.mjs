@@ -2084,7 +2084,7 @@ function renderAboutPage(entry, data, cache) {
             <h2>Jimmy Herring Has a Posse</h2>
           </div>
           <div class="archive-content prose-plate">
-            <p>Burnthday produced a few odd side projects along the way. The most visible was Jimmy Herring Has a Posse, a riff on the old Andre the Giant street-art campaign that somehow became shirts, stickers and its own little piece of Panic folklore. Stickers found their way onto Jimmy's amp. Derek Trucks wore one of the shirts onstage. People still turn up wearing them.</p>
+            <p>Burnthday produced a few odd side projects along the way. The most visible was Jimmy Herring Has a Posse, a riff on the old Andre the Giant street-art campaign that somehow became shirts, stickers and its own little piece of Panic folklore. Stickers found their way onto Jimmy's volume pedals. His guitar tech, Eric Pretto, got a full box of them at Red Rocks and wore one onstage. Derek Trucks wore one onstage during the 2009 Allman Brothers and Widespread Panic co-bill. People still turn up wearing them.</p>
 
             <p>The useful part was what happened to the money.</p>
 
