@@ -15477,14 +15477,14 @@ body.stagelight .athens-strip {
 /* Continuous right-to-left crawl (Alex 2026-07-23: bigger, and it should scroll).
    The track holds two identical copies and translates -50%, so the loop is seamless.
    Pauses on hover; reduced-motion visitors get a static line. */
-body.stagelight .athens-track { display: flex; width: max-content; animation: athens-crawl 30s linear infinite; }
+body.stagelight .athens-track { display: flex; width: max-content; animation: athens-crawl 72s linear infinite; }
 body.stagelight .athens-strip:hover .athens-track { animation-play-state: paused; }
 @keyframes athens-crawl { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 body.stagelight .athens-strip span {
   display: block; white-space: nowrap; padding-right: 0.28em;
   font-family: var(--sl-display); font-style: italic; font-weight: 700;
   font-size: clamp(60px, 13vw, 320px); letter-spacing: -0.018em;
-  margin-bottom: -0.085em;
+  margin-bottom: -0.128em;
   background:
     linear-gradient(100deg, #d4514f 0%, #e0574f 5%, rgba(96,165,210,1) 10%, #c9a35f 14%, rgba(242,242,240,0) 17%),
     linear-gradient(rgba(242,242,240,0.92), rgba(242,242,240,0.92));
